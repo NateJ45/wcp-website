@@ -16,29 +16,37 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
 ---
 
-{/* The footer's cloud seam reveals whatever section sits above it — a navy
+{
+  /* The footer's cloud seam reveals whatever section sits above it — a navy
     CTA on most pages (reads as a subtle orange seam line) or a light section
-    on the newsletter/legal pages (reads as a full cloud). */}
+    on the newsletter/legal pages (reads as a full cloud). */
+}
 <footer class="relative -mt-px bg-navy text-white">
   <Seam color="navy" />
-  <div class="wcp-container grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+  <div
+    class="wcp-container grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
+  >
     {/* Brand + contact */}
     <div>
       <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-16 w-auto" />
       <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/80">{site.tagline}</p>
-      <address class="mt-4 space-y-2 text-sm not-italic text-white/90">
+      <address class="mt-4 space-y-2 text-sm text-white/90 not-italic">
         <a href={`tel:${phoneDigits}`} class="inline-flex items-center gap-2 hover:underline">
           <Icon name="phone" class="h-4 w-4 text-amber" />{site.phone}
         </a>
         <br />
-        <a href={`mailto:${site.email.general}`} class="inline-flex items-center gap-2 hover:underline">
+        <a
+          href={`mailto:${site.email.general}`}
+          class="inline-flex items-center gap-2 hover:underline"
+        >
           <Icon name="mail" class="h-4 w-4 text-amber" />{site.email.general}
         </a>
         <div class="flex items-start gap-2 pt-1 text-white/80">
           <Icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-amber" />
           <span>
             {site.address.street}<br />
-            {site.address.city}, {site.address.state} {site.address.zip}
+            {site.address.city}, {site.address.state}
+            {site.address.zip}
           </span>
         </div>
       </address>
@@ -116,7 +124,9 @@ const year = new Date().getFullYear();
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p>&copy; {year} {site.name}. All rights reserved.</p>
         <p>
-          A secular, non-discriminatory cooperative preschool. Founded {site.founded}. {site.license}.
+          A secular, non-discriminatory cooperative preschool. Founded {site.founded}. {
+            site.license
+          }.
         </p>
       </div>
     </div>

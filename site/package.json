@@ -15,6 +15,11 @@
     "lint": "oxlint src",
     "lint:fix": "oxlint --fix src",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "serve:dist": "http-server dist/client -p 4321 -s -c-1 --silent",
+    "check:links": "linkinator ./dist/client --recurse --skip \"^(?!http://localhost)\"",
     "encode:hero": "node scripts/encode-hero.mjs"
   },
   "dependencies": {
@@ -36,14 +41,19 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@axe-core/playwright": "^4.12.1",
     "@iconify-json/lucide": "^1.2.116",
     "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.61.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "ffmpeg-static": "^5.3.0",
+    "http-server": "^14.1.1",
+    "linkinator": "^7.6.1",
     "oxlint": "^1.73.0",
     "prettier": "^3.9.5",
     "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "^6.0.3",
     "wrangler": "^4.110.0"
   }

@@ -52,11 +52,7 @@ export default defineConfig({
   // leaves images broken in production on a static site.)
   adapter: cloudflare({ imageService: 'compile' }),
 
-  integrations: [
-    sitemap(),
-    partytown({ config: { forward: ['dataLayer.push'] } }),
-    react(),
-  ],
+  integrations: [sitemap(), partytown({ config: { forward: ['dataLayer.push'] } }), react()],
 
   vite: {
     plugins: [tailwindcss()],

@@ -17,29 +17,104 @@ import prekHero from '@/assets/photos/prek-hero.jpg';
 import lisaCortez from '@/assets/staff/lisa-cortez.jpg';
 
 const classSize = [
-  { icon: 'users', chip: 'orange' as const, title: '12 children per session', body: 'Both AM and PM sessions are capped at 12 children, well below the averages at larger preschools.' },
-  { icon: 'graduation-cap', chip: 'sky' as const, title: 'Mrs. Lisa, lead teacher', body: '10 years at WCP. Her own children are alumni. She brings deep expertise and genuine care to every session.' },
-  { icon: 'calendar-days', chip: 'green' as const, title: 'Annual conferences', body: 'Pre-K families receive parent-teacher conferences early in the year to help with kindergarten placement.' },
+  {
+    icon: 'users',
+    chip: 'orange' as const,
+    title: '12 children per session',
+    body: 'Both AM and PM sessions are capped at 12 children, well below the averages at larger preschools.',
+  },
+  {
+    icon: 'graduation-cap',
+    chip: 'sky' as const,
+    title: 'Mrs. Lisa, lead teacher',
+    body: '10 years at WCP. Her own children are alumni. She brings deep expertise and genuine care to every session.',
+  },
+  {
+    icon: 'calendar-days',
+    chip: 'green' as const,
+    title: 'Annual conferences',
+    body: 'Pre-K families receive parent-teacher conferences early in the year to help with kindergarten placement.',
+  },
 ];
 
 // The full "what your Pre-K child learns" curriculum, drawn directly from
 // Ohio's Early Learning Content Standards.
 const curriculum = [
-  { icon: 'book-open', chip: 'orange' as const, title: 'Reading and phonics', body: 'Children recognize upper and lower case letters, identify rhymes, isolate syllables through clapping and movement, and begin reading their own first and last name. They predict story events, answer comprehension questions, and retell stories after read-alouds.' },
-  { icon: 'pencil', chip: 'sky' as const, title: 'Writing', body: 'Using the Handwriting Without Tears approach, children practice printing letters of their name and other meaningful words. They learn proper letter formation, write from top to bottom in horizontal rows, and develop a mature pencil grip through daily fine motor exercises.' },
-  { icon: 'message-circle', chip: 'green' as const, title: 'Communication', body: 'Children speak clearly to express ideas and needs, sustain back-and-forth conversations, recite their home address and phone number, and participate in poems, chants, and nursery rhymes. They also state their parents’ names and follow multi-step oral directions.' },
-  { icon: 'calculator', chip: 'amber' as const, title: 'Math', body: 'Counting to 20, identifying numerals 0–20, recognizing coins and their values, identifying 2D and 3D shapes, creating and extending patterns, differentiating left from right, and using the language of time — day, night, yesterday, today, and tomorrow.' },
-  { icon: 'hand', chip: 'sky' as const, title: 'Fine and gross motor', body: 'Tracing lines, cutting straight and curved lines, drawing from memory, working puzzles with ten or more pieces, and drawing a person with full body detail. Gross motor includes hopping, skipping, balancing, catching a ball, and climbing with alternating feet.' },
-  { icon: 'microscope', chip: 'orange' as const, title: 'Science and social studies', body: 'Weather, seasons, planets, life cycles, dinosaurs, forces and motion, dental health, and our bodies. Social studies covers U.S. symbols, the Pledge of Allegiance, authority figures, community helpers, maps, and different environments.' },
+  {
+    icon: 'book-open',
+    chip: 'orange' as const,
+    title: 'Reading and phonics',
+    body: 'Children recognize upper and lower case letters, identify rhymes, isolate syllables through clapping and movement, and begin reading their own first and last name. They predict story events, answer comprehension questions, and retell stories after read-alouds.',
+  },
+  {
+    icon: 'pencil',
+    chip: 'sky' as const,
+    title: 'Writing',
+    body: 'Using the Handwriting Without Tears approach, children practice printing letters of their name and other meaningful words. They learn proper letter formation, write from top to bottom in horizontal rows, and develop a mature pencil grip through daily fine motor exercises.',
+  },
+  {
+    icon: 'message-circle',
+    chip: 'green' as const,
+    title: 'Communication',
+    body: 'Children speak clearly to express ideas and needs, sustain back-and-forth conversations, recite their home address and phone number, and participate in poems, chants, and nursery rhymes. They also state their parents’ names and follow multi-step oral directions.',
+  },
+  {
+    icon: 'calculator',
+    chip: 'amber' as const,
+    title: 'Math',
+    body: 'Counting to 20, identifying numerals 0–20, recognizing coins and their values, identifying 2D and 3D shapes, creating and extending patterns, differentiating left from right, and using the language of time — day, night, yesterday, today, and tomorrow.',
+  },
+  {
+    icon: 'hand',
+    chip: 'sky' as const,
+    title: 'Fine and gross motor',
+    body: 'Tracing lines, cutting straight and curved lines, drawing from memory, working puzzles with ten or more pieces, and drawing a person with full body detail. Gross motor includes hopping, skipping, balancing, catching a ball, and climbing with alternating feet.',
+  },
+  {
+    icon: 'microscope',
+    chip: 'orange' as const,
+    title: 'Science and social studies',
+    body: 'Weather, seasons, planets, life cycles, dinosaurs, forces and motion, dental health, and our bodies. Social studies covers U.S. symbols, the Pledge of Allegiance, authority figures, community helpers, maps, and different environments.',
+  },
 ];
 
 const readiness = [
-  { icon: 'book-open', chip: 'orange' as const, title: 'Literacy', body: 'Alphabet recognition, phonics basics, and comprehension through daily storytime and reading centers.' },
-  { icon: 'calculator', chip: 'sky' as const, title: 'Math', body: 'Counting, patterning, shapes, classifying, and number recognition through hands-on activities every session.' },
-  { icon: 'file-check', chip: 'green' as const, title: 'Fine motor', body: 'Handwriting Without Tears builds the pencil control kids need for writing in kindergarten.' },
-  { icon: 'heart-handshake', chip: 'amber' as const, title: 'Social skills', body: 'Cooperating, listening, following routines, and managing emotions — the skills teachers say matter most.' },
-  { icon: 'microscope', chip: 'sky' as const, title: 'Science', body: 'Curiosity-driven exploration through experiments, sensory bins, and outdoor observation.' },
-  { icon: 'sparkles', chip: 'orange' as const, title: 'Independence', body: 'Managing belongings, following directions, and navigating routines without constant adult support.' },
+  {
+    icon: 'book-open',
+    chip: 'orange' as const,
+    title: 'Literacy',
+    body: 'Alphabet recognition, phonics basics, and comprehension through daily storytime and reading centers.',
+  },
+  {
+    icon: 'calculator',
+    chip: 'sky' as const,
+    title: 'Math',
+    body: 'Counting, patterning, shapes, classifying, and number recognition through hands-on activities every session.',
+  },
+  {
+    icon: 'file-check',
+    chip: 'green' as const,
+    title: 'Fine motor',
+    body: 'Handwriting Without Tears builds the pencil control kids need for writing in kindergarten.',
+  },
+  {
+    icon: 'heart-handshake',
+    chip: 'amber' as const,
+    title: 'Social skills',
+    body: 'Cooperating, listening, following routines, and managing emotions — the skills teachers say matter most.',
+  },
+  {
+    icon: 'microscope',
+    chip: 'sky' as const,
+    title: 'Science',
+    body: 'Curiosity-driven exploration through experiments, sensory bins, and outdoor observation.',
+  },
+  {
+    icon: 'sparkles',
+    chip: 'orange' as const,
+    title: 'Independence',
+    body: 'Managing belongings, following directions, and navigating routines without constant adult support.',
+  },
 ];
 ---
 
@@ -68,7 +143,13 @@ const readiness = [
       lead="Both Pre-K sessions are capped at 12 children with one lead teacher: small enough that Mrs. Lisa knows every child deeply, large enough for the social experience of a real classroom."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {classSize.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+      {
+        classSize.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -131,7 +212,13 @@ const readiness = [
       lead="Kindergarten readiness is the heart of our Pre-K program. Every goal below is drawn directly from Ohio’s Early Learning Content Standards and delivered through a structured but playful daily routine."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {curriculum.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+      {
+        curriculum.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -139,7 +226,12 @@ const readiness = [
   <Section bg="grey" labelledby="prek-teacher">
     <SectionHeader eyebrow="Your Child’s Teacher" title="Meet Mrs. Lisa" titleId="prek-teacher" />
     <div class="mx-auto mt-12 grid max-w-4xl items-start gap-8 md:grid-cols-2">
-      <TeacherCard photo={lisaCortez} name="Mrs. Lisa Cortez" role="Pre-K · 10 years at WCP" email={site.teachers.lisa}>
+      <TeacherCard
+        photo={lisaCortez}
+        name="Mrs. Lisa Cortez"
+        role="Pre-K · 10 years at WCP"
+        email={site.teachers.lisa}
+      >
         Lisa has a passion for early education and a classroom built around hands-on activities that
         develop social skills, early literacy, math, science, and the arts. She and her family have
         called Ohio home since 2014 and her youngest, Oliver, is a proud WCP alumnus. She describes
@@ -162,17 +254,26 @@ const readiness = [
     </div>
   </Section>
 
-  {/* Navy readiness band — top seam clouds up into the teacher section above.
-      It flows straight into the navy CTA below, so the CTA's own seam is off. */}
+  {
+    /* Navy readiness band — top seam clouds up into the teacher section above.
+      It flows straight into the navy CTA below, so the CTA's own seam is off. */
+  }
   <Section bg="navy" seam labelledby="prek-readiness">
     <SectionHeader
       eyebrow="Kindergarten Readiness"
+      eyebrowTone="amber"
       title="What WCP Pre-K graduates walk in with"
       titleId="prek-readiness"
       lead="Our curriculum is built around Ohio’s Early Learning Content Standards, aligned with what kindergarten teachers expect on day one."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {readiness.map((r) => (<FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>{r.body}</FeatureCard>))}
+      {
+        readiness.map((r) => (
+          <FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>
+            {r.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 

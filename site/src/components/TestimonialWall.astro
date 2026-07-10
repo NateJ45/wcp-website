@@ -39,12 +39,14 @@ const accents = ['border-t-orange', 'border-t-sky', 'border-t-green', 'border-t-
         >
           {/* Oversized decorative quote mark — pale, behind the text. */}
           <span
-            class="pointer-events-none absolute right-4 top-2 font-display text-6xl leading-none text-cream select-none"
+            class="pointer-events-none absolute top-2 right-4 font-display text-6xl leading-none text-cream select-none"
             aria-hidden="true"
           >
             &rdquo;
           </span>
-          <div class="relative text-amber" aria-hidden="true">{'★★★★★'}</div>
+          <div class="relative text-amber" aria-hidden="true">
+            {'★★★★★'}
+          </div>
           <span class="sr-only">5 out of 5 stars</span>
           <blockquote class="relative mt-3 leading-relaxed text-ink">{t.quote}</blockquote>
           <figcaption class="mt-4 font-bold text-navy">

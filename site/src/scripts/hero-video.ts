@@ -46,8 +46,11 @@ function init(): void {
 
   // Defer until after load + idle so the download never blocks first paint.
   const schedule = (): void => {
-    const ric = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void })
-      .requestIdleCallback;
+    const ric = (
+      window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
+      }
+    ).requestIdleCallback;
     if (typeof ric === 'function') ric(kick, { timeout: 2500 });
     else window.setTimeout(kick, 250);
   };

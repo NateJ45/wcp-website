@@ -13,7 +13,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // Focus rings come from the global :focus-visible rule in globals.css.
 // =============================================================================
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-pill font-bold no-underline whitespace-nowrap ' +
+  'inline-flex items-center justify-center gap-2 rounded-pill font-bold whitespace-nowrap no-underline ' +
     'transition-[transform,background-color,color,box-shadow] duration-150 ease-out ' +
     'disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0',
   {

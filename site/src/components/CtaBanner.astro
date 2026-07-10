@@ -22,7 +22,14 @@ interface Props {
   seam?: boolean;
   class?: string;
 }
-const { title, titleId = 'cta-title', lead, tone = 'navy', seam = true, class: className } = Astro.props;
+const {
+  title,
+  titleId = 'cta-title',
+  lead,
+  tone = 'navy',
+  seam = true,
+  class: className,
+} = Astro.props;
 const isNavy = tone === 'navy';
 ---
 
@@ -32,7 +39,11 @@ const isNavy = tone === 'navy';
 >
   {seam && <Seam color={tone} />}
   <div class="wcp-container py-[var(--wcp-space-xl)] text-center">
-    <h2 id={titleId} class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')} data-reveal>
+    <h2
+      id={titleId}
+      class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')}
+      data-reveal
+    >
       {title}
     </h2>
     {

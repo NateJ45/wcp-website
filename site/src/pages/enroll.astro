@@ -17,20 +17,59 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 
 const steps = [
-  { icon: 'phone', chip: 'sky' as const, title: '1. Reach out', body: 'Call, email, or send us a message. Tell us your child’s age and which class you are considering.' },
-  { icon: 'map-pin', chip: 'orange' as const, title: '2. Schedule a tour', body: 'Come see the classrooms, meet the teachers, and let your child spend some time in the space.' },
-  { icon: 'file-pen', chip: 'green' as const, title: '3. Complete paperwork', body: 'We walk you through the enrollment forms. The $100 registration fee is due now to secure your spot; the participation deposit follows at the May Gathering.' },
+  {
+    icon: 'phone',
+    chip: 'sky' as const,
+    title: '1. Reach out',
+    body: 'Call, email, or send us a message. Tell us your child’s age and which class you are considering.',
+  },
+  {
+    icon: 'map-pin',
+    chip: 'orange' as const,
+    title: '2. Schedule a tour',
+    body: 'Come see the classrooms, meet the teachers, and let your child spend some time in the space.',
+  },
+  {
+    icon: 'file-pen',
+    chip: 'green' as const,
+    title: '3. Complete paperwork',
+    body: 'We walk you through the enrollment forms. The $100 registration fee is due now to secure your spot; the participation deposit follows at the May Gathering.',
+  },
 ];
 
 // What enrolling actually signs a family up for — the co-op ask, at a glance.
 // Full detail lives on /co-op-life; this is the "good to know before you commit".
 const goodToKnow = [
-  { icon: 'heart-handshake', title: 'Help in the classroom', body: '1–3 times per month, alongside the teacher.' },
-  { icon: 'users', title: 'Hold a co-op job', body: 'One role for the year, matched to your skills.' },
-  { icon: 'shield-check', title: 'Complete a background check', body: 'Required by Ohio before your first shift.' },
-  { icon: 'megaphone', title: 'Join in fundraising', body: 'At least one fundraiser a year — your pick.' },
-  { icon: 'calendar-days', title: 'Attend four meetings', body: 'May Parent Conference, two info meetings, and September Orientation.' },
-  { icon: 'piggy-bank', title: 'Pay tuition on time', body: 'Monthly, with an annual-payment option.' },
+  {
+    icon: 'heart-handshake',
+    title: 'Help in the classroom',
+    body: '1–3 times per month, alongside the teacher.',
+  },
+  {
+    icon: 'users',
+    title: 'Hold a co-op job',
+    body: 'One role for the year, matched to your skills.',
+  },
+  {
+    icon: 'shield-check',
+    title: 'Complete a background check',
+    body: 'Required by Ohio before your first shift.',
+  },
+  {
+    icon: 'megaphone',
+    title: 'Join in fundraising',
+    body: 'At least one fundraiser a year — your pick.',
+  },
+  {
+    icon: 'calendar-days',
+    title: 'Attend four meetings',
+    body: 'May Parent Conference, two info meetings, and September Orientation.',
+  },
+  {
+    icon: 'piggy-bank',
+    title: 'Pay tuition on time',
+    body: 'Monthly, with an annual-payment option.',
+  },
 ];
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 ---
@@ -46,16 +85,26 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
   >
     <Fragment slot="actions">
       <Button href={`tel:${phoneDigits}`} variant="accent" size="lg">Call {site.phone}</Button>
-      <Button href={`mailto:${site.email.general}`} variant="outline-white" size="lg">Email Us</Button>
+      <Button href={`mailto:${site.email.general}`} variant="outline-white" size="lg"
+        >Email Us</Button
+      >
     </Fragment>
   </Hero>
 
   <Section bg="grey" labelledby="how-enroll">
-    <SectionHeader eyebrow="How It Works" title="Enrolling takes three steps" titleId="how-enroll" />
+    <SectionHeader
+      eyebrow="How It Works"
+      title="Enrolling takes three steps"
+      titleId="how-enroll"
+    />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {steps.map((s) => (
-        <FeatureCard as="li" icon={s.icon} chip={s.chip} title={s.title}>{s.body}</FeatureCard>
-      ))}
+      {
+        steps.map((s) => (
+          <FeatureCard as="li" icon={s.icon} chip={s.chip} title={s.title}>
+            {s.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -91,32 +140,37 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
 
   <Section bg="grey" labelledby="reach-us">
     <div class="mx-auto max-w-2xl text-center" data-reveal>
-      <SectionHeader eyebrow="Get In Touch" title="Talk to a real parent volunteer" titleId="reach-us" />
+      <SectionHeader
+        eyebrow="Get In Touch"
+        title="Talk to a real parent volunteer"
+        titleId="reach-us"
+      />
       <p class="mt-4 text-lg leading-relaxed text-ink">
         We are a parent-run school and we actually reply, usually within a day or two. An online
-        enrollment form is on the way. In the meantime, the fastest way to start is to call or email.
+        enrollment form is on the way. In the meantime, the fastest way to start is to call or
+        email.
       </p>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
         <Button href={`tel:${phoneDigits}`} variant="primary" size="lg">Call {site.phone}</Button>
-        {/* whitespace-normal + break-words override the Button base's
-            whitespace-nowrap, but that alone isn't enough: this button is a
-            flex child, and flex items default to min-width:auto, which keeps
-            them at their max-content width regardless of wrap settings.
-            min-w-0 lets it actually shrink and wrap instead of forcing the
-            long, space-free email address past the viewport edge — see WCAG
-            1.4.10 Reflow (must hold at 320px with no horizontal scroll). */}
-        <Button
+        <Button href={`mailto:${site.email.general}`} variant="outline" size="lg">Email Us</Button>
+      </div>
+      {
+        /* The full address is shown as a wrapping text link rather than crammed
+          into a pill button (a long, space-free email can't wrap inside a
+          whitespace-nowrap pill and overflows at 320px). */
+      }
+      <p class="mt-4 text-ink">
+        or email{' '}
+        <a
           href={`mailto:${site.email.general}`}
-          variant="outline"
-          size="lg"
-          class="min-w-0 max-w-full whitespace-normal break-words"
+          class="font-bold text-sky-ink underline underline-offset-2"
         >
           {site.email.general}
-        </Button>
-      </div>
+        </a>
+      </p>
       <p class="mt-6 text-sm text-ink-muted">
-        {site.address.street}, {site.address.city}, {site.address.state} {site.address.zip} · inside
-        Crestview Presbyterian Church
+        {site.address.street}, {site.address.city}, {site.address.state}
+        {site.address.zip} · inside Crestview Presbyterian Church
       </p>
     </div>
   </Section>

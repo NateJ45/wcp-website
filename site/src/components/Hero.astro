@@ -164,14 +164,19 @@ const posterSrc = typeof image === 'string' ? image : undefined;
     <div class={cn('w-full max-w-[42rem]', align === 'center' && 'mx-auto')}>
       {
         eyebrow && (
-          <p class="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-amber" data-reveal="fade">
+          <p
+            class="mb-3 text-sm font-bold tracking-[0.14em] text-amber uppercase"
+            data-reveal="fade"
+          >
             {eyebrow}
           </p>
         )
       }
-      {/* A `title` slot lets a page mark up one accent word (e.g. with the
+      {
+        /* A `title` slot lets a page mark up one accent word (e.g. with the
           crayon <Underline>); the `title` string prop is the fallback and
-          still carries the plain-text headline for anything that needs it. */}
+          still carries the plain-text headline for anything that needs it. */
+      }
       <h1 id={titleId} class="text-balance text-white" data-reveal>
         {Astro.slots.has('title') ? <slot name="title" /> : title}
       </h1>
@@ -183,7 +188,10 @@ const posterSrc = typeof image === 'string' ? image : undefined;
         )
       }
       <div
-        class={cn('mt-8 flex flex-wrap gap-4', align === 'center' ? 'justify-center' : 'justify-start')}
+        class={cn(
+          'mt-8 flex flex-wrap gap-4',
+          align === 'center' ? 'justify-center' : 'justify-start',
+        )}
         data-reveal
       >
         <slot name="actions" />
@@ -192,8 +200,10 @@ const posterSrc = typeof image === 'string' ? image : undefined;
   </div>
 </section>
 
-{/* Colocated: reduced-motion-aware hero-video autoplay ships only on pages
-    that use a Hero. Harmless when the hero has no video. */}
+{
+  /* Colocated: reduced-motion-aware hero-video autoplay ships only on pages
+    that use a Hero. Harmless when the hero has no video. */
+}
 <script>
   import '@/scripts/hero-video';
 </script>

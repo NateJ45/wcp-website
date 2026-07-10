@@ -18,34 +18,121 @@ import { schoolYear } from '@/data/school-year';
 import firetruckFieldTrip from '@/assets/photos/firetruck-field-trip.jpg';
 
 const commitments = [
-  { icon: 'heart-handshake', chip: 'orange' as const, title: 'Help in the classroom', body: 'Every family helps in their child’s classroom 1–3 times per month (depending on class size and age of class). You work alongside the teacher and get to watch your child in their element.' },
-  { icon: 'users', chip: 'sky' as const, title: 'Hold a co-op job', body: 'Every family is assigned a role for the full year — from board positions to event planning to school maintenance. Jobs are matched to your skills and availability.' },
-  { icon: 'shield-check', chip: 'green' as const, title: 'Comply with health requirements', body: 'All classroom helpers must complete an Ohio state background and health check before their first shift.' },
-  { icon: 'megaphone', chip: 'amber' as const, title: 'Participate in fundraising', body: 'Families take part in fundraising activities throughout the year. There are multiple events to choose from so you can get involved in ways that suit you.' },
-  { icon: 'calendar-days', chip: 'sky' as const, title: 'Attend mandatory meetings', body: 'Four meetings per year: the May Parent Conference, two Informational Meetings, and September Orientation.' },
-  { icon: 'piggy-bank', chip: 'orange' as const, title: 'Pay tuition on time', body: 'Tuition is due monthly, with an annual payment option for families who prefer to pay the full year up front.' },
+  {
+    icon: 'heart-handshake',
+    chip: 'orange' as const,
+    title: 'Help in the classroom',
+    body: 'Every family helps in their child’s classroom 1–3 times per month (depending on class size and age of class). You work alongside the teacher and get to watch your child in their element.',
+  },
+  {
+    icon: 'users',
+    chip: 'sky' as const,
+    title: 'Hold a co-op job',
+    body: 'Every family is assigned a role for the full year — from board positions to event planning to school maintenance. Jobs are matched to your skills and availability.',
+  },
+  {
+    icon: 'shield-check',
+    chip: 'green' as const,
+    title: 'Comply with health requirements',
+    body: 'All classroom helpers must complete an Ohio state background and health check before their first shift.',
+  },
+  {
+    icon: 'megaphone',
+    chip: 'amber' as const,
+    title: 'Participate in fundraising',
+    body: 'Families take part in fundraising activities throughout the year. There are multiple events to choose from so you can get involved in ways that suit you.',
+  },
+  {
+    icon: 'calendar-days',
+    chip: 'sky' as const,
+    title: 'Attend mandatory meetings',
+    body: 'Four meetings per year: the May Parent Conference, two Informational Meetings, and September Orientation.',
+  },
+  {
+    icon: 'piggy-bank',
+    chip: 'orange' as const,
+    title: 'Pay tuition on time',
+    body: 'Tuition is due monthly, with an annual payment option for families who prefer to pay the full year up front.',
+  },
 ];
 
 const helperDay = [
-  { title: 'Arrive 15 minutes early', body: 'Help set up the classroom and get the playground or gym ready. Your teacher will walk you through exactly what needs doing.' },
-  { title: 'Welcome the children', body: 'Jump straight into play. Encourage sharing, help kids settle in, and get ready to be asked to play — it is the best feeling.' },
-  { title: 'Join in all morning long', body: 'Circle time, small group activities, the restroom routine, snack prep, and outdoor play. You are fully in the middle of it all.' },
-  { title: 'Snack time is the highlight', body: 'Sit down with the kids and just listen. The stories you will hear are priceless. Every parent helper says this is their favorite part.', note: 'Parents always leave wishing snack time lasted longer' },
-  { title: 'Head outside with the class', body: 'Playground or gym time. Your energy sets the tone. Get in there and play — kids light up when helpers are having fun too.' },
-  { title: 'Quick tidy-up and you are done', body: 'Follow the simple cleaning checklist to reset the room. Takes about 10 minutes.' },
+  {
+    title: 'Arrive 15 minutes early',
+    body: 'Help set up the classroom and get the playground or gym ready. Your teacher will walk you through exactly what needs doing.',
+  },
+  {
+    title: 'Welcome the children',
+    body: 'Jump straight into play. Encourage sharing, help kids settle in, and get ready to be asked to play — it is the best feeling.',
+  },
+  {
+    title: 'Join in all morning long',
+    body: 'Circle time, small group activities, the restroom routine, snack prep, and outdoor play. You are fully in the middle of it all.',
+  },
+  {
+    title: 'Snack time is the highlight',
+    body: 'Sit down with the kids and just listen. The stories you will hear are priceless. Every parent helper says this is their favorite part.',
+    note: 'Parents always leave wishing snack time lasted longer',
+  },
+  {
+    title: 'Head outside with the class',
+    body: 'Playground or gym time. Your energy sets the tone. Get in there and play — kids light up when helpers are having fun too.',
+  },
+  {
+    title: 'Quick tidy-up and you are done',
+    body: 'Follow the simple cleaning checklist to reset the room. Takes about 10 minutes.',
+  },
 ];
 
 const classDojo = [
-  { icon: 'camera', chip: 'orange' as const, title: 'Classroom photos', body: 'See what your child worked on today. Teachers share photos and highlights from every session.' },
-  { icon: 'megaphone', chip: 'sky' as const, title: 'Announcements', body: 'Reminders, schedule changes, and event updates delivered directly to your phone or computer.' },
-  { icon: 'message-circle', chip: 'green' as const, title: 'Direct messaging', body: 'Send and receive private messages with your child’s teacher anytime during the year.' },
-  { icon: 'users', chip: 'amber' as const, title: 'Class community', body: 'Chat with other families in your class and build connections before you even meet in person.' },
+  {
+    icon: 'camera',
+    chip: 'orange' as const,
+    title: 'Classroom photos',
+    body: 'See what your child worked on today. Teachers share photos and highlights from every session.',
+  },
+  {
+    icon: 'megaphone',
+    chip: 'sky' as const,
+    title: 'Announcements',
+    body: 'Reminders, schedule changes, and event updates delivered directly to your phone or computer.',
+  },
+  {
+    icon: 'message-circle',
+    chip: 'green' as const,
+    title: 'Direct messaging',
+    body: 'Send and receive private messages with your child’s teacher anytime during the year.',
+  },
+  {
+    icon: 'users',
+    chip: 'amber' as const,
+    title: 'Class community',
+    body: 'Chat with other families in your class and build connections before you even meet in person.',
+  },
 ];
 
 const coopStories = [
-  { quote: 'I loved the sense of community we felt at WCP. We gained lifelong friends. It was wonderful to take such a hands-on role in my children’s first educational experience.', author: 'Katherine Oliver', context: 'Alumni Parent', accent: 'orange' as const },
-  { quote: 'Our first year at WCP has been amazing. My son loves his teacher and his friends. The teachers and parents here are a blessing — I could not recommend this school more.', author: 'Amber Cron', context: 'Threes Parent', accent: 'sky' as const },
-  { quote: 'A wonderful school where teachers care for each student as an individual and parents get to have direct impact. We loved it so much we signed our daughter up to join her brother next year.', author: 'Daniel Hagedorn', context: 'Pre-K Parent', accent: 'green' as const },
+  {
+    quote:
+      'I loved the sense of community we felt at WCP. We gained lifelong friends. It was wonderful to take such a hands-on role in my children’s first educational experience.',
+    author: 'Katherine Oliver',
+    context: 'Alumni Parent',
+    accent: 'orange' as const,
+  },
+  {
+    quote:
+      'Our first year at WCP has been amazing. My son loves his teacher and his friends. The teachers and parents here are a blessing — I could not recommend this school more.',
+    author: 'Amber Cron',
+    context: 'Threes Parent',
+    accent: 'sky' as const,
+  },
+  {
+    quote:
+      'A wonderful school where teachers care for each student as an individual and parents get to have direct impact. We loved it so much we signed our daughter up to join her brother next year.',
+    author: 'Daniel Hagedorn',
+    context: 'Pre-K Parent',
+    accent: 'green' as const,
+  },
 ];
 ---
 
@@ -69,14 +156,19 @@ const coopStories = [
   {/* The Co-op Model — what it actually means */}
   <Section bg="white" labelledby="model">
     <div class="mx-auto max-w-2xl text-center" data-reveal>
-      <SectionHeader eyebrow="The Co-op Model" title="What does it actually mean?" titleId="model" />
+      <SectionHeader
+        eyebrow="The Co-op Model"
+        title="What does it actually mean?"
+        titleId="model"
+      />
       <p class="mt-4 text-lg leading-relaxed text-ink">
         A cooperative preschool is owned and operated by the families of enrolled students. Our
         teachers are the only paid staff. Every other role is handled by parents.
       </p>
       <p class="mt-4 leading-relaxed text-ink">
         This is what keeps tuition low, class sizes small, and the community genuinely close. When
-        parents are in the building regularly, they know every child, every family, and every teacher.
+        parents are in the building regularly, they know every child, every family, and every
+        teacher.
       </p>
       <p class="mt-4 leading-relaxed text-ink">
         Most families say the co-op ask is one of the best parts of WCP. You get a front-row seat to
@@ -93,7 +185,13 @@ const coopStories = [
       lead="When you enroll, you take on these six commitments for the school year. They are what make WCP run."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {commitments.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+      {
+        commitments.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -136,17 +234,38 @@ const coopStories = [
       public sharing.
     </Callout>
     <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {classDojo.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+      {
+        classDojo.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
   {/* From Our Families */}
   <Section bg="grey" labelledby="coop-stories">
-    <SectionHeader eyebrow="From Our Families" title="What co-op parents say" titleId="coop-stories" lead="The co-op commitment sounds like work. Here is what families actually experience." />
+    <SectionHeader
+      eyebrow="From Our Families"
+      title="What co-op parents say"
+      titleId="coop-stories"
+      lead="The co-op commitment sounds like work. Here is what families actually experience."
+    />
     <ul class="mt-12 grid gap-6 md:grid-cols-3">
-      {coopStories.map((t) => (
-        <li class="h-full"><Testimonial quote={t.quote} author={t.author} context={t.context} accent={t.accent} confetti /></li>
-      ))}
+      {
+        coopStories.map((t) => (
+          <li class="h-full">
+            <Testimonial
+              quote={t.quote}
+              author={t.author}
+              context={t.context}
+              accent={t.accent}
+              confetti
+            />
+          </li>
+        ))
+      }
     </ul>
     <p class="mt-10 text-center" data-reveal>
       <a href="/why-wcp#stories" class="font-bold text-sky-ink underline underline-offset-2">

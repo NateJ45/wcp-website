@@ -14,9 +14,24 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 
 const previews = [
-  { icon: 'calendar-days', chip: 'sky' as const, title: 'Calendar & events', body: 'Every school date, meeting, and celebration in one place.' },
-  { icon: 'users', chip: 'orange' as const, title: 'Family directory', body: 'Connect with other WCP families, behind a secure login.' },
-  { icon: 'file-check', chip: 'green' as const, title: 'Documents & forms', body: 'Handbook, licensing forms, and orientation materials.' },
+  {
+    icon: 'calendar-days',
+    chip: 'sky' as const,
+    title: 'Calendar & events',
+    body: 'Every school date, meeting, and celebration in one place.',
+  },
+  {
+    icon: 'users',
+    chip: 'orange' as const,
+    title: 'Family directory',
+    body: 'Connect with other WCP families, behind a secure login.',
+  },
+  {
+    icon: 'file-check',
+    chip: 'green' as const,
+    title: 'Documents & forms',
+    body: 'Handbook, licensing forms, and orientation materials.',
+  },
 ];
 ---
 
@@ -42,7 +57,13 @@ const previews = [
       lead="Secure sign-in for enrolled families arrives with the Family Hub build."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {previews.map((p) => (<FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>{p.body}</FeatureCard>))}
+      {
+        previews.map((p) => (
+          <FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>
+            {p.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <p class="mx-auto mt-10 max-w-2xl text-center text-sm text-ink-muted">
       Questions? Email

@@ -33,9 +33,11 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
 ---
 
 <header data-header>
-  {/* ---------------------------------------------------------------------
+  {
+    /* ---------------------------------------------------------------------
        1. Mobile bar — in-flow, sticky, solid white. Own hamburger + panel.
-     --------------------------------------------------------------------- */}
+     --------------------------------------------------------------------- */
+  }
   <div class="sticky top-0 z-40 border-b border-border bg-white lg:hidden">
     <div class="wcp-container flex items-center justify-between gap-4 py-3">
       <a href="/" class="inline-flex items-center" aria-label={`${site.name} home`}>
@@ -66,18 +68,24 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     </div>
   </div>
 
-  {/* ---------------------------------------------------------------------
+  {
+    /* ---------------------------------------------------------------------
        2. Big overlay header — desktop only. Transparent, floats over Hero.
-     --------------------------------------------------------------------- */}
+     --------------------------------------------------------------------- */
+  }
   <div class="relative z-30 hidden lg:block">
-    {/* data-big-header lives on THIS element (not the zero-height flow
+    {
+      /* data-big-header lives on THIS element (not the zero-height flow
         wrapper above) because compact-nav.ts reads its real offsetHeight to
         know when the visitor has scrolled past it — an absolutely positioned
         element still reports its own rendered size even though it doesn't
-        contribute to the parent's flow height. */}
+        contribute to the parent's flow height. */
+    }
     <div data-big-header class="absolute inset-x-0 top-0">
-      {/* Scrim: guarantees the logo/nav read over any Hero media, independent
-          of the Hero's own scrim. */}
+      {
+        /* Scrim: guarantees the logo/nav read over any Hero media, independent
+          of the Hero's own scrim. */
+      }
       <div
         class="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-navy/75 via-navy/30 to-transparent"
         aria-hidden="true"
@@ -113,7 +121,11 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
               </a>
             )
           }
-          <a href={`mailto:${site.email.general}`} aria-label="Email West Chester Preschool" class="wcp-icon-btn">
+          <a
+            href={`mailto:${site.email.general}`}
+            aria-label="Email West Chester Preschool"
+            class="wcp-icon-btn"
+          >
             <Icon name="mail" class="h-4 w-4" />
           </a>
         </div>
@@ -146,9 +158,11 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     </div>
   </div>
 
-  {/* ---------------------------------------------------------------------
+  {
+    /* ---------------------------------------------------------------------
        3. Compact bar — desktop only, fixed, hidden until scrolled past #2.
-     --------------------------------------------------------------------- */}
+     --------------------------------------------------------------------- */
+  }
   <div
     id="compact-nav"
     class="wcp-compact-bar fixed inset-x-0 top-0 z-40 hidden border-b border-border bg-white/95 backdrop-blur lg:block"
@@ -186,7 +200,9 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     border-radius: 9999px;
     background-color: rgba(255, 255, 255, 0.16);
     color: #ffffff;
-    transition: background-color 0.15s ease, transform 0.15s ease;
+    transition:
+      background-color 0.15s ease,
+      transform 0.15s ease;
   }
   .wcp-icon-btn:hover {
     background-color: var(--color-amber);
@@ -230,7 +246,9 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
   .wcp-compact-bar {
     transform: translateY(-100%);
     opacity: 0;
-    transition: transform 0.25s ease, opacity 0.25s ease;
+    transition:
+      transform 0.25s ease,
+      opacity 0.25s ease;
   }
   .wcp-compact-bar[data-visible] {
     transform: translateY(0);

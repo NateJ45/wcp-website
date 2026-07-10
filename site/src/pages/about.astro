@@ -44,9 +44,27 @@ const approach = [
 ];
 
 const facilities = [
-  { icon: 'school', chip: 'orange' as const, value: '2', title: 'Dedicated classrooms', body: 'Each classroom is designed for hands-on learning, creativity, and small group interaction.' },
-  { icon: 'dumbbell', chip: 'sky' as const, value: '1', title: 'Full gymnasium', body: 'Kids get access to a full gym for movement activities, indoor play, and physical development.' },
-  { icon: 'trees', chip: 'green' as const, value: '1', title: 'Expansive outdoor area', body: 'A large playground and open field give kids fresh air and space to run, explore, and play every single day.' },
+  {
+    icon: 'school',
+    chip: 'orange' as const,
+    value: '2',
+    title: 'Dedicated classrooms',
+    body: 'Each classroom is designed for hands-on learning, creativity, and small group interaction.',
+  },
+  {
+    icon: 'dumbbell',
+    chip: 'sky' as const,
+    value: '1',
+    title: 'Full gymnasium',
+    body: 'Kids get access to a full gym for movement activities, indoor play, and physical development.',
+  },
+  {
+    icon: 'trees',
+    chip: 'green' as const,
+    value: '1',
+    title: 'Expansive outdoor area',
+    body: 'A large playground and open field give kids fresh air and space to run, explore, and play every single day.',
+  },
 ];
 ---
 
@@ -81,13 +99,13 @@ const facilities = [
         something better together.
       </p>
       <p class="mt-4 leading-relaxed text-ink">
-        That spirit has never changed. Today WCP is still entirely parent-run. Our teachers are
-        the only paid staff. Every other role, administration, fundraising, classroom support,
+        That spirit has never changed. Today WCP is still entirely parent-run. Our teachers are the
+        only paid staff. Every other role, administration, fundraising, classroom support,
         maintenance, event planning, is handled by the families enrolled.
       </p>
       <p class="mt-4 leading-relaxed text-ink">
-        It sounds like a lot. Families who join almost always say the same thing: it gives back
-        far more than it asks.
+        It sounds like a lot. Families who join almost always say the same thing: it gives back far
+        more than it asks.
       </p>
     </div>
   </Section>
@@ -121,17 +139,27 @@ const facilities = [
     />
     <ul class="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
       <li>
-        <TeacherCard photo={lisaCortez} name="Ms. Lisa Cortez" role="Pre-K · 10 years at WCP" email={site.teachers.lisa}>
+        <TeacherCard
+          photo={lisaCortez}
+          name="Ms. Lisa Cortez"
+          role="Pre-K · 10 years at WCP"
+          email={site.teachers.lisa}
+        >
           Lisa brings creativity, curiosity, and genuine warmth to every session. Her classroom is
           built around hands-on activities that develop social skills, early literacy, math,
           science, and the arts. Her youngest child is also WCP alumni.
         </TeacherCard>
       </li>
       <li>
-        <TeacherCard photo={erinSchmerr} name="Ms. Erin Schmerr" role="Threes and Twos · 3 years at WCP" email={site.teachers.erin}>
-          Erin is a Cincinnati native with nearly 20 years in education, social work, and
-          childcare. She came to WCP as a parent, fell in love with the school, and never left.
-          She also runs a photography business in her spare time.
+        <TeacherCard
+          photo={erinSchmerr}
+          name="Ms. Erin Schmerr"
+          role="Threes and Twos · 3 years at WCP"
+          email={site.teachers.erin}
+        >
+          Erin is a Cincinnati native with nearly 20 years in education, social work, and childcare.
+          She came to WCP as a parent, fell in love with the school, and never left. She also runs a
+          photography business in her spare time.
         </TeacherCard>
       </li>
     </ul>
@@ -146,8 +174,10 @@ const facilities = [
     />
     <p class="mx-auto -mt-6 mb-10 max-w-2xl text-center leading-relaxed text-ink" data-reveal>
       WCP is located inside Crestview Presbyterian Church at {site.address.street},{' '}
-      {site.address.city} {site.address.state} {site.address.zip}. We are not a religious school,
-      we simply rent a wonderful space from great neighbors.
+      {site.address.city}
+      {site.address.state}
+      {site.address.zip}. We are not a religious school, we simply rent a wonderful space from great
+      neighbors.
     </p>
     <ul class="grid gap-6 sm:grid-cols-3">
       {
@@ -162,8 +192,8 @@ const facilities = [
       }
     </ul>
     <Callout tone="sky" class="mx-auto mt-8 max-w-2xl">
-      Got questions before you decide? Our FAQ covers everything from potty training to co-op
-      jobs to what happens on a helper day.
+      Got questions before you decide? Our FAQ covers everything from potty training to co-op jobs
+      to what happens on a helper day.
       <a href="/faq" class="ml-1 font-bold text-navy underline underline-offset-2">Read the FAQ</a>.
     </Callout>
   </Section>

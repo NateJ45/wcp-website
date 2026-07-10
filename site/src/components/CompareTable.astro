@@ -25,15 +25,17 @@ interface Props {
   typicalLabel?: string;
   class?: string;
 }
-const { rows, wcpLabel = 'WCP', typicalLabel = 'Typical preschool', class: className } = Astro.props;
+const {
+  rows,
+  wcpLabel = 'WCP',
+  typicalLabel = 'Typical preschool',
+  class: className,
+} = Astro.props;
 ---
 
 <div class={cn('mx-auto max-w-4xl', className)} data-reveal>
   {/* Column headers — hidden when the rows stack (labels move inline). */}
-  <div
-    class="hidden gap-4 px-5 pb-3 sm:grid sm:grid-cols-[1.3fr_1fr_1fr]"
-    aria-hidden="true"
-  >
+  <div class="hidden gap-4 px-5 pb-3 sm:grid sm:grid-cols-[1.3fr_1fr_1fr]" aria-hidden="true">
     <span></span>
     <span class="text-center font-display text-xl text-navy">{wcpLabel}</span>
     <span class="text-center font-bold text-ink-muted">{typicalLabel}</span>
@@ -51,7 +53,7 @@ const { rows, wcpLabel = 'WCP', typicalLabel = 'Typical preschool', class: class
           <dt class="font-bold text-navy">{r.feature}</dt>
           {/* WCP value — tinted lane + check. */}
           <dd class="rounded-lg bg-sky-soft px-3 py-2 text-navy sm:text-center">
-            <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-sky-ink sm:hidden">
+            <span class="mb-1 block text-xs font-bold tracking-wide text-sky-ink uppercase sm:hidden">
               {wcpLabel}
             </span>
             <span class="inline-flex items-center gap-1.5 font-semibold">
@@ -61,7 +63,7 @@ const { rows, wcpLabel = 'WCP', typicalLabel = 'Typical preschool', class: class
           </dd>
           {/* Typical value — quiet. */}
           <dd class="px-3 py-2 text-ink-muted sm:text-center">
-            <span class="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted sm:hidden">
+            <span class="mb-1 block text-xs font-bold tracking-wide text-ink-muted uppercase sm:hidden">
               {typicalLabel}
             </span>
             {r.typical}

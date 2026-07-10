@@ -19,28 +19,81 @@ import { schoolYear } from '@/data/school-year';
 import outdoorExploration from '@/assets/photos/outdoor-exploration.jpg';
 
 const reasons = [
-  { icon: 'door-open', chip: 'sky' as const, title: 'You get a front-row seat', body: 'Most preschools keep parents at the door. At WCP you are in the classroom, watching your child make friends, solve problems, and grow in real time.' },
-  { icon: 'piggy-bank', chip: 'green' as const, title: 'Tuition that makes sense', body: 'Starting at $70 a month, WCP is one of the most affordable preschools in West Chester. The co-op model keeps costs low without cutting corners.' },
-  { icon: 'graduation-cap', chip: 'orange' as const, title: 'Teachers who know your child', body: 'Small classes and the same teachers every day. Our staff know every child by name, every quirk, every strength.' },
-  { icon: 'users', chip: 'amber' as const, title: 'A community that sticks around', body: 'WCP families become actual friends who stay in touch long after their kids move on.' },
-  { icon: 'award', chip: 'sky' as const, title: 'Kids leave ready for kindergarten', body: 'Our curriculum follows Ohio’s Early Learning Content Standards. By Pre-K graduation, their kindergarten teachers notice the difference.' },
-  { icon: 'heart', chip: 'orange' as const, title: '55 years of doing this well', body: 'WCP has been here since 1969. Families keep coming back, often enrolling a second or third child before the first has finished.' },
+  {
+    icon: 'door-open',
+    chip: 'sky' as const,
+    title: 'You get a front-row seat',
+    body: 'Most preschools keep parents at the door. At WCP you are in the classroom, watching your child make friends, solve problems, and grow in real time.',
+  },
+  {
+    icon: 'piggy-bank',
+    chip: 'green' as const,
+    title: 'Tuition that makes sense',
+    body: 'Starting at $70 a month, WCP is one of the most affordable preschools in West Chester. The co-op model keeps costs low without cutting corners.',
+  },
+  {
+    icon: 'graduation-cap',
+    chip: 'orange' as const,
+    title: 'Teachers who know your child',
+    body: 'Small classes and the same teachers every day. Our staff know every child by name, every quirk, every strength.',
+  },
+  {
+    icon: 'users',
+    chip: 'amber' as const,
+    title: 'A community that sticks around',
+    body: 'WCP families become actual friends who stay in touch long after their kids move on.',
+  },
+  {
+    icon: 'award',
+    chip: 'sky' as const,
+    title: 'Kids leave ready for kindergarten',
+    body: 'Our curriculum follows Ohio’s Early Learning Content Standards. By Pre-K graduation, their kindergarten teachers notice the difference.',
+  },
+  {
+    icon: 'heart',
+    chip: 'orange' as const,
+    title: '55 years of doing this well',
+    body: 'WCP has been here since 1969. Families keep coming back, often enrolling a second or third child before the first has finished.',
+  },
 ];
 
 // "Your Child's Progress" — how families always know how their child is doing.
 const progress = [
-  { icon: 'file-check', chip: 'sky' as const, title: 'Annual parent-teacher conferences', body: 'Threes and Pre-K families receive a formal conference each year where the teacher reviews your child’s development in detail. You can also request a conference at any time — no waiting for a scheduled slot.' },
-  { icon: 'graduation-cap', chip: 'orange' as const, title: 'Early Pre-K conferences', body: 'Pre-K conferences are scheduled early in the year specifically to help families make informed decisions about kindergarten readiness or whether an additional Pre-K year would benefit their child.' },
-  { icon: 'eye', chip: 'green' as const, title: 'You see it yourself', body: 'Because you help in the classroom 1–3 times a month, you do not have to wait for a conference to know how your child is doing. You watch them learn, grow, and make friends in real time.' },
+  {
+    icon: 'file-check',
+    chip: 'sky' as const,
+    title: 'Annual parent-teacher conferences',
+    body: 'Threes and Pre-K families receive a formal conference each year where the teacher reviews your child’s development in detail. You can also request a conference at any time — no waiting for a scheduled slot.',
+  },
+  {
+    icon: 'graduation-cap',
+    chip: 'orange' as const,
+    title: 'Early Pre-K conferences',
+    body: 'Pre-K conferences are scheduled early in the year specifically to help families make informed decisions about kindergarten readiness or whether an additional Pre-K year would benefit their child.',
+  },
+  {
+    icon: 'eye',
+    chip: 'green' as const,
+    title: 'You see it yourself',
+    body: 'Because you help in the classroom 1–3 times a month, you do not have to wait for a conference to know how your child is doing. You watch them learn, grow, and make friends in real time.',
+  },
 ];
 
 // "How We Compare" — an honest side-by-side with a typical preschool.
 const compareRows = [
-  { feature: 'Parent involvement in classroom', wcp: 'Yes — 1–3× per month', typical: 'Rarely or never' },
+  {
+    feature: 'Parent involvement in classroom',
+    wcp: 'Yes — 1–3× per month',
+    typical: 'Rarely or never',
+  },
   { feature: 'Monthly tuition (4-year-old)', wcp: 'From $175–$200', typical: 'Often $500–$1,500+' },
   { feature: 'Class size', wcp: 'Small, intentional', typical: 'Varies, often larger' },
   { feature: 'Know every classmate’s family', wcp: 'Yes', typical: 'Unlikely' },
-  { feature: 'Curriculum basis', wcp: 'Ohio Early Learning Standards', typical: 'Varies by school' },
+  {
+    feature: 'Curriculum basis',
+    wcp: 'Ohio Early Learning Standards',
+    typical: 'Varies by school',
+  },
   { feature: 'Parent community', wcp: 'Built in by design', typical: 'Up to you to find' },
   { feature: 'State licensed', wcp: 'Yes, by ODJFS', typical: 'Varies' },
   { feature: 'Non-discriminatory', wcp: 'Yes, always', typical: 'Varies' },
@@ -72,18 +125,42 @@ const compareRows = [
       lead="These are the things families tell us they wish they had known before they started looking."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {reasons.map((r) => (<FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>{r.body}</FeatureCard>))}
+      {
+        reasons.map((r) => (
+          <FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>
+            {r.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
-  {/* Stats — a "special" navy band framed by cloud seams (top here; the seam
-      on the compare section below marks the exit). */}
+  {
+    /* Stats — a "special" navy band framed by cloud seams (top here; the seam
+      on the compare section below marks the exit). */
+  }
   <Section bg="navy" seam label="West Chester Preschool by the numbers">
     <ul class="grid grid-cols-2 gap-5 lg:grid-cols-4">
-      <li><StatBlock value={55} suffix="+" label="Years in West Chester">Founded in 1969 and still going strong.</StatBlock></li>
-      <li><StatBlock value={4} label="Classes for ages 2-5">Twos, Threes, and Pre-K AM and PM.</StatBlock></li>
-      <li><StatBlock value={70} prefix="$" label="Tuition from, per month">The co-op model keeps our tuition low.</StatBlock></li>
-      <li><StatBlock value={100} suffix="%" label="Ohio licensed">Fully licensed and non-discriminatory. Every family is welcome.</StatBlock></li>
+      <li>
+        <StatBlock value={55} suffix="+" label="Years in West Chester"
+          >Founded in 1969 and still going strong.</StatBlock
+        >
+      </li>
+      <li>
+        <StatBlock value={4} label="Classes for ages 2-5"
+          >Twos, Threes, and Pre-K AM and PM.</StatBlock
+        >
+      </li>
+      <li>
+        <StatBlock value={70} prefix="$" label="Tuition from, per month"
+          >The co-op model keeps our tuition low.</StatBlock
+        >
+      </li>
+      <li>
+        <StatBlock value={100} suffix="%" label="Ohio licensed"
+          >Fully licensed and non-discriminatory. Every family is welcome.</StatBlock
+        >
+      </li>
     </ul>
   </Section>
 
@@ -107,7 +184,13 @@ const compareRows = [
       lead="Between ClassDojo updates, your own classroom helper days, and formal conferences, you will never feel out of the loop."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {progress.map((p) => (<FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>{p.body}</FeatureCard>))}
+      {
+        progress.map((p) => (
+          <FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>
+            {p.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 

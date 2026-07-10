@@ -13,8 +13,7 @@ interface Props {
   class?: string;
 }
 const { tone = 'sky', class: className } = Astro.props;
-const toneClass =
-  tone === 'warm' ? 'border-orange bg-cream' : 'border-sky bg-sky-soft';
+const toneClass = tone === 'warm' ? 'border-orange bg-cream' : 'border-sky bg-sky-soft';
 ---
 
 <div class={cn('rounded-r-lg border-l-4 p-5', toneClass, className)}>

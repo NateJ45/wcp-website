@@ -30,10 +30,7 @@ const { entries, class: className } = Astro.props;
       >
         {/* Connector line (behind the dots), hidden on the last item. */}
         {i < entries.length - 1 && (
-          <span
-            class="absolute left-[13px] top-7 bottom-0 w-0.5 bg-sky/40"
-            aria-hidden="true"
-          />
+          <span class="absolute top-7 bottom-0 left-[13px] w-0.5 bg-sky/40" aria-hidden="true" />
         )}
         {/* Dot */}
         <span

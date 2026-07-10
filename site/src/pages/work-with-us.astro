@@ -17,15 +17,45 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 
 const why = [
-  { icon: 'heart-handshake', chip: 'orange' as const, title: 'Parents are partners', body: 'Parent helpers are in the classroom every session. Teachers lead — parents support. It means smaller effective ratios and more time for individual attention.' },
-  { icon: 'users', chip: 'sky' as const, title: 'A real community', body: 'You will know every child and every family by name. WCP families are engaged, present, and genuinely invested in the school. Teaching here feels collaborative, not isolating.' },
-  { icon: 'palette', chip: 'green' as const, title: 'Play-based curriculum', body: 'Our curriculum follows Ohio’s Early Learning Content Standards and is delivered through play, creativity, and exploration. No rigid scripted lessons — real teaching.' },
+  {
+    icon: 'heart-handshake',
+    chip: 'orange' as const,
+    title: 'Parents are partners',
+    body: 'Parent helpers are in the classroom every session. Teachers lead — parents support. It means smaller effective ratios and more time for individual attention.',
+  },
+  {
+    icon: 'users',
+    chip: 'sky' as const,
+    title: 'A real community',
+    body: 'You will know every child and every family by name. WCP families are engaged, present, and genuinely invested in the school. Teaching here feels collaborative, not isolating.',
+  },
+  {
+    icon: 'palette',
+    chip: 'green' as const,
+    title: 'Play-based curriculum',
+    body: 'Our curriculum follows Ohio’s Early Learning Content Standards and is delivered through play, creativity, and exploration. No rigid scripted lessons — real teaching.',
+  },
 ];
 
 const role = [
-  { icon: 'notebook-pen', chip: 'orange' as const, title: 'Lesson planning', body: 'Teachers design and deliver all lesson plans aligned to Ohio’s Early Learning Standards. You have full creative ownership of your classroom curriculum.' },
-  { icon: 'baby', chip: 'sky' as const, title: 'Small class sizes', body: 'WCP keeps class sizes intentionally small. You work with the same children every session, building real relationships and tracking individual progress over the year.' },
-  { icon: 'calendar-days', chip: 'green' as const, title: 'School year schedule', body: 'The school year runs September through May and follows the Lakota School District calendar. Morning sessions only — a schedule that works for teachers with families too.' },
+  {
+    icon: 'notebook-pen',
+    chip: 'orange' as const,
+    title: 'Lesson planning',
+    body: 'Teachers design and deliver all lesson plans aligned to Ohio’s Early Learning Standards. You have full creative ownership of your classroom curriculum.',
+  },
+  {
+    icon: 'baby',
+    chip: 'sky' as const,
+    title: 'Small class sizes',
+    body: 'WCP keeps class sizes intentionally small. You work with the same children every session, building real relationships and tracking individual progress over the year.',
+  },
+  {
+    icon: 'calendar-days',
+    chip: 'green' as const,
+    title: 'School year schedule',
+    body: 'The school year runs September through May and follows the Lakota School District calendar. Morning sessions only — a schedule that works for teachers with families too.',
+  },
 ];
 ---
 
@@ -39,7 +69,11 @@ const role = [
     lead="WCP is a cooperative preschool where teachers are valued, supported, and genuinely part of the community. If you love early childhood education, we would love to meet you."
   >
     <Fragment slot="actions">
-      <Button href={`mailto:${site.email.general}?subject=Teaching%20at%20WCP`} variant="accent" size="lg">Submit Your Details</Button>
+      <Button
+        href={`mailto:${site.email.general}?subject=Teaching%20at%20WCP`}
+        variant="accent"
+        size="lg">Submit Your Details</Button
+      >
       <Button href="#the-role" variant="outline-white" size="lg">Learn About the Role</Button>
     </Fragment>
   </Hero>
@@ -52,7 +86,13 @@ const role = [
       lead="Most preschools put teachers in a room and close the door. WCP is built differently."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {why.map((w) => (<FeatureCard as="li" icon={w.icon} chip={w.chip} title={w.title}>{w.body}</FeatureCard>))}
+      {
+        why.map((w) => (
+          <FeatureCard as="li" icon={w.icon} chip={w.chip} title={w.title}>
+            {w.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -64,24 +104,34 @@ const role = [
       lead="Our teachers are the only paid staff. That means you focus entirely on the children and the classroom."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {role.map((r) => (<FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>{r.body}</FeatureCard>))}
+      {
+        role.map((r) => (
+          <FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>
+            {r.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
   <Section bg="grey" labelledby="openings">
     <div class="mx-auto max-w-2xl text-center" data-reveal>
-      <SectionHeader eyebrow="Current Openings" title="We review applications on a rolling basis" titleId="openings" />
+      <SectionHeader
+        eyebrow="Current Openings"
+        title="We review applications on a rolling basis"
+        titleId="openings"
+      />
       <p class="mt-4 leading-relaxed text-ink">
-        We do not always have open positions but we keep every submission on file. When a role opens,
-        we reach out to candidates we have already heard from first. If you are passionate about early
-        childhood education and want to be considered, send us your details and we will be in touch.
+        We do not always have open positions but we keep every submission on file. When a role
+        opens, we reach out to candidates we have already heard from first. If you are passionate
+        about early childhood education and want to be considered, send us your details and we will
+        be in touch.
       </p>
     </div>
     <Callout tone="warm" class="mx-auto mt-8 max-w-2xl">
-      <strong class="font-bold text-navy">Qualifications we look for:</strong> an early childhood
-      education degree or equivalent experience, a genuine love of working with young children,
-      comfort with a cooperative model where parents are present, and Ohio BCI and FBI background
-      check clearance.
+      <strong class="font-bold text-navy">Qualifications we look for:</strong> an early childhood education
+      degree or equivalent experience, a genuine love of working with young children, comfort with a cooperative
+      model where parents are present, and Ohio BCI and FBI background check clearance.
     </Callout>
   </Section>
 
@@ -91,7 +141,11 @@ const role = [
     tone="navy"
   >
     <Fragment slot="actions">
-      <Button href={`mailto:${site.email.general}?subject=Teaching%20at%20WCP`} variant="accent" size="lg">Email Us Your Details</Button>
+      <Button
+        href={`mailto:${site.email.general}?subject=Teaching%20at%20WCP`}
+        variant="accent"
+        size="lg">Email Us Your Details</Button
+      >
     </Fragment>
     <Fragment slot="note">Questions about teaching at WCP? Email {site.email.general}</Fragment>
   </CtaBanner>

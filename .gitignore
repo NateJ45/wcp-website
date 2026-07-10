@@ -73,3 +73,6 @@ site/public/hero/*.webm
 .lighthouse*/
 phase-*.png
 .playwright-mcp/
+playwright-report/
+test-results/
+playwright/.cache/

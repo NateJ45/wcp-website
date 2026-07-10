@@ -22,34 +22,111 @@ import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
 import twosHero from '@/assets/photos/twos-hero.jpg';
 
 const glance = [
-  { icon: 'calendar-days', chip: 'sky' as const, title: 'Thursdays only', body: 'One morning a week, perfect for little ones just starting out.' },
-  { icon: 'clock', chip: 'orange' as const, title: '9:30 am – 12:00 pm', body: 'Drop off, enjoy your morning, and pick up at noon.' },
-  { icon: 'cake', chip: 'amber' as const, title: 'Age 2 by Sept 30', body: 'Your child must turn 2 by September 30 of the enrollment year.' },
-  { icon: 'piggy-bank', chip: 'green' as const, title: '$70 per month', body: '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.' },
+  {
+    icon: 'calendar-days',
+    chip: 'sky' as const,
+    title: 'Thursdays only',
+    body: 'One morning a week, perfect for little ones just starting out.',
+  },
+  {
+    icon: 'clock',
+    chip: 'orange' as const,
+    title: '9:30 am – 12:00 pm',
+    body: 'Drop off, enjoy your morning, and pick up at noon.',
+  },
+  {
+    icon: 'cake',
+    chip: 'amber' as const,
+    title: 'Age 2 by Sept 30',
+    body: 'Your child must turn 2 by September 30 of the enrollment year.',
+  },
+  {
+    icon: 'piggy-bank',
+    chip: 'green' as const,
+    title: '$70 per month',
+    body: '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.',
+  },
 ];
 
 const classSize = [
-  { icon: 'users', chip: 'amber' as const, title: '7 children, max', body: 'The Twos class is capped at 7 children so every child gets real individual attention from the teacher.' },
-  { icon: 'graduation-cap', chip: 'sky' as const, title: 'Certified teacher', body: 'Mrs. Erin leads every Twos session. She knows every child by name before the second week.' },
-  { icon: 'heart-handshake', chip: 'orange' as const, title: 'Two parent helpers', body: 'Two co-op parents help in the classroom every session. One of them could be you.' },
+  {
+    icon: 'users',
+    chip: 'amber' as const,
+    title: '7 children, max',
+    body: 'The Twos class is capped at 7 children so every child gets real individual attention from the teacher.',
+  },
+  {
+    icon: 'graduation-cap',
+    chip: 'sky' as const,
+    title: 'Certified teacher',
+    body: 'Mrs. Erin leads every Twos session. She knows every child by name before the second week.',
+  },
+  {
+    icon: 'heart-handshake',
+    chip: 'orange' as const,
+    title: 'Two parent helpers',
+    body: 'Two co-op parents help in the classroom every session. One of them could be you.',
+  },
 ];
 
 const schedule = [
-  { time: '9:30 am', title: 'Greeting and Free Play', desc: 'Kids arrive and settle in at their own pace. Free exploration of toys and materials.' },
-  { time: '9:45 am', title: 'First Circle Time', desc: 'Songs, simple activities, and group time on the rug together.' },
-  { time: '10:00 am', title: 'Sensory Bins and Free Play', desc: 'Hands-on sensory exploration and open play with parent helpers at every table.' },
-  { time: '10:50 am', title: 'Snack Time', desc: 'Parent helpers bring snack. Kids eat together and start winding down.' },
-  { time: '11:15 am', title: 'Storytime', desc: 'A quiet wind-down with books and songs before heading outside.' },
-  { time: '11:40 am', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Families pick up at 12:00 pm.' },
+  {
+    time: '9:30 am',
+    title: 'Greeting and Free Play',
+    desc: 'Kids arrive and settle in at their own pace. Free exploration of toys and materials.',
+  },
+  {
+    time: '9:45 am',
+    title: 'First Circle Time',
+    desc: 'Songs, simple activities, and group time on the rug together.',
+  },
+  {
+    time: '10:00 am',
+    title: 'Sensory Bins and Free Play',
+    desc: 'Hands-on sensory exploration and open play with parent helpers at every table.',
+  },
+  {
+    time: '10:50 am',
+    title: 'Snack Time',
+    desc: 'Parent helpers bring snack. Kids eat together and start winding down.',
+  },
+  {
+    time: '11:15 am',
+    title: 'Storytime',
+    desc: 'A quiet wind-down with books and songs before heading outside.',
+  },
+  {
+    time: '11:40 am',
+    title: 'Outdoor Play and Dismissal',
+    desc: 'Playground time. Families pick up at 12:00 pm.',
+  },
 ];
 
 const learn = [
-  { title: 'Reading and language', body: 'Children are introduced to letters, printed names, and how books work. They enjoy stories and rhymes and begin recognising print vs pictures.' },
-  { title: 'Communication', body: 'Toddlers begin to speak more clearly to express ideas, feelings, and needs, follow simple directions, and grow their vocabulary through conversation.' },
-  { title: 'Early math', body: 'An introduction to colours, numbers, and basic shapes through play, hands-on materials, and daily activities.' },
-  { title: 'Social and emotional', body: 'Learning to separate from parents, take turns, share, and ask for things in appropriate ways, building confidence with teachers and peers.' },
-  { title: 'Music and art', body: 'Group singing, art projects, and creative exploration with tools like scissors, paintbrushes, and cookie cutters.' },
-  { title: 'Science and social studies', body: 'Exploring weather and seasons, animals, plants, and life cycles, plus family history, cultural traditions, and seasonal holidays.' },
+  {
+    title: 'Reading and language',
+    body: 'Children are introduced to letters, printed names, and how books work. They enjoy stories and rhymes and begin recognising print vs pictures.',
+  },
+  {
+    title: 'Communication',
+    body: 'Toddlers begin to speak more clearly to express ideas, feelings, and needs, follow simple directions, and grow their vocabulary through conversation.',
+  },
+  {
+    title: 'Early math',
+    body: 'An introduction to colours, numbers, and basic shapes through play, hands-on materials, and daily activities.',
+  },
+  {
+    title: 'Social and emotional',
+    body: 'Learning to separate from parents, take turns, share, and ask for things in appropriate ways, building confidence with teachers and peers.',
+  },
+  {
+    title: 'Music and art',
+    body: 'Group singing, art projects, and creative exploration with tools like scissors, paintbrushes, and cookie cutters.',
+  },
+  {
+    title: 'Science and social studies',
+    body: 'Exploring weather and seasons, animals, plants, and life cycles, plus family history, cultural traditions, and seasonal holidays.',
+  },
 ];
 ---
 
@@ -74,9 +151,13 @@ const learn = [
   <Section bg="grey" labelledby="twos-glance">
     <SectionHeader eyebrow="Twos Class" title="Everything you need to know" titleId="twos-glance" />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {glance.map((g) => (
-        <FeatureCard as="li" icon={g.icon} chip={g.chip} title={g.title}>{g.body}</FeatureCard>
-      ))}
+      {
+        glance.map((g) => (
+          <FeatureCard as="li" icon={g.icon} chip={g.chip} title={g.title}>
+            {g.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -89,14 +170,18 @@ const learn = [
       lead="The Twos class is intentionally tiny. Seven children, one teacher, and two parent helpers every single session. Your child will never be a face in a crowd."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {classSize.map((c) => (
-        <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>
-      ))}
+      {
+        classSize.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <Callout tone="sky" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-navy">Caregiver and Me option:</strong> if your child is not yet
-      fully potty trained, a parent or guardian is welcome to stay in the building for the entire
-      session. No child is ever turned away.
+      <strong class="font-bold text-navy">Caregiver and Me option:</strong> if your child is not yet fully
+      potty trained, a parent or guardian is welcome to stay in the building for the entire session. No
+      child is ever turned away.
     </Callout>
   </Section>
 
@@ -125,9 +210,13 @@ const learn = [
       lead="Our curriculum is built on Ohio’s Early Learning Content Standards. For two-year-olds, every goal is delivered through play."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {learn.map((l) => (
-        <FeatureCard as="li" title={l.title}>{l.body}</FeatureCard>
-      ))}
+      {
+        learn.map((l) => (
+          <FeatureCard as="li" title={l.title}>
+            {l.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
       Every goal above is drawn directly from Ohio’s Early Learning Content Standards and delivered
@@ -139,11 +228,16 @@ const learn = [
   <Section bg="grey" labelledby="twos-teacher">
     <SectionHeader eyebrow="Your Child’s Teacher" title="Meet Mrs. Erin" titleId="twos-teacher" />
     <div class="mx-auto mt-12 grid max-w-4xl items-start gap-8 md:grid-cols-2">
-      <TeacherCard photo={erinSchmerr} name="Mrs. Erin Schmerr" role="Twos & Threes · 3 years at WCP" email={site.teachers.erin}>
-        Erin is a Cincinnati native with nearly 20 years of experience in education, social work, and
-        childcare. She holds a degree in Social Work from Xavier University and also serves as WCP’s
-        school administrator. She came to WCP as a parent, fell in love with the school, and never
-        left. In her spare time she runs a photography business and loves to travel.
+      <TeacherCard
+        photo={erinSchmerr}
+        name="Mrs. Erin Schmerr"
+        role="Twos & Threes · 3 years at WCP"
+        email={site.teachers.erin}
+      >
+        Erin is a Cincinnati native with nearly 20 years of experience in education, social work,
+        and childcare. She holds a degree in Social Work from Xavier University and also serves as
+        WCP’s school administrator. She came to WCP as a parent, fell in love with the school, and
+        never left. In her spare time she runs a photography business and loves to travel.
       </TeacherCard>
       <div class="md:pt-4">
         <Testimonial

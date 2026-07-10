@@ -44,7 +44,9 @@ function initMobile() {
 }
 
 function initDropdowns() {
-  const triggers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]'));
+  const triggers = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]'),
+  );
   if (!triggers.length) return;
 
   const menuOf = (t: HTMLButtonElement) =>

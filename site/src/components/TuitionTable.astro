@@ -29,7 +29,7 @@ const { caption, columns, rows, class: className } = Astro.props;
             <th
               scope="col"
               class={cn(
-                'px-4 py-3 font-bold uppercase tracking-wide',
+                'px-4 py-3 font-bold tracking-wide uppercase',
                 i === 0 ? 'text-left' : 'text-left',
               )}
             >
@@ -45,7 +45,7 @@ const { caption, columns, rows, class: className } = Astro.props;
           <tr class="border-b border-border last:border-b-0 even:bg-grey/60">
             {row.map((cell, i) =>
               i === 0 ? (
-                <th scope="row" class="whitespace-nowrap px-4 py-3 font-bold text-navy">
+                <th scope="row" class="px-4 py-3 font-bold whitespace-nowrap text-navy">
                   {cell}
                 </th>
               ) : (

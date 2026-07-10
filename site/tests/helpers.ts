@@ -1,0 +1,23 @@
+import type { Page } from '@playwright/test';
+
+// =============================================================================
+// settle() — put a page in a stable, fully-rendered state before we measure or
+// audit it. Without this, tests are flaky for two real reasons:
+//
+//   1. Web fonts (Captain Comic) load async; text measured before they load
+//      uses fallback metrics and can be a couple px wider — a false Reflow fail.
+//   2. Scroll-reveal content fades in via opacity transition; axe run mid-fade
+//      sees semi-transparent text and reports false color-contrast violations.
+//
+// So: wait for fonts, kill all transitions/animations, then force every
+// [data-reveal] element to its visible end-state.
+// =============================================================================
+export async function settle(page: Page): Promise<void> {
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+  await page.addStyleTag({
+    content: '*,*::before,*::after{transition:none!important;animation:none!important}',
+  });
+  await page.evaluate(() =>
+    document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible')),
+  );
+}

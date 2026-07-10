@@ -36,10 +36,15 @@ const bar: Record<string, string> = {
     events.map((e, i) => (
       <li data-reveal style={`--reveal-delay:${(i % 4) * 60}ms`}>
         <article class="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] bg-white shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-          <div class={cn('h-1.5', bar[e.accent])} aria-hidden="true"></div>
+          <div class={cn('h-1.5', bar[e.accent])} aria-hidden="true" />
           <div class="flex flex-1 flex-col p-5">
             <div class="flex items-center justify-between gap-3">
-              <span class={cn('rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide', tab[e.accent])}>
+              <span
+                class={cn(
+                  'rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase',
+                  tab[e.accent],
+                )}
+              >
                 {e.month}
               </span>
               <Icon name={e.icon} class="h-6 w-6 text-navy/70" />

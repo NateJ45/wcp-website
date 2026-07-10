@@ -27,11 +27,15 @@ const { steps, footnote, class: className } = Astro.props;
 <ol class={cn('relative mx-auto max-w-2xl', className)}>
   {
     steps.map((s, i) => (
-      <li class="relative flex gap-5 pb-8 last:pb-0" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+      <li
+        class="relative flex gap-5 pb-8 last:pb-0"
+        data-reveal
+        style={`--reveal-delay:${i * 70}ms`}
+      >
         {/* Dashed connector — drawn between badges, not after the last one. */}
         {i !== steps.length - 1 && (
           <span
-            class="absolute left-5 top-11 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-orange/40"
+            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-orange/40"
             aria-hidden="true"
           />
         )}

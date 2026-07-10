@@ -57,7 +57,13 @@ const panelId = `faqp-${slug}`;
       </svg>
     </button>
   </Heading>
-  <div id={panelId} class="wcp-faq-panel" role="region" aria-labelledby={btnId} inert={!defaultOpen}>
+  <div
+    id={panelId}
+    class="wcp-faq-panel"
+    role="region"
+    aria-labelledby={btnId}
+    inert={!defaultOpen}
+  >
     <div class="wcp-faq-panel-inner">
       <div class="pb-5 leading-relaxed text-ink"><slot /></div>
     </div>

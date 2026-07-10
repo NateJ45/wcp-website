@@ -41,12 +41,16 @@ const bgClasses: Record<string, string> = {
   white: 'bg-white',
   grey: 'bg-grey',
   cream: 'bg-cream',
-  // On navy, flip body + all headings to white in one place.
+  // On navy: base text → white, and headings flipped from their default navy to
+  // white. Everything else (leads, StatBlock) already inherits white or uses
+  // light tones. A SectionHeader eyebrow is the one exception — it uses a dark
+  // "-ink" tone by design, so navy sections must pass eyebrowTone="amber". A
+  // nested light panel (Callout, card) keeps its own colors — we deliberately
+  // do NOT flip descendants, which would turn its text white on its light bg.
   navy: 'bg-navy text-white [&_:is(h1,h2,h3,h4,h5,h6)]:text-white',
 };
 
-const pad =
-  size === 'compact' ? 'py-[var(--wcp-space-xl)]' : 'py-[var(--wcp-space-2xl)]';
+const pad = size === 'compact' ? 'py-[var(--wcp-space-xl)]' : 'py-[var(--wcp-space-2xl)]';
 ---
 
 <section

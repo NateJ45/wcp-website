@@ -18,32 +18,113 @@ import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
 import threesHero from '@/assets/photos/threes-hero.jpg';
 
 const glance = [
-  { icon: 'calendar-days', chip: 'green' as const, title: 'Mon, Tue, Wed', body: 'Three mornings a week gives kids real routine and rhythm.' },
-  { icon: 'clock', chip: 'sky' as const, title: '9:30 am – 12:00 pm', body: 'Drop off, enjoy your morning, and pick up at noon.' },
-  { icon: 'cake', chip: 'amber' as const, title: 'Age 3 by Sept 30', body: 'Your child must turn 3 by September 30 of the enrollment year.' },
-  { icon: 'piggy-bank', chip: 'orange' as const, title: '$150 per month', body: '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.' },
+  {
+    icon: 'calendar-days',
+    chip: 'green' as const,
+    title: 'Mon, Tue, Wed',
+    body: 'Three mornings a week gives kids real routine and rhythm.',
+  },
+  {
+    icon: 'clock',
+    chip: 'sky' as const,
+    title: '9:30 am – 12:00 pm',
+    body: 'Drop off, enjoy your morning, and pick up at noon.',
+  },
+  {
+    icon: 'cake',
+    chip: 'amber' as const,
+    title: 'Age 3 by Sept 30',
+    body: 'Your child must turn 3 by September 30 of the enrollment year.',
+  },
+  {
+    icon: 'piggy-bank',
+    chip: 'orange' as const,
+    title: '$150 per month',
+    body: '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.',
+  },
 ];
 const classSize = [
-  { icon: 'users', chip: 'green' as const, title: '12 children, max', body: 'Small enough for individual attention, large enough for real friendships.' },
-  { icon: 'graduation-cap', chip: 'sky' as const, title: 'Certified teacher', body: 'Mrs. Erin leads every Threes session with years of experience in early childhood education.' },
-  { icon: 'heart-handshake', chip: 'orange' as const, title: 'Two parent helpers', body: 'Two co-op parents help in the classroom every session. You will be one of them 2 to 3 times a month.' },
+  {
+    icon: 'users',
+    chip: 'green' as const,
+    title: '12 children, max',
+    body: 'Small enough for individual attention, large enough for real friendships.',
+  },
+  {
+    icon: 'graduation-cap',
+    chip: 'sky' as const,
+    title: 'Certified teacher',
+    body: 'Mrs. Erin leads every Threes session with years of experience in early childhood education.',
+  },
+  {
+    icon: 'heart-handshake',
+    chip: 'orange' as const,
+    title: 'Two parent helpers',
+    body: 'Two co-op parents help in the classroom every session. You will be one of them 2 to 3 times a month.',
+  },
 ];
 const schedule = [
-  { time: '9:30 am', title: 'Greeting and Free Play', desc: 'Kids arrive and start playing with friends right away.' },
-  { time: '9:45 am', title: 'First Circle Time', desc: 'Songs, calendar, and group conversation to start the morning.' },
-  { time: '10:00 am', title: 'Group Activity', desc: 'A teacher-led activity: crafts, science, cooking, or a themed project.' },
-  { time: '10:10 am', title: 'Centers and Free Play', desc: 'Open play across activity stations with parent helpers.' },
-  { time: '10:50 am', title: 'Snack Time', desc: 'Parent helpers bring snack. Kids eat and talk together.' },
-  { time: '11:15 am', title: 'Second Circle Time', desc: 'Stories, literacy activities, and a group wind-down before outdoor play.' },
-  { time: '11:40 am', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Families pick up at 12:00 pm.' },
+  {
+    time: '9:30 am',
+    title: 'Greeting and Free Play',
+    desc: 'Kids arrive and start playing with friends right away.',
+  },
+  {
+    time: '9:45 am',
+    title: 'First Circle Time',
+    desc: 'Songs, calendar, and group conversation to start the morning.',
+  },
+  {
+    time: '10:00 am',
+    title: 'Group Activity',
+    desc: 'A teacher-led activity: crafts, science, cooking, or a themed project.',
+  },
+  {
+    time: '10:10 am',
+    title: 'Centers and Free Play',
+    desc: 'Open play across activity stations with parent helpers.',
+  },
+  {
+    time: '10:50 am',
+    title: 'Snack Time',
+    desc: 'Parent helpers bring snack. Kids eat and talk together.',
+  },
+  {
+    time: '11:15 am',
+    title: 'Second Circle Time',
+    desc: 'Stories, literacy activities, and a group wind-down before outdoor play.',
+  },
+  {
+    time: '11:40 am',
+    title: 'Outdoor Play and Dismissal',
+    desc: 'Playground time. Families pick up at 12:00 pm.',
+  },
 ];
 const learn = [
-  { title: 'Reading and phonics', body: 'Recognising and naming letters, identifying rhymes, spotting their own name in print, and responding to read-alouds.' },
-  { title: 'Writing', body: 'Practising writing from top to bottom and printing letters from their own name with assistance.' },
-  { title: 'Math', body: 'Counting to 10, identifying numerals 0-5, naming shapes, and sorting by size, colour, and shape.' },
-  { title: 'Social and emotional', body: 'Following classroom routines, self-confidence, sharing and turn-taking, and respecting authority.' },
-  { title: 'Fine and gross motor', body: 'Crayons, scissors, and clay build small-muscle control; climbing and balancing build coordination for kindergarten.' },
-  { title: 'Science and social studies', body: 'Weather, seasons, animals, plants, and life cycles, plus family heritage, community helpers, and holidays.' },
+  {
+    title: 'Reading and phonics',
+    body: 'Recognising and naming letters, identifying rhymes, spotting their own name in print, and responding to read-alouds.',
+  },
+  {
+    title: 'Writing',
+    body: 'Practising writing from top to bottom and printing letters from their own name with assistance.',
+  },
+  {
+    title: 'Math',
+    body: 'Counting to 10, identifying numerals 0-5, naming shapes, and sorting by size, colour, and shape.',
+  },
+  {
+    title: 'Social and emotional',
+    body: 'Following classroom routines, self-confidence, sharing and turn-taking, and respecting authority.',
+  },
+  {
+    title: 'Fine and gross motor',
+    body: 'Crayons, scissors, and clay build small-muscle control; climbing and balancing build coordination for kindergarten.',
+  },
+  {
+    title: 'Science and social studies',
+    body: 'Weather, seasons, animals, plants, and life cycles, plus family heritage, community helpers, and holidays.',
+  },
 ];
 ---
 
@@ -65,9 +146,19 @@ const learn = [
   </Hero>
 
   <Section bg="grey" labelledby="threes-glance">
-    <SectionHeader eyebrow="Threes Class" title="Everything you need to know" titleId="threes-glance" />
+    <SectionHeader
+      eyebrow="Threes Class"
+      title="Everything you need to know"
+      titleId="threes-glance"
+    />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {glance.map((g) => (<FeatureCard as="li" icon={g.icon} chip={g.chip} title={g.title}>{g.body}</FeatureCard>))}
+      {
+        glance.map((g) => (
+          <FeatureCard as="li" icon={g.icon} chip={g.chip} title={g.title}>
+            {g.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -79,12 +170,18 @@ const learn = [
       lead="Twelve children, one teacher, and two parent helpers every session. Small enough that every child is known. Large enough that friendships form fast."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {classSize.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+      {
+        classSize.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>
+            {c.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <Callout tone="sky" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-navy">Caregiver and Me option:</strong> if your child is not yet
-      fully potty trained, a parent or guardian is welcome to stay in the building for the entire
-      session. No child is ever turned away.
+      <strong class="font-bold text-navy">Caregiver and Me option:</strong> if your child is not yet fully
+      potty trained, a parent or guardian is welcome to stay in the building for the entire session. No
+      child is ever turned away.
     </Callout>
   </Section>
 
@@ -111,7 +208,13 @@ const learn = [
       lead="The Threes curriculum introduces real literacy and number skills alongside science, social studies, and creative expression, all grounded in Ohio’s Early Learning Standards."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {learn.map((l) => (<FeatureCard as="li" title={l.title}>{l.body}</FeatureCard>))}
+      {
+        learn.map((l) => (
+          <FeatureCard as="li" title={l.title}>
+            {l.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
       Every goal above is drawn directly from Ohio’s Early Learning Content Standards and delivered
@@ -123,11 +226,16 @@ const learn = [
   <Section bg="grey" labelledby="threes-teacher">
     <SectionHeader eyebrow="Your Child’s Teacher" title="Meet Mrs. Erin" titleId="threes-teacher" />
     <div class="mx-auto mt-12 grid max-w-4xl items-start gap-8 md:grid-cols-2">
-      <TeacherCard photo={erinSchmerr} name="Mrs. Erin Schmerr" role="Twos & Threes · 3 years at WCP" email={site.teachers.erin}>
-        Erin is a Cincinnati native with nearly 20 years of experience in education, social work, and
-        childcare. She holds a degree in Social Work from Xavier University and also serves as WCP’s
-        school administrator. She came to WCP as a parent, fell in love with the school, and never
-        left. In her spare time she runs a photography business and loves to travel.
+      <TeacherCard
+        photo={erinSchmerr}
+        name="Mrs. Erin Schmerr"
+        role="Twos & Threes · 3 years at WCP"
+        email={site.teachers.erin}
+      >
+        Erin is a Cincinnati native with nearly 20 years of experience in education, social work,
+        and childcare. She holds a degree in Social Work from Xavier University and also serves as
+        WCP’s school administrator. She came to WCP as a parent, fell in love with the school, and
+        never left. In her spare time she runs a photography business and loves to travel.
       </TeacherCard>
       <div class="md:pt-4">
         <Testimonial

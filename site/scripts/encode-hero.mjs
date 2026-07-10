@@ -37,7 +37,9 @@ if (!existsSync(input)) {
 
 const run = (label, args) => {
   console.log(`\n▶ ${label}`);
-  const r = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit' });
+  const r = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', ...args], {
+    stdio: 'inherit',
+  });
   if (r.status !== 0) {
     console.error(`ffmpeg failed: ${label}`);
     process.exit(r.status ?? 1);
@@ -46,15 +48,50 @@ const run = (label, args) => {
 
 // MP4 (H.264)
 run('MP4 (H.264, CRF 33)', [
-  '-i', input, '-map', '0:v:0', '-an', '-vf', VF,
-  '-c:v', 'libx264', '-crf', '33', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4,
+  '-i',
+  input,
+  '-map',
+  '0:v:0',
+  '-an',
+  '-vf',
+  VF,
+  '-c:v',
+  'libx264',
+  '-crf',
+  '33',
+  '-preset',
+  'slow',
+  '-pix_fmt',
+  'yuv420p',
+  '-movflags',
+  '+faststart',
+  mp4,
 ]);
 
 // WebM (VP9, two-pass @ 600k)
 const vp9 = (pass, out) => [
-  '-i', input, '-map', '0:v:0', '-an', '-vf', VF,
-  '-c:v', 'libvpx-vp9', '-b:v', '600k', '-pass', String(pass), '-passlogfile', passlog,
-  '-deadline', 'good', '-cpu-used', pass === 1 ? '4' : '2', '-row-mt', '1', ...out,
+  '-i',
+  input,
+  '-map',
+  '0:v:0',
+  '-an',
+  '-vf',
+  VF,
+  '-c:v',
+  'libvpx-vp9',
+  '-b:v',
+  '600k',
+  '-pass',
+  String(pass),
+  '-passlogfile',
+  passlog,
+  '-deadline',
+  'good',
+  '-cpu-used',
+  pass === 1 ? '4' : '2',
+  '-row-mt',
+  '1',
+  ...out,
 ];
 run('WebM (VP9 pass 1)', vp9(1, ['-f', 'null', '-']));
 run('WebM (VP9 pass 2)', vp9(2, [webm]));

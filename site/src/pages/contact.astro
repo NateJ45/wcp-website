@@ -24,7 +24,9 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
   >
     <Fragment slot="actions">
       <Button href={`tel:${phoneDigits}`} variant="accent" size="lg">Call {site.phone}</Button>
-      <Button href={`mailto:${site.email.general}`} variant="outline-white" size="lg">Email Us</Button>
+      <Button href={`mailto:${site.email.general}`} variant="outline-white" size="lg"
+        >Email Us</Button
+      >
     </Fragment>
   </Hero>
 
@@ -34,20 +36,25 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
         <h2 class="text-navy">Reach us</h2>
         <dl class="mt-4 space-y-3 text-ink">
           <div>
-            <dt class="text-sm font-bold uppercase tracking-wide text-sky-ink">Phone</dt>
+            <dt class="text-sm font-bold tracking-wide text-sky-ink uppercase">Phone</dt>
             <dd><a href={`tel:${phoneDigits}`} class="text-navy underline">{site.phone}</a></dd>
           </div>
           <div>
-            <dt class="text-sm font-bold uppercase tracking-wide text-sky-ink">Email</dt>
-            <dd><a href={`mailto:${site.email.general}`} class="text-navy underline">{site.email.general}</a></dd>
+            <dt class="text-sm font-bold tracking-wide text-sky-ink uppercase">Email</dt>
+            <dd>
+              <a href={`mailto:${site.email.general}`} class="text-navy underline"
+                >{site.email.general}</a
+              >
+            </dd>
           </div>
         </dl>
       </div>
       <div data-reveal>
         <h2 class="text-navy">Visit</h2>
-        <address class="mt-4 not-italic leading-relaxed text-ink">
+        <address class="mt-4 leading-relaxed text-ink not-italic">
           {site.address.street}<br />
-          {site.address.city}, {site.address.state} {site.address.zip}<br />
+          {site.address.city}, {site.address.state}
+          {site.address.zip}<br />
           <span class="text-ink-muted">Inside Crestview Presbyterian Church</span>
         </address>
         <p class="mt-3 text-sm text-ink-muted">{site.calendar}</p>

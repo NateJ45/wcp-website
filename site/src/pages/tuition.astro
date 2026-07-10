@@ -14,31 +14,106 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 
 const why = [
-  { icon: 'award', chip: 'sky' as const, title: 'Expert teachers', body: 'Our only paid staff. Certified, experienced, and genuinely invested in every child.' },
-  { icon: 'users', chip: 'orange' as const, title: 'Parent-powered', body: 'Everything else is run by the families enrolled, which is also what makes WCP special.' },
-  { icon: 'trending-down', chip: 'green' as const, title: 'Lower overhead', body: 'No admin salaries, no outside contractors, no unnecessary costs passed on to you.' },
-  { icon: 'star', chip: 'amber' as const, title: 'High standards', body: 'Affordable does not mean lower quality. WCP families consistently say it exceeded expectations.' },
+  {
+    icon: 'award',
+    chip: 'sky' as const,
+    title: 'Expert teachers',
+    body: 'Our only paid staff. Certified, experienced, and genuinely invested in every child.',
+  },
+  {
+    icon: 'users',
+    chip: 'orange' as const,
+    title: 'Parent-powered',
+    body: 'Everything else is run by the families enrolled, which is also what makes WCP special.',
+  },
+  {
+    icon: 'trending-down',
+    chip: 'green' as const,
+    title: 'Lower overhead',
+    body: 'No admin salaries, no outside contractors, no unnecessary costs passed on to you.',
+  },
+  {
+    icon: 'star',
+    chip: 'amber' as const,
+    title: 'High standards',
+    body: 'Affordable does not mean lower quality. WCP families consistently say it exceeded expectations.',
+  },
 ];
 
-const tuitionColumns = ['Class', 'Days', 'Time', 'Age by Sept 30', 'Monthly', 'Annual', 'Reg. fee', 'Deposit', 'Student fees'];
+const tuitionColumns = [
+  'Class',
+  'Days',
+  'Time',
+  'Age by Sept 30',
+  'Monthly',
+  'Annual',
+  'Reg. fee',
+  'Deposit',
+  'Student fees',
+];
 const tuitionRows = [
   ['Twos', 'Thursdays', '9:30 am – 12:00 pm', 'Age 2', '$70', '$630', '$100', '$100', '$45'],
   ['Threes', 'Mon – Wed', '9:30 am – 12:00 pm', 'Age 3', '$150', '$1,350', '$100', '$100', '$45'],
-  ['Pre-K AM', 'Mon – Thurs', '9:15 am – 12:00 pm', 'Age 4', '$200', '$1,800', '$100', '$100', '$50'],
+  [
+    'Pre-K AM',
+    'Mon – Thurs',
+    '9:15 am – 12:00 pm',
+    'Age 4',
+    '$200',
+    '$1,800',
+    '$100',
+    '$100',
+    '$50',
+  ],
   ['Pre-K PM', 'Mon – Wed', '12:30 pm – 3:15 pm', 'Age 4', '$175', '$1,575', '$100', '$100', '$50'],
 ];
 
 const fees = [
-  { icon: 'file-check', chip: 'orange' as const, title: 'Registration fee · $100', body: 'A one-time fee due at enrollment that secures your child’s place. Non-refundable once enrollment is confirmed.' },
-  { icon: 'shield-check', chip: 'sky' as const, title: 'Participation deposit · $100', body: 'Due at the May Gathering (or at registration if you enroll mid-year). Held to ensure the co-op commitment is met, and returned at the end of the year when all obligations have been fulfilled.' },
-  { icon: 'palette', chip: 'green' as const, title: 'Student fees · $45–$50', body: 'Covers classroom supplies, art materials, snack contributions, and other resources used directly by children.' },
+  {
+    icon: 'file-check',
+    chip: 'orange' as const,
+    title: 'Registration fee · $100',
+    body: 'A one-time fee due at enrollment that secures your child’s place. Non-refundable once enrollment is confirmed.',
+  },
+  {
+    icon: 'shield-check',
+    chip: 'sky' as const,
+    title: 'Participation deposit · $100',
+    body: 'Due at the May Gathering (or at registration if you enroll mid-year). Held to ensure the co-op commitment is met, and returned at the end of the year when all obligations have been fulfilled.',
+  },
+  {
+    icon: 'palette',
+    chip: 'green' as const,
+    title: 'Student fees · $45–$50',
+    body: 'Covers classroom supplies, art materials, snack contributions, and other resources used directly by children.',
+  },
 ];
 
 const timeline = [
-  { icon: 'users', chip: 'sky' as const, title: 'Current families', body: 'Families already enrolled get first pick. Registration forms are distributed in December.' },
-  { icon: 'heart', chip: 'orange' as const, title: 'Alumni and Crestview members', body: 'Families who have previously enrolled at WCP, and Crestview Church members, register next in order received.' },
-  { icon: 'door-open', chip: 'green' as const, title: 'Open House — public', body: 'Open registration begins at Open House in January. New families register on a first-come, first-served basis.' },
-  { icon: 'list', chip: 'amber' as const, title: 'Waiting list', body: 'Once a class is full, a free waiting list is created. Families are contacted in order as spots open up.' },
+  {
+    icon: 'users',
+    chip: 'sky' as const,
+    title: 'Current families',
+    body: 'Families already enrolled get first pick. Registration forms are distributed in December.',
+  },
+  {
+    icon: 'heart',
+    chip: 'orange' as const,
+    title: 'Alumni and Crestview members',
+    body: 'Families who have previously enrolled at WCP, and Crestview Church members, register next in order received.',
+  },
+  {
+    icon: 'door-open',
+    chip: 'green' as const,
+    title: 'Open House — public',
+    body: 'Open registration begins at Open House in January. New families register on a first-come, first-served basis.',
+  },
+  {
+    icon: 'list',
+    chip: 'amber' as const,
+    title: 'Waiting list',
+    body: 'Once a class is full, a free waiting list is created. Families are contacted in order as spots open up.',
+  },
 ];
 ---
 
@@ -65,9 +140,13 @@ const timeline = [
       lead="At most preschools every role is a paid position, and those salaries get passed on to families. At WCP, our teachers are the only paid staff. You are the reason the school can afford to be this good."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {why.map((w) => (
-        <FeatureCard as="li" icon={w.icon} chip={w.chip} title={w.title}>{w.body}</FeatureCard>
-      ))}
+      {
+        why.map((w) => (
+          <FeatureCard as="li" icon={w.icon} chip={w.chip} title={w.title}>
+            {w.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
@@ -86,40 +165,55 @@ const timeline = [
       />
     </div>
     <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-navy">Annual payment:</strong> families who pay the full year’s
-      tuition and fees can skip the monthly billing cycle. Tuition is subject to a 5–15% annual
-      adjustment, and rates for each school year are confirmed before enrollment opens. First month’s
-      tuition and fees are due in May.
+      <strong class="font-bold text-navy">Annual payment:</strong> families who pay the full year’s tuition
+      and fees can skip the monthly billing cycle. Tuition is subject to a 5–15% annual adjustment, and
+      rates for each school year are confirmed before enrollment opens. First month’s tuition and fees
+      are due in May.
     </Callout>
   </Section>
 
   <Section bg="white" labelledby="fee-explainer">
-    <SectionHeader eyebrow="What Each Fee Covers" title="Where your money goes" titleId="fee-explainer" />
+    <SectionHeader
+      eyebrow="What Each Fee Covers"
+      title="Where your money goes"
+      titleId="fee-explainer"
+    />
     <ul class="mt-12 grid gap-6 sm:grid-cols-3">
-      {fees.map((f) => (
-        <FeatureCard as="li" icon={f.icon} chip={f.chip} title={f.title}>{f.body}</FeatureCard>
-      ))}
+      {
+        fees.map((f) => (
+          <FeatureCard as="li" icon={f.icon} chip={f.chip} title={f.title}>
+            {f.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
   </Section>
 
-  {/* Navy timeline band — top seam clouds up into the fee section above; flows
-      into the navy CTA below (its seam is off). */}
+  {
+    /* Navy timeline band — top seam clouds up into the fee section above; flows
+      into the navy CTA below (its seam is off). */
+  }
   <Section bg="navy" seam labelledby="reg-timeline">
     <SectionHeader
       eyebrow="Registration Timeline"
+      eyebrowTone="amber"
       title="Spots go fast. Here is how it works."
       titleId="reg-timeline"
       lead="Registration opens each January and follows a priority order. Families who move quickly are almost always placed in their first-choice class."
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {timeline.map((t) => (
-        <FeatureCard as="li" icon={t.icon} chip={t.chip} title={t.title}>{t.body}</FeatureCard>
-      ))}
+      {
+        timeline.map((t) => (
+          <FeatureCard as="li" icon={t.icon} chip={t.chip} title={t.title}>
+            {t.body}
+          </FeatureCard>
+        ))
+      }
     </ul>
     <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-navy">Good to know:</strong> WCP also accepts open enrollment
-      mid-year if space is available and the teacher and board approve. So even if you missed the
-      start of the school year, it is worth reaching out.
+      <strong class="font-bold text-navy">Good to know:</strong> WCP also accepts open enrollment mid-year
+      if space is available and the teacher and board approve. So even if you missed the start of the
+      school year, it is worth reaching out.
     </Callout>
   </Section>
 

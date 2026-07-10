@@ -4,3 +4,7 @@ node_modules
 .wrangler
 package-lock.json
 public
+playwright-report
+test-results
+src/lib/lucide-icons.ts
+src/lib/brand-icons.ts

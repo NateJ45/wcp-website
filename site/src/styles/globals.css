@@ -91,11 +91,13 @@
      Contrast ratios measured against white (#fff) and grey (#EFF0F1):
        orange-ink  5.4:1 white / 4.7:1 grey / 5.4:1 as white-on-fill
        sky-ink     5.4:1 white / 4.8:1 grey
-       green-ink   4.7:1 as white-on-fill
+       green-ink   5.4:1 white / ~5.0:1 on the pale-green chip tint
      Use these for orange/sky/green headings, eyebrows, links, and buttons. */
   --color-orange-ink: #a85300;
   --color-sky-ink: #166fa8;
-  --color-green-ink: #138636;
+  /* Darkened from #138636: as TEXT on the pale-green chip fill (used by
+     FeatureCard/SchoolYear) the old value was only 4.28:1 — just under AA. */
+  --color-green-ink: #0e7b2e;
   --color-amber-ink: #9e5c0a; /* amber-as-text fallback (rarely needed) */
 
   /* ---- Text + surfaces ---- */
@@ -296,8 +298,7 @@
 .wcp-container {
   max-width: var(--wcp-content-width, 68.75rem); /* 1100px main-column cap */
   margin-inline: auto;
-  padding-inline:
-    max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+  padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
   width: 100%;
 }
 
