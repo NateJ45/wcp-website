@@ -39,7 +39,9 @@ const { entries, class: className } = Astro.props;
         />
         <div class="min-w-0 flex-1">
           <p class="text-sm font-bold text-sky-ink">{e.time}</p>
-          <h4 class="mt-0.5 text-navy">{e.title}</h4>
+          {/* h3: these entries sit directly under the section's h2 header, so
+              h4 here would skip a level (fails axe/Lighthouse heading-order). */}
+          <h3 class="mt-0.5 text-lg text-navy">{e.title}</h3>
           {e.desc && <p class="mt-1 leading-relaxed text-ink">{e.desc}</p>}
         </div>
       </li>
