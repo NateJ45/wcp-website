@@ -1,0 +1,168 @@
+---
+/* ============================================================================
+   Co-op Life page  (real copy, verified against the live site 2026-07)
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import StepList from '@/components/StepList.astro';
+import SchoolYear from '@/components/SchoolYear.astro';
+import Testimonial from '@/components/Testimonial.astro';
+import Callout from '@/components/Callout.astro';
+import CtaBanner from '@/components/CtaBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+import { schoolYear } from '@/data/school-year';
+import firetruckFieldTrip from '@/assets/photos/firetruck-field-trip.jpg';
+
+const commitments = [
+  { icon: 'heart-handshake', chip: 'orange' as const, title: 'Help in the classroom', body: 'Every family helps in their child’s classroom 1–3 times per month (depending on class size and age of class). You work alongside the teacher and get to watch your child in their element.' },
+  { icon: 'users', chip: 'sky' as const, title: 'Hold a co-op job', body: 'Every family is assigned a role for the full year — from board positions to event planning to school maintenance. Jobs are matched to your skills and availability.' },
+  { icon: 'shield-check', chip: 'green' as const, title: 'Comply with health requirements', body: 'All classroom helpers must complete an Ohio state background and health check before their first shift.' },
+  { icon: 'megaphone', chip: 'amber' as const, title: 'Participate in fundraising', body: 'Families take part in fundraising activities throughout the year. There are multiple events to choose from so you can get involved in ways that suit you.' },
+  { icon: 'calendar-days', chip: 'sky' as const, title: 'Attend mandatory meetings', body: 'Four meetings per year: the May Parent Conference, two Informational Meetings, and September Orientation.' },
+  { icon: 'piggy-bank', chip: 'orange' as const, title: 'Pay tuition on time', body: 'Tuition is due monthly, with an annual payment option for families who prefer to pay the full year up front.' },
+];
+
+const helperDay = [
+  { title: 'Arrive 15 minutes early', body: 'Help set up the classroom and get the playground or gym ready. Your teacher will walk you through exactly what needs doing.' },
+  { title: 'Welcome the children', body: 'Jump straight into play. Encourage sharing, help kids settle in, and get ready to be asked to play — it is the best feeling.' },
+  { title: 'Join in all morning long', body: 'Circle time, small group activities, the restroom routine, snack prep, and outdoor play. You are fully in the middle of it all.' },
+  { title: 'Snack time is the highlight', body: 'Sit down with the kids and just listen. The stories you will hear are priceless. Every parent helper says this is their favorite part.', note: 'Parents always leave wishing snack time lasted longer' },
+  { title: 'Head outside with the class', body: 'Playground or gym time. Your energy sets the tone. Get in there and play — kids light up when helpers are having fun too.' },
+  { title: 'Quick tidy-up and you are done', body: 'Follow the simple cleaning checklist to reset the room. Takes about 10 minutes.' },
+];
+
+const classDojo = [
+  { icon: 'camera', chip: 'orange' as const, title: 'Classroom photos', body: 'See what your child worked on today. Teachers share photos and highlights from every session.' },
+  { icon: 'megaphone', chip: 'sky' as const, title: 'Announcements', body: 'Reminders, schedule changes, and event updates delivered directly to your phone or computer.' },
+  { icon: 'message-circle', chip: 'green' as const, title: 'Direct messaging', body: 'Send and receive private messages with your child’s teacher anytime during the year.' },
+  { icon: 'users', chip: 'amber' as const, title: 'Class community', body: 'Chat with other families in your class and build connections before you even meet in person.' },
+];
+
+const coopStories = [
+  { quote: 'I loved the sense of community we felt at WCP. We gained lifelong friends. It was wonderful to take such a hands-on role in my children’s first educational experience.', author: 'Katherine Oliver', context: 'Alumni Parent', accent: 'orange' as const },
+  { quote: 'Our first year at WCP has been amazing. My son loves his teacher and his friends. The teachers and parents here are a blessing — I could not recommend this school more.', author: 'Amber Cron', context: 'Threes Parent', accent: 'sky' as const },
+  { quote: 'A wonderful school where teachers care for each student as an individual and parents get to have direct impact. We loved it so much we signed our daughter up to join her brother next year.', author: 'Daniel Hagedorn', context: 'Pre-K Parent', accent: 'green' as const },
+];
+---
+
+<BaseLayout
+  title="Co-op Life — West Chester Preschool"
+  description="WCP is a cooperative preschool: the families run the school alongside the teachers. Here is what the co-op commitment actually involves, and why families love it."
+>
+  <Hero
+    eyebrow="Parent-Run Since 1969"
+    title="You are not just a parent here. You are an owner."
+    lead="A cooperative preschool means the families enrolled run the school alongside the teachers. It takes more than dropping off. It gives back far more too."
+    image={firetruckFieldTrip}
+    imageAlt="WCP children on a field trip to a local fire station, exploring the fire truck with a parent volunteer and firefighter"
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Join the Co-op</Button>
+      <Button href="#commitments" variant="outline-white" size="lg">See What’s Involved</Button>
+    </Fragment>
+  </Hero>
+
+  {/* The Co-op Model — what it actually means */}
+  <Section bg="white" labelledby="model">
+    <div class="mx-auto max-w-2xl text-center" data-reveal>
+      <SectionHeader eyebrow="The Co-op Model" title="What does it actually mean?" titleId="model" />
+      <p class="mt-4 text-lg leading-relaxed text-ink">
+        A cooperative preschool is owned and operated by the families of enrolled students. Our
+        teachers are the only paid staff. Every other role is handled by parents.
+      </p>
+      <p class="mt-4 leading-relaxed text-ink">
+        This is what keeps tuition low, class sizes small, and the community genuinely close. When
+        parents are in the building regularly, they know every child, every family, and every teacher.
+      </p>
+      <p class="mt-4 leading-relaxed text-ink">
+        Most families say the co-op ask is one of the best parts of WCP. You get a front-row seat to
+        your child’s first school experiences — and you build real friendships along the way.
+      </p>
+    </div>
+  </Section>
+
+  <Section bg="grey" labelledby="commitments">
+    <SectionHeader
+      eyebrow="The Co-op Commitment"
+      title="Six things every WCP family agrees to"
+      titleId="commitments"
+      lead="When you enroll, you take on these six commitments for the school year. They are what make WCP run."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {commitments.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+    </ul>
+  </Section>
+
+  {/* Your Helper Day */}
+  <Section bg="white" labelledby="helper-day">
+    <SectionHeader
+      eyebrow="Your Helper Day"
+      title="A morning you will actually look forward to"
+      titleId="helper-day"
+      lead="Here is what happens from the moment you arrive to the moment you head home."
+    />
+    <StepList
+      steps={helperDay}
+      footnote="Total time in class: roughly 2.5 hours start to finish."
+      class="mt-12"
+    />
+  </Section>
+
+  {/* The School Year */}
+  <Section bg="grey" labelledby="school-year">
+    <SectionHeader
+      eyebrow="The School Year"
+      title="A year full of things to look forward to"
+      titleId="school-year"
+      lead="WCP is not just classes. The school year is packed with events, celebrations, and community moments that families talk about long after their kids graduate."
+    />
+    <SchoolYear events={schoolYear} class="mt-12" />
+  </Section>
+
+  {/* Stay Connected — ClassDojo */}
+  <Section bg="white" labelledby="classdojo">
+    <SectionHeader
+      eyebrow="Stay Connected"
+      title="Your window into the classroom — every week"
+      titleId="classdojo"
+      lead="WCP uses ClassDojo as our main classroom communication tool. Teachers use it to share photos, updates, reminders, and news from the school day — so you always know what is happening, even when you are not there."
+    />
+    <Callout tone="sky" class="mx-auto mt-8 max-w-2xl text-center">
+      ClassDojo is private and secure. Only enrolled WCP families and staff have access. No ads, no
+      public sharing.
+    </Callout>
+    <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {classDojo.map((c) => (<FeatureCard as="li" icon={c.icon} chip={c.chip} title={c.title}>{c.body}</FeatureCard>))}
+    </ul>
+  </Section>
+
+  {/* From Our Families */}
+  <Section bg="grey" labelledby="coop-stories">
+    <SectionHeader eyebrow="From Our Families" title="What co-op parents say" titleId="coop-stories" lead="The co-op commitment sounds like work. Here is what families actually experience." />
+    <ul class="mt-12 grid gap-6 md:grid-cols-3">
+      {coopStories.map((t) => (
+        <li class="h-full"><Testimonial quote={t.quote} author={t.author} context={t.context} accent={t.accent} confetti /></li>
+      ))}
+    </ul>
+    <p class="mt-10 text-center" data-reveal>
+      <a href="/why-wcp#stories" class="font-bold text-sky-ink underline underline-offset-2">
+        Read more family stories
+      </a>
+    </p>
+  </Section>
+
+  <CtaBanner
+    title="Ready to be part of something different?"
+    lead="Enrollment for 2026-27 is open. Come for a tour, meet the teachers, and see the co-op in action."
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Enroll Your Child</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Schedule a Tour</Button>
+    </Fragment>
+    <Fragment slot="note">Call {site.phone} or email {site.email.general}</Fragment>
+  </CtaBanner>
+</BaseLayout>

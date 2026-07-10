@@ -1,0 +1,65 @@
+---
+/* ============================================================================
+   FaqItem — one accessible question/answer
+   ============================================================================
+   Real semantics: the question is a <button aria-expanded aria-controls> inside
+   a heading; the answer is a region (role=region aria-labelledby) that is
+   `inert` while collapsed so its links aren't keyboard-reachable. This replaces
+   the old Squarespace checkbox-toggle hack entirely.
+
+   Put the answer in the default slot:
+     <FaqItem question="...">Answer text, may include <a>links</a>.</FaqItem>
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  question: string;
+  defaultOpen?: boolean;
+  /** Heading level for the question, to fit the page outline. */
+  as?: 'h3' | 'h4';
+  class?: string;
+}
+const { question, defaultOpen = false, as = 'h3', class: className } = Astro.props;
+const Heading = as;
+
+// Stable ids from the question text so aria-controls / aria-labelledby link up.
+const slug = question
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '')
+  .slice(0, 48);
+const btnId = `faqb-${slug}`;
+const panelId = `faqp-${slug}`;
+---
+
+<div class={cn('border-b border-border', className)} data-faq-item>
+  <Heading class="m-0 text-[length:inherit]">
+    <button
+      type="button"
+      id={btnId}
+      class="flex w-full items-center justify-between gap-4 py-5 text-left font-semibold text-navy transition-colors hover:text-orange-ink"
+      aria-expanded={defaultOpen ? 'true' : 'false'}
+      aria-controls={panelId}
+      data-faq-trigger
+    >
+      <span class="text-lg">{question}</span>
+      <svg
+        class="wcp-faq-chevron h-5 w-5 shrink-0 text-sky-ink transition-transform duration-300"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m6 9 6 6 6-6"></path>
+      </svg>
+    </button>
+  </Heading>
+  <div id={panelId} class="wcp-faq-panel" role="region" aria-labelledby={btnId} inert={!defaultOpen}>
+    <div class="wcp-faq-panel-inner">
+      <div class="pb-5 leading-relaxed text-ink"><slot /></div>
+    </div>
+  </div>
+</div>

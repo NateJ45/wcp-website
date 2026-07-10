@@ -1,0 +1,87 @@
+---
+/* ============================================================================
+   Underline — a hand-drawn crayon underline under an accent word
+   ============================================================================
+   Wrap ONE accent word (or a short phrase) in a headline to give it a wobbly,
+   hand-drawn underline in a brand color. Where the browser supports scroll
+   timelines, the line draws itself in as the headline scrolls into view;
+   everywhere else (and under reduced-motion) it simply renders fully drawn.
+   The text keeps its own color — only the underline is tinted.
+
+   Usage:  Where kids <Underline>belong</Underline>.
+   Keep it to a single accent per headline (see the design guidelines).
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  color?: 'orange' | 'sky' | 'amber' | 'green';
+  class?: string;
+}
+const { color = 'orange', class: className } = Astro.props;
+
+const stroke: Record<string, string> = {
+  orange: 'var(--color-orange)',
+  sky: 'var(--color-sky)',
+  amber: 'var(--color-amber)',
+  green: 'var(--color-green)',
+};
+---
+
+<span class={cn('wcp-ul', className)} style={`--ul-color:${stroke[color]}`}>
+  <slot />
+  <svg
+    class="wcp-ul__line"
+    viewBox="0 0 120 12"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      d="M3,7.5 C 22,3.5 40,9.5 58,6 S 96,3.5 117,7"
+      pathLength="1"
+      fill="none"
+      stroke-width="3.2"
+      stroke-linecap="round"
+    />
+  </svg>
+</span>
+
+<style>
+  .wcp-ul {
+    position: relative;
+    display: inline-block;
+    /* Keep the underline out of the text's own descenders. */
+    padding-bottom: 0.08em;
+  }
+  .wcp-ul__line {
+    position: absolute;
+    left: 0;
+    bottom: -0.02em;
+    width: 100%;
+    height: 0.4em;
+    overflow: visible;
+  }
+  .wcp-ul__line path {
+    stroke: var(--ul-color, var(--color-orange));
+  }
+
+  /* Progressive enhancement: draw the line in as it scrolls into view, only
+     where scroll timelines exist and motion is welcome. Default state (below)
+     is fully drawn, so unsupported browsers just show a static underline. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .wcp-ul__line path {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: wcp-ul-draw linear both;
+        animation-timeline: view();
+        animation-range: entry 15% cover 40%;
+      }
+      @keyframes wcp-ul-draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+    }
+  }
+</style>

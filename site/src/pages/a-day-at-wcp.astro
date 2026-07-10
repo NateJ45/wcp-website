@@ -1,0 +1,198 @@
+---
+/* ============================================================================
+   A Day at WCP page  (real copy, extraction Part 4)
+   ============================================================================
+   Linked from content (class pages, home), not in the top nav — matches the
+   original site structure. All four class schedules reuse ScheduleTimeline;
+   the photo gallery uses real curated photos with required alt text.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import ScheduleTimeline from '@/components/ScheduleTimeline.astro';
+import PhotoGallery from '@/components/PhotoGallery.astro';
+import CtaBanner from '@/components/CtaBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+import prekCircleTime from '@/assets/photos/prek-circle-time.jpg';
+import unicornHug from '@/assets/photos/unicorn-hug.jpg';
+import dressUpPlay from '@/assets/photos/dress-up-play.jpg';
+import gymPlaytime from '@/assets/photos/gym-playtime.jpg';
+import outdoorExploration from '@/assets/photos/outdoor-exploration.jpg';
+import firetruckFieldTrip from '@/assets/photos/firetruck-field-trip.jpg';
+
+const everyDay = [
+  { icon: 'palette', chip: 'orange' as const, title: 'Free Play', body: 'Child-led exploration with toys, art, and open materials.' },
+  { icon: 'users', chip: 'sky' as const, title: 'Circle Time', body: 'Songs, stories, and group conversation on the rug.' },
+  { icon: 'cake', chip: 'amber' as const, title: 'Snack Time', body: 'Parent helpers bring snack. Kids eat and talk together.' },
+  { icon: 'heart-handshake', chip: 'green' as const, title: 'Parent Helpers', body: 'Two parents in the classroom every session to support learning.' },
+  { icon: 'door-open', chip: 'orange' as const, title: 'Outdoor Play', body: 'Every session ends with fresh air and playground time.' },
+];
+
+const twosSchedule = [
+  { time: '9:30 am', title: 'Greeting and Free Play', desc: 'Kids arrive and settle in at their own pace.' },
+  { time: '9:45 am', title: 'First Circle Time', desc: 'Songs, simple activities, and group time on the rug.' },
+  { time: '10:00 am', title: 'Sensory Bins and Free Play', desc: 'Hands-on sensory exploration and open play.' },
+  { time: '10:50 am', title: 'Snack Time', desc: 'Parent helpers bring snack. Kids eat and wind down.' },
+  { time: '11:15 am', title: 'Storytime', desc: 'A quiet wind-down with books and songs.' },
+  { time: '11:40 am', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Pickup at 12:00 pm.' },
+];
+const threesSchedule = [
+  { time: '9:30 am', title: 'Greeting and Free Play', desc: 'Kids arrive and start playing with friends right away.' },
+  { time: '9:45 am', title: 'First Circle Time', desc: 'Songs, calendar, and group conversation to open the morning.' },
+  { time: '10:00 am', title: 'Group Activity', desc: 'A teacher-led project: crafts, science, or cooking.' },
+  { time: '10:10 am', title: 'Centers and Free Play', desc: 'Open play across activity stations with parent helpers.' },
+  { time: '10:50 am', title: 'Snack Time', desc: 'Parent helpers bring snack. Kids eat and talk together.' },
+  { time: '11:15 am', title: 'Second Circle Time', desc: 'Stories and literacy activities before outdoor play.' },
+  { time: '11:40 am', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Pickup at 12:00 pm.' },
+];
+const prekAmSchedule = [
+  { time: '9:15 am', title: 'Arrival', desc: 'Children arrive and transition into the classroom routine.' },
+  { time: '9:30 am', title: 'Calendar', desc: 'Days, months, patterns, and counting: a daily warm-up.' },
+  { time: '9:45 am', title: 'Fine Motor Activity', desc: 'Handwriting Without Tears and fine motor exercises.' },
+  { time: '9:55 am', title: 'Centers', desc: 'Reading, math, science, art, and play stations.' },
+  { time: '11:00 am', title: 'Snack', desc: 'Parent helpers bring snack and kids eat as a class.' },
+  { time: '11:20 am', title: 'Circle Time', desc: 'Stories and group conversation before outdoor play.' },
+  { time: '11:35 am', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Pickup at 12:00 pm.' },
+];
+const prekPmSchedule = [
+  { time: '12:30 pm', title: 'Arrival', desc: 'Children arrive and settle into the afternoon routine.' },
+  { time: '12:45 pm', title: 'Calendar', desc: 'Days, months, patterns, and counting to open the session.' },
+  { time: '1:00 pm', title: 'Fine Motor Activity', desc: 'Handwriting and fine motor exercises.' },
+  { time: '1:10 pm', title: 'Centers', desc: 'Reading, math, science, art, and play stations.' },
+  { time: '2:15 pm', title: 'Snack', desc: 'A mid-afternoon refuel and social moment.' },
+  { time: '2:35 pm', title: 'Circle Time', desc: 'Stories and group conversation to close the day.' },
+  { time: '2:50 pm', title: 'Outdoor Play and Dismissal', desc: 'Playground time. Pickup at 3:15 pm.' },
+];
+
+const galleryPhotos = [
+  { src: prekCircleTime, alt: 'A teacher reads to the Pre-K class during circle time on the classroom rug', caption: 'Circle time' },
+  { src: unicornHug, alt: 'Three children sharing a group hug with a stuffed unicorn toy', caption: 'Free play' },
+  { src: dressUpPlay, alt: 'Two children in firefighter dress-up costumes playing together in the classroom', caption: 'Dress-up play' },
+  { src: gymPlaytime, alt: 'A teacher and children playing together on the gymnasium floor', caption: 'Gym time' },
+  { src: outdoorExploration, alt: 'A teacher and children examining something together outdoors', caption: 'Outdoor exploration' },
+  { src: firetruckFieldTrip, alt: 'Children on a field trip exploring a fire truck with a firefighter', caption: 'A field trip' },
+];
+---
+
+<BaseLayout
+  title="A Day at WCP — West Chester Preschool"
+  description="What a day at West Chester Preschool actually looks like: full daily schedules for Twos, Threes, and Pre-K AM/PM, plus photos from our classrooms."
+>
+  <Hero
+    eyebrow="A Peek Inside a WCP Morning"
+    title="What a day at WCP actually looks like."
+    lead="Every session at WCP is a mix of free play, guided activities, snack, and outdoor time. Here is a full look at how each class spends their morning, or afternoon."
+    image={prekCircleTime}
+    imageAlt="A teacher reads to a class of children sitting together on the classroom rug during circle time"
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Enroll Your Child</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Schedule a Tour</Button>
+    </Fragment>
+  </Hero>
+
+  <Section bg="white" labelledby="every-session">
+    <SectionHeader
+      eyebrow="Every Single Session"
+      title="What all three classes have in common"
+      titleId="every-session"
+      lead="No matter which class your child is in, every WCP session includes these five things."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      {everyDay.map((e) => (<FeatureCard as="li" icon={e.icon} chip={e.chip} title={e.title}>{e.body}</FeatureCard>))}
+    </ul>
+  </Section>
+
+  <Section bg="grey" labelledby="twos-sched">
+    <SectionHeader eyebrow="Twos Class" title="Thursday mornings, 9:30–12:00 pm" titleId="twos-sched" />
+    <p class="mx-auto -mt-8 mb-4 max-w-2xl text-center leading-relaxed text-ink" data-reveal>
+      The Twos class meets once a week. The pace is gentle and the session is short by design: two-year-olds
+      need transition time, sensory play, and a calm environment to feel safe in a new place.
+    </p>
+    <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
+      Age requirement: must be 2 by September 30 &middot; Tuition: $70 per month
+    </p>
+    <p class="text-center" data-reveal>
+      <a href="/classes/twos" class="font-bold text-sky-ink underline underline-offset-2">
+        Learn more about the Twos Class
+      </a>
+    </p>
+    <ScheduleTimeline entries={twosSchedule} class="mt-10" />
+  </Section>
+
+  <Section bg="white" labelledby="threes-sched">
+    <SectionHeader eyebrow="Threes Class" title="Mon–Wed mornings, 9:30–12:00 pm" titleId="threes-sched" />
+    <p class="mx-auto -mt-8 mb-4 max-w-2xl text-center leading-relaxed text-ink" data-reveal>
+      Three mornings a week gives three-year-olds real routine and rhythm. The Threes day has more
+      structure: two circle times, a group activity, and centers, while still leaving room for free play.
+    </p>
+    <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
+      Age requirement: must be 3 by September 30 &middot; Tuition: $150 per month
+    </p>
+    <p class="text-center" data-reveal>
+      <a href="/classes/threes" class="font-bold text-sky-ink underline underline-offset-2">
+        Learn more about the Threes Class
+      </a>
+    </p>
+    <ScheduleTimeline entries={threesSchedule} class="mt-10" />
+  </Section>
+
+  <Section bg="grey" labelledby="prekam-sched">
+    <SectionHeader eyebrow="Pre-K AM Class" title="Mon–Thurs mornings, 9:15–12:00 pm" titleId="prekam-sched" />
+    <p class="mx-auto -mt-8 mb-4 max-w-2xl text-center leading-relaxed text-ink" data-reveal>
+      Four mornings a week gives Pre-K kids the most time with our curriculum. Each morning includes
+      calendar, fine motor work, centers, snack, and outdoor play.
+    </p>
+    <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
+      Age requirement: must be 4 by September 30 &middot; Tuition: $200 per month
+    </p>
+    <p class="text-center" data-reveal>
+      <a href="/classes/pre-k" class="font-bold text-sky-ink underline underline-offset-2">
+        Learn more about Pre-K
+      </a>
+    </p>
+    <ScheduleTimeline entries={prekAmSchedule} class="mt-10" />
+  </Section>
+
+  <Section bg="white" labelledby="prekpm-sched">
+    <SectionHeader eyebrow="Pre-K PM Class" title="Mon–Wed afternoons, 12:30–3:15 pm" titleId="prekpm-sched" />
+    <p class="mx-auto -mt-8 mb-4 max-w-2xl text-center leading-relaxed text-ink" data-reveal>
+      The PM session covers the same curriculum as the AM class across three afternoons a week. Great
+      for families who need mornings free or whose child does better later in the day.
+    </p>
+    <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
+      Age requirement: must be 4 by September 30 &middot; Tuition: $175 per month
+    </p>
+    <p class="text-center" data-reveal>
+      <a href="/classes/pre-k" class="font-bold text-sky-ink underline underline-offset-2">
+        Learn more about Pre-K
+      </a>
+    </p>
+    <ScheduleTimeline entries={prekPmSchedule} class="mt-10" />
+  </Section>
+
+  <Section bg="grey" labelledby="gallery">
+    <SectionHeader
+      eyebrow="See It in Action"
+      title="Photos from our classrooms"
+      titleId="gallery"
+      lead="A look at what a real WCP session looks like: the activities, the helpers, the outdoor time, and the moments in between."
+    />
+    <PhotoGallery photos={galleryPhotos} class="mt-12" />
+  </Section>
+
+  <CtaBanner
+    title="Want to see it in person?"
+    lead="Come for a tour and watch a real session in action. Meet the teachers, see the space, and let your child spend time in the classroom."
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Schedule a Tour</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Enroll Now</Button>
+    </Fragment>
+    <Fragment slot="note">Call {site.phone} or email {site.email.general}</Fragment>
+  </CtaBanner>
+</BaseLayout>

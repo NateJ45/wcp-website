@@ -1,0 +1,98 @@
+---
+/* ============================================================================
+   Privacy Policy
+   ============================================================================
+   A plain-language policy for a small, mostly-static preschool site. Honest
+   about what little is collected. NOTE(nathan): the board should give this a
+   read (and a lawyer if you want to be thorough) before relying on it — it is
+   a sensible starting template, not legal advice.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import Prose from '@/components/Prose.astro';
+import { site } from '@/data/site';
+
+const updated = 'July 2026';
+---
+
+<BaseLayout
+  title="Privacy Policy — West Chester Preschool"
+  description="How West Chester Preschool handles the limited personal information collected through this website."
+>
+  <Hero
+    eyebrow="Privacy"
+    title="Your privacy matters to us."
+    lead="We keep this simple: we collect as little as possible, and we never sell your information."
+    height="medium"
+  />
+
+  <Section bg="white" label="Privacy policy">
+    <Prose>
+      <p><strong>Last updated:</strong> {updated}</p>
+      <p>
+        This policy explains how West Chester Preschool (“WCP,” “we,” “us”) handles personal
+        information in connection with this website. WCP is a parent-run cooperative preschool in
+        West Chester, Ohio.
+      </p>
+
+      <h2>Information we collect</h2>
+      <p>
+        This website is largely static and does not require you to create an account. We only receive
+        personal information that you choose to give us:
+      </p>
+      <ul>
+        <li><strong>When you contact us</strong> — if you email, call, or send an enrollment or tour request, we receive the details you provide, such as your name, email address, phone number, and your child’s age.</li>
+        <li><strong>Basic site analytics</strong> — we may use privacy-respecting analytics to understand which pages are visited so we can improve the site. This is aggregate information and is not used to identify you personally.</li>
+      </ul>
+
+      <h2>How we use it</h2>
+      <p>
+        We use the information you provide only to respond to you, schedule tours, process enrollment
+        interest, and communicate about the school. We do not sell, rent, or trade your personal
+        information to anyone.
+      </p>
+
+      <h2>Enrolled-family information</h2>
+      <p>
+        Information about enrolled families — such as the family directory — is kept separate from
+        this public website and is only available to logged-in WCP families. It is never published
+        publicly.
+      </p>
+
+      <h2>Children’s privacy</h2>
+      <p>
+        This website is intended for parents and guardians, not children. We do not knowingly collect
+        personal information from children under 13.
+      </p>
+
+      <h2>Cookies and third-party links</h2>
+      <p>
+        We use only the cookies necessary for the site to function and, where enabled, analytics
+        cookies. This site links to third-party services — for example ClassDojo, Google Maps, and
+        our online store — which have their own privacy policies. We are not responsible for the
+        practices of those services.
+      </p>
+
+      <h2>Your choices</h2>
+      <p>
+        You can ask us what personal information you have shared with us, and request that we correct
+        or delete it, by contacting us. You can also decline non-essential cookies in your browser
+        settings.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        We may update this policy from time to time. When we do, we will revise the “last updated”
+        date above.
+      </p>
+
+      <h2>Contact us</h2>
+      <ul>
+        <li>Email: <a href={`mailto:${site.email.general}`}>{site.email.general}</a></li>
+        <li>Phone: <a href={`tel:${site.phone.replace(/[^\d]/g, '')}`}>{site.phone}</a></li>
+        <li>Mail: {site.address.street}, {site.address.city}, {site.address.state} {site.address.zip}</li>
+      </ul>
+    </Prose>
+  </Section>
+</BaseLayout>

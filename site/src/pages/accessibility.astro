@@ -1,0 +1,70 @@
+---
+/* ============================================================================
+   Accessibility Statement
+   ============================================================================
+   A genuine statement — this site is built to WCAG 2.1 AA (semantic markup,
+   keyboard support, contrast, reduced-motion, 320px reflow). Keep the "last
+   updated" current when the site's accessibility posture changes.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import Prose from '@/components/Prose.astro';
+import { site } from '@/data/site';
+
+const updated = 'July 2026';
+---
+
+<BaseLayout
+  title="Accessibility — West Chester Preschool"
+  description="West Chester Preschool is committed to making its website accessible to everyone, targeting WCAG 2.1 Level AA."
+>
+  <Hero
+    eyebrow="Accessibility"
+    title="A website everyone can use."
+    lead="We want every family to be able to use this site — including people who use assistive technology."
+    height="medium"
+  />
+
+  <Section bg="white" label="Accessibility statement">
+    <Prose>
+      <p><strong>Last updated:</strong> {updated}</p>
+
+      <h2>Our commitment</h2>
+      <p>
+        West Chester Preschool is committed to making its website accessible to everyone, including
+        people with disabilities. We aim to conform to the
+        <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener">Web Content
+        Accessibility Guidelines (WCAG) 2.1, Level AA</a>, which explain how to make web content more
+        accessible for people with a wide range of abilities.
+      </p>
+
+      <h2>What we have done</h2>
+      <ul>
+        <li>Built the site with semantic HTML and labeled landmarks so screen readers can navigate it.</li>
+        <li>Made every interactive element usable with a keyboard, with a visible focus indicator and a skip-to-content link.</li>
+        <li>Chosen text and color combinations that meet AA contrast ratios.</li>
+        <li>Provided descriptive alternative text for meaningful images.</li>
+        <li>Respected the “reduce motion” setting — animations are minimized for visitors who prefer that.</li>
+        <li>Ensured the site reflows without horizontal scrolling down to a 320-pixel width and at 400% zoom.</li>
+      </ul>
+
+      <h2>Ongoing effort</h2>
+      <p>
+        Accessibility is an ongoing effort, not a one-time fix. We continue to test the site and
+        improve it over time. Some content — such as documents or third-party tools we link to — may
+        not yet be fully accessible, and we are working on it.
+      </p>
+
+      <h2>Tell us if something isn’t working</h2>
+      <p>
+        If you run into a barrier on this site, or need information in a different format, please let
+        us know and we will help. We aim to respond within 1–2 business days.
+      </p>
+      <ul>
+        <li>Email: <a href={`mailto:${site.email.general}`}>{site.email.general}</a></li>
+        <li>Phone: <a href={`tel:${site.phone.replace(/[^\d]/g, '')}`}>{site.phone}</a></li>
+      </ul>
+    </Prose>
+  </Section>
+</BaseLayout>

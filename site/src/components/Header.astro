@@ -1,0 +1,245 @@
+---
+/* ============================================================================
+   Header — big overlay logo on desktop, slim bar on mobile
+   ============================================================================
+   FOUNDATION. Three renderings, all sharing one <header> landmark and one
+   nav source (src/data/nav.ts via NavList.astro):
+
+     1. Mobile bar (< lg)   — a normal in-flow sticky white bar: small logo +
+        hamburger. Simple and safe on small screens.
+     2. Big overlay (>= lg) — transparent, `position:absolute` over the page's
+        Hero: a large centered logo, social/CTA row, and the primary nav
+        below. Out of document flow (0 height), so the Hero starts at the
+        true top of the page and this floats on top of it. A gradient scrim
+        (independent of the Hero's own scrim) guarantees the logo/nav stay
+        legible over any photo or video. Scrolls away normally with the page.
+     3. Compact bar (>= lg) — `position:fixed`, hidden until the visitor
+        scrolls past the big header (src/scripts/compact-nav.ts toggles
+        `data-visible`), then slides in: small logo + inline nav + Enroll.
+
+   Every page starts with a <Hero>, so the overlay pairing always has
+   something to sit on top of. (A page that ever used Hero align="center"
+   would need to check its text doesn't sit under the overlay's ~150px band.)
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/Icon.astro';
+import NavList from '@/components/NavList.astro';
+import Button from '@/components/ui/Button.astro';
+import wcpLogoNavy from '@/assets/brand/wcp-logo-navy.png';
+import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+import { site } from '@/data/site';
+
+const hasSocial = Boolean(site.social.facebook || site.social.instagram);
+---
+
+<header data-header>
+  {/* ---------------------------------------------------------------------
+       1. Mobile bar — in-flow, sticky, solid white. Own hamburger + panel.
+     --------------------------------------------------------------------- */}
+  <div class="sticky top-0 z-40 border-b border-border bg-white lg:hidden">
+    <div class="wcp-container flex items-center justify-between gap-4 py-3">
+      <a href="/" class="inline-flex items-center" aria-label={`${site.name} home`}>
+        <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-11 w-auto" />
+      </a>
+      <div class="flex items-center gap-2">
+        <Button href="/enroll" variant="accent" size="sm">Enroll</Button>
+        <button
+          type="button"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-md text-navy hover:bg-grey"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          aria-label="Menu"
+          data-nav-toggle
+        >
+          <Icon name="menu" class="menu-icon h-6 w-6" />
+          <Icon name="x" class="close-icon hidden h-6 w-6" />
+        </button>
+      </div>
+    </div>
+    <div id="mobile-nav" hidden class="border-t border-border bg-white">
+      <nav aria-label="Mobile" class="wcp-container py-4">
+        <NavList idPrefix="mobile" variant="mobile" />
+        <div class="mt-3 border-t border-border pt-4">
+          <Button href="/enroll" variant="accent" class="w-full">Enroll Your Child</Button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  {/* ---------------------------------------------------------------------
+       2. Big overlay header — desktop only. Transparent, floats over Hero.
+     --------------------------------------------------------------------- */}
+  <div class="relative z-30 hidden lg:block">
+    {/* data-big-header lives on THIS element (not the zero-height flow
+        wrapper above) because compact-nav.ts reads its real offsetHeight to
+        know when the visitor has scrolled past it — an absolutely positioned
+        element still reports its own rendered size even though it doesn't
+        contribute to the parent's flow height. */}
+    <div data-big-header class="absolute inset-x-0 top-0">
+      {/* Scrim: guarantees the logo/nav read over any Hero media, independent
+          of the Hero's own scrim. */}
+      <div
+        class="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-navy/75 via-navy/30 to-transparent"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="wcp-container relative flex items-center justify-between gap-6 pt-6">
+        {/* Social + email (only shown when a real URL exists — see site.ts) */}
+        <div class="flex w-40 items-center gap-2">
+          {
+            hasSocial && site.social.facebook && (
+              <a
+                href={site.social.facebook}
+                target="_blank"
+                rel="noopener"
+                aria-label={`${site.name} on Facebook`}
+                class="wcp-icon-btn"
+              >
+                <Icon name="facebook" class="h-4 w-4" />
+              </a>
+            )
+          }
+          {
+            hasSocial && site.social.instagram && (
+              <a
+                href={site.social.instagram}
+                target="_blank"
+                rel="noopener"
+                aria-label={`${site.name} on Instagram`}
+                class="wcp-icon-btn"
+              >
+                <Icon name="instagram" class="h-4 w-4" />
+              </a>
+            )
+          }
+          <a href={`mailto:${site.email.general}`} aria-label="Email West Chester Preschool" class="wcp-icon-btn">
+            <Icon name="mail" class="h-4 w-4" />
+          </a>
+        </div>
+
+        {/* Big centered logo — rises in gently on first paint, like a sunrise. */}
+        <a href="/" class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
+          <Image
+            src={wcpLogoWhite}
+            alt={site.name}
+            width={220}
+            height={147}
+            class="wcp-logo-rise h-24 w-auto drop-shadow-[0_2px_10px_rgba(1,20,40,0.35)] xl:h-28"
+          />
+        </a>
+
+        {/* CTAs */}
+        <div class="flex w-40 items-center justify-end gap-2">
+          <Button href="/enroll" variant="outline-white" size="sm" class="whitespace-nowrap">
+            Setup a Tour
+          </Button>
+          <Button href="/enroll" variant="accent" size="sm" class="whitespace-nowrap">
+            Enroll Now
+          </Button>
+        </div>
+      </div>
+
+      <nav aria-label="Primary" class="relative mt-3 border-t border-white/15 py-2">
+        <NavList idPrefix="big" variant="row" tone="overlay" />
+      </nav>
+    </div>
+  </div>
+
+  {/* ---------------------------------------------------------------------
+       3. Compact bar — desktop only, fixed, hidden until scrolled past #2.
+     --------------------------------------------------------------------- */}
+  <div
+    id="compact-nav"
+    class="wcp-compact-bar fixed inset-x-0 top-0 z-40 hidden border-b border-border bg-white/95 backdrop-blur lg:block"
+  >
+    <div class="wcp-container flex items-center justify-between gap-6 py-2.5">
+      <a href="/" class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
+        <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-10 w-auto" />
+      </a>
+      <nav aria-label="Primary (compact)">
+        <NavList idPrefix="compact" variant="compact" />
+      </nav>
+      <Button href="/enroll" variant="accent" size="sm" class="shrink-0">Enroll</Button>
+    </div>
+  </div>
+</header>
+
+<script>
+  import '@/scripts/nav';
+  import '@/scripts/compact-nav';
+</script>
+
+<style>
+  /* .nav-link / .nav-link--overlay / [data-dropdown-menu] rules live in
+     NavList.astro, NOT here — Astro's per-component style scoping means a
+     rule in Header.astro's <style> only matches elements Header.astro itself
+     renders. Header.astro only renders the elements below directly. */
+
+  /* Round icon buttons (social/email row in the big header). */
+  .wcp-icon-btn {
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .wcp-icon-btn:hover {
+    background-color: var(--color-amber);
+    color: var(--color-navy);
+    transform: translateY(-1px);
+  }
+
+  /* Big logo "sunrise" — a single gentle rise + fade on first paint, so the
+     header greets the visitor instead of just appearing. Plays once; disabled
+     under reduced-motion. */
+  .wcp-logo-rise {
+    animation: wcp-logo-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes wcp-logo-rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wcp-logo-rise {
+      animation: none;
+    }
+  }
+
+  /* Hamburger <-> X swap (mobile bar). */
+  [data-nav-toggle][aria-expanded='true'] .menu-icon {
+    display: none;
+  }
+  [data-nav-toggle][aria-expanded='true'] .close-icon {
+    display: block;
+  }
+
+  /* Compact bar: slides down + fades in once scripted `data-visible` is set.
+     Starts fully hidden (translated up, not just transparent) so it never
+     intercepts clicks/taps while off-screen. */
+  .wcp-compact-bar {
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .wcp-compact-bar[data-visible] {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wcp-compact-bar {
+      transition: none;
+    }
+  }
+</style>

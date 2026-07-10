@@ -1,0 +1,61 @@
+---
+/* ============================================================================
+   Section — the vertical rhythm + background primitive
+   ============================================================================
+   FOUNDATION. Wraps page content in a <section> landmark with a background
+   variant and consistent vertical padding, and centers content in the
+   standard container. Pass `labelledby` (id of the section's heading) so the
+   landmark has an accessible name — important for screen-reader navigation.
+
+   Backgrounds are all AA-safe with their default text color. There is no
+   bright-orange variant on purpose (white text on it fails contrast); use
+   `cream` for a warm section or `navy` for a dark one.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+import Seam from '@/components/Seam.astro';
+
+interface Props {
+  bg?: 'white' | 'grey' | 'cream' | 'navy';
+  /** id of the heading that names this section (preferred). */
+  labelledby?: string;
+  /** literal accessible name, when there is no visible heading to point at. */
+  label?: string;
+  size?: 'default' | 'compact';
+  /** Render a cloud-scallop seam at the top (only at a real color change). */
+  seam?: boolean;
+  class?: string;
+  containerClass?: string;
+}
+
+const {
+  bg = 'white',
+  labelledby,
+  label,
+  size = 'default',
+  seam = false,
+  class: className,
+  containerClass,
+} = Astro.props;
+
+const bgClasses: Record<string, string> = {
+  white: 'bg-white',
+  grey: 'bg-grey',
+  cream: 'bg-cream',
+  // On navy, flip body + all headings to white in one place.
+  navy: 'bg-navy text-white [&_:is(h1,h2,h3,h4,h5,h6)]:text-white',
+};
+
+const pad =
+  size === 'compact' ? 'py-[var(--wcp-space-xl)]' : 'py-[var(--wcp-space-2xl)]';
+---
+
+<section
+  class={cn(seam && 'relative -mt-px', bgClasses[bg], className)}
+  aria-labelledby={labelledby}
+  aria-label={label}
+>
+  {seam && <Seam color={bg} />}
+  <div class={cn('wcp-container', pad, containerClass)}>
+    <slot />
+  </div>
+</section>

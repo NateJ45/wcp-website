@@ -1,0 +1,29 @@
+---
+/* ============================================================================
+   Eyebrow — the small uppercase label above a heading
+   ============================================================================
+   Tone picks an AA-safe color for the background it sits on:
+     - sky    : sky-INK, for light backgrounds (5.4:1 on white/grey)   [default]
+     - amber  : amber, for navy backgrounds (4.89:1 on navy)
+     - orange : orange-INK, warm accent on light (5.4:1)
+     - white  : plain white, on dark photo/colored backgrounds
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  tone?: 'sky' | 'amber' | 'orange' | 'white';
+  class?: string;
+}
+const { tone = 'sky', class: className } = Astro.props;
+
+const toneClass: Record<string, string> = {
+  sky: 'text-sky-ink',
+  amber: 'text-amber',
+  orange: 'text-orange-ink',
+  white: 'text-white',
+};
+---
+
+<p class={cn('mb-2 text-sm font-bold uppercase tracking-[0.14em]', toneClass[tone], className)}>
+  <slot />
+</p>

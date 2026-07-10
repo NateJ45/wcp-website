@@ -1,0 +1,373 @@
+/* ============================================================================
+   West Chester Preschool | Global stylesheet
+   ============================================================================
+   FOUNDATION — this is CODE, not content. Board editors change words, photos,
+   dates, and tuition in Sanity; the look of the site lives here and in the
+   Astro components. Don't paste raw colors or styles into content.
+
+   Single stylesheet imported by BaseLayout.astro. Loads Tailwind 4, the two
+   self-hosted brand fonts, the brand design tokens via @theme, and the base
+   styles that survive Tailwind's reset.
+
+   Contents:
+     1. Tailwind core
+     2. Fonts (Captain Comic display + Quicksand body)
+     3. @theme — brand design tokens (also become Tailwind utilities)
+     4. Base styles (headings, body, focus, motion)
+     5. Scroll-reveal system (accessible, no-JS-safe)
+     6. @theme inline + :root — semantic tokens (for shadcn components later)
+
+   ----------------------------------------------------------------------------
+   ACCESSIBILITY NOTE — the two-tier color system (read before changing colors)
+   ----------------------------------------------------------------------------
+   The bright WCP brand colors (orange #FF8C00, sky #40AAED, amber #FFA334,
+   green #22C55E) are gorgeous but they FAIL WCAG AA contrast for text: white
+   text on bright orange is only 2.33:1 (needs 4.5:1). So we run TWO tiers:
+
+     - BRIGHT tier  (--color-orange, --color-sky, ...): large DECORATIVE fills
+       only — big blocks, hero graphics, dividers. Never small text on them.
+     - INK tier     (--color-orange-ink, --color-sky-ink, ...): any text or
+       interactive label. These are darkened to clear AA (verified below).
+
+   Rule: any color that carries text or is a button/link must clear 4.5:1
+   (body) / 3:1 (large text + UI). When adding a color, check the math first.
+   ============================================================================ */
+
+/* 1. Tailwind core — brings in preflight (reset) + the utility engine. -------- */
+@import 'tailwindcss';
+
+/* 2. Fonts -------------------------------------------------------------------
+   Quicksand (body) is a variable font from Fontsource; Vite bundles + hashes
+   its woff2 automatically. Captain Comic (headings) is licensed to WCP and
+   self-hosted from public/fonts (converted from the original TTFs to woff2).
+   Both use font-display: swap so text is never invisible while a font loads.
+   ---------------------------------------------------------------------------- */
+@import '@fontsource-variable/quicksand';
+
+@font-face {
+  font-family: 'Captain Comic';
+  src: url('/fonts/captain-comic-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Captain Comic';
+  src: url('/fonts/captain-comic-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Captain Comic';
+  src: url('/fonts/captain-comic-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Captain Comic';
+  src: url('/fonts/captain-comic-bold-italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 3. Brand design tokens -----------------------------------------------------
+   Tailwind 4 turns each @theme variable into a utility class AND keeps it as a
+   CSS variable. --color-navy -> bg-navy / text-navy / border-navy;
+   --font-display -> font-display; --spacing-m -> p-m / gap-m; etc.
+   ---------------------------------------------------------------------------- */
+@theme {
+  /* ---- BRIGHT tier: decorative fills only (NOT for small text) ---- */
+  --color-orange: #ff8c00; /* Primary brand orange. Big blocks, accents. */
+  --color-navy: #01457e; /* Dark sections, primary text-on-light. AA-safe. */
+  --color-sky: #40aaed; /* Sky blue. Dividers, decorative, Pre-K PM. */
+  --color-amber: #ffa334; /* Amber. Stars, Twos class color. */
+  --color-green: #22c55e; /* Green. Threes class color (decorative). */
+  --color-grey: #eff0f1; /* Light grey. Alternating section backgrounds. */
+
+  /* ---- INK tier: any TEXT or interactive label (WCAG AA verified) ----
+     Contrast ratios measured against white (#fff) and grey (#EFF0F1):
+       orange-ink  5.4:1 white / 4.7:1 grey / 5.4:1 as white-on-fill
+       sky-ink     5.4:1 white / 4.8:1 grey
+       green-ink   4.7:1 as white-on-fill
+     Use these for orange/sky/green headings, eyebrows, links, and buttons. */
+  --color-orange-ink: #a85300;
+  --color-sky-ink: #166fa8;
+  --color-green-ink: #138636;
+  --color-amber-ink: #9e5c0a; /* amber-as-text fallback (rarely needed) */
+
+  /* ---- Text + surfaces ---- */
+  --color-ink: #1a1a1a; /* Near-black body text. 21:1 on white. */
+  --color-ink-muted: #5f6573; /* Muted meta text. AA on white + grey. */
+  --color-bg: #ffffff; /* Page background. */
+  --color-bg-soft: #eff0f1; /* Alternating section background (= grey). */
+  --color-cream: #fff4e0; /* Warm orange-tint surface. Navy text on it is
+                             AA-safe — the on-brand way to get an "orange"
+                             section without the failing white-on-orange. */
+  --color-sky-soft: #eaf6fd; /* Soft sky tint. Callouts, gentle info panels. */
+
+  /* ---- Fonts ---- */
+  --font-display: 'Captain Comic', system-ui, sans-serif; /* headings */
+  --font-body: 'Quicksand Variable', system-ui, sans-serif; /* body */
+  --font-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+
+  /* ---- Fluid heading scale (clamp so type scales with viewport) ---- */
+  --text-h6: 1rem;
+  --text-h5: clamp(1.125rem, 1.5vw, 1.25rem);
+  --text-h4: clamp(1.25rem, 2vw, 1.5rem);
+  --text-h3: clamp(1.5rem, 2.5vw, 2rem);
+  --text-h2: clamp(1.9rem, 4vw, 2.75rem);
+  --text-h1: clamp(2.4rem, 6vw, 4.25rem);
+
+  /* NOTE: the fluid spacing scale (--wcp-space-*) is defined as PLAIN CSS
+     variables in :root below, NOT here. Named keys like `xl`/`2xl`/`xs` in
+     Tailwind's `--spacing-*`/size namespace collide with the max-w-{size} and
+     other t-shirt-size utilities (e.g. max-w-2xl would resolve to our spacing
+     clamp instead of 42rem). Keeping them out of @theme avoids that.
+
+     ---- Radii (from the old design system) ---- */
+  --radius: 14px;
+  --radius-pill: 36px;
+  /* NOTE: do NOT add a `--container-*` token here. In Tailwind v4 the
+     `--container-*` namespace powers every `max-w-{size}` utility; defining a
+     custom key in it wipes the default scale (max-w-xl/2xl/3xl break). The
+     site content-width cap lives as a plain variable in :root below instead. */
+}
+
+/* 4. Base styles -------------------------------------------------------------
+   Tailwind's reset strips default heading sizes and body font; we put the
+   brand defaults back so even unstyled markup looks right.
+   ---------------------------------------------------------------------------- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background-color: var(--color-bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ---- Paper grain -------------------------------------------------------
+     A whisper-faint film grain over the whole page so flat color fills read
+     as *paper* rather than #hex — a real perceived-quality lift that stays
+     subconscious (if you consciously notice it, it's too strong). A single
+     inlined SVG fractal-noise tile, fixed and non-interactive, blended so it
+     darkens lights and lifts darks a hair. Purely decorative. Cheap: one
+     small repeating tile, no JS, no animation. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+
+  /* Headings use Captain Comic and default to navy (9.75:1 on white — safe).
+     For an "orange heading" look, add the .text-orange-ink utility (AA-safe),
+     never the bright --color-orange. On navy/orange section backgrounds,
+     components set the heading to white. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    color: var(--color-navy);
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: var(--text-h2);
+  }
+  h3 {
+    font-size: var(--text-h3);
+  }
+  h4 {
+    font-size: var(--text-h4);
+  }
+  h5 {
+    font-size: var(--text-h5);
+  }
+  h6 {
+    font-size: var(--text-h6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Nav/layout lists carry no bullets by default; add list-disc when wanted. */
+  ul,
+  ol {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* ---- Visible focus for EVERY interactive element ----------------------
+     The old Squarespace site had no :focus-visible styling at all. This is a
+     single, consistent, high-contrast focus ring for keyboard users. Mouse
+     clicks don't trigger it (:focus-visible), so it's unobtrusive. */
+  :focus-visible {
+    outline: 3px solid var(--color-sky-ink);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-sky) 30%, transparent);
+    color: var(--color-navy);
+  }
+
+  /* Email addresses (and other long, space-free strings) are the #1 cause of
+     horizontal overflow at narrow widths. Let every mailto link wrap anywhere
+     so it can never force a scrollbar at 320px — WCAG 1.4.10 Reflow. One rule,
+     site-wide, instead of per-link classes that are easy to forget. */
+  a[href^='mailto:'] {
+    overflow-wrap: anywhere;
+  }
+
+  /* Respect prefers-reduced-motion globally: anyone who opts out gets no
+     animation or transition anywhere, with no per-component work. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* 5. Scroll-reveal system ----------------------------------------------------
+   Tag any element with data-reveal; the IntersectionObserver in BaseLayout
+   adds .is-visible as it scrolls into view. The hidden-until-revealed state is
+   scoped to .js (added to <html> by the bootstrap script before first paint),
+   so WITHOUT JavaScript every [data-reveal] element stays fully visible —
+   nothing depends on JS or motion to be seen. Gated behind no-preference so it
+   is inert for reduced-motion users (who instead see content immediately).
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition:
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal='fade'] {
+    transform: none;
+  }
+  .js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Content-width container with side padding that clears a phone notch when the
+   page runs edge-to-edge (env() resolves to 0 on non-notched devices). */
+.wcp-container {
+  max-width: var(--wcp-content-width, 68.75rem); /* 1100px main-column cap */
+  margin-inline: auto;
+  padding-inline:
+    max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+  width: 100%;
+}
+
+/* 6. Semantic tokens ---------------------------------------------------------
+   These map shadcn-style semantic names (--background, --primary, ...) onto
+   brand values, so shadcn/ui primitives added in Phase 1 pick up WCP colors
+   automatically. Kept light-only for now; the structure supports adding a
+   .dark block later without touching components.
+   ---------------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  /* Site content-width cap for .wcp-container (kept out of Tailwind's
+     --container-* namespace on purpose — see the note in @theme). */
+  --wcp-content-width: 68.75rem;
+
+  /* Fluid section spacing scale. Plain CSS variables (NOT Tailwind @theme
+     tokens) so they can't collide with the size-scale utilities. Reference as
+     e.g. py-[var(--wcp-space-2xl)] in components. */
+  --wcp-space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+  --wcp-space-s: clamp(0.5rem, 1vw, 1rem);
+  --wcp-space-m: clamp(1rem, 2vw, 1.5rem);
+  --wcp-space-l: clamp(2rem, 4vw, 3rem);
+  --wcp-space-xl: clamp(3rem, 6vw, 5rem);
+  --wcp-space-2xl: clamp(4rem, 8vw, 7rem);
+
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+
+  /* Primary action = navy (white text 9.75:1). The safe default button. */
+  --primary: #01457e;
+  --primary-foreground: #ffffff;
+
+  /* Secondary = sky-INK (white text 5.4:1), not bright sky (which fails). */
+  --secondary: #166fa8;
+  --secondary-foreground: #ffffff;
+
+  /* Accent = orange-INK (white text 5.4:1). The "Enroll" CTA color — keeps the
+     warm orange identity while clearing AA. Bright orange is decorative only. */
+  --accent: #a85300;
+  --accent-foreground: #ffffff;
+
+  --muted: #eff0f1;
+  --muted-foreground: #5f6573;
+
+  --border: rgba(1, 69, 126, 0.14);
+  --input: rgba(1, 69, 126, 0.22);
+  --ring: #166fa8; /* focus ring — matches the base :focus-visible color */
+
+  --destructive: #b42318; /* form errors / destructive actions (AA on white) */
+}

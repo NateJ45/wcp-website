@@ -1,0 +1,22 @@
+---
+/* ============================================================================
+   Callout — a highlighted info panel
+   ============================================================================
+   Used for asides like "All curriculum is based on Ohio's Early Learning
+   Standards." Soft sky tint with a sky left-border. `tone="warm"` gives the
+   cream/orange variant.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  tone?: 'sky' | 'warm';
+  class?: string;
+}
+const { tone = 'sky', class: className } = Astro.props;
+const toneClass =
+  tone === 'warm' ? 'border-orange bg-cream' : 'border-sky bg-sky-soft';
+---
+
+<div class={cn('rounded-r-lg border-l-4 p-5', toneClass, className)}>
+  <div class="leading-relaxed text-ink"><slot /></div>
+</div>

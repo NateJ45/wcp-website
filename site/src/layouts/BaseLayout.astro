@@ -1,0 +1,133 @@
+---
+/* ============================================================================
+   Base Layout — the shell every public page renders inside
+   ============================================================================
+   FOUNDATION, edit with care. Owns the <head> (SEO, Open Graph, fonts,
+   analytics), the page landmarks (header / main / footer), and the sitewide
+   scripts. Page content goes in the <slot /> inside <main>.
+
+   Light theme only for now. The token system in globals.css is structured so a
+   dark mode could be added later without touching components.
+   ============================================================================ */
+import '../styles/globals.css';
+import Analytics from '@/components/Analytics.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { site } from '@/data/site';
+
+interface Props {
+  /** Browser tab + Open Graph title. Required so no page ships untitled. */
+  title: string;
+  /** Meta description + OG description. Falls back to the site tagline. */
+  description?: string;
+  /** Absolute or root-relative OG image. Defaults to the sitewide card. */
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+}
+
+const { title, description = site.tagline, ogImage, ogType = 'website' } = Astro.props;
+
+// Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
+// og:image is only emitted when a page provides one — no broken default image
+// until the branded OG-card pipeline lands (a later phase).
+const canonical = new URL(Astro.url.pathname, site.url).toString();
+const ogImageUrl = ogImage ? new URL(ogImage, site.url).toString() : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover lets full-bleed sections run into a phone's notch;
+         .wcp-container adds safe-area padding so content never hides under it. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#01457E" />
+
+    <!-- Open Graph + Twitter card for rich link previews. -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={site.name} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
+    <!-- Google Ads tag + search-console verification (env-driven, see component). -->
+    <Analytics />
+
+    <!-- Preload the display font used by the LCP heading. crossorigin is
+         required on font preloads or the browser fetches the file twice. Only
+         the regular weight is preloaded; bold/italic load on demand. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/captain-comic-regular.woff2"
+      crossorigin
+    />
+
+    <!-- Mark that JS is running BEFORE first paint, so the scroll-reveal
+         hidden-state (scoped to .js in globals.css) only applies when JS can
+         un-hide it. Without JS the class is absent and all content stays
+         visible. is:inline keeps it out of the bundle so it runs first. -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+
+  <body class="relative">
+    <!-- Skip link: first focusable element, hidden until focused, then jumps
+         keyboard/screen-reader users straight to the page content. Sits above
+         the overlay header (z-50) so it's never hidden behind it. -->
+    <a
+      href="#main"
+      class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-3 focus-visible:top-3 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-navy focus-visible:px-4 focus-visible:py-2 focus-visible:font-semibold focus-visible:text-white"
+    >
+      Skip to main content
+    </a>
+
+    <!-- body is `relative` so the big header's absolute overlay (Header.astro,
+         `data-big-header`) positions against the full document, not just the
+         viewport — it scrolls away naturally with the page instead of
+         behaving like `fixed`. -->
+    <Header />
+
+    <main id="main" tabindex="-1"><slot /></main>
+
+    <Footer />
+
+    <!-- Scroll-reveal observer. Adds .is-visible to [data-reveal] elements as
+         they enter the viewport. Under reduced-motion (or no IntersectionObserver)
+         it shows everything immediately, so nothing depends on motion to appear. -->
+    <script>
+      const els = Array.from(document.querySelectorAll('[data-reveal]:not(.is-visible)'));
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce || !('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+        );
+        els.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
+</html>

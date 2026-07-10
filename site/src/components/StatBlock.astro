@@ -1,0 +1,46 @@
+---
+/* ============================================================================
+   StatBlock — a big count-up number with a label + context
+   ============================================================================
+   For the navy "stats strip" (years running, ages served, tuition from, etc.).
+   The number animates from 0 on scroll-in (see src/scripts/countup.ts), which
+   respects prefers-reduced-motion by jumping straight to the final value. The
+   real value is always in the DOM as text, so it's correct with or without JS.
+
+   `prefix`/`suffix` frame the animated number (e.g. prefix="$", suffix="+").
+   ============================================================================ */
+interface Props {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+  class?: string;
+}
+const { value, prefix = '', suffix = '', label, class: className } = Astro.props;
+---
+
+<div
+  class:list={[
+    'rounded-[var(--radius)] border border-white/10 bg-white/[0.06] p-8 text-center',
+    className,
+  ]}
+  data-reveal
+>
+  <span class="block font-display text-5xl leading-none text-amber">
+    {prefix}<span data-countup data-count={value}>{value}</span>{suffix}
+  </span>
+  <span class="mt-3 block text-sm font-bold uppercase tracking-wide text-white">{label}</span>
+  {
+    Astro.slots.has('default') && (
+      <p class="mt-2 text-sm leading-relaxed text-white/70">
+        <slot />
+      </p>
+    )
+  }
+</div>
+
+{/* Colocated so the count-up JS only ships on pages that use a StatBlock.
+    Astro dedupes this across multiple instances into one bundle include. */}
+<script>
+  import '@/scripts/countup';
+</script>

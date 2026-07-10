@@ -1,0 +1,23 @@
+# =============================================================================
+# Cloudflare | Custom Response Headers
+# =============================================================================
+# Ships with the deploy; Cloudflare applies these to matching routes.
+# https://developers.cloudflare.com/workers/static-assets/headers/
+# =============================================================================
+
+# ---- Site-wide security headers (Lighthouse "Trust & Safety" wins) ----------
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin
+
+# ---- Content-hashed build assets — cache for a year, never revalidate -------
+# Everything under /_astro/ carries a content hash, so the bytes never change.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ---- Self-hosted fonts — long cache (bust by renaming if ever replaced) ------
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

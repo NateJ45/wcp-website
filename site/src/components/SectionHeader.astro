@@ -1,0 +1,49 @@
+---
+/* ============================================================================
+   SectionHeader — eyebrow + heading + optional lead
+   ============================================================================
+   The standard centered heading block that opens most sections. Pass `titleId`
+   and wire it to the parent <Section labelledby={...}> so the landmark is named.
+   Text color is inherited (navy on light sections, white on navy sections), so
+   this reads correctly on any Section background with no per-use color props.
+   ============================================================================ */
+import Eyebrow from './Eyebrow.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  eyebrow?: string;
+  eyebrowTone?: 'sky' | 'amber' | 'orange' | 'white';
+  title: string;
+  titleId?: string;
+  as?: 'h1' | 'h2' | 'h3';
+  lead?: string;
+  align?: 'center' | 'left';
+  class?: string;
+}
+
+const {
+  eyebrow,
+  eyebrowTone = 'sky',
+  title,
+  titleId,
+  as = 'h2',
+  lead,
+  align = 'center',
+  class: className,
+} = Astro.props;
+
+const Heading = as;
+---
+
+<div
+  class={cn(
+    'max-w-2xl',
+    align === 'center' ? 'mx-auto text-center' : 'text-left',
+    className,
+  )}
+  data-reveal
+>
+  {eyebrow && <Eyebrow tone={eyebrowTone}>{eyebrow}</Eyebrow>}
+  <Heading id={titleId} class="text-balance">{title}</Heading>
+  {lead && <p class="mt-4 text-lg leading-relaxed">{lead}</p>}
+</div>

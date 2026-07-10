@@ -1,0 +1,124 @@
+---
+/* ============================================================================
+   Footer — sitewide contentinfo
+   ============================================================================
+   Logo + contact + nav columns + a legal/identity bottom bar. Links come from
+   src/data/nav.ts; identity from src/data/site.ts.
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/Icon.astro';
+import Seam from '@/components/Seam.astro';
+import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+import { footerNav, legalNav } from '@/data/nav';
+import { site } from '@/data/site';
+
+const phoneDigits = site.phone.replace(/[^\d]/g, '');
+const year = new Date().getFullYear();
+---
+
+{/* The footer's cloud seam reveals whatever section sits above it — a navy
+    CTA on most pages (reads as a subtle orange seam line) or a light section
+    on the newsletter/legal pages (reads as a full cloud). */}
+<footer class="relative -mt-px bg-navy text-white">
+  <Seam color="navy" />
+  <div class="wcp-container grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+    {/* Brand + contact */}
+    <div>
+      <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-16 w-auto" />
+      <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/80">{site.tagline}</p>
+      <address class="mt-4 space-y-2 text-sm not-italic text-white/90">
+        <a href={`tel:${phoneDigits}`} class="inline-flex items-center gap-2 hover:underline">
+          <Icon name="phone" class="h-4 w-4 text-amber" />{site.phone}
+        </a>
+        <br />
+        <a href={`mailto:${site.email.general}`} class="inline-flex items-center gap-2 hover:underline">
+          <Icon name="mail" class="h-4 w-4 text-amber" />{site.email.general}
+        </a>
+        <div class="flex items-start gap-2 pt-1 text-white/80">
+          <Icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-amber" />
+          <span>
+            {site.address.street}<br />
+            {site.address.city}, {site.address.state} {site.address.zip}
+          </span>
+        </div>
+      </address>
+      {
+        (site.social.facebook || site.social.instagram) && (
+          <div class="mt-4 flex items-center gap-2">
+            {site.social.facebook && (
+              <a
+                href={site.social.facebook}
+                target="_blank"
+                rel="noopener"
+                aria-label={`${site.name} on Facebook`}
+                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-navy"
+              >
+                <Icon name="facebook" class="h-4 w-4" />
+              </a>
+            )}
+            {site.social.instagram && (
+              <a
+                href={site.social.instagram}
+                target="_blank"
+                rel="noopener"
+                aria-label={`${site.name} on Instagram`}
+                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-navy"
+              >
+                <Icon name="instagram" class="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        )
+      }
+    </div>
+
+    {/* Nav columns */}
+    {
+      footerNav.map((col) => (
+        <nav aria-label={col.label}>
+          <h2 class="font-display text-lg text-white">{col.label}</h2>
+          <ul class="mt-3 space-y-2 text-sm">
+            {col.children.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-white/80 hover:text-white hover:underline"
+                  {...(link.external ? { target: '_blank', rel: 'noopener' } : {})}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
+  </div>
+
+  {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
+  <div class="wcp-container -mt-2 pb-8 text-center">
+    <p class="font-display text-2xl text-amber">See you at drop-off!</p>
+    <p class="mt-1 text-sm text-white/70">— The WCP Families</p>
+  </div>
+
+  <div class="border-t border-white/10">
+    <div class="wcp-container flex flex-col gap-4 py-6 text-xs text-white/60">
+      {/* Legal / policy links */}
+      <nav aria-label="Legal" class="flex flex-wrap gap-x-5 gap-y-2">
+        {
+          legalNav.map((link) => (
+            <a href={link.href} class="text-white/70 hover:text-white hover:underline">
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p>&copy; {year} {site.name}. All rights reserved.</p>
+        <p>
+          A secular, non-discriminatory cooperative preschool. Founded {site.founded}. {site.license}.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

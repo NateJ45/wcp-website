@@ -1,0 +1,169 @@
+---
+/* ============================================================================
+   FAQ page
+   ============================================================================
+   Real approved copy from the content extraction (Part 4), grouped into four
+   categories, rendered with the accessible accordion. LAYOUT is code; the Q&A
+   becomes editable Sanity `faqItem` documents later.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Faq from '@/components/faq/Faq.astro';
+import FaqItem from '@/components/faq/FaqItem.astro';
+import CtaBanner from '@/components/CtaBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+const categories = [
+  {
+    eyebrow: 'About the Co-op',
+    title: 'How the cooperative model works',
+    id: 'coop',
+    items: [
+      {
+        q: 'What is a cooperative preschool?',
+        a: 'At WCP, the school is owned, operated, and supported by the families enrolled. The only paid staff are our teachers. Each parent plays an active role as a working member, contributing to classroom activities, fundraising, maintenance, decision-making, and more. This shared commitment keeps tuition affordable while upholding the high standards that make WCP special.',
+      },
+      {
+        q: 'How often will I work in the classroom?',
+        a: 'On average, expect to help in the classroom 1 to 3 days per month per enrolled child. The exact number depends on your child’s class level, how many parents are required, and how many children you have enrolled. In addition to classroom time, each family holds a co-op job for the full year, assigned at the start of the school year based on availability and interests.',
+      },
+      {
+        q: 'Can another family member take my place in the classroom?',
+        a: 'Yes. A grandparent, aunt, uncle, or other trusted adult may serve as your classroom helper as long as they complete the state-required background check and fingerprinting before volunteering. If you need a substitute, the school covers the fingerprinting cost for your designated helper. Class Representatives can help adjust scheduled days around major family events like the birth of a new baby.',
+      },
+      {
+        q: 'What kind of co-op jobs are available?',
+        a: 'Co-op jobs cover all aspects of running the school — classroom assistance, event planning, fundraising, school maintenance, policy-making, and administrative tasks. At the start of the year, families choose or are assigned a job based on their availability, interests, and strengths. Efforts are made to match roles to your skills and schedule.',
+      },
+      {
+        q: 'Do I need any special qualifications to help in the classroom?',
+        a: 'No formal teaching experience is required — just a willingness to engage with children and support the teachers’ lesson plans. The only hard requirement is a state background check. Teachers guide parents on their roles, making it a rewarding and collaborative experience.',
+      },
+      {
+        q: 'What will I actually do on a classroom helper day?',
+        a: 'You arrive 15 minutes early to help set up, then welcome children as they arrive and engage them in play. Throughout the morning you support table activities, help guide children through the restroom routine, prepare and serve snack, sit with the children at circle time, join outdoor or gym play, and follow the daily cleaning checklist at the end of class.',
+      },
+      {
+        q: 'Can I switch my classroom helper day if something comes up?',
+        a: 'Yes. Parents coordinate with each other to swap classroom shifts when needed. If you cannot work your assigned day, it is your responsibility to arrange a replacement and notify your Class Representative so they can keep accurate records of participation.',
+      },
+      {
+        q: 'Is fundraising required?',
+        a: 'Families are required to participate in at least one fundraiser per year. Fundraisers help complete the school budget, keep costs down for families, and fund school improvements and teacher bonuses. There are multiple events to choose from so you can get involved in ways that work for you.',
+      },
+    ],
+  },
+  {
+    eyebrow: 'Classes and Schedules',
+    title: 'What classes are available and when',
+    id: 'classes',
+    items: [
+      {
+        q: 'What age does my child need to be to enroll?',
+        a: 'Your child must turn the class age by September 30 of the enrollment year. That means age 2 for the Twos class, age 3 for Threes, and age 4 for Pre-K AM and Pre-K PM. Reach out if you are not sure which class is right for your child.',
+      },
+      {
+        q: 'What is the school schedule?',
+        a: 'The school year runs September through May and follows the Lakota School District calendar for holidays and closures. Twos meet Thursdays 9:30–12pm. Threes meet Mon–Wed 9:30–12pm. Pre-K AM meets Mon–Thurs 9:15am–12pm. Pre-K PM meets Mon–Wed 12:30–3:15pm.',
+      },
+      {
+        q: 'What are the potty training requirements?',
+        a: 'For the Twos and Threes classes, a caregiver may remain in the building throughout the session if your child is not yet fully potty trained. Pre-K requires all children to be potty trained before starting. For documented medical exceptions, families may speak with the Board and teacher to discuss the situation.',
+      },
+      {
+        q: 'What facilities does WCP have?',
+        a: 'WCP has two dedicated classrooms designed for hands-on learning and social interaction, access to a full gymnasium for movement and indoor play, and an expansive playground and open field for outdoor time every session. The facilities are inside Crestview Presbyterian Church at 9463 Cincinnati Columbus Rd, West Chester OH 45069.',
+      },
+    ],
+  },
+  {
+    eyebrow: 'Enrollment and Fees',
+    title: 'How to join and what it costs',
+    id: 'enrollment',
+    items: [
+      {
+        q: 'How do I enroll?',
+        a: 'Registration opens each January. Current families get first priority, followed by WCP alumni families and Crestview Church members, then the general public at Open House. Reach out through our Enroll page or call (513) 202-6187 and we will walk you through the process and schedule a tour.',
+      },
+      {
+        q: 'What fees are due at enrollment?',
+        a: 'A $100 registration fee is due at sign-up to officially hold your child’s spot in the school. The $100 participation deposit is due at the May Gathering (or at registration if you enroll mid-year). Student fees ($45 for Twos and Threes, $50 for Pre-K) are due at the start of the school year. The participation deposit is returned at the end of the year when all co-op obligations are fulfilled.',
+      },
+      {
+        q: 'Can I pay tuition annually?',
+        a: 'Yes. Families who pay the full year’s tuition and fees can skip the monthly billing cycle. Tuition is subject to a 5–15% annual adjustment. Rates for each school year are confirmed before enrollment opens.',
+      },
+      {
+        q: 'Can my child start mid-year?',
+        a: 'Yes. WCP offers open enrollment, meaning new students may join after the school year has begun if space is available and the teacher and Board approve the placement. It is generally not recommended for a new student to start after the end of February, as it becomes harder for children to transition successfully.',
+      },
+    ],
+  },
+  {
+    eyebrow: 'About WCP',
+    title: 'The school itself',
+    id: 'about',
+    items: [
+      {
+        q: 'Is WCP a religious school?',
+        a: 'No. WCP is a secular, non-discriminatory cooperative preschool. We rent our facilities from Crestview Presbyterian Church but operate completely independently with no religious affiliation. WCP welcomes families of all backgrounds regardless of race, religion, sex, or national origin.',
+      },
+      {
+        q: 'How is WCP connected to Crestview Presbyterian Church?',
+        a: 'WCP rents its facilities from Crestview Presbyterian Church and operates completely independently. Both organizations share a commitment to enriching experiences for children and collaborate on shared equipment and resources. Crestview Church members receive priority enrollment at WCP, and WCP families receive priority registration for Crestview events like Vacation Bible School.',
+      },
+      {
+        q: 'Is WCP licensed by the state?',
+        a: 'Yes. WCP is fully licensed by the state of Ohio under Day Care Licensing Code 5101:2-12 by the ODJFS. We comply with all state health requirements for teachers, parents, and children. Licensing inspection reports are posted on our hallway bulletin boards and available for review upon request.',
+      },
+      {
+        q: 'Where is WCP located?',
+        a: 'WCP is located at 9463 Cincinnati Columbus Rd, West Chester OH 45069, inside Crestview Presbyterian Church. Enter through the rear west doors — look for Door 5, a set of double white doors with white pillars on either side. Park near the concrete sidewalk by the rear doors.',
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="FAQ — West Chester Preschool"
+  description="Answers to common questions about West Chester Preschool: the co-op model, classes and schedules, enrollment, fees, and the school itself."
+>
+  <Hero
+    eyebrow="Common Questions Answered"
+    title="Got questions? We have answers."
+    lead="Everything families ask us before and after enrolling, all in one place. If you don’t find what you need, just reach out."
+  >
+    <Fragment slot="actions">
+      <Button href="/contact" variant="accent" size="lg">Ask Us Directly</Button>
+    </Fragment>
+  </Hero>
+
+  {
+    categories.map((cat, i) => (
+      <Section bg={i % 2 === 0 ? 'grey' : 'white'} labelledby={`faq-${cat.id}`}>
+        <SectionHeader eyebrow={cat.eyebrow} title={cat.title} titleId={`faq-${cat.id}`} />
+        <Faq class="mt-10">
+          {cat.items.map((item) => (
+            <FaqItem question={item.q}>{item.a}</FaqItem>
+          ))}
+        </Faq>
+      </Section>
+    ))
+  }
+
+  <CtaBanner
+    title="Still have questions?"
+    lead="We are a parent-run school and we actually reply. Call, email, or send us a message."
+    tone="navy"
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Enroll Now</Button>
+      <Button href="/contact" variant="outline-white" size="lg">Get in Touch</Button>
+    </Fragment>
+    <Fragment slot="note">Call {site.phone} or email {site.email.general}</Fragment>
+  </CtaBanner>
+</BaseLayout>

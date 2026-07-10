@@ -1,0 +1,57 @@
+---
+/* ============================================================================
+   FeatureCard — icon + title + body, with a soft lift on hover
+   ============================================================================
+   The recurring "pillar" card. `icon` is a Lucide icon name (e.g. "users",
+   "palette", "piggy-bank"), rendered as inline SVG in a tinted round chip and
+   colored with the matching brand-ink tone. Icons are decorative (the title
+   carries the meaning), so they're aria-hidden. Hover lift is reduced-motion
+   safe.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  /** Lucide icon name, e.g. "users". Omit for a text-only card. */
+  icon?: string;
+  title: string;
+  /** Chip tint + icon ink color. */
+  chip?: 'sky' | 'orange' | 'amber' | 'green' | 'navy';
+  as?: 'li' | 'div';
+  class?: string;
+}
+const { icon, title, chip = 'sky', as = 'div', class: className } = Astro.props;
+const Tag = as;
+
+const chipClass: Record<string, string> = {
+  sky: 'bg-sky-soft text-sky-ink',
+  orange: 'bg-cream text-orange-ink',
+  amber: 'bg-amber/15 text-amber-ink',
+  green: 'bg-[color-mix(in_oklab,var(--color-green)_12%,white)] text-green-ink',
+  navy: 'bg-navy/8 text-navy',
+};
+---
+
+<Tag
+  class={cn(
+    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-200',
+    'hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    className,
+  )}
+  data-reveal
+>
+  {
+    icon && (
+      <span
+        class={cn(
+          'mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
+          chipClass[chip],
+        )}
+      >
+        <Icon name={icon} class="h-7 w-7" />
+      </span>
+    )
+  }
+  <h3 class="text-navy">{title}</h3>
+  <div class="mt-2 leading-relaxed text-ink"><slot /></div>
+</Tag>

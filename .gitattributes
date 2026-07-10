@@ -1,0 +1,18 @@
+# Normalize all text files to LF line endings on commit, regardless of OS.
+# Stops CRLF warnings on Windows and keeps diffs clean across machines.
+* text=auto eol=lf
+
+# Binary assets: never normalize, never diff as text.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.avif   binary
+*.ico    binary
+*.pdf    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
+*.xlsx   binary

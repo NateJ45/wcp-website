@@ -1,0 +1,179 @@
+---
+/* ============================================================================
+   Home page
+   ============================================================================
+   Copy adopted from the live site hero + real approved testimonials from the
+   extraction. Media-forward hero (photo/video placeholder until real assets
+   land in Sanity). This is the (locked) LAYOUT; words/photos become editable
+   Sanity fields later. No emoji icons or sparkle characters — those read as
+   generated; real SVG icons come with the icon system.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import StatBlock from '@/components/StatBlock.astro';
+import Testimonial from '@/components/Testimonial.astro';
+import Underline from '@/components/Underline.astro';
+import CtaBanner from '@/components/CtaBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+const reasons = [
+  {
+    icon: 'users',
+    chip: 'sky' as const,
+    title: 'A real co-op',
+    body: "Families run the school alongside the teachers. You're in the classroom two or three times a month, not waiting at the door.",
+  },
+  {
+    icon: 'palette',
+    chip: 'orange' as const,
+    title: 'Play-based, standards-based',
+    body: "Every class is built on Ohio's Early Learning Content Standards and delivered through play, art, music, and outdoor time.",
+  },
+  {
+    icon: 'piggy-bank',
+    chip: 'green' as const,
+    title: 'Tuition that makes sense',
+    body: 'Starting at $70 a month, the co-op model keeps WCP one of the most affordable preschools in West Chester.',
+  },
+];
+
+// Real, approved family quotes (from the content extraction).
+const testimonials = [
+  {
+    quote:
+      'My only regret is not finding this place sooner. I have complete confidence that my son is prepared for kindergarten because of his time at WCP.',
+    author: 'Alison B.',
+    context: 'Pre-K Parent',
+    accent: 'orange' as const,
+  },
+  {
+    quote:
+      'When I heard WCP was parent-run, I knew it was the right school. The teachers are wonderful, the families are wonderful, and the tuition is very affordable.',
+    author: 'Erin S.',
+    context: 'Pre-K Parent',
+    accent: 'sky' as const,
+  },
+  {
+    quote:
+      'We moved here not knowing anyone. Finding WCP gave us an instant community that we are so grateful for.',
+    author: 'Laura G.',
+    context: 'WCP Alumni Parent',
+    accent: 'green' as const,
+  },
+];
+---
+
+<BaseLayout title={`${site.name} — Parent-run preschool in West Chester, OH`}>
+  <Hero
+    eyebrow="Now Enrolling 2026-27"
+    title="Where little ones learn, grow, and belong."
+    lead="West Chester Preschool is a cooperative preschool in West Chester, Ohio. Play-based learning, experienced teachers, and a parent community unlike any other."
+    image="/hero/wcp-hero-poster.webp"
+    imageAlt="Children playing together at West Chester Preschool"
+    video="/hero/wcp-hero.mp4"
+    videoWebm="/hero/wcp-hero.webm"
+  >
+    <Fragment slot="title">
+      Where little ones learn, grow, and <Underline color="amber">belong</Underline>.
+    </Fragment>
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Enroll Your Child</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Schedule a Tour</Button>
+    </Fragment>
+  </Hero>
+
+  {/* Announcement strip (from the live site) */}
+  <div class="bg-cream">
+    <div class="wcp-container flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-3 text-center text-sm">
+      <span class="font-semibold text-navy">Summer Playdates are open to all families.</span>
+      <a href="/contact" class="font-bold text-orange-ink underline underline-offset-2">Ask us for dates</a>
+    </div>
+  </div>
+
+  {/* Why WCP */}
+  <Section bg="grey" labelledby="why-title">
+    <SectionHeader
+      eyebrow="Why families choose WCP"
+      title="Small classes. Real community."
+      titleId="why-title"
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-3">
+      {
+        reasons.map((r) => (
+          <FeatureCard as="li" icon={r.icon} chip={r.chip} title={r.title}>
+            {r.body}
+          </FeatureCard>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* Stats — a "special" navy band, framed by cloud seams (top here, and the
+      seam on the testimonials section below marks the exit). The ONE band on
+      the home page besides the footer that earns them. */}
+  <Section bg="navy" seam label="West Chester Preschool by the numbers">
+    <ul class="grid grid-cols-2 gap-5 lg:grid-cols-4">
+      <li>
+        <StatBlock value={55} suffix="+" label="Years in West Chester">
+          Founded in 1969 and still going strong.
+        </StatBlock>
+      </li>
+      <li>
+        <StatBlock value={70} prefix="$" label="Tuition from, per month">
+          The co-op model keeps costs low without cutting corners.
+        </StatBlock>
+      </li>
+      <li>
+        <StatBlock value={12} label="Children per class, max">
+          Small enough that every child is known by name.
+        </StatBlock>
+      </li>
+      <li>
+        <StatBlock value={4} label="Class options">
+          Twos, Threes, and Pre-K morning or afternoon.
+        </StatBlock>
+      </li>
+    </ul>
+  </Section>
+
+  {/* Testimonials — its top seam is the navy band's "exit" cloud. */}
+  <Section bg="white" seam labelledby="stories-title">
+    <SectionHeader
+      eyebrow="From our families"
+      title="Heard directly from our community"
+      titleId="stories-title"
+    />
+    <ul class="mt-12 grid gap-6 md:grid-cols-3">
+      {
+        testimonials.map((t) => (
+          <li class="h-full">
+            <Testimonial
+              quote={t.quote}
+              author={t.author}
+              context={t.context}
+              accent={t.accent}
+              confetti
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <CtaBanner
+    title="Come see it for yourself."
+    lead="The best way to know if WCP is right for your family is to walk through the door. Reach out and we'll be in touch within a day or two."
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Enroll Now</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Schedule a Tour</Button>
+    </Fragment>
+    <Fragment slot="note">
+      Call {site.phone} or email {site.email.general}
+    </Fragment>
+  </CtaBanner>
+</BaseLayout>

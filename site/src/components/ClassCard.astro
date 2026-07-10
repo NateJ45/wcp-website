@@ -1,0 +1,98 @@
+---
+/* ============================================================================
+   ClassCard — a class option summary (Twos, Threes, Pre-K AM/PM)
+   ============================================================================
+   White card with a bright class-color top accent (decorative), navy heading,
+   and a checkmarked feature list. The bright class color is used only as the
+   accent rule — all text stays navy/ink on white for AA. Optional price,
+   schedule, age, and a CTA button.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import Button from '@/components/ui/Button.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  name: string;
+  color?: 'amber' | 'green' | 'orange' | 'sky' | 'navy';
+  price?: string;
+  cadence?: string;
+  schedule?: string;
+  age?: string;
+  features?: string[];
+  href?: string;
+  ctaLabel?: string;
+  as?: 'li' | 'div';
+  headingAs?: 'h3' | 'h4';
+  class?: string;
+}
+const {
+  name,
+  color = 'sky',
+  price,
+  cadence,
+  schedule,
+  age,
+  features = [],
+  href,
+  ctaLabel = 'Learn more',
+  as = 'div',
+  headingAs = 'h3',
+  class: className,
+} = Astro.props;
+const Tag = as;
+const Heading = headingAs;
+
+const accent: Record<string, string> = {
+  amber: 'border-t-amber',
+  green: 'border-t-green',
+  orange: 'border-t-orange',
+  sky: 'border-t-sky',
+  navy: 'border-t-navy',
+};
+---
+
+<Tag
+  class={cn(
+    'flex h-full flex-col rounded-[var(--radius)] border-t-4 bg-white p-6 shadow-sm',
+    'transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-md',
+    'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    accent[color],
+    className,
+  )}
+  data-reveal
+>
+  <div class="flex items-baseline justify-between gap-3">
+    <Heading class="text-navy">{name}</Heading>
+    {
+      price && (
+        <span class="whitespace-nowrap font-display text-2xl text-navy">
+          {price}
+          {cadence && <span class="text-sm font-normal text-ink-muted"> {cadence}</span>}
+        </span>
+      )
+    }
+  </div>
+  {schedule && <p class="mt-1 font-bold text-sky-ink">{schedule}</p>}
+  {age && <p class="mt-0.5 text-sm text-ink-muted">{age}</p>}
+
+  {
+    features.length > 0 && (
+      <ul class="mt-4 flex-1 space-y-2">
+        {features.map((f: string) => (
+          <li class="flex gap-2.5 text-ink">
+            <Icon name="check" class="mt-1 h-4 w-4 text-green-ink" />
+            <span class="leading-snug">{f}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    href && (
+      <Button href={href} variant="accent" class="mt-6 w-full">
+        {ctaLabel}
+      </Button>
+    )
+  }
+</Tag>

@@ -1,0 +1,61 @@
+// ============================================================================
+// Hero background video — deferred, graceful load-in
+// ============================================================================
+// The hero's still poster (a tiny WebP) is the LCP and paints immediately. The
+// background <video> is deliberately heavier, so we:
+//
+//   1. DEFER its download until the page has finished loading AND the browser
+//      is idle — so the ~9MB file never competes with the LCP poster or first
+//      interaction. (The <video> ships preload="none"; nothing loads until we
+//      call play() here.)
+//   2. FADE it in only once it is actually playing frames, cross-fading over
+//      the poster — a smooth "load-in", never an abrupt pop.
+//
+// It stays a still poster (never plays) for anyone who asked for reduced motion
+// or is on a data-saver / very slow connection — so the hero never depends on
+// the video to look right, and we respect people's bandwidth and preferences.
+// The <video> has no `autoplay` attribute for exactly this reason.
+// ============================================================================
+
+interface SaveDataConnection {
+  saveData?: boolean;
+  effectiveType?: string;
+}
+
+function start(v: HTMLVideoElement): void {
+  v.muted = true; // required for programmatic autoplay
+  // Reveal only when real frames start painting, so we never fade in a blank
+  // or half-buffered video over the crisp poster.
+  v.addEventListener('playing', () => (v.style.opacity = '1'), { once: true });
+  // play() can reject (autoplay blocked, low power, data-saver) — that's fine,
+  // the poster simply stays visible and nothing breaks.
+  v.play().catch(() => {});
+}
+
+function init(): void {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Respect data-saver and very slow connections — keep the lightweight poster.
+  const conn = (navigator as Navigator & { connection?: SaveDataConnection }).connection;
+  if (conn && (conn.saveData || /2g/.test(conn.effectiveType ?? ''))) return;
+
+  const videos = Array.from(document.querySelectorAll<HTMLVideoElement>('video[data-hero-video]'));
+  if (videos.length === 0) return;
+
+  const kick = (): void => videos.forEach(start);
+
+  // Defer until after load + idle so the download never blocks first paint.
+  const schedule = (): void => {
+    const ric = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void })
+      .requestIdleCallback;
+    if (typeof ric === 'function') ric(kick, { timeout: 2500 });
+    else window.setTimeout(kick, 250);
+  };
+
+  if (document.readyState === 'complete') schedule();
+  else window.addEventListener('load', schedule, { once: true });
+}
+
+init();
+
+export {};

@@ -1,0 +1,65 @@
+---
+/* ============================================================================
+   Newsletter page  — real copy from the live site
+   ============================================================================
+   The signup needs an email provider (Mailchimp/Buttondown/etc.) wired in a
+   later phase. Rather than ship a form that submits nowhere, the CTA is a
+   mailto "subscribe" request for now. When the provider is chosen, replace the
+   card below with its embed — the copy and layout stay.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+const perks = [
+  { icon: 'calendar-days', chip: 'orange' as const, title: 'Enrollment reminders', body: 'Know when registration opens so you never miss a spot in your first-choice class.' },
+  { icon: 'party-popper', chip: 'sky' as const, title: 'Event dates', body: 'Picnics, parties, the Easter egg hunt, graduation — the moments that make the WCP year.' },
+  { icon: 'camera', chip: 'green' as const, title: 'Peeks inside', body: 'The occasional look inside our classrooms and the little wins that make us smile.' },
+];
+---
+
+<BaseLayout
+  title="Newsletter — West Chester Preschool"
+  description="Get West Chester Preschool news before anyone else: school updates, enrollment reminders, and event dates. A few times a year. No spam."
+>
+  <Hero
+    eyebrow="Stay in the Loop"
+    title="Get WCP news before anyone else."
+    lead="We send a short newsletter a few times a year with school updates, enrollment reminders, event dates, and the occasional peek inside our classrooms. No spam. Unsubscribe any time."
+  >
+    <Fragment slot="actions">
+      <Button href="#signup" variant="accent" size="lg">Sign Up</Button>
+    </Fragment>
+  </Hero>
+
+  <Section bg="grey" labelledby="perks">
+    <SectionHeader eyebrow="What You’ll Get" title="A few emails a year, all worth opening" titleId="perks" />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-3">
+      {perks.map((p) => (<FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>{p.body}</FeatureCard>))}
+    </ul>
+  </Section>
+
+  <Section bg="white" labelledby="signup">
+    <div class="mx-auto max-w-xl text-center" data-reveal>
+      <SectionHeader eyebrow="Sign Up" title="Join the WCP newsletter" titleId="signup" />
+      <p class="mt-4 leading-relaxed text-ink">
+        Send us a quick email with your name and we will add you to the list. One-click
+        online signup is coming soon.
+      </p>
+      <div class="mt-8">
+        <Button
+          href={`mailto:${site.email.general}?subject=Newsletter%20signup&body=Please%20add%20me%20to%20the%20WCP%20newsletter.%20My%20name%20is%3A`}
+          variant="primary"
+          size="lg"
+        >
+          Subscribe by Email
+        </Button>
+      </div>
+      <p class="mt-6 text-sm text-ink-muted">We respect your privacy. Unsubscribe any time.</p>
+    </div>
+  </Section>
+</BaseLayout>

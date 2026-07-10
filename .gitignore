@@ -1,0 +1,75 @@
+# =============================================================================
+# West Chester Preschool — repo-wide gitignore
+# =============================================================================
+# The deployable Astro app lives in site/ ; the Sanity Studio will live in
+# studio/ (added later). Generic folder patterns below match at any depth, so
+# they cover site/node_modules, site/dist, etc. without per-folder entries.
+# =============================================================================
+
+# ---- Dependencies & build output (any subfolder) ----------------------------
+node_modules/
+dist/
+.astro/
+.wrangler/
+.output/
+
+# ---- Secrets — keep API keys and tokens out of the repo ---------------------
+# .env.example / .dev.vars.example ARE committed as templates for new setups.
+.env
+.env.*
+!.env.example
+.dev.vars*
+!.dev.vars.example
+
+# =============================================================================
+# FAMILY PII — NEVER COMMIT
+# =============================================================================
+# These reference files contain REAL family names, home addresses, phone
+# numbers and emails (a hardcoded FAMILIES array + new-family additions + the
+# class rotas). They stay on disk as migration reference, but must never enter
+# git history. In the new stack this data lives ONLY in Sanity, behind the
+# family-hub gate — see the migration plan. Do not remove these lines.
+# =============================================================================
+directory-additions-2026-2027.txt
+wcp-directory-block.html
+wcp-family-map.html
+WCP_Rota_*.xlsx
+.~lock.*#
+
+# ---- The rest of the root migration workspace (belt & suspenders) -----------
+# The repo tracks the deployable app (site/) + config only. The project root
+# also holds the Squarespace migration workspace: ALL the family-hub code
+# blocks (directory, co-op jobs, HEALTH/EMERGENCY, fundraising, budget,
+# tuition), the class rotas/rosters, and the proposed budget. These hold real
+# family names, children's health/emergency info, and finances. Local only —
+# in the new stack this data lives ONLY in Sanity behind the family-hub gate.
+/wcp-*.html
+/*.pdf
+/*.xlsx
+/WCP_Project_Extraction.md
+/code-injection.md
+/P-01-global.css
+/fonts/
+
+# ---- Editor / OS noise ------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+~$*
+.claude/settings.local.json
+
+# ---- Media harvested from the old Squarespace site --------------------------
+# Staging area for photos/videos/logos pulled from the live site. Kept out of
+# git: real media belongs in Sanity, and any child photos shouldn't sit in the
+# repo. Curate from here, then upload the keepers to Sanity.
+assets-from-squarespace/
+
+# Compressed hero video — 8.9MB, belongs in Sanity/R2 in production, not git.
+# The tiny WebP poster IS committed (it's the LCP fallback).
+site/public/hero/*.mp4
+site/public/hero/*.webm
+
+# ---- Lighthouse / Playwright / audit artifacts ------------------------------
+.lighthouse*/
+phase-*.png
+.playwright-mcp/

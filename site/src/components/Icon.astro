@@ -1,0 +1,48 @@
+---
+/* ============================================================================
+   Icon — inline SVG, zero runtime dependencies
+   ============================================================================
+   Renders an icon from one of two hand-extracted, self-contained path sets:
+   src/lib/lucide-icons.ts (stroke-based line icons) or src/lib/brand-icons.ts
+   (fill-based social logos). Both already declare their own fill/stroke, so
+   set color with a text-* class on a parent and size with a class here. (We
+   hand-roll this instead of astro-icon, which broke `astro dev` on this
+   Astro 7 + Cloudflare + Vite 7 stack.)
+
+   Decorative by default (aria-hidden). Pass `title` to give it an accessible
+   name (role="img").
+
+   Usage: <Icon name="users" class="h-6 w-6" />
+   ============================================================================ */
+import { lucideIcons } from '@/lib/lucide-icons';
+import { brandIcons } from '@/lib/brand-icons';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  name: string;
+  class?: string;
+  title?: string;
+}
+const { name, class: className, title } = Astro.props;
+// Two icon sets, both pre-inlined as self-contained SVG bodies (each already
+// declares its own fill/stroke): Lucide (stroke-based line icons) and a
+// handful of brand logos from simple-icons (fill-based) for social links.
+const body = lucideIcons[name] ?? brandIcons[name];
+if (!body) {
+  // Fail loudly in dev so a typo'd icon name is caught immediately.
+  throw new Error(
+    `<Icon>: unknown icon "${name}". Add it to src/lib/lucide-icons.ts or brand-icons.ts.`,
+  );
+}
+const inner = title ? `<title>${title}</title>${body}` : body;
+---
+
+<svg
+  viewBox="0 0 24 24"
+  class={cn('inline-block shrink-0', className)}
+  role={title ? 'img' : undefined}
+  aria-hidden={title ? undefined : 'true'}
+  aria-label={title}
+  set:html={inner}
+>
+</svg>

@@ -1,0 +1,34 @@
+---
+/* ============================================================================
+   Badge — a small announcement tag (e.g. "Now Enrolling 2026-27")
+   ============================================================================
+   A clean static pill. Tone picks an AA-safe color pair for its background:
+     - amber : amber text on translucent amber — for navy/photo backgrounds
+     - sky   : sky-ink on soft sky — for light backgrounds
+     - cream : orange-ink on cream — warm, for light backgrounds
+   (No animation, no sparkle character — those read as generic.)
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  tone?: 'amber' | 'sky' | 'cream';
+  class?: string;
+}
+const { tone = 'amber', class: className } = Astro.props;
+
+const toneClass: Record<string, string> = {
+  amber: 'bg-amber/15 text-amber',
+  sky: 'bg-sky-soft text-sky-ink',
+  cream: 'bg-cream text-orange-ink',
+};
+---
+
+<span
+  class={cn(
+    'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold uppercase tracking-[0.12em]',
+    toneClass[tone],
+    className,
+  )}
+>
+  <slot />
+</span>

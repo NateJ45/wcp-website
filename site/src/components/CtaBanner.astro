@@ -1,0 +1,59 @@
+---
+/* ============================================================================
+   CtaBanner — the closing call-to-action band
+   ============================================================================
+   Two AA-safe tones: `navy` (dark, confident solid) or `cream` (warm light
+   with navy text). Put buttons in the `actions` slot; an optional `note` line
+   sits below (e.g. a phone number).
+   NOTE: no bright-orange tone (white text on it fails contrast) and no
+   decorative glow — a clean solid block reads more intentional.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+import Seam from '@/components/Seam.astro';
+
+interface Props {
+  title: string;
+  titleId?: string;
+  lead?: string;
+  tone?: 'navy' | 'cream';
+  /** Cloud seam at the top. On by default — the closing CTA is always a color
+      change from the content above. Set false when a same-color band (a navy
+      Section) sits directly above, so we don't seam navy into navy. */
+  seam?: boolean;
+  class?: string;
+}
+const { title, titleId = 'cta-title', lead, tone = 'navy', seam = true, class: className } = Astro.props;
+const isNavy = tone === 'navy';
+---
+
+<section
+  class={cn('relative -mt-px', isNavy ? 'bg-navy text-white' : 'bg-cream text-navy', className)}
+  aria-labelledby={titleId}
+>
+  {seam && <Seam color={tone} />}
+  <div class="wcp-container py-[var(--wcp-space-xl)] text-center">
+    <h2 id={titleId} class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')} data-reveal>
+      {title}
+    </h2>
+    {
+      lead && (
+        <p
+          class={cn('mx-auto mt-4 max-w-xl text-lg leading-relaxed', isNavy && 'text-white/90')}
+          data-reveal
+        >
+          {lead}
+        </p>
+      )
+    }
+    <div class="mt-7 flex flex-wrap items-center justify-center gap-4" data-reveal>
+      <slot name="actions" />
+    </div>
+    {
+      Astro.slots.has('note') && (
+        <p class={cn('mt-5 text-sm', isNavy ? 'text-white/70' : 'text-ink-muted')}>
+          <slot name="note" />
+        </p>
+      )
+    }
+  </div>
+</section>

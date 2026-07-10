@@ -1,0 +1,54 @@
+---
+/* ============================================================================
+   Family Hub landing — STUB. This whole /family-hub/* section becomes the
+   PASSWORD-GATED, server-rendered area for enrolled families in Phase 4
+   (directory, map, calendar, documents, budget, etc. from Sanity). For now
+   this is a public explainer page. Do NOT put any family PII here.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+const previews = [
+  { icon: 'calendar-days', chip: 'sky' as const, title: 'Calendar & events', body: 'Every school date, meeting, and celebration in one place.' },
+  { icon: 'users', chip: 'orange' as const, title: 'Family directory', body: 'Connect with other WCP families, behind a secure login.' },
+  { icon: 'file-check', chip: 'green' as const, title: 'Documents & forms', body: 'Handbook, licensing forms, and orientation materials.' },
+];
+---
+
+<BaseLayout
+  title="Enrolled Families — West Chester Preschool"
+  description="The West Chester Preschool Family Hub: calendar, directory, documents, and resources for enrolled families."
+>
+  <Hero
+    eyebrow="Members Only"
+    title="Welcome back, WCP family."
+    lead="Everything you need for the school year, all in one place. This area is for enrolled families and will be password-protected."
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Not enrolled yet? Start here</Button>
+    </Fragment>
+  </Hero>
+
+  <Section bg="grey" labelledby="hub-preview">
+    <SectionHeader
+      eyebrow="Coming Soon"
+      title="What lives in the Family Hub"
+      titleId="hub-preview"
+      lead="Secure sign-in for enrolled families arrives with the Family Hub build."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-3">
+      {previews.map((p) => (<FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>{p.body}</FeatureCard>))}
+    </ul>
+    <p class="mx-auto mt-10 max-w-2xl text-center text-sm text-ink-muted">
+      Questions? Email
+      <a href={`mailto:${site.email.general}`} class="font-semibold text-sky-ink underline">
+        {site.email.general}
+      </a>.
+    </p>
+  </Section>
+</BaseLayout>

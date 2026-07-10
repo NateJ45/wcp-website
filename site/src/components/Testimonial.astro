@@ -1,0 +1,68 @@
+---
+/* ============================================================================
+   Testimonial — a family quote card
+   ============================================================================
+   A <figure> with an accessible star rating (visual stars are hidden from
+   assistive tech; a text equivalent is announced instead), the quote, and the
+   attribution. A thin accent top-border ties it to a class color.
+
+   `confetti` opts the card into the hover burst (src/scripts/confetti.ts) — it
+   is purely decorative, hover-only, cooldown-limited, and skipped under
+   prefers-reduced-motion.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  quote: string;
+  author: string;
+  context?: string;
+  rating?: number;
+  accent?: 'orange' | 'sky' | 'amber' | 'green' | 'navy';
+  confetti?: boolean;
+  class?: string;
+}
+const {
+  quote,
+  author,
+  context,
+  rating = 5,
+  accent = 'orange',
+  confetti = false,
+  class: className,
+} = Astro.props;
+
+const accentBorder: Record<string, string> = {
+  orange: 'border-t-orange',
+  sky: 'border-t-sky',
+  amber: 'border-t-amber',
+  green: 'border-t-green',
+  navy: 'border-t-navy',
+};
+---
+
+<figure
+  class={cn(
+    'flex h-full flex-col rounded-[var(--radius)] border-t-4 bg-white p-6 shadow-sm',
+    'transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-md',
+    'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    accentBorder[accent],
+    className,
+  )}
+  data-reveal
+  data-confetti={confetti ? '' : undefined}
+>
+  <div class="text-amber" aria-hidden="true">
+    {'★'.repeat(rating)}
+  </div>
+  <span class="sr-only">{rating} out of 5 stars</span>
+  <blockquote class="mt-3 flex-1 italic leading-relaxed text-ink">{quote}</blockquote>
+  <figcaption class="mt-4 font-bold not-italic text-navy">
+    {author}
+    {context && <span class="mt-0.5 block text-sm font-normal text-ink-muted">{context}</span>}
+  </figcaption>
+</figure>
+
+{/* Colocated: the confetti JS only ships on pages that render a Testimonial. */}
+<script>
+  import '@/scripts/confetti';
+</script>

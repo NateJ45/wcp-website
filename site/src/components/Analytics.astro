@@ -1,0 +1,46 @@
+---
+/* ============================================================================
+   Analytics + site verification
+   ============================================================================
+   FOUNDATION. Emits two things, each only when its env var is set, so local
+   dev and preview builds stay clean:
+
+     1. Search-console / Bing verification <meta> (PUBLIC_GSC_VERIFICATION)
+     2. Google Ads gtag.js conversion tag (PUBLIC_GADS_ID, e.g. AW-16817798038)
+
+   The IDs are NOT hardcoded — they come from environment variables so they can
+   differ per environment (real in production, empty in previews) and are never
+   baked into a component. Set them in site/.env (see .env.example) and in the
+   Cloudflare project settings for production.
+
+   gtag runs through Partytown (type="text/partytown"), which moves it OFF the
+   main thread — third-party tracking then can't drag down the Lighthouse
+   Performance score. The partytown integration in astro.config forwards
+   dataLayer.push so gtag() calls still reach the worker.
+   ============================================================================ */
+const gadsId = import.meta.env.PUBLIC_GADS_ID;
+const gscToken = import.meta.env.PUBLIC_GSC_VERIFICATION;
+---
+
+{gscToken && <meta name="msvalidate.01" content={gscToken} />}
+
+{
+  gadsId && (
+    <>
+      <script
+        type="text/partytown"
+        is:inline
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${gadsId}`}
+      />
+      <script type="text/partytown" is:inline define:vars={{ gadsId }}>
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){ dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', gadsId);
+        `}
+      </script>
+    </>
+  )
+}

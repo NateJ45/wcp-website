@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The enrolled-families area is private (password-gated + noindex).
+Disallow: /family-hub/
+
+Sitemap: https://www.westchesterpreschool.org/sitemap-index.xml

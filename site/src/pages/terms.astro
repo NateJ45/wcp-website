@@ -1,0 +1,84 @@
+---
+/* ============================================================================
+   Terms of Use
+   ============================================================================
+   Plain-language terms for an informational preschool website. NOTE(nathan):
+   have the board (and counsel if you want to be thorough) review before you
+   rely on this — sensible starting template, not legal advice.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import Prose from '@/components/Prose.astro';
+import { site } from '@/data/site';
+
+const updated = 'July 2026';
+---
+
+<BaseLayout
+  title="Terms of Use — West Chester Preschool"
+  description="The terms that apply when you use the West Chester Preschool website."
+>
+  <Hero
+    eyebrow="Terms of Use"
+    title="The fine print, in plain language."
+    lead="A few things to know about using this website."
+    height="medium"
+  />
+
+  <Section bg="white" label="Terms of use">
+    <Prose>
+      <p><strong>Last updated:</strong> {updated}</p>
+      <p>
+        These terms apply to your use of the West Chester Preschool (“WCP”) website. By using the
+        site, you agree to them. If you do not agree, please do not use the site.
+      </p>
+
+      <h2>Informational purpose</h2>
+      <p>
+        This website is provided for general information about our school. It is not itself an
+        enrollment agreement or a contract. Enrollment, tuition, and co-op participation are governed
+        by the separate paperwork you complete when you register.
+      </p>
+
+      <h2>Accuracy and changes</h2>
+      <p>
+        We work hard to keep the information here accurate and up to date, but details such as
+        tuition, fees, schedules, and dates can change. We may update or correct content at any time
+        without notice. If a specific detail matters to your decision, please confirm it with us
+        directly.
+      </p>
+
+      <h2>Our content</h2>
+      <p>
+        The text, photographs, logo, and design on this site belong to West Chester Preschool or are
+        used with permission, and are protected by copyright and trademark law. Please do not reuse
+        them without our permission. Photographs of children are published with their families’
+        permission.
+      </p>
+
+      <h2>Links to other sites</h2>
+      <p>
+        This site links to third-party services and websites — for example our online store,
+        ClassDojo, and Google Maps. We do not control those sites and are not responsible for their
+        content or practices. Visiting them is at your own discretion.
+      </p>
+
+      <h2>No warranty</h2>
+      <p>
+        This site is provided “as is.” We make no warranties about its availability or that it will be
+        error-free, and to the extent permitted by law we are not liable for any loss arising from
+        your use of it.
+      </p>
+
+      <h2>Governing law</h2>
+      <p>These terms are governed by the laws of the State of Ohio.</p>
+
+      <h2>Contact us</h2>
+      <ul>
+        <li>Email: <a href={`mailto:${site.email.general}`}>{site.email.general}</a></li>
+        <li>Phone: <a href={`tel:${site.phone.replace(/[^\d]/g, '')}`}>{site.phone}</a></li>
+      </ul>
+    </Prose>
+  </Section>
+</BaseLayout>

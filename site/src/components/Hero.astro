@@ -1,0 +1,199 @@
+---
+/* ============================================================================
+   Hero — media-forward (photo or muted video), accessible text overlay
+   ============================================================================
+   The top-of-page banner. Real photography/video is the point; the headline
+   sits over it. To guarantee WCAG AA regardless of the photo, a navy scrim is
+   layered between the media and the text (heavier on the text side), so white
+   text always clears 4.5:1 no matter how light the image is.
+
+   Media:
+     - `image` : background photo (also the video poster). Either a local
+                 asset import (src/assets/... — gets Astro's build-time Sharp
+                 optimization via <Image>) or a plain string path into
+                 /public (e.g. the pre-optimized hero-video poster). Omit for
+                 a labeled navy placeholder, so it's obvious media still
+                 needs to go in.
+     - `video` : optional muted-loop video src (a /public path — video isn't
+                 run through the image pipeline). Does NOT autoplay from
+                 markup — hero-video.ts starts it only when the visitor has
+                 not requested reduced motion; everyone else sees the poster.
+     - Real media will come from Sanity (with responsive sizing + required alt).
+
+   Layout is editorial/asymmetric by default (text anchored bottom-left), not
+   the generic center-stacked hero.
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import { cn } from '@/lib/utils';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  titleId?: string;
+  lead?: string;
+  image?: ImageMetadata | string;
+  imageAlt?: string;
+  /** Muted-loop video (MP4, /public path). The universal fallback source. */
+  video?: string;
+  /** Optional WebM (VP9) of the same clip — smaller; modern browsers prefer it. */
+  videoWebm?: string;
+  align?: 'left' | 'center';
+  /** Overall hero height. */
+  height?: 'tall' | 'medium';
+  class?: string;
+}
+const {
+  eyebrow,
+  title,
+  titleId = 'hero-title',
+  lead,
+  image,
+  imageAlt = '',
+  video,
+  videoWebm,
+  align = 'left',
+  height = 'tall',
+  class: className,
+} = Astro.props;
+
+const heightClass =
+  height === 'tall' ? 'min-h-[clamp(32rem,74vh,48rem)]' : 'min-h-[clamp(26rem,54vh,36rem)]';
+// Only control text alignment here — NOT flex align-items. Leaving the column
+// at its default align-items:stretch is what lets the content block take full
+// width (then cap via max-width); items-start would shrink it to content.
+const alignClass = align === 'center' ? 'text-center' : 'text-left';
+
+// A <video poster> must be a plain URL string; a local asset import can't be
+// used directly there, so only pass it through when `image` is already a
+// string (the video pages always ship a /public poster for exactly this).
+const posterSrc = typeof image === 'string' ? image : undefined;
+---
+
+<section
+  class={cn('relative isolate overflow-hidden bg-navy', className)}
+  aria-labelledby={titleId}
+>
+  {/* --- Media layer --------------------------------------------------------- */}
+  {
+    typeof image === 'string' ? (
+      // /public path — already pre-optimized (e.g. the hero-video poster), a
+      // plain <img> is correct here; Astro's Image component can't process
+      // strings outside its allowlisted remote-image config.
+      <img
+        src={image}
+        alt={imageAlt}
+        class="absolute inset-0 -z-10 h-full w-full object-cover"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    ) : image ? (
+      // Local src/assets import — runs through Astro's build-time Sharp
+      // pipeline (responsive sizes, WebP) via <Image>, same as the logo.
+      <Image
+        src={image}
+        alt={imageAlt}
+        class="absolute inset-0 -z-10 h-full w-full object-cover"
+        widths={[640, 960, 1280, 1920]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    ) : (
+      /* No media: a clean navy field with a faint diagonal texture (a small
+         tactile touch, not a glow). Real photos/video come via Sanity. */
+      <div
+        class="absolute inset-0 -z-10 bg-navy"
+        aria-hidden="true"
+        style="background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 14px, transparent 14px 28px);"
+      />
+    )
+  }
+  {
+    video && (
+      <video
+        class="absolute inset-0 -z-10 h-full w-full object-cover opacity-0 transition-opacity duration-[1200ms] ease-out motion-reduce:transition-none"
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster={posterSrc}
+        data-hero-video
+        aria-hidden="true"
+      >
+        {/* preload="none": the browser fetches nothing until hero-video.ts
+            starts playback (deferred to idle-after-load), so nothing competes
+            with the LCP poster. The poster carries the hero until the video
+            fades in. Sources are ordered smallest-first: modern browsers take
+            the lighter WebM, everything else falls back to the MP4. */}
+        {videoWebm && <source src={videoWebm} type="video/webm" />}
+        <source src={video} type="video/mp4" />
+      </video>
+    )
+  }
+
+  {/* --- Scrim: guarantees text contrast over any image --------------------- */}
+  <div
+    class={cn(
+      'absolute inset-0 -z-10',
+      align === 'center'
+        ? 'bg-[linear-gradient(to_top,rgba(1,32,58,.82),rgba(1,32,58,.5)_45%,rgba(1,32,58,.55))]'
+        : 'bg-[linear-gradient(to_top,rgba(1,32,58,.85),rgba(1,32,58,.35)_55%,transparent),linear-gradient(to_right,rgba(1,32,58,.7),transparent_65%)]',
+    )}
+    aria-hidden="true"
+  >
+  </div>
+
+  {/* --- Content ------------------------------------------------------------- */}
+  <div
+    class={cn(
+      'wcp-container relative flex flex-col py-[var(--wcp-space-xl)]',
+      // Reserve real clearance under the big overlay header (logo + CTA row +
+      // nav row) so bottom-anchored content can never collide with it even if
+      // the title wraps to 2-3 lines. Measured header height is ~207px at
+      // lg — pt-56 (224px) gives a safety margin above that. Only needed at
+      // lg+ since the mobile header is a normal in-flow bar, not an overlay.
+      'lg:pt-56',
+      heightClass,
+      alignClass,
+      align === 'center' ? 'justify-center' : 'justify-end',
+    )}
+  >
+    <div class={cn('w-full max-w-[42rem]', align === 'center' && 'mx-auto')}>
+      {
+        eyebrow && (
+          <p class="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-amber" data-reveal="fade">
+            {eyebrow}
+          </p>
+        )
+      }
+      {/* A `title` slot lets a page mark up one accent word (e.g. with the
+          crayon <Underline>); the `title` string prop is the fallback and
+          still carries the plain-text headline for anything that needs it. */}
+      <h1 id={titleId} class="text-balance text-white" data-reveal>
+        {Astro.slots.has('title') ? <slot name="title" /> : title}
+      </h1>
+      {
+        lead && (
+          <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90" data-reveal>
+            {lead}
+          </p>
+        )
+      }
+      <div
+        class={cn('mt-8 flex flex-wrap gap-4', align === 'center' ? 'justify-center' : 'justify-start')}
+        data-reveal
+      >
+        <slot name="actions" />
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* Colocated: reduced-motion-aware hero-video autoplay ships only on pages
+    that use a Hero. Harmless when the hero has no video. */}
+<script>
+  import '@/scripts/hero-video';
+</script>

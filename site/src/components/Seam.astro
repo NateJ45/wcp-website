@@ -1,0 +1,48 @@
+---
+/* ============================================================================
+   Seam — a self-placing cloud-scallop seam at the TOP of a colored band
+   ============================================================================
+   A soft rolling cloud-scallop that rhymes with the logo's cloud (rounded and
+   friendly — NOT a dramatic wave or a literal cloud outline), designed to be
+   dropped INSIDE a band. It positions itself just above the band's top edge
+   (absolute +
+   translate-y) and overlaps into the section above's bottom padding. Its filled
+   scallop is the band's OWN color; everything above the scallop line is
+   transparent, so it reveals whatever section sits above — no need to tell it
+   the color above. An orange line traces the seam (the logo-warm accent).
+
+   Requirements: the parent band must be `position: relative` (the components
+   that use this add it), and the section above needs enough bottom padding for
+   the ~30px overlap (our Section padding is generous — safe).
+
+   Use SPARINGLY — only at a real color change. Purely decorative (aria-hidden).
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  /** The band's own background color (the scallop fills with this). */
+  color?: 'white' | 'grey' | 'cream' | 'navy';
+  class?: string;
+}
+const { color = 'navy', class: className } = Astro.props;
+
+const fill: Record<string, string> = {
+  white: '#ffffff',
+  grey: 'var(--color-grey)',
+  cream: 'var(--color-cream)',
+  navy: 'var(--color-navy)',
+};
+
+// Gentle rolling scallop — the one cloud motif used site-wide, kept consistent.
+const wave = 'M0,40 C160,22 320,22 480,40 C640,58 800,58 960,40 C1120,22 1280,22 1440,40';
+---
+
+<svg
+  viewBox="0 0 1440 60"
+  preserveAspectRatio="none"
+  class={cn('pointer-events-none absolute inset-x-0 top-0 -translate-y-full block h-8 w-full sm:h-12', className)}
+  aria-hidden="true"
+>
+  <path d={`${wave} L1440,60 L0,60 Z`} fill={fill[color]}></path>
+  <path d={wave} fill="none" stroke="var(--color-orange)" stroke-width="4" stroke-linecap="round"></path>
+</svg>

@@ -1,0 +1,43 @@
+{
+  "//": "Lighthouse CI runs against the built static output (dist/client) so dev-server quirks never affect scores. The url list is EXPLICIT on purpose: with staticDistDir alone, lhci auto-discovers pages but caps at 5, testing a near-random subset. Listing URLs covers every distinct template and skips non-page stubs. Accessibility is a HARD gate (must hold 100); performance / best-practices / SEO are warnings so normal CI variance doesn't block a PR. Add a representative URL per template as pages are built. Run locally: npm run build && npx lhci autorun",
+  "ci": {
+    "collect": {
+      "staticDistDir": "./dist/client",
+      "url": [
+        "http://localhost/index.html",
+        "http://localhost/about/index.html",
+        "http://localhost/why-wcp/index.html",
+        "http://localhost/classes/twos/index.html",
+        "http://localhost/classes/pre-k/index.html",
+        "http://localhost/co-op-life/index.html",
+        "http://localhost/a-day-at-wcp/index.html",
+        "http://localhost/virtual-tour/index.html",
+        "http://localhost/work-with-us/index.html",
+        "http://localhost/donate/index.html",
+        "http://localhost/newsletter/index.html",
+        "http://localhost/privacy/index.html",
+        "http://localhost/tuition/index.html",
+        "http://localhost/faq/index.html",
+        "http://localhost/enroll/index.html",
+        "http://localhost/contact/index.html",
+        "http://localhost/family-hub/index.html",
+        "http://localhost/404.html"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "skipAudits": ["uses-http2", "canonical"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 1 }],
+        "categories:best-practices": ["warn", { "minScore": 0.95 }],
+        "categories:seo": ["warn", { "minScore": 0.95 }],
+        "categories:performance": ["warn", { "minScore": 0.85 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

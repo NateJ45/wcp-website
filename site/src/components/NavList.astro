@@ -1,0 +1,177 @@
+---
+/* ============================================================================
+   NavList — shared nav-link renderer for all three header contexts
+   ============================================================================
+   The header now renders navigation in three places (the big overlay row on
+   desktop, the compact sticky bar, and the mobile panel), all from the same
+   src/data/nav.ts source. This component avoids tripling that markup.
+
+   `idPrefix` must be unique per render (e.g. "big", "compact") so each
+   instance's dropdown ids (aria-controls) don't collide when more than one
+   NavList is present in the DOM at once (compact bar starts hidden, not
+   unmounted).
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { mainNav, isGroup } from '@/data/nav';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  idPrefix: string;
+  variant: 'row' | 'compact' | 'mobile';
+  /** 'overlay' = white text for the transparent header over photo/video. */
+  tone?: 'default' | 'overlay';
+}
+const { idPrefix, variant, tone = 'default' } = Astro.props;
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const groupActive = (children: { href: string }[]) => children.some((c) => isActive(c.href));
+
+const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
+---
+
+{
+  variant === 'mobile' ? (
+    <div class="flex flex-col gap-1">
+      {mainNav.map((item) =>
+        isGroup(item) ? (
+          <div class="py-1">
+            <p class="px-2 pt-2 text-xs font-bold uppercase tracking-wide text-sky-ink">
+              {item.label}
+            </p>
+            {item.children.map((c) => (
+              <a
+                href={c.href}
+                class="block rounded-md px-2 py-2.5 font-semibold text-navy hover:bg-grey"
+                aria-current={isActive(c.href) ? 'page' : undefined}
+                {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
+              >
+                {c.label}
+              </a>
+            ))}
+          </div>
+        ) : (
+          <a
+            href={item.href}
+            class="block rounded-md px-2 py-2.5 font-semibold text-navy hover:bg-grey"
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ),
+      )}
+    </div>
+  ) : (
+    <ul class={cn('flex items-center gap-1', variant === 'row' && 'justify-center')}>
+      {mainNav.map((item, i) =>
+        isGroup(item) ? (
+          <li class="relative">
+            <button
+              type="button"
+              class={cn(linkClass, 'inline-flex items-center gap-1')}
+              aria-expanded="false"
+              aria-controls={`${idPrefix}-menu-${i}`}
+              data-dropdown-trigger
+              data-active={groupActive(item.children) ? '' : undefined}
+            >
+              {item.label}
+              <Icon name="chevron-down" class="h-4 w-4" />
+            </button>
+            <ul
+              id={`${idPrefix}-menu-${i}`}
+              data-dropdown-menu
+              class="absolute left-0 top-full z-10 mt-1 min-w-52 rounded-lg border border-border bg-white p-2 shadow-md"
+            >
+              {item.children.map((c) => (
+                <li>
+                  <a
+                    href={c.href}
+                    class="flex items-center justify-between gap-2 rounded-md px-3 py-2 font-semibold text-navy hover:bg-grey hover:text-orange-ink"
+                    aria-current={isActive(c.href) ? 'page' : undefined}
+                    {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
+                  >
+                    {c.label}
+                    {c.external && (
+                      <Icon name="external-link" class="h-3.5 w-3.5 text-ink-muted" title="opens in a new tab" />
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ) : (
+          <li>
+            <a
+              href={item.href}
+              class={linkClass}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              data-active={isActive(item.href) ? '' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ),
+      )}
+    </ul>
+  )
+}
+
+<style>
+  /* These rules must live HERE (not in Header.astro) — Astro scopes <style>
+     blocks per-component via a data-astro-cid attribute, and this component
+     is what actually renders the .nav-link / [data-dropdown-menu] elements.
+     A style block in the parent Header.astro would carry a DIFFERENT scope
+     id and silently never match these elements. */
+
+  /* Nav link base (compact bar + mobile panel: navy on white). */
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    color: var(--color-navy);
+    text-decoration: none;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .nav-link:hover {
+    color: var(--color-orange-ink);
+    background-color: var(--color-grey);
+  }
+  .nav-link[data-active] {
+    color: var(--color-orange-ink);
+  }
+
+  /* Overlay variant (big header row: white on transparent photo/video). */
+  .nav-link--overlay {
+    color: #ffffff;
+  }
+  .nav-link--overlay:hover {
+    color: var(--color-amber);
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  .nav-link--overlay[data-active] {
+    color: var(--color-amber);
+  }
+
+  /* Dropdown menus: hidden until the trigger's click handler sets this SAME
+     element's `data-open` attribute — see src/scripts/nav.ts. A same-element
+     selector is more robust than a sibling/`:has()` combinator here. */
+  [data-dropdown-menu] {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  }
+  [data-dropdown-menu][data-open] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-dropdown-menu] {
+      transition: none;
+    }
+  }
+</style>

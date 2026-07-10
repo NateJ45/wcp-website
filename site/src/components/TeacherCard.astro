@@ -1,0 +1,49 @@
+---
+/* ============================================================================
+   TeacherCard — a staff bio card with photo, role, and contact
+   ============================================================================
+   Real named staff, not anonymous candids — headshot + role + years at WCP +
+   a short bio + a mailto "Say Hello" link. Photo alt text uses the person's
+   name (appropriate for a named public bio, unlike candid kid photos).
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  photo: ImageMetadata;
+  name: string;
+  role: string;
+  email: string;
+  class?: string;
+}
+const { photo, name, role, email, class: className } = Astro.props;
+---
+
+<figure class={cn('overflow-hidden rounded-[var(--radius)] bg-white shadow-sm', className)} data-reveal>
+  <div class="aspect-[4/3] overflow-hidden">
+    <Image
+      src={photo}
+      alt={name}
+      class="h-full w-full object-cover"
+      widths={[320, 480, 640]}
+      sizes="(min-width: 1024px) 33vw, 50vw"
+      loading="lazy"
+    />
+  </div>
+  <figcaption class="p-6">
+    <p class="font-display text-xl text-navy">{name}</p>
+    <p class="mt-0.5 text-sm font-bold uppercase tracking-wide text-sky-ink">{role}</p>
+    <div class="mt-3 leading-relaxed text-ink">
+      <slot />
+    </div>
+    <a
+      href={`mailto:${email}`}
+      class="mt-4 inline-flex items-center gap-1.5 font-bold text-orange-ink underline underline-offset-2"
+    >
+      <Icon name="mail" class="h-4 w-4" />
+      Say Hello
+    </a>
+  </figcaption>
+</figure>

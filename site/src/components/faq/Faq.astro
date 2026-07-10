@@ -1,0 +1,54 @@
+---
+/* ============================================================================
+   Faq — accordion wrapper
+   ============================================================================
+   Holds a list of <FaqItem>s. The open/close animation is pure CSS
+   (grid-template-rows 0fr -> 1fr, the modern way to transition to height:auto),
+   keyed off each item's button[aria-expanded] via :has(). JS (faq.ts, colocated
+   below) only flips aria-expanded + inert. With no JS, all answers are visible.
+
+   The styles are `is:global` so they reach the separate FaqItem component, but
+   they only ship on pages that render an <Faq> (Astro bundles component styles
+   per page) and every selector is prefixed .wcp-faq- to avoid collisions.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class={cn('mx-auto max-w-3xl', className)}>
+  <slot />
+</div>
+
+<script>
+  import '@/scripts/faq';
+</script>
+
+<style is:global>
+  .wcp-faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+  .wcp-faq-panel-inner {
+    overflow: hidden;
+  }
+  /* Open state: the item whose trigger is expanded gets a full-height panel and
+     a flipped chevron. :has() is well supported in current browsers; where it
+     is not, the panel simply stays open (content is never hidden). */
+  [data-faq-item]:has([data-faq-trigger][aria-expanded='true']) .wcp-faq-panel {
+    grid-template-rows: 1fr;
+  }
+  [data-faq-item]:has([data-faq-trigger][aria-expanded='true']) .wcp-faq-chevron {
+    transform: rotate(180deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wcp-faq-panel,
+    .wcp-faq-chevron {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+/* ============================================================================
+   Button — the workhorse action element
+   ============================================================================
+   FOUNDATION. Renders an <a> when `href` is set, otherwise a <button>. Styling
+   comes from buttonVariants (see src/lib/button-variants.ts). Any extra
+   attributes (aria-*, target, rel, data-*) pass straight through.
+
+   Usage:
+     <Button href="/enroll" variant="accent" size="lg">Enroll Now</Button>
+     <Button type="submit" variant="primary">Send</Button>
+   ============================================================================ */
+import { buttonVariants, type ButtonVariants } from '@/lib/button-variants';
+import { cn } from '@/lib/utils';
+
+interface Props extends ButtonVariants {
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  // Allow arbitrary pass-through attributes (aria-label, target, rel, data-*).
+  [key: string]: unknown;
+}
+
+const { href, type, variant, size, class: className, ...rest } = Astro.props;
+const classes = cn(buttonVariants({ variant, size }), className);
+---
+
+{
+  href ? (
+    <a href={href} class={classes} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type ?? 'button'} class={classes} {...rest}>
+      <slot />
+    </button>
+  )
+}

@@ -1,0 +1,234 @@
+---
+/* ============================================================================
+   Virtual Tour page  — real copy from the live /tour page
+   ============================================================================
+   A full photo/video walkthrough is still a future enhancement, but this is no
+   longer a stub: real teacher pull-quotes, room-by-room "Our Spaces"
+   descriptions, a typical-morning summary, and a class finder — all using the
+   real classroom photography we harvested.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import ClassCard from '@/components/ClassCard.astro';
+import CtaBanner from '@/components/CtaBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import { Image } from 'astro:assets';
+import { site } from '@/data/site';
+import gymPlaytime from '@/assets/photos/gym-playtime.jpg';
+import prekCircleTime from '@/assets/photos/prek-circle-time.jpg';
+import twosHero from '@/assets/photos/twos-hero.jpg';
+import lisaCortez from '@/assets/staff/lisa-cortez.jpg';
+import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
+
+const teachers = [
+  {
+    photo: lisaCortez,
+    name: 'Meet Mrs. Lisa',
+    role: 'Pre-K Teacher · 10 years at WCP',
+    quote: 'Through play, I nurture curiosity, creativity, and a genuine love for learning, in a place where every child belongs.',
+    bio: 'Mrs. Lisa leads both the AM and PM Pre-K sessions. Her youngest child is also WCP alumni. She brings patience, structure, and genuine warmth to every morning and afternoon.',
+    href: '/classes/pre-k',
+    linkLabel: 'Learn About Pre-K',
+  },
+  {
+    photo: erinSchmerr,
+    name: 'Meet Mrs. Erin',
+    role: 'Twos & Threes Teacher · 3 years at WCP',
+    quote: 'The Twos and Threes years are when kids figure out they love school. I get to be the person who makes that happen.',
+    bio: 'Mrs. Erin leads every Twos and Threes session. She knows every child by name before the second week of school. Her classes are gentle, play-forward, and built around sensory exploration and early social skills.',
+    href: '/classes/twos',
+    linkLabel: 'Explore the Twos Class',
+  },
+];
+
+const spaces = [
+  {
+    photo: twosHero,
+    alt: 'Children exploring a sensory bin in the Twos and Threes classroom',
+    title: 'Twos & Threes Classroom',
+    tagline: 'Bright, warm, and built for little hands.',
+    body: 'Low tables, soft seating, sensory bins, a cozy reading nook, and art stations. Everything in this room is sized for two and three-year-olds and designed to invite exploration. This is where your child will have circle time on the rug, work on crafts at the tables, and play alongside friends and parent helpers every session.',
+    detail: 'Class size: 7 children (Twos) or 12 children (Threes) with 1 teacher and 2 parent helpers.',
+  },
+  {
+    photo: prekCircleTime,
+    alt: 'The Pre-K classroom during circle time, with the teacher reading to the class',
+    title: 'Pre-K Classroom',
+    tagline: 'Kindergarten readiness starts here.',
+    body: 'Learning centers for reading, math, science, and art. A calendar wall. A Handwriting Without Tears station. This room is set up for structured learning through play. Mrs. Lisa runs the same curriculum in both AM and PM sessions. By May, Pre-K graduates walk into kindergarten ready and confident.',
+    detail: 'Class size: 12 children per session with 1 teacher and 1 parent helper.',
+  },
+  {
+    photo: gymPlaytime,
+    alt: 'A teacher and children playing together on the gymnasium floor',
+    title: 'Movement & Outdoor Play',
+    tagline: 'The gym and playground.',
+    body: 'Every session includes time for big-body movement. On nice days, kids head to the playground and open field to run, climb, and explore. On cold or rainy days, the gym has plenty of space for running, jumping, and games.',
+    detail: 'A full gymnasium, an expansive playground, and an open field — outdoor time every single session.',
+  },
+];
+
+const morning = [
+  { icon: 'sun', chip: 'orange' as const, title: 'Arrival and free play', body: 'Kids arrive and settle in at their own pace. Parent helpers are already in the classroom welcoming everyone as they come through the door.' },
+  { icon: 'palette', chip: 'sky' as const, title: 'Activities and centers', body: 'Crafts, science, sensory play, and group projects. The teacher leads, parent helpers work at every table. Every activity is built around Ohio’s Early Learning Standards.' },
+  { icon: 'trees', chip: 'green' as const, title: 'Outdoor play and pickup', body: 'Every session ends on the playground. Kids burn energy, make friends, and transition out of school mode before families pick up.' },
+];
+
+const classes = [
+  { name: 'Twos', color: 'orange' as const, price: '$70', schedule: 'Thursdays · 9:30–12:00 pm', age: 'Age 2 by Sept 30', features: ['7 children max', '1 teacher + 2 parent helpers', 'Gentle, play-based intro to school'], href: '/classes/twos' },
+  { name: 'Threes', color: 'sky' as const, price: '$150', schedule: 'Mon–Wed · 9:30–12:00 pm', age: 'Age 3 by Sept 30', features: ['12 children max', '1 teacher + 2 parent helpers', 'More structure, more friendships'], href: '/classes/threes' },
+  { name: 'Pre-K AM', color: 'green' as const, price: '$200', schedule: 'Mon–Thurs · 9:15–12:00 pm', age: 'Age 4 by Sept 30', features: ['12 children max', '1 teacher + 1 parent helper', 'Handwriting Without Tears'], href: '/classes/pre-k' },
+  { name: 'Pre-K PM', color: 'amber' as const, price: '$175', schedule: 'Mon–Wed · 12:30–3:15 pm', age: 'Age 4 by Sept 30', features: ['12 children max', 'Same curriculum as AM', 'Great for afternoon kids'], href: '/classes/pre-k' },
+];
+---
+
+<BaseLayout
+  title="Virtual Tour — West Chester Preschool"
+  description="Take a look inside West Chester Preschool: our classrooms, gymnasium, playground, and the teachers your child will love — before you ever visit."
+>
+  <Hero
+    eyebrow="See Our School · Photos Inside"
+    title="Take a look around before you visit."
+    lead="Browse the classrooms, hear from our teachers, and explore the spaces your child will love. Then book a tour or jump straight to enrollment."
+    image={gymPlaytime}
+    imageAlt="A WCP teacher and children playing together on the gymnasium floor"
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Book a Tour</Button>
+      <Button href="#spaces" variant="outline-white" size="lg">Start Looking Around</Button>
+    </Fragment>
+  </Hero>
+
+  {/* Meet the teachers — pull-quote forward */}
+  <Section bg="white" labelledby="tour-teachers">
+    <SectionHeader eyebrow="Meet Your Teachers" title="The people your child will love" titleId="tour-teachers" />
+    <div class="mt-12 space-y-12">
+      {
+        teachers.map((t, i) => (
+          <div class="grid items-center gap-8 md:grid-cols-2" data-reveal>
+            <div class={i % 2 === 1 ? 'md:order-2' : ''}>
+              <Image
+                src={t.photo}
+                alt={t.name}
+                class="aspect-[4/3] w-full rounded-[var(--radius)] object-cover shadow-sm"
+                widths={[400, 640, 800]}
+                sizes="(min-width: 768px) 45vw, 100vw"
+                loading="lazy"
+              />
+            </div>
+            <div class={i % 2 === 1 ? 'md:order-1' : ''}>
+              <p class="text-sm font-bold uppercase tracking-wide text-sky-ink">{t.role}</p>
+              <blockquote class="mt-3 font-display text-2xl leading-snug text-navy">
+                &ldquo;{t.quote}&rdquo;
+              </blockquote>
+              <p class="mt-4 leading-relaxed text-ink">{t.bio}</p>
+              <p class="mt-4">
+                <a href={t.href} class="font-bold text-orange-ink underline underline-offset-2">{t.linkLabel}</a>
+              </p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  {/* Our Spaces — room by room */}
+  <Section bg="grey" labelledby="spaces">
+    <SectionHeader
+      eyebrow="Our Spaces"
+      title="Where your child will learn and play"
+      titleId="spaces"
+      lead="WCP has two dedicated classrooms, a full gymnasium, and an outdoor playground. Every space is set up for hands-on exploration, movement, and fun."
+    />
+    <div class="mt-12 space-y-10">
+      {
+        spaces.map((s, i) => (
+          <div class="grid items-center gap-8 md:grid-cols-2" data-reveal>
+            <div class={i % 2 === 1 ? 'md:order-2' : ''}>
+              <Image
+                src={s.photo}
+                alt={s.alt}
+                class="aspect-[4/3] w-full rounded-[var(--radius)] object-cover shadow-sm"
+                widths={[400, 640, 800]}
+                sizes="(min-width: 768px) 45vw, 100vw"
+                loading="lazy"
+              />
+            </div>
+            <div class={i % 2 === 1 ? 'md:order-1' : ''}>
+              <h3 class="font-display text-2xl text-navy">{s.title}</h3>
+              <p class="mt-1 font-bold text-sky-ink">{s.tagline}</p>
+              <p class="mt-3 leading-relaxed text-ink">{s.body}</p>
+              <p class="mt-3 text-sm font-semibold text-ink-muted">{s.detail}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  {/* A typical morning */}
+  <Section bg="white" labelledby="tour-morning">
+    <SectionHeader
+      eyebrow="A Typical Morning"
+      title="What school actually looks like"
+      titleId="tour-morning"
+      lead="From drop-off to pickup, every morning has free play, circle time, a group activity, snack, and outdoor time."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-3">
+      {morning.map((m) => (<FeatureCard as="li" icon={m.icon} chip={m.chip} title={m.title}>{m.body}</FeatureCard>))}
+    </ul>
+    <p class="mt-10 text-center" data-reveal>
+      <a href="/a-day-at-wcp" class="font-bold text-sky-ink underline underline-offset-2">
+        See the full daily schedules
+      </a>
+    </p>
+  </Section>
+
+  {/* Find your class */}
+  <Section bg="grey" labelledby="find-class">
+    <SectionHeader
+      eyebrow="Find Your Class"
+      title="Which class is right for your child?"
+      titleId="find-class"
+      lead="Check your child’s age against September 30 of the enrollment year. Four classes for ages 2–5."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        classes.map((c) => (
+          <ClassCard
+            as="li"
+            name={c.name}
+            color={c.color}
+            price={c.price}
+            cadence="/ mo"
+            schedule={c.schedule}
+            age={c.age}
+            features={c.features}
+            href={c.href}
+            ctaLabel="Learn More"
+          />
+        ))
+      }
+    </ul>
+    <p class="mt-10 text-center" data-reveal>
+      <a href="/tuition" class="font-bold text-sky-ink underline underline-offset-2">
+        View the full tuition breakdown
+      </a>
+    </p>
+  </Section>
+
+  <CtaBanner
+    title="Ready to see it in person?"
+    lead="Book an in-person tour and we will show you around. Tours are casual and low-pressure — come see the classrooms, meet the teachers, and ask anything."
+    tone="navy"
+  >
+    <Fragment slot="actions">
+      <Button href="/enroll" variant="accent" size="lg">Schedule a Tour</Button>
+      <Button href="/enroll" variant="outline-white" size="lg">Enroll Now</Button>
+    </Fragment>
+    <Fragment slot="note">Call {site.phone} or email {site.email.general}</Fragment>
+  </CtaBanner>
+</BaseLayout>
