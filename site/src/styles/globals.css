@@ -358,10 +358,13 @@
   --secondary: #166fa8;
   --secondary-foreground: #ffffff;
 
-  /* Accent = orange-INK (white text 5.4:1). The "Enroll" CTA color — keeps the
-     warm orange identity while clearing AA. Bright orange is decorative only. */
-  --accent: #a85300;
-  --accent-foreground: #ffffff;
+  /* Accent = the TRUE brand orange, with dark ink text (7.46:1) instead of
+     white — white-on-orange fails (2.33:1), but ink-on-orange clears AA
+     comfortably, so the "Enroll" CTA can be the real, vibrant brand color
+     instead of the darker orange-ink shade (which reads as brown/rust when
+     used as a large fill, not just as small text). */
+  --accent: #ff8c00;
+  --accent-foreground: #1a1a1a;
 
   --muted: #eff0f1;
   --muted-foreground: #5f6573;

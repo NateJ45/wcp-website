@@ -7,9 +7,12 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // .astro file and a <button> in a React island look identical. Import
 // `buttonVariants` and pass the class, or use the <Button> component.
 //
-// ACCESSIBILITY: every variant below meets WCAG AA. Note there is deliberately
-// NO bright-orange or bright-sky filled variant — white text on those fails
-// contrast (2.33:1 / 2.56:1). The warm CTA uses `accent` (orange-INK, 5.4:1).
+// ACCESSIBILITY: every variant below meets WCAG AA. There is deliberately no
+// bright-sky filled variant with white text (fails at 2.56:1) — `secondary`
+// uses sky-INK instead. `accent`, though, IS the true brand orange: white
+// text on it fails (2.33:1), but dark ink text clears AA comfortably
+// (7.46:1), so the "Enroll" CTA gets the real, vibrant brand color instead of
+// a darker/browner ink-orange fill.
 // Focus rings come from the global :focus-visible rule in globals.css.
 // =============================================================================
 export const buttonVariants = cva(
@@ -21,7 +24,7 @@ export const buttonVariants = cva(
       variant: {
         // Navy fill, white text (9.75:1) — the safe default action.
         primary: 'bg-navy text-white hover:-translate-y-0.5 hover:shadow-lg',
-        // Orange-ink fill, white text (5.4:1) — the warm "Enroll" CTA.
+        // True brand-orange fill, dark ink text (7.46:1) — the warm "Enroll" CTA.
         accent: 'bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
         // Sky-ink fill, white text (5.4:1) — secondary emphasis.
         secondary: 'bg-secondary text-secondary-foreground hover:-translate-y-0.5',
