@@ -17,6 +17,7 @@ import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { site as siteFallback } from '@/data/site';
 import { PAGE_BY_SLUG_QUERY, ALL_PAGE_SLUGS_QUERY } from '@/lib/queries';
+import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
 
 export async function getStaticPaths() {
   const slugs = await cmsFetch<string[]>(ALL_PAGE_SLUGS_QUERY, {}, []);
@@ -30,6 +31,7 @@ interface PageDoc {
   title?: string;
   seoTitle?: string;
   seoDescription?: string;
+  ogImage?: SanityImageValue | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hero?: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,9 +43,13 @@ const siteData = await getSiteSettings(siteFallback);
 
 const title =
   page?.seoTitle ?? (page?.title ? `${page.title} — ${siteFallback.name}` : siteFallback.name);
+// Page's own share image when set (else BaseLayout falls back to the sitewide card).
+const ogImage = page?.ogImage?.asset
+  ? imageUrl(page.ogImage as SanityImageSource, 1200)
+  : undefined;
 ---
 
-<BaseLayout title={title} description={page?.seoDescription}>
+<BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>
   {page?.hero && <PageHero hero={page.hero} />}
   <SectionRenderer sections={page?.sections} site={siteData} />
 </BaseLayout>
