@@ -111,9 +111,20 @@ when Sanity tells it a document was published.
      ```
      {"event_type": "sanity-publish"}
      ```
-   - Leave **Filter** empty (so every document counts, matching the trigger events above).
-   - Save. Sanity will now ping GitHub on every publish, and the `Deploy` workflow
-     picks it up within a minute or two.
+   - **Filter** — skip the document types that only feed Family Hub pages. Every
+     Family Hub route has `prerender = false` (session-gated, reads Sanity live on
+     every request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
+     `update`, `hubDocument`, `directoryEntry`, or `classNote` document already shows
+     up immediately with no rebuild. Everything else (`testimonial`, `siteSettings`,
+     `page`, `schoolYearEvent`, `faqItem`, `class`, `legalPage`, `feeSchedule`) is
+     baked into the static public pages at build time and DOES need a redeploy:
+     ```
+     !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote"])
+     ```
+     If a new document type is added later, decide which bucket it belongs to by
+     checking whether the page(s) that read it have `prerender = false`.
+   - Save. Sanity will now ping GitHub on every publish of a type that isn't
+     filtered out, and the `Deploy` workflow picks it up within a minute or two.
 
 **Why these two are on you:** creating account credentials (API tokens, PATs) is
 something Claude won't do on your behalf, even when asked — they're typed directly by
