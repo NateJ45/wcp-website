@@ -1,0 +1,49 @@
+---
+/* ============================================================================
+   [...slug] — every builder page, statically prerendered
+   ============================================================================
+   getStaticPaths reads every `page` document from Sanity at build time and
+   emits one static route each ("home" → /, slashes stay: classes/twos →
+   /classes/twos). New pages published in the Studio go live on the next
+   rebuild (the Sanity webhook triggers it). Non-builder routes (family-hub,
+   404, api, studio, preview) are their own files and are never page docs, so
+   they don't collide.
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/sections/PageHero.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import { cmsFetch, getSiteSettings } from '@/lib/cms';
+import { site as siteFallback } from '@/data/site';
+import { PAGE_BY_SLUG_QUERY, ALL_PAGE_SLUGS_QUERY } from '@/lib/queries';
+
+export async function getStaticPaths() {
+  const slugs = await cmsFetch<string[]>(ALL_PAGE_SLUGS_QUERY, {}, []);
+  return slugs.map((slug) => ({
+    params: { slug: slug === 'home' ? undefined : slug },
+    props: { slug },
+  }));
+}
+
+interface PageDoc {
+  title?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hero?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+const { slug } = Astro.props as { slug: string };
+const page = await cmsFetch<PageDoc | null>(PAGE_BY_SLUG_QUERY, { slug }, null);
+const siteData = await getSiteSettings(siteFallback);
+
+const title =
+  page?.seoTitle ?? (page?.title ? `${page.title} — ${siteFallback.name}` : siteFallback.name);
+---
+
+<BaseLayout title={title} description={page?.seoDescription}>
+  {page?.hero && <PageHero hero={page.hero} />}
+  <SectionRenderer sections={page?.sections} site={siteData} />
+</BaseLayout>

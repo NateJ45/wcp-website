@@ -49,15 +49,19 @@ const actions = hero.actions ?? [];
   video={isVideo ? hero.videoFile?.url : undefined}
   videoWebm={isVideo ? hero.videoWebm?.url : undefined}
 >
-  {
-    idx >= 0 && word && (
-      <Fragment slot="title">
-        {before}
-        <Underline color={hero.accentColor ?? 'amber'}>{word}</Underline>
-        {after}
-      </Fragment>
-    )
-  }
+  <Fragment slot="title">
+    {
+      idx >= 0 && word ? (
+        <>
+          {before}
+          <Underline color={hero.accentColor ?? 'amber'}>{word}</Underline>
+          {after}
+        </>
+      ) : (
+        hero.title
+      )
+    }
+  </Fragment>
   {
     actions.length > 0 && (
       <Fragment slot="actions">
