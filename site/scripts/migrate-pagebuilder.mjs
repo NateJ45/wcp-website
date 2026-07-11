@@ -479,6 +479,444 @@ P(
   ],
 );
 
+// ---------------------------------------------------------------- a-day-at-wcp
+P(
+  'a-day-at-wcp',
+  'A Day at WCP',
+  B.hero({
+    eyebrow: 'A Peek Inside a WCP Morning',
+    title: 'What a day at WCP actually looks like.',
+    lead: 'Every session at WCP is a mix of free play, guided activities, snack, and outdoor time. Here is a full look at how each class spends their morning, or afternoon.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.prekCircle,
+    imageAlt:
+      'A teacher reads to a class of children sitting together on the classroom rug during circle time',
+    actions: [
+      B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Every Single Session',
+        'What all three classes have in common',
+        'No matter which class your child is in, every WCP session includes these five things.',
+      ),
+      cards: [
+        B.card(
+          'palette',
+          'orange',
+          'Free Play',
+          'Child-led exploration with toys, art, and open materials.',
+        ),
+        B.card('users', 'sky', 'Circle Time', 'Songs, stories, and group conversation on the rug.'),
+        B.card(
+          'cake',
+          'amber',
+          'Snack Time',
+          'Parent helpers bring snack. Kids eat and talk together.',
+        ),
+        B.card(
+          'heart-handshake',
+          'green',
+          'Parent Helpers',
+          'Two parents in the classroom every session to support learning.',
+        ),
+        B.card(
+          'door-open',
+          'orange',
+          'Outdoor Play',
+          'Every session ends with fresh air and playground time.',
+        ),
+      ],
+    }),
+    B.schedule({
+      bg: 'grey',
+      header: B.sh('Twos Class', 'Thursday mornings, 9:30–12:00 pm'),
+      intro:
+        'The Twos class meets once a week. The pace is gentle and the session is short by design: two-year-olds need transition time, sensory play, and a calm environment to feel safe in a new place.',
+      entries: [
+        {
+          time: '9:30 am',
+          title: 'Greeting and Free Play',
+          desc: 'Kids arrive and settle in at their own pace.',
+        },
+        {
+          time: '9:45 am',
+          title: 'First Circle Time',
+          desc: 'Songs, simple activities, and group time on the rug.',
+        },
+        {
+          time: '10:00 am',
+          title: 'Sensory Bins and Free Play',
+          desc: 'Hands-on sensory exploration and open play.',
+        },
+        {
+          time: '10:50 am',
+          title: 'Snack Time',
+          desc: 'Parent helpers bring snack. Kids eat and wind down.',
+        },
+        { time: '11:15 am', title: 'Storytime', desc: 'A quiet wind-down with books and songs.' },
+        {
+          time: '11:40 am',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Pickup at 12:00 pm.',
+        },
+      ],
+    }),
+    B.schedule({
+      bg: 'white',
+      header: B.sh('Threes Class', 'Mon–Wed mornings, 9:30–12:00 pm'),
+      entries: [
+        {
+          time: '9:30 am',
+          title: 'Greeting and Free Play',
+          desc: 'Kids arrive and start playing with friends right away.',
+        },
+        {
+          time: '9:45 am',
+          title: 'First Circle Time',
+          desc: 'Songs, calendar, and group conversation to open the morning.',
+        },
+        {
+          time: '10:00 am',
+          title: 'Group Activity',
+          desc: 'A teacher-led project: crafts, science, or cooking.',
+        },
+        {
+          time: '10:10 am',
+          title: 'Centers and Free Play',
+          desc: 'Open play across activity stations with parent helpers.',
+        },
+        {
+          time: '10:50 am',
+          title: 'Snack Time',
+          desc: 'Parent helpers bring snack. Kids eat and talk together.',
+        },
+        {
+          time: '11:15 am',
+          title: 'Second Circle Time',
+          desc: 'Stories and literacy activities before outdoor play.',
+        },
+        {
+          time: '11:40 am',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Pickup at 12:00 pm.',
+        },
+      ],
+    }),
+    B.schedule({
+      bg: 'grey',
+      header: B.sh('Pre-K AM Class', 'Mon–Thurs mornings, 9:15–12:00 pm'),
+      entries: [
+        {
+          time: '9:15 am',
+          title: 'Arrival',
+          desc: 'Children arrive and transition into the classroom routine.',
+        },
+        {
+          time: '9:30 am',
+          title: 'Calendar',
+          desc: 'Days, months, patterns, and counting: a daily warm-up.',
+        },
+        {
+          time: '9:45 am',
+          title: 'Fine Motor Activity',
+          desc: 'Handwriting Without Tears and fine motor exercises.',
+        },
+        {
+          time: '9:55 am',
+          title: 'Centers',
+          desc: 'Reading, math, science, art, and play stations.',
+        },
+        {
+          time: '11:00 am',
+          title: 'Snack',
+          desc: 'Parent helpers bring snack and kids eat as a class.',
+        },
+        {
+          time: '11:20 am',
+          title: 'Circle Time',
+          desc: 'Stories and group conversation before outdoor play.',
+        },
+        {
+          time: '11:35 am',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Pickup at 12:00 pm.',
+        },
+      ],
+    }),
+    B.schedule({
+      bg: 'white',
+      header: B.sh('Pre-K PM Class', 'Mon–Wed afternoons, 12:30–3:15 pm'),
+      entries: [
+        {
+          time: '12:30 pm',
+          title: 'Arrival',
+          desc: 'Children arrive and settle into the afternoon routine.',
+        },
+        {
+          time: '12:45 pm',
+          title: 'Calendar',
+          desc: 'Days, months, patterns, and counting to open the session.',
+        },
+        {
+          time: '1:00 pm',
+          title: 'Fine Motor Activity',
+          desc: 'Handwriting and fine motor exercises.',
+        },
+        {
+          time: '1:10 pm',
+          title: 'Centers',
+          desc: 'Reading, math, science, art, and play stations.',
+        },
+        { time: '2:15 pm', title: 'Snack', desc: 'A mid-afternoon refuel and social moment.' },
+        {
+          time: '2:35 pm',
+          title: 'Circle Time',
+          desc: 'Stories and group conversation to close the day.',
+        },
+        {
+          time: '2:50 pm',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Pickup at 3:15 pm.',
+        },
+      ],
+    }),
+    B.gallery({
+      bg: 'grey',
+      header: B.sh(
+        'See It in Action',
+        'Photos from our classrooms',
+        'A look at what a real WCP session looks like: the activities, the helpers, the outdoor time, and the moments in between.',
+      ),
+      photos: [
+        {
+          assetId: A.prekCircle,
+          alt: 'A teacher reads to the Pre-K class during circle time on the classroom rug',
+          caption: 'Circle time',
+        },
+        {
+          assetId: A.unicorn,
+          alt: 'Three children sharing a group hug with a stuffed unicorn toy',
+          caption: 'Free play',
+        },
+        {
+          assetId: A.dressUp,
+          alt: 'Two children in firefighter dress-up costumes playing together in the classroom',
+          caption: 'Dress-up play',
+        },
+        {
+          assetId: A.gym,
+          alt: 'A teacher and children playing together on the gymnasium floor',
+          caption: 'Gym time',
+        },
+        {
+          assetId: A.outdoor,
+          alt: 'A teacher and children examining something together outdoors',
+          caption: 'Outdoor exploration',
+        },
+        {
+          assetId: A.firetruck,
+          alt: 'WCP children on a field trip exploring a fire truck',
+          caption: 'Field trip',
+        },
+      ],
+    }),
+    B.cta({
+      title: 'Want to see it in person?',
+      lead: 'Come for a tour and watch a real session in action. Meet the teachers, see the space, and let your child spend time in the classroom.',
+      actions: [
+        B.act('Schedule a Tour', 'accent', { url: '/enroll' }),
+        B.act('Enroll Now', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- co-op-life
+P(
+  'co-op-life',
+  'Co-op Life',
+  B.hero({
+    eyebrow: 'Parent-Run Since 1969',
+    title: 'You are not just a parent here. You are an owner.',
+    lead: 'WCP is a cooperative preschool: the families run the school alongside the teachers. Here is what the co-op commitment actually involves, and why families love it.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.firetruck,
+    imageAlt:
+      'WCP children on a field trip to a local fire station, exploring the fire truck with a parent volunteer and firefighter',
+    actions: [
+      B.act('Join the Co-op', 'accent', { url: '/enroll' }),
+      B.act('See What’s Involved', 'outline-white', { url: '#commitments' }),
+    ],
+  }),
+  [
+    B.proseSection({
+      bg: 'white',
+      header: B.sh('The Co-op Model', 'What does it actually mean?'),
+      body: B.toPT(
+        'A cooperative preschool is owned and operated by the families of enrolled students. Our teachers are the only paid staff. Every other role is handled by parents.\n\nThis is what keeps tuition low, class sizes small, and the community genuinely close. When parents are in the building regularly, they know every child, every family, and every teacher.\n\nMost families say the co-op ask is one of the best parts of WCP. You get a front-row seat to your child’s first school experiences — and you build real friendships along the way.',
+      ),
+    }),
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'The Co-op Commitment',
+        'Six things every WCP family agrees to',
+        'When you enroll, you take on these six commitments for the school year. They are what make WCP run.',
+      ),
+      cards: [
+        B.card(
+          'heart-handshake',
+          'orange',
+          'Help in the classroom',
+          'Every family helps in their child’s classroom 1–3 times per month (depending on class size and age of class). You work alongside the teacher and get to watch your child in their element.',
+        ),
+        B.card(
+          'users',
+          'sky',
+          'Hold a co-op job',
+          'Every family is assigned a role for the full year — from board positions to event planning to school maintenance. Jobs are matched to your skills and availability.',
+        ),
+        B.card(
+          'shield-check',
+          'green',
+          'Comply with health requirements',
+          'All classroom helpers must complete an Ohio state background and health check before their first shift.',
+        ),
+        B.card(
+          'megaphone',
+          'amber',
+          'Participate in fundraising',
+          'Families take part in fundraising activities throughout the year. There are multiple events to choose from so you can get involved in ways that suit you.',
+        ),
+        B.card(
+          'calendar-days',
+          'sky',
+          'Attend mandatory meetings',
+          'Four meetings per year: the May Parent Conference, two Informational Meetings, and September Orientation.',
+        ),
+        B.card(
+          'piggy-bank',
+          'orange',
+          'Pay tuition on time',
+          'Tuition is due monthly, with an annual payment option for families who prefer to pay the full year up front.',
+        ),
+      ],
+    }),
+    B.stepList({
+      bg: 'white',
+      header: B.sh(
+        'Your Helper Day',
+        'A morning you will actually look forward to',
+        'Here is what happens from the moment you arrive to the moment you head home.',
+      ),
+      steps: [
+        {
+          title: 'Arrive 15 minutes early',
+          body: 'Help set up the classroom and get the playground or gym ready. Your teacher will walk you through exactly what needs doing.',
+        },
+        {
+          title: 'Welcome the children',
+          body: 'Jump straight into play. Encourage sharing, help kids settle in, and get ready to be asked to play — it is the best feeling.',
+        },
+        {
+          title: 'Join in all morning long',
+          body: 'Circle time, small group activities, the restroom routine, snack prep, and outdoor play. You are fully in the middle of it all.',
+        },
+        {
+          title: 'Snack time is the highlight',
+          body: 'Sit down with the kids and just listen. The stories you will hear are priceless. Every parent helper says this is their favorite part.',
+          note: 'Parents always leave wishing snack time lasted longer',
+        },
+        {
+          title: 'Head outside with the class',
+          body: 'Playground or gym time. Your energy sets the tone. Get in there and play — kids light up when helpers are having fun too.',
+        },
+        {
+          title: 'Quick tidy-up and you are done',
+          body: 'Follow the simple cleaning checklist to reset the room. Takes about 10 minutes.',
+        },
+      ],
+      footnote: 'Total time in class: roughly 2.5 hours start to finish.',
+    }),
+    B.schoolYear({
+      bg: 'grey',
+      header: B.sh(
+        'The School Year',
+        'A year full of things to look forward to',
+        'WCP is not just classes. The school year is packed with events, celebrations, and community moments that families talk about long after their kids graduate.',
+      ),
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 4,
+      header: B.sh(
+        'Stay Connected',
+        'Your window into the classroom — every week',
+        'WCP uses ClassDojo as our main classroom communication tool. Teachers use it to share photos, updates, reminders, and news from the school day — so you always know what is happening, even when you are not there.',
+      ),
+      cards: [
+        B.card(
+          'camera',
+          'orange',
+          'Classroom photos',
+          'See what your child worked on today. Teachers share photos and highlights from every session.',
+        ),
+        B.card(
+          'megaphone',
+          'sky',
+          'Announcements',
+          'Reminders, schedule changes, and event updates delivered directly to your phone or computer.',
+        ),
+        B.card(
+          'message-circle',
+          'green',
+          'Direct messaging',
+          'Send and receive private messages with your child’s teacher anytime during the year.',
+        ),
+        B.card(
+          'users',
+          'amber',
+          'Class community',
+          'Chat with other families in your class and build connections before you even meet in person.',
+        ),
+      ],
+      callout: B.callout(
+        'sky',
+        'ClassDojo is private and secure. Only enrolled WCP families and staff have access. No ads, no public sharing.',
+      ),
+    }),
+    B.testimonials({
+      bg: 'grey',
+      source: 'featured',
+      limit: 3,
+      header: B.sh(
+        'From Our Families',
+        'What co-op parents say',
+        'The co-op commitment sounds like work. Here is what families actually experience.',
+      ),
+    }),
+    B.cta({
+      title: 'Ready to be part of something different?',
+      lead: 'Enrollment for 2026-27 is open. Come for a tour, meet the teachers, and see the co-op in action.',
+      actions: [
+        B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
 // ---------------------------------------------------------------- why-wcp
 P(
   'why-wcp',
@@ -908,6 +1346,852 @@ P(
       actions: [
         B.act('Apply Now', 'accent', {
           url: 'mailto:president@westchesterpreschool.org?subject=Teaching%20at%20WCP',
+        }),
+      ],
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- virtual-tour
+P(
+  'virtual-tour',
+  'Virtual Tour',
+  B.hero({
+    eyebrow: 'See Our School · Photos Inside',
+    title: 'Take a look around before you visit.',
+    lead: 'Browse the classrooms, hear from our teachers, and explore the spaces your child will love. Then book a tour or jump straight to enrollment.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.gym,
+    imageAlt: 'A WCP teacher and children playing together on the gymnasium floor',
+    actions: [
+      B.act('Book a Tour', 'accent', { url: '/enroll' }),
+      B.act('Enroll Now', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.teachers({
+      bg: 'white',
+      header: B.sh('Meet Your Teachers', 'The people your child will love'),
+      staffRefs: ['staff-lisa', 'staff-erin'],
+    }),
+    B.splitMedia({
+      bg: 'grey',
+      header: B.sh(
+        'Our Spaces',
+        'Where your child will learn and play',
+        'WCP has two dedicated classrooms, a full gymnasium, and an outdoor playground. Every space is set up for hands-on exploration, movement, and fun.',
+      ),
+      rows: [
+        {
+          assetId: A.twosHero,
+          alt: 'Children exploring a sensory bin in the Twos and Threes classroom',
+          eyebrow: 'Bright, warm, and built for little hands.',
+          title: 'Twos & Threes Classroom',
+          body: 'Low tables, soft seating, sensory bins, a cozy reading nook, and art stations. Everything in this room is sized for two and three-year-olds and designed to invite exploration. This is where your child will have circle time on the rug, work on crafts at the tables, and play alongside friends and parent helpers every session.',
+        },
+        {
+          assetId: A.prekCircle,
+          alt: 'The Pre-K classroom during circle time, with the teacher reading to the class',
+          eyebrow: 'Kindergarten readiness starts here.',
+          title: 'Pre-K Classroom',
+          body: 'Learning centers for reading, math, science, and art. A calendar wall. A Handwriting Without Tears station. This room is set up for structured learning through play. Mrs. Lisa runs the same curriculum in both AM and PM sessions. By May, Pre-K graduates walk into kindergarten ready and confident.',
+        },
+        {
+          assetId: A.gym,
+          alt: 'A teacher and children playing together on the gymnasium floor',
+          eyebrow: 'The gym and playground.',
+          title: 'Movement & Outdoor Play',
+          body: 'Every session includes time for big-body movement. On nice days, kids head to the playground and open field to run, climb, and explore. On cold or rainy days, the gym has plenty of space for running, jumping, and games.',
+        },
+      ],
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'A Typical Morning',
+        'What school actually looks like',
+        'From drop-off to pickup, every morning has free play, circle time, a group activity, snack, and outdoor time.',
+      ),
+      cards: [
+        B.card(
+          'sun',
+          'orange',
+          'Arrival and free play',
+          'Kids arrive and settle in at their own pace. Parent helpers are already in the classroom welcoming everyone as they come through the door.',
+        ),
+        B.card(
+          'palette',
+          'sky',
+          'Activities and centers',
+          'Crafts, science, sensory play, and group projects. The teacher leads, parent helpers work at every table. Every activity is built around Ohio’s Early Learning Standards.',
+        ),
+        B.card(
+          'trees',
+          'green',
+          'Outdoor play and pickup',
+          'Every session ends on the playground. Kids burn energy, make friends, and transition out of school mode before families pick up.',
+        ),
+      ],
+    }),
+    B.classCards({
+      bg: 'grey',
+      header: B.sh(
+        'Find Your Class',
+        'Which class is right for your child?',
+        'Check your child’s age against September 30 of the enrollment year. Four classes for ages 2–5.',
+      ),
+      classRefs: ['class-twos', 'class-threes', 'class-pre-k-am', 'class-pre-k-pm'],
+    }),
+    B.cta({
+      title: 'Ready to see it in person?',
+      lead: 'Book an in-person tour and we will show you around. Tours are casual and low-pressure — come see the classrooms, meet the teachers, and ask anything.',
+      actions: [
+        B.act('Book a Tour', 'accent', { url: '/enroll' }),
+        B.act('Enroll Now', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- classes/twos
+P(
+  'classes/twos',
+  'Twos Class',
+  B.hero({
+    eyebrow: 'Now Enrolling 2026-27 · Ages 2+',
+    title: 'A gentle first step into school life.',
+    lead: 'The Twos class meets every Thursday morning. It is a calm, play-based introduction to being at school, made for children who are just starting out.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.twosHero,
+    imageAlt:
+      'Two Twos-class children exploring a sensory bin filled with beans and toy animals together',
+    actions: [
+      B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.cardGrid({
+      bg: 'grey',
+      columns: 4,
+      header: B.sh('Twos Class', 'Everything you need to know'),
+      cards: [
+        B.card(
+          'calendar-days',
+          'sky',
+          'Thursdays only',
+          'One morning a week, perfect for little ones just starting out.',
+        ),
+        B.card(
+          'clock',
+          'orange',
+          '9:30 am – 12:00 pm',
+          'Drop off, enjoy your morning, and pick up at noon.',
+        ),
+        B.card(
+          'cake',
+          'amber',
+          'Age 2 by Sept 30',
+          'Your child must turn 2 by September 30 of the enrollment year.',
+        ),
+        B.card(
+          'piggy-bank',
+          'green',
+          '$70 per month',
+          '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.',
+        ),
+      ],
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Class Size',
+        'Small classes. Real attention.',
+        'The Twos class is intentionally tiny. Seven children, one teacher, and two parent helpers every single session. Your child will never be a face in a crowd.',
+      ),
+      cards: [
+        B.card(
+          'users',
+          'amber',
+          '7 children max',
+          'The Twos class is capped at 7 children so every child gets real individual attention from the teacher.',
+        ),
+        B.card(
+          'graduation-cap',
+          'sky',
+          'Certified teacher',
+          'Mrs. Erin leads every Twos session. She knows every child by name before the second week.',
+        ),
+        B.card(
+          'heart-handshake',
+          'orange',
+          'Two parent helpers',
+          'Two co-op parents help in the classroom every session. One of them could be you.',
+        ),
+      ],
+      callout: B.callout(
+        'sky',
+        'Caregiver and Me option: if your child is not yet fully potty trained, a parent or guardian is welcome to stay in the building for the entire session. No child is ever turned away.',
+      ),
+    }),
+    B.schedule({
+      bg: 'grey',
+      header: B.sh(
+        'A Typical Thursday',
+        'What your child’s morning looks like',
+        'Each session is paced for two-year-olds: short bursts of activity, plenty of free time, and a snack and outdoor play to finish the morning.',
+      ),
+      entries: [
+        {
+          time: '9:30 am',
+          title: 'Greeting and Free Play',
+          desc: 'Kids arrive and settle in at their own pace. Free exploration of toys and materials.',
+        },
+        {
+          time: '9:45 am',
+          title: 'First Circle Time',
+          desc: 'Songs, simple activities, and group time on the rug together.',
+        },
+        {
+          time: '10:00 am',
+          title: 'Sensory Bins and Free Play',
+          desc: 'Hands-on sensory exploration and open play with parent helpers at every table.',
+        },
+        {
+          time: '10:50 am',
+          title: 'Snack Time',
+          desc: 'Parent helpers bring snack. Kids eat together and start winding down.',
+        },
+        {
+          time: '11:15 am',
+          title: 'Storytime',
+          desc: 'A quiet wind-down with books and songs before heading outside.',
+        },
+        {
+          time: '11:40 am',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Families pick up at 12:00 pm.',
+        },
+      ],
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Ohio Early Learning Standards',
+        'What your two-year-old learns at WCP',
+        'Our curriculum is built on Ohio’s Early Learning Content Standards. For two-year-olds, every goal is delivered through play.',
+      ),
+      cards: [
+        B.card(
+          undefined,
+          'sky',
+          'Reading and language',
+          'Children are introduced to letters, printed names, and how books work. They enjoy stories and rhymes and begin recognising print vs pictures.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Communication',
+          'Toddlers begin to speak more clearly to express ideas, feelings, and needs, follow simple directions, and grow their vocabulary through conversation.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Early math',
+          'An introduction to colours, numbers, and basic shapes through play, hands-on materials, and daily activities.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Social and emotional',
+          'Learning to separate from parents, take turns, share, and ask for things in appropriate ways, building confidence with teachers and peers.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Music and art',
+          'Group singing, art projects, and creative exploration with tools like scissors, paintbrushes, and cookie cutters.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Science and social studies',
+          'Exploring weather and seasons, animals, plants, and life cycles, plus family history, cultural traditions, and seasonal holidays.',
+        ),
+      ],
+      callout: B.callout(
+        'warm',
+        'Every goal above is drawn directly from Ohio’s Early Learning Content Standards and delivered through play, every single session.',
+      ),
+    }),
+    B.teachers({
+      bg: 'grey',
+      header: B.sh('Your Child’s Teacher', 'Meet Mrs. Erin'),
+      staffRefs: ['staff-erin'],
+    }),
+    B.testimonials({ bg: 'white', source: 'tag', tag: 'twos', limit: 1 }),
+    B.cta({
+      title: 'Ready to get your two-year-old started?',
+      lead: 'Enrollment for 2026-27 is open now. Send us a message and we will be in touch within a day or two.',
+      actions: [
+        B.act('Enroll Now', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- classes/threes
+P(
+  'classes/threes',
+  'Threes Class',
+  B.hero({
+    eyebrow: 'Now Enrolling 2026-27 · Ages 3+',
+    title: 'Building independence, one morning at a time.',
+    lead: 'The Threes class meets Monday through Wednesday. Kids this age are ready for more structure, more creativity, and more time with friends.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.threesHero,
+    imageAlt:
+      'A Threes-class group exploring a creek with a parent volunteer during an outdoor nature walk',
+    actions: [
+      B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.cardGrid({
+      bg: 'grey',
+      columns: 4,
+      header: B.sh('Threes Class', 'Everything you need to know'),
+      cards: [
+        B.card(
+          'calendar-days',
+          'green',
+          'Mon, Tue, Wed',
+          'Three mornings a week gives kids real routine and rhythm.',
+        ),
+        B.card(
+          'clock',
+          'sky',
+          '9:30 am – 12:00 pm',
+          'Drop off, enjoy your morning, and pick up at noon.',
+        ),
+        B.card(
+          'cake',
+          'amber',
+          'Age 3 by Sept 30',
+          'Your child must turn 3 by September 30 of the enrollment year.',
+        ),
+        B.card(
+          'piggy-bank',
+          'orange',
+          '$150 per month',
+          '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.',
+        ),
+      ],
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Class Size',
+        'Small classes. Real attention.',
+        'Twelve children, one teacher, and two parent helpers every session. Small enough that every child is known. Large enough that friendships form fast.',
+      ),
+      cards: [
+        B.card(
+          'users',
+          'green',
+          '12 children max',
+          'Small enough for individual attention, large enough for real friendships.',
+        ),
+        B.card(
+          'graduation-cap',
+          'sky',
+          'Certified teacher',
+          'Mrs. Erin leads every Threes session with years of experience in early childhood education.',
+        ),
+        B.card(
+          'heart-handshake',
+          'orange',
+          'Two parent helpers',
+          'Two co-op parents help in the classroom every session. You will be one of them 2 to 3 times a month.',
+        ),
+      ],
+      callout: B.callout(
+        'sky',
+        'Caregiver and Me option: if your child is not yet fully potty trained, a parent or guardian is welcome to stay in the building for the entire session. No child is ever turned away.',
+      ),
+    }),
+    B.schedule({
+      bg: 'grey',
+      header: B.sh(
+        'A Typical Morning',
+        'What your child’s day looks like',
+        'The Threes day has more structure: two circle times, group activities, and centers, while still leaving room for free play and outdoor time every session.',
+      ),
+      entries: [
+        {
+          time: '9:30 am',
+          title: 'Greeting and Free Play',
+          desc: 'Kids arrive and start playing with friends right away.',
+        },
+        {
+          time: '9:45 am',
+          title: 'First Circle Time',
+          desc: 'Songs, calendar, and group conversation to start the morning.',
+        },
+        {
+          time: '10:00 am',
+          title: 'Group Activity',
+          desc: 'A teacher-led activity: crafts, science, cooking, or a themed project.',
+        },
+        {
+          time: '10:10 am',
+          title: 'Centers and Free Play',
+          desc: 'Open play across activity stations with parent helpers.',
+        },
+        {
+          time: '10:50 am',
+          title: 'Snack Time',
+          desc: 'Parent helpers bring snack. Kids eat and talk together.',
+        },
+        {
+          time: '11:15 am',
+          title: 'Second Circle Time',
+          desc: 'Stories, literacy activities, and a group wind-down before outdoor play.',
+        },
+        {
+          time: '11:40 am',
+          title: 'Outdoor Play and Dismissal',
+          desc: 'Playground time. Families pick up at 12:00 pm.',
+        },
+      ],
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Ohio Early Learning Standards',
+        'What your three-year-old learns at WCP',
+        'The Threes curriculum introduces real literacy and number skills alongside science, social studies, and creative expression, all grounded in Ohio’s Early Learning Standards.',
+      ),
+      cards: [
+        B.card(
+          undefined,
+          'sky',
+          'Reading and phonics',
+          'Recognising and naming letters, identifying rhymes, spotting their own name in print, and responding to read-alouds.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Writing',
+          'Practising writing from top to bottom and printing letters from their own name with assistance.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Math',
+          'Counting to 10, identifying numerals 0-5, naming shapes, and sorting by size, colour, and shape.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Social and emotional',
+          'Following classroom routines, self-confidence, sharing and turn-taking, and respecting authority.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Fine and gross motor',
+          'Crayons, scissors, and clay build small-muscle control; climbing and balancing build coordination for kindergarten.',
+        ),
+        B.card(
+          undefined,
+          'sky',
+          'Science and social studies',
+          'Weather, seasons, animals, plants, and life cycles, plus family heritage, community helpers, and holidays.',
+        ),
+      ],
+      callout: B.callout(
+        'warm',
+        'Every goal above is drawn directly from Ohio’s Early Learning Content Standards and delivered through play, every single session.',
+      ),
+    }),
+    B.teachers({
+      bg: 'grey',
+      header: B.sh('Your Child’s Teacher', 'Meet Mrs. Erin'),
+      staffRefs: ['staff-erin'],
+    }),
+    B.testimonials({ bg: 'white', source: 'tag', tag: 'threes', limit: 1 }),
+    B.cta({
+      title: 'Ready to enroll your three-year-old?',
+      lead: 'Enrollment for 2026-27 is open now. Reach out and we will get back to you within a day or two.',
+      actions: [
+        B.act('Enroll Now', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- classes/pre-k
+P(
+  'classes/pre-k',
+  'Pre-K Class',
+  B.hero({
+    eyebrow: 'Now Enrolling 2026-27 · Ages 4+ · AM and PM',
+    title: 'Ready for kindergarten. Ready for anything.',
+    lead: 'Pre-K at WCP gives four-year-olds the skills, confidence, and love of learning they need to walk into kindergarten ready. Two session options to fit your family.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.prekHero,
+    imageAlt:
+      'A Pre-K teacher reads to the class during circle time, with a second teacher assisting',
+    actions: [
+      B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'Class Size',
+        'Small classes. Real attention.',
+        'Both Pre-K sessions are capped at 12 children with one lead teacher: small enough that Mrs. Lisa knows every child deeply, large enough for the social experience of a real classroom.',
+      ),
+      cards: [
+        B.card(
+          'users',
+          'orange',
+          '12 children max',
+          'Both AM and PM sessions are capped at 12 children, well below the averages at larger preschools.',
+        ),
+        B.card(
+          'graduation-cap',
+          'sky',
+          'Mrs. Lisa, lead teacher',
+          'A certified early childhood educator who leads every Pre-K session, AM and PM, with years of experience.',
+        ),
+        B.card(
+          'calendar-days',
+          'green',
+          'Annual conferences',
+          'Pre-K families receive parent-teacher conferences early in the year to help with kindergarten placement.',
+        ),
+      ],
+    }),
+    B.classCards({
+      bg: 'white',
+      header: B.sh(
+        'Pre-K Class',
+        'Two options to fit your schedule',
+        'Both sessions cover the same curriculum. Pick the time that works best for your family.',
+      ),
+      classRefs: ['class-pre-k-am', 'class-pre-k-pm'],
+    }),
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'Ohio Early Learning Standards',
+        'What your Pre-K child learns at WCP',
+        'Kindergarten readiness is the heart of our Pre-K program. Every goal below is drawn directly from Ohio’s Early Learning Content Standards and delivered through a structured but playful daily routine.',
+      ),
+      cards: [
+        B.card(
+          'book-open',
+          'orange',
+          'Reading and phonics',
+          'Children recognize upper and lower case letters, identify rhymes, isolate syllables through clapping and movement, and begin reading their own first and last name. They predict story events, answer comprehension questions, and retell stories after read-alouds.',
+        ),
+        B.card(
+          'pencil',
+          'sky',
+          'Writing',
+          'Using the Handwriting Without Tears approach, children practice printing letters of their name and other meaningful words. They learn proper letter formation, write from top to bottom in horizontal rows, and develop a mature pencil grip through daily fine motor exercises.',
+        ),
+        B.card(
+          'message-circle',
+          'green',
+          'Communication',
+          'Children speak clearly to express ideas and needs, sustain back-and-forth conversations, recite their home address and phone number, and participate in poems, chants, and nursery rhymes. They also state their parents’ names and follow multi-step oral directions.',
+        ),
+        B.card(
+          'calculator',
+          'amber',
+          'Math',
+          'Counting to 20, identifying numerals 0–20, recognizing coins and their values, identifying 2D and 3D shapes, creating and extending patterns, differentiating left from right, and using the language of time — day, night, yesterday, today, and tomorrow.',
+        ),
+        B.card(
+          'hand',
+          'sky',
+          'Fine and gross motor',
+          'Tracing lines, cutting straight and curved lines, drawing from memory, working puzzles with ten or more pieces, and drawing a person with full body detail. Gross motor includes hopping, skipping, balancing, catching a ball, and climbing with alternating feet.',
+        ),
+        B.card(
+          'microscope',
+          'orange',
+          'Science and social studies',
+          'Weather, seasons, planets, life cycles, dinosaurs, forces and motion, dental health, and our bodies. Social studies covers U.S. symbols, the Pledge of Allegiance, authority figures, community helpers, maps, and different environments.',
+        ),
+      ],
+    }),
+    B.teachers({
+      bg: 'white',
+      header: B.sh('Your Child’s Teacher', 'Meet Mrs. Lisa'),
+      staffRefs: ['staff-lisa'],
+    }),
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'Kindergarten Readiness',
+        'What WCP Pre-K graduates walk in with',
+        'Our curriculum is built around Ohio’s Early Learning Content Standards, aligned with what kindergarten teachers expect on day one.',
+      ),
+      cards: [
+        B.card(
+          'book-open',
+          'orange',
+          'Literacy',
+          'Alphabet recognition, phonics basics, and comprehension through daily storytime and reading centers.',
+        ),
+        B.card(
+          'calculator',
+          'sky',
+          'Math',
+          'Counting, patterning, shapes, classifying, and number recognition through hands-on activities every session.',
+        ),
+        B.card(
+          'file-check',
+          'green',
+          'Fine motor',
+          'Handwriting Without Tears builds the pencil control kids need for writing in kindergarten.',
+        ),
+        B.card(
+          'heart-handshake',
+          'amber',
+          'Social skills',
+          'Cooperating, listening, following routines, and managing emotions — the skills teachers say matter most.',
+        ),
+        B.card(
+          'microscope',
+          'sky',
+          'Science',
+          'Curiosity-driven exploration through experiments, sensory bins, and outdoor observation.',
+        ),
+        B.card(
+          'sparkles',
+          'orange',
+          'Independence',
+          'Managing belongings, following directions, and navigating routines without constant adult support.',
+        ),
+      ],
+    }),
+    B.testimonials({ bg: 'white', source: 'tag', tag: 'prek', limit: 1 }),
+    B.cta({
+      title: 'Give your four-year-old the best start.',
+      lead: 'Enrollment for 2026-27 Pre-K is open now. AM and PM spots fill up, so reach out soon.',
+      actions: [
+        B.act('Enroll Now', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      ],
+      note: CALL_NOTE,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- donate
+P(
+  'donate',
+  'Donate',
+  B.hero({
+    eyebrow: 'Support West Chester Preschool',
+    title: 'Help a child’s school year shine.',
+    lead: 'WCP has been a cornerstone of the West Chester community since 1969. Every dollar donated goes directly toward enriching classrooms, supporting teachers, and keeping our co-op strong for the families who need us most.',
+    height: 'tall',
+    mediaType: 'none',
+    actions: [B.act('Make a Gift', 'accent', { url: '#give' })],
+  }),
+  [
+    B.cardGrid({
+      bg: 'white',
+      columns: 4,
+      header: B.sh(
+        'Your Impact',
+        'Every gift goes straight to the classroom',
+        'WCP is a parent-run cooperative. There is no large administrative overhead — donations fund things families and teachers can actually see and use.',
+      ),
+      cards: [
+        B.card(
+          'palette',
+          'orange',
+          'Classroom Supplies',
+          'Covers a full month of art supplies for one class — paint, paper, glue, and craft materials kids love.',
+          '$25',
+        ),
+        B.card(
+          'book-open',
+          'sky',
+          'New Books',
+          'Adds a collection of new books to a classroom library that children read every single day.',
+          '$50',
+        ),
+        B.card(
+          'puzzle',
+          'green',
+          'Learning Materials',
+          'Funds sensory bins, puzzles, or manipulatives — the hands-on tools that make play-based learning work.',
+          '$100',
+        ),
+        B.card(
+          'star',
+          'amber',
+          'Enrichment Programs',
+          'Sponsors a special event or enrichment session for all WCP children — field trips, guests, and seasonal celebrations.',
+          '$250+',
+        ),
+      ],
+    }),
+    B.cta({
+      title: 'Ready to support WCP?',
+      lead: 'Online giving is coming soon. In the meantime, the fastest way to give is to reach the treasurer directly.',
+      tone: 'cream',
+      actions: [
+        B.act('Email the Treasurer', 'primary', {
+          url: 'mailto:treasurer@westchesterpreschool.org',
+        }),
+        B.act('Call (513) 202-6187', 'outline', { url: 'tel:5132026187' }),
+      ],
+      note: 'Secure giving · 100% to WCP · Receipt on request',
+    }),
+    B.cardGrid({
+      bg: 'white',
+      columns: 3,
+      header: B.sh(
+        'Where Your Money Goes',
+        'Transparent. Local. All for the kids.',
+        'Our fundraising is managed by the WCP Vice President in coordination with the Executive Board. All spending decisions are made at open monthly board meetings where any family can attend and participate.',
+      ),
+      cards: [
+        B.card(
+          'blocks',
+          'orange',
+          'Classroom resources and supplies',
+          'Art materials, sensory tools, games, books, and the hands-on supplies that fill our classrooms with things for children to explore and create with.',
+        ),
+        B.card(
+          'trees',
+          'green',
+          'Playground and facility upgrades',
+          'Donations help maintain and improve our outdoor play space, gym equipment, and classroom furnishings — keeping the school a safe, joyful place to learn.',
+        ),
+        B.card(
+          'party-popper',
+          'sky',
+          'Enrichment and special events',
+          'Field trips, enrichment programs, seasonal celebrations, and the extra experiences that make a school year memorable for children and families alike.',
+        ),
+        B.card(
+          'graduation-cap',
+          'amber',
+          'Teacher appreciation and development',
+          'Extra fundraising goes toward teacher bonuses, raises, and professional development. Our teachers are the heart of WCP and we work to show it.',
+        ),
+        B.card(
+          'piggy-bank',
+          'green',
+          'Keeping tuition affordable',
+          'Donations help close the gap between tuition revenue and operating costs. The less we need to raise tuition, the more accessible WCP stays for every family.',
+        ),
+        B.card(
+          'hand-heart',
+          'orange',
+          'Community programs',
+          'Support for open house events, new family orientations, and outreach that helps families discover WCP and feel at home when they arrive.',
+        ),
+      ],
+    }),
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'More Ways to Help',
+        'Not just cash — every kind of support counts',
+        'Money is helpful. But WCP also thrives on in-kind support, business partnerships, and community word-of-mouth.',
+      ),
+      cards: [
+        B.card(
+          'building-2',
+          'sky',
+          'Business and corporate giving',
+          'Local businesses can sponsor classroom supplies, enrichment events, or annual fundraisers. Your business name is acknowledged in school communications. Email us to discuss partnership options.',
+        ),
+        B.card(
+          'shopping-bag',
+          'green',
+          'In-kind donations',
+          'New or gently-used classroom materials, art supplies, books, games, and sensory items are always welcome. Reach out before donating so we can confirm what is most needed.',
+        ),
+        B.card(
+          'megaphone',
+          'orange',
+          'Spread the word',
+          'Leave a Google or Facebook review. Share WCP posts on social media. Tell a friend who is looking for a preschool. Word-of-mouth is the most powerful support a small school can get.',
+        ),
+      ],
+    }),
+    B.faqSection({
+      bg: 'white',
+      source: 'inline',
+      header: B.sh('Questions About Giving', 'Donation FAQ'),
+      inlineItems: [
+        {
+          q: 'Is my donation tax-deductible?',
+          a: 'WCP is a nonprofit parent cooperative. We recommend speaking with your tax advisor regarding deductibility. For questions about our tax status or to request documentation, email treasurer@westchesterpreschool.org.',
+        },
+        {
+          q: 'How is my donation used?',
+          a: 'All donations support WCP’s operating budget and enrichment programs. This includes classroom supplies, playground upkeep, teacher support, special events, and keeping tuition affordable for enrolled families. Spending decisions are made by the volunteer parent board at open monthly meetings.',
+        },
+        {
+          q: 'Can I set up a recurring monthly gift?',
+          a: 'Yes. Once online giving is live, our donation form will support both one-time and recurring monthly gifts. Monthly giving helps us plan ahead and is especially valuable for a small school like WCP. In the meantime, contact the treasurer to arrange recurring support.',
+        },
+        {
+          q: 'Can my business make a donation or sponsorship?',
+          a: 'Absolutely. We welcome business sponsorships of classroom materials, enrichment events, and annual fundraisers. Your support is acknowledged in school communications. Email president@westchesterpreschool.org to start a conversation.',
+        },
+        {
+          q: 'Will I receive a receipt for my donation?',
+          a: 'Yes. A receipt is provided for every gift — keep it for your records. Email the treasurer if you need documentation for a specific donation.',
+        },
+        {
+          q: 'I don’t have children at WCP — can I still donate?',
+          a: 'Of course. WCP has been part of the West Chester community since 1969. We welcome support from alumni families, neighbors, local businesses, and anyone who values quality early childhood education in our area.',
+        },
+      ],
+    }),
+    B.cta({
+      title: 'Every gift makes a difference.',
+      lead: 'Your donation, whatever the size, makes a real difference for the children and families in our community.',
+      tone: 'navy',
+      actions: [
+        B.act('Email the Treasurer', 'accent', {
+          url: 'mailto:treasurer@westchesterpreschool.org',
         }),
       ],
     }),
