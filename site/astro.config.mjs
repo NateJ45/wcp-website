@@ -43,6 +43,19 @@ export default defineConfig({
   site: 'https://www.westchesterpreschool.org',
   output: 'static',
 
+  // Redirects — old URLs → new, so links and search rankings survive the move
+  // off Squarespace. Add one line per old path when the domain is cut over
+  // (get the old URL list from the current site's sitemap). These emit real
+  // 301s via the Cloudflare adapter. See docs/REDIRECTS.md.
+  redirects: {
+    // Friendly aliases (safe regardless of the old site):
+    '/blog': '/news',
+    '/calendar': '/events',
+    // Old Squarespace paths go here, e.g.:
+    // '/our-classes': '/classes/twos',
+    // '/about-us': '/about',
+  },
+
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'viewport',
