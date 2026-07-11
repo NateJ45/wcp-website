@@ -125,7 +125,7 @@ export const guides: Guide[] = [
         items: [
           'Open **Pages**, then click the page you want. A live preview of the page opens on the right.',
           'Click any text or photo in the preview. The matching box opens on the left, ready to edit.',
-          'Type your change. You will see it update in the preview as you go.',
+          'Type your change. A moment after you pause, the preview refreshes on its own so you can see how it looks.',
           'When it looks right, click **Publish**.',
         ],
       },

@@ -118,6 +118,18 @@ component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
   same query through the draft-aware, stega-enabled `cms-preview.ts` client. One file
   serves every page's preview.
 
+**Auto-refresh as you edit.** The section content is server-rendered Astro, so it can't
+re-render on the client the way a React app would. Instead
+[`VisualEditingOverlay.tsx`](../src/components/preview/VisualEditingOverlay.tsx) gives
+`<VisualEditing>` a `refresh` handler: when the Studio reports a draft mutation over the
+comlink (no browser token involved), it soft-refetches the current preview URL and swaps
+in the fresh `#main`. So edits appear on their own ~1s after you pause typing — no full
+reload, no manual refresh — while click-to-edit keeps working (the swapped HTML is
+draft-fetched with stega). It is intentionally not per-keystroke: that would need the
+whole renderer ported to React, recreating the drift the builder avoids. (For
+`source: 'mutation'` the library has no default behavior, which is why, without this
+handler, the preview only updated on a manual browser reload.)
+
 ## Navigation
 
 The header/footer menus are a Sanity `navigation` singleton (the "Menus" doc:

@@ -19,6 +19,10 @@ import { site as siteFallback } from '@/data/site';
 
 const draftMode = Astro.cookies.has(perspectiveCookieName);
 const slug = (Astro.params.slug as string | undefined) || 'home';
+// Page doc ids are `page-<slug>` with slashes turned to dashes (see the
+// migration + PAGE builder). The overlay uses this to know when an edit
+// applies to the page currently on screen.
+const pageId = `page-${slug.replace(/\//g, '-')}`;
 
 interface PageDoc {
   title?: string;
@@ -36,7 +40,7 @@ if (!page) {
 }
 ---
 
-<PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode}>
+<PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode} pageId={pageId}>
   {page.hero && <PageHero hero={page.hero} linkBase="/preview" />}
   <SectionRenderer sections={page.sections} linkBase="/preview" site={site} />
 </PreviewLayout>

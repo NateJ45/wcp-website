@@ -22,8 +22,10 @@ import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx'
 interface Props {
   title: string;
   draftMode: boolean;
+  /** Doc id this preview renders (e.g. "page-classes-twos"), for auto-refresh. */
+  pageId: string;
 }
-const { title, draftMode } = Astro.props;
+const { title, draftMode, pageId } = Astro.props;
 ---
 
 <!doctype html>
@@ -42,7 +44,7 @@ const { title, draftMode } = Astro.props;
     {
       draftMode && (
         <>
-          <VisualEditingOverlay client:only="react" />
+          <VisualEditingOverlay client:only="react" pageId={pageId} />
           <a
             href="/api/draft-mode/disable"
             class="fixed right-4 bottom-4 z-50 rounded-full bg-navy px-4 py-2 text-sm font-bold text-white shadow-lg hover:bg-heading"
