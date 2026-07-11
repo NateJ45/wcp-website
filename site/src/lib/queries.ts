@@ -43,9 +43,9 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "noticeBarSection" => { "pageSlug": page->slug },
     _type == "testimonialSection" => {
       "items": select(
-        source == "featured" => *[_type == "testimonial" && featured == true] | order(order asc){ quote, author, role },
-        source == "all" => *[_type == "testimonial"] | order(order asc){ quote, author, role },
-        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(order asc){ quote, author, role },
+        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role },
+        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role },
+        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role },
         source == "manual" => manualItems[]->{ quote, author, role }
       )
     },
@@ -62,10 +62,10 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       )
     },
     _type == "schoolYearSection" => {
-      "events": *[_type == "schoolYearEvent"] | order(order asc){ month, title, body, icon, accent }
+      "events": *[_type == "schoolYearEvent"] | order(orderRank){ month, title, body, icon, accent }
     },
     _type == "tuitionTableSection" => {
-      "classItems": *[_type == "class"] | order(order asc){ name, days, time, age, monthly, annual, studentFee },
+      "classItems": *[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee },
       "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
     }
   }
@@ -113,9 +113,9 @@ export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortNa
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
-export const SCHOOL_YEAR_EVENTS_QUERY = `*[_type == "schoolYearEvent"] | order(order asc){ month, title, body, icon, accent }`;
+export const SCHOOL_YEAR_EVENTS_QUERY = `*[_type == "schoolYearEvent"] | order(orderRank){ month, title, body, icon, accent }`;
 
-export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(order asc){ name, days, time, age, monthly, annual, studentFee }`;
+export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee }`;
 
 export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
 
@@ -134,5 +134,5 @@ export function testimonialsQuery(
     featuredOnly ? 'featured == true' : null,
   ].filter(Boolean);
   const range = limit ? `[0...${limit}]` : '';
-  return `*[${filters.join(' && ')}] | order(order asc)${range}{ quote, author, role, tags, featured }`;
+  return `*[${filters.join(' && ')}] | order(orderRank)${range}{ quote, author, role, tags, featured }`;
 }

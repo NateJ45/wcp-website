@@ -195,6 +195,19 @@ the build token available:
 node scripts/migrate-pagebuilder.mjs
 ```
 
+## Drag-to-reorder (orderable lists)
+
+`class`, `testimonial`, and `schoolYearEvent` use
+[`@sanity/orderable-document-list`](https://www.sanity.io/plugins/orderable-document-list):
+their Studio lists have drag handles, and the site renders them in that order. Each
+schema has `orderRankField()` + `orderRankOrdering`, their old `order` number field is
+hidden, `structure.ts` uses `orderableDocumentListDeskItem`, and the site queries sort by
+`order(orderRank)`. Existing docs were seeded from the old `order` values via
+[`scripts/seed-order-ranks.mjs`](../scripts/seed-order-ranks.mjs) (LexoRank, idempotent),
+so ordering was preserved with no downtime — **run that script once after adding a new
+orderable type.** `faqItem` is deliberately **not** orderable: it groups by category, so a
+flat drag list would be misleading; it keeps its `order` field.
+
 ## How a change goes live
 
 A volunteer publishes in the Studio → the Sanity webhook fires

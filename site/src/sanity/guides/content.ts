@@ -543,6 +543,12 @@ export const guides: Guide[] = [
         title: 'Get permission first.',
         text: 'Before quoting a family by name on the public site, make sure they are comfortable with it.',
       },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Drag to reorder',
+        text: 'In the Testimonials list, grab the handle on the left of a quote and drag it up or down. The order you set is the order the site shows. The same drag-to-reorder works for Classes and School-Year Events.',
+      },
     ],
   },
 

@@ -1,4 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 
 // =============================================================================
 // Class / Program
@@ -179,15 +180,17 @@ export const classType = defineType({
       group: 'details',
       description: 'The learning-focus cards shown on the class page.',
     }),
+    // Legacy manual sort — superseded by drag-to-reorder (orderRank), hidden.
     defineField({
       name: 'order',
       title: 'Sort order',
       type: 'number',
       initialValue: 0,
-      description: 'Lower numbers show first (Twos → Threes → Pre-K…).',
+      hidden: true,
     }),
+    orderRankField({ type: 'class' }),
   ],
-  orderings: [{ title: 'Sort order', name: 'order', by: [{ field: 'order', direction: 'asc' }] }],
+  orderings: [orderRankOrdering],
   preview: {
     select: { name: 'name', time: 'time', monthly: 'monthly', media: 'heroImage' },
     prepare({ name, time, monthly, media }) {

@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 
 // =============================================================================
 // Testimonial — a parent/family quote
@@ -54,9 +55,18 @@ export const testimonial = defineType({
       initialValue: false,
       description: 'Featured quotes appear on the homepage and top of the reviews wall.',
     }),
-    defineField({ name: 'order', title: 'Sort order', type: 'number', initialValue: 0 }),
+    // Legacy manual sort — superseded by drag-to-reorder (orderRank). Hidden so
+    // volunteers use the drag handles in the Testimonials list instead.
+    defineField({
+      name: 'order',
+      title: 'Sort order',
+      type: 'number',
+      initialValue: 0,
+      hidden: true,
+    }),
+    orderRankField({ type: 'testimonial' }),
   ],
-  orderings: [{ title: 'Sort order', name: 'order', by: [{ field: 'order', direction: 'asc' }] }],
+  orderings: [orderRankOrdering],
   preview: {
     select: { quote: 'quote', author: 'author', role: 'role', featured: 'featured' },
     prepare({ quote, author, role, featured }) {

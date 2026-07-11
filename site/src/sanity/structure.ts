@@ -1,5 +1,6 @@
 import type { StructureResolver, StructureBuilder } from 'sanity/structure';
 import type { ComponentType } from 'react';
+import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list';
 import { guides } from './guides/content';
 import { makeGuideView } from './components/GuideView';
 import { WelcomePane } from './components/WelcomePane';
@@ -80,7 +81,7 @@ const PLACED = new Set([
   'directoryEntry',
 ]);
 
-export const structure: StructureResolver = (S) =>
+export const structure: StructureResolver = (S, context) =>
   S.list()
     .title('West Chester Preschool')
     .items([
@@ -123,12 +124,32 @@ export const structure: StructureResolver = (S) =>
 
       S.divider(),
 
-      S.documentTypeListItem('class').title('Classes').icon(emoji('🎒')),
+      // Drag-to-reorder lists (orderable-document-list): the order you set by
+      // dragging is exactly the order the site shows.
+      orderableDocumentListDeskItem({
+        type: 'class',
+        S,
+        context,
+        title: 'Classes',
+        icon: emoji('🎒'),
+      }),
       S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
       singleton(S, 'feeSchedule', 'Tuition & Fees', emoji('💳')),
       S.documentTypeListItem('faqItem').title('FAQs').icon(emoji('❓')),
-      S.documentTypeListItem('testimonial').title('Testimonials').icon(emoji('💬')),
-      S.documentTypeListItem('schoolYearEvent').title('School-Year Events').icon(emoji('📅')),
+      orderableDocumentListDeskItem({
+        type: 'testimonial',
+        S,
+        context,
+        title: 'Testimonials',
+        icon: emoji('💬'),
+      }),
+      orderableDocumentListDeskItem({
+        type: 'schoolYearEvent',
+        S,
+        context,
+        title: 'School-Year Events',
+        icon: emoji('📅'),
+      }),
       S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 

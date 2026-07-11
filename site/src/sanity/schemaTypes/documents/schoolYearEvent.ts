@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 
 // School-year calendar highlight (shown on Co-op Life + Why WCP as a timeline).
 export const schoolYearEvent = defineType({
@@ -36,14 +37,16 @@ export const schoolYearEvent = defineType({
       },
       initialValue: 'sky',
     }),
+    // Legacy manual sort — superseded by drag-to-reorder (orderRank), hidden.
     defineField({
       name: 'order',
       title: 'Sort order',
       type: 'number',
       initialValue: 0,
-      description: 'Chronological order through the year (lower shows first).',
+      hidden: true,
     }),
+    orderRankField({ type: 'schoolYearEvent' }),
   ],
-  orderings: [{ title: 'Sort order', name: 'order', by: [{ field: 'order', direction: 'asc' }] }],
+  orderings: [orderRankOrdering],
   preview: { select: { title: 'title', subtitle: 'month' } },
 });
