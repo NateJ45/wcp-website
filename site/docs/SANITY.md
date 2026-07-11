@@ -1,15 +1,40 @@
-# Sanity — the content system behind the Family Hub
+# Sanity — the content system behind the whole site
 
-Sanity is where the hub's private content lives (announcements, documents, per-class
-notes, and the family directory). The website reads it **server-side, with a token,
-behind the family gate** — the dataset is private, so PII never touches the public site
-or git. Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
+Sanity is the CMS behind **both** halves of the site:
 
-- **Project ID:** `niemhgev` · **Dataset:** `production` (private)
+1. **The public marketing site** is a full **page builder** — every page is a Sanity
+   document a volunteer composes from a palette of sections. These are read at **build
+   time** and prerendered to static HTML. See [PAGE_BUILDER.md](PAGE_BUILDER.md).
+2. **The Family Hub** private content (announcements, documents, per-class notes, the
+   family directory) is read **server-side, with a token, behind the family gate** —
+   the dataset is private, so PII never touches the public site or git.
+
+Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
+
+- **Project ID:** `niemhgev` · **Dataset:** `production` (private) · **API version:** `2025-01-01`
 - **Studio config:** [sanity.config.ts](../sanity.config.ts) · schemas in [src/sanity/schemaTypes/](../src/sanity/schemaTypes/)
-- **Read client:** [src/lib/sanity.ts](../src/lib/sanity.ts) (server-only, token, `useCdn: false`)
+- **Read clients:** [src/lib/cms.ts](../src/lib/cms.ts) (public build-time reads),
+  [src/lib/sanity.ts](../src/lib/sanity.ts) (gated hub, request-time),
+  [src/lib/cms-preview.ts](../src/lib/cms-preview.ts) (Studio draft preview, stega on)
 
 ## Content types (what board members can edit)
+
+**Public site (built into static pages):**
+
+| Type                  | What it feeds                                                                   |
+| --------------------- | ------------------------------------------------------------------------------- |
+| **Page**              | Every public page, as a hero + a stack of sections (the page builder)           |
+| **Menus**             | The header and footer navigation (singleton)                                    |
+| **Class**             | Each class's schedule, ages, tuition — used on its page, the tuition table, hub |
+| **Staff**             | Teacher names and bios (one source, shown everywhere they appear)               |
+| **Tuition & Fees**    | Registration / participation fees and payment info (singleton)                  |
+| **FAQ**               | The FAQ page, grouped by category                                               |
+| **Testimonial**       | Parent quotes (feature one for the homepage wall)                               |
+| **School-Year Event** | The school-year timeline                                                        |
+| **Legal page**        | Privacy / Terms / Accessibility long-form bodies                                |
+| **Site Settings**     | Phone, email, address, social, current school year (singleton, used everywhere) |
+
+**Family Hub (read live behind the gate):**
 
 | Type                   | What it feeds                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------ |
@@ -19,7 +44,8 @@ or git. Content that stays on Google (Calendar, Fundraising) is **not** in Sanit
 | **Directory — Family** | Family Directory (**PII**; only entries marked "Show in directory" appear)           |
 
 Editors get bold/italic/links/lists and a couple of headings — no raw HTML, no color or
-font controls. They can't break the design.
+font controls, and (in the page builder) no spacing or layout knobs. They can't break the
+design. See [PAGE_BUILDER.md](PAGE_BUILDER.md) for why that brand-lock is deliberate.
 
 ## The Studio
 
@@ -58,13 +84,18 @@ If `westchesterpreschool` is taken, change `studioHost` in [sanity.cli.ts](../sa
 
 ## Secrets & config
 
-- **`SANITY_TOKEN`** (Editor token) is a **server-only secret**. It lives in `.dev.vars`
-  (gitignored) for local dev; for production set it as a Cloudflare secret:
-  ```sh
-  npx wrangler secret put SANITY_TOKEN
-  ```
-- `projectId` / `dataset` are **not** secret (the Studio bundles them) — they're in
-  `astro.config.mjs`, `sanity.config.ts`, and `src/sanity/env.ts`.
+**`SANITY_TOKEN`** (Editor token) is a **server-only secret**, never committed. It is read
+in two different contexts, so it lives in a few places:
+
+| Where                         | Why                                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `.env` (gitignored)           | Local **build** — `cms.ts` reads public page content via `import.meta.env` at build time             |
+| `.dev.vars` (gitignored)      | Local **Worker runtime** — the gated hub reads via `cloudflare:workers` env under `wrangler`/preview |
+| GitHub `secrets.SANITY_TOKEN` | CI, Lighthouse, and Deploy builds (all three pass it — a tokenless build emits an empty site)        |
+| Cloudflare secret             | The deployed Worker's runtime (gated hub) — set with `npx wrangler secret put SANITY_TOKEN`          |
+
+`projectId` / `dataset` are **not** secret (the Studio bundles them) — they're in
+`astro.config.mjs`, `sanity.config.ts`, and `src/sanity/env.ts`.
 
 ## Auto-deploy on publish (Sanity → GitHub Actions → Cloudflare)
 

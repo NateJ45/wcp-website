@@ -1,0 +1,148 @@
+# The page builder — how the public site is composed
+
+The entire public marketing site is **CMS-driven**. Every page is a Sanity `page`
+document made of a fixed hero plus an ordered stack of **sections** chosen from a
+fixed palette, rendered by Astro through the site's existing components. A volunteer
+composes pages in the Studio (Squarespace-style); production stays static.
+
+This is the single most important thing to understand about the codebase. The goal
+was **board buy-in**: prove a non-technical volunteer can edit every page without
+touching code. It is shipped and live.
+
+## The `page` document
+
+Defined in [`src/sanity/schemaTypes/documents/page.ts`](../src/sanity/schemaTypes/documents/page.ts).
+
+```
+page {
+  title, slug,                 // slug is a STRING + regex, not Sanity's slug type
+  hero,                        // a dedicated heroObject FIELD (not a section) — always exactly one, at top
+  sections[],                  // the editable body: an ordered array of section objects
+  seoTitle, seoDescription, ogImage
+}
+```
+
+- **The hero is a fixed field, not the first array item.** The marketing `Header`
+  overlay hard-requires exactly one hero at the top of every page, so making it a
+  field means a volunteer cannot delete, reorder, or duplicate it.
+- **Slug is a plain string validated by regex** (`^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$`),
+  because Sanity's built-in `slug` type slugifies away the slashes that nested routes
+  like `classes/twos` depend on. Doc ids are `page-<slug>` with slashes turned to
+  dashes (`page-classes-twos`). `home` maps to `/`.
+
+## The section palette
+
+17 body section types + the hero. Registered in
+[`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts);
+each maps 1:1 to an existing presentational component.
+
+| Section type              | Renders through                   | Used for                                                               |
+| ------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| `heroObject` (page field) | `Hero.astro`                      | every page's top banner (incl. home video + `<Underline>` accent word) |
+| `proseSection`            | `Prose.astro`                     | body copy; legal pages use the rich-prose variant (h2/h3/lists)        |
+| `cardGridSection`         | `FeatureCard.astro` grid          | every feature-card grid                                                |
+| `statBandSection`         | `StatBlock.astro`                 | navy stat bands (home, why-wcp)                                        |
+| `ctaSection`              | `CtaBanner.astro`                 | every call-to-action banner                                            |
+| `testimonialSection`      | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                    |
+| `teacherSection`          | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                   |
+| `classCardsSection`       | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                             |
+| `faqSection`              | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                    |
+| `schoolYearSection`       | `SchoolYear.astro`                | school-year timeline                                                   |
+| `tuitionTableSection`     | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                  |
+| `scheduleSection`         | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                      |
+| `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                      |
+| `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                             |
+| `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                        |
+| `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                          |
+| `noticeBarSection`        | cream announcement strip          | home announcement                                                      |
+| `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                     |
+
+**Reference vs. inline.** Sections that can pull from existing docs
+(`testimonial`, `staff`, `class`, `faqItem`, `schoolYearEvent`) offer a `source`
+toggle: reference the shared doc (single source of truth) or hold one-off inline
+content. Callouts are an optional trailing field on content sections, not a
+standalone section (a standalone one would double the band padding).
+
+## Brand-lock
+
+Shared building blocks live in
+[`src/sanity/schemaTypes/objects/_shared.ts`](../src/sanity/schemaTypes/objects/_shared.ts):
+`bandFields()` (background `white|grey|cream|navy` + seam + compact only),
+`iconField()` (a **validated dropdown** of allowed icon names, so a typo can never
+break the build), required `alt` on every image, and constrained Portable Text.
+
+There are **no** color, font, spacing, or layout fields anywhere, by design. A
+volunteer chooses _what_ and _what order_ and fills in words and photos; the styling
+is the components'. This is the guardrail that keeps new pages on-brand. **Do not add
+design controls to section schemas.**
+
+## The renderer
+
+[`src/components/sections/SectionRenderer.astro`](../src/components/sections/SectionRenderer.astro)
+is a dispatch table keyed on `_type`. Each section type has one thin **bridge**
+component (e.g. `CardGridSection.astro`) that unpacks Sanity fields into the existing
+component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
+`titleId` derives from the section `_key` and feeds both `Section labelledby` and
+`SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
+
+- **Images:** [`src/lib/image.ts`](../src/lib/image.ts) builds responsive URLs from
+  Sanity's CDN via `@sanity/image-url`; `SanityImage.astro` emits `<img srcset>`. The
+  five media components (Hero, TeacherCard, PhotoGallery, ClassCard, splitMedia) each
+  gained one optional `sanityImage` prop that swaps the local `<Image>` for the Sanity
+  `<img>` with identical wrapper classes — reuse, not rebuild.
+- **Rich text:** [`src/lib/portable-text.ts`](../src/lib/portable-text.ts) via
+  `@portabletext/to-html`.
+- **Preview-aware links:** `withBase(href, linkBase)` in
+  [`src/lib/utils.ts`](../src/lib/utils.ts) prefixes internal links with `/preview`
+  inside the Presentation preview so click-through stays in draft mode. It is threaded
+  through the renderer and the shared `Header`/`Footer`/`NavList` chrome.
+
+## Routing
+
+- **`src/pages/[...slug].astro`** (static, `prerender = true`): `getStaticPaths()`
+  reads every `page` slug from Sanity at build time and emits one static route each.
+  `home` → `/`; nested slugs keep their slashes via the rest param. Fetches
+  `PAGE_BY_SLUG_QUERY` (page + hero + all sections with refs dereferenced in one
+  round-trip — see [`src/lib/queries.ts`](../src/lib/queries.ts)).
+- **`src/pages/preview/[...slug].astro`** (SSR, `prerender = false`, `noindex`): the
+  same query through the draft-aware, stega-enabled `cms-preview.ts` client. One file
+  serves every page's preview.
+
+## Navigation
+
+The header/footer menus are a Sanity `navigation` singleton (the "Menus" doc:
+`mainNav`, `footerColumns`, `legalNav`). [`src/lib/nav.ts`](../src/lib/nav.ts)
+`resolveNavigation()` turns it into the shapes `src/data/nav.ts` already exports,
+falling back to that static file if the Studio has no menus, so the site never loses
+its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSettings`).
+
+## Editing in the Studio
+
+- **Presentation Tool** ([`src/sanity/resolve.ts`](../src/sanity/resolve.ts)) maps
+  every `page` to its `/preview/[...slug]` route, so a live preview opens beside the
+  editor and any text or photo is click-to-edit (stega).
+- **Structure** ([`src/sanity/structure.ts`](../src/sanity/structure.ts)) surfaces
+  "Pages (section builder)" and the "Menus" singleton. Because `page` is not a
+  singleton, the default **＋ Create** gives volunteers new-page creation.
+- **In-Studio help:** [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts)
+  holds plain-language walkthroughs ("Build or edit a page", "Edit the menus", etc.)
+  rendered in a read-only Help & Guide pane.
+
+## Migration / seeding
+
+[`scripts/migrate-pagebuilder.mjs`](../scripts/migrate-pagebuilder.mjs) (with helpers
+in `pagebuilder-lib.mjs`) transcribes all pages and the nav into Sanity. It is
+**idempotent** — assets are uploaded once (tracked in `scripts/.asset-map.json`),
+pages are `createOrReplace` by `page-<slug>` id — so it is safe to re-run. Run it with
+the build token available:
+
+```sh
+node scripts/migrate-pagebuilder.mjs
+```
+
+## How a change goes live
+
+A volunteer publishes in the Studio → the Sanity webhook fires
+`repository_dispatch` → the Deploy workflow rebuilds and redeploys → the static page
+updates ~1-2 minutes later. The Presentation preview reflects the draft instantly; the
+public page waits for the rebuild. See [SANITY.md](SANITY.md) for the webhook.

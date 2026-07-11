@@ -75,3 +75,9 @@ real data is live or private, it shows a designed empty-state that names its sou
 Interim content lives in typed data files under `src/data/hub/` and `src/data/classes.ts`,
 so moving a section to Sanity is a change of data source, not a page rewrite. Nothing in
 those files is PII (no family or board-member names, addresses, phones, or finances).
+
+---
+
+See also: [CLAUDE.md](../CLAUDE.md) (project overview and the two content paths) ·
+[SANITY.md](SANITY.md) (the CMS and secrets) ·
+[PAGE_BUILDER.md](PAGE_BUILDER.md) (the public-site page builder).
