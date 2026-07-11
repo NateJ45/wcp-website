@@ -168,7 +168,13 @@ export const structure: StructureResolver = (S, context) =>
               S.documentTypeListItem('hubDocument').title('Documents & Forms').icon(emoji('📄')),
               S.documentTypeListItem('classNote').title('Class Notes').icon(emoji('📓')),
               S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
-              S.documentTypeListItem('coopRole').title('Co-op Roles').icon(emoji('🤝')),
+              orderableDocumentListDeskItem({
+                type: 'coopRole',
+                S,
+                context,
+                title: 'Co-op Roles',
+                icon: emoji('🤝'),
+              }),
             ]),
         ),
 

@@ -52,7 +52,7 @@ interface CoopRoleDoc {
 let coopTiers = coopTiersFallback;
 try {
   const roleDocs = await sanityFetch<CoopRoleDoc[]>(
-    `*[_type == "coopRole"] | order(order asc){ name, tier, icon, team, reportsTo, stipend, body }`,
+    `*[_type == "coopRole"] | order(orderRank){ name, tier, icon, team, reportsTo, stipend, body }`,
   );
   if (roleDocs.length > 0) {
     coopTiers = TIER_ORDER.filter((t) => roleDocs.some((r) => r.tier === t)).map((t) => ({

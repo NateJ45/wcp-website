@@ -52,6 +52,7 @@ each maps 1:1 to an existing presentational component.
 | `scheduleSection`         | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                      |
 | `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                      |
 | `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                             |
+| `tabsSection`             | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)    |
 | `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                        |
 | `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                          |
 | `noticeBarSection`        | cream announcement strip          | home announcement                                                      |
@@ -197,7 +198,7 @@ node scripts/migrate-pagebuilder.mjs
 
 ## Drag-to-reorder (orderable lists)
 
-`class`, `testimonial`, and `schoolYearEvent` use
+`class`, `testimonial`, `schoolYearEvent`, and `coopRole` use
 [`@sanity/orderable-document-list`](https://www.sanity.io/plugins/orderable-document-list):
 their Studio lists have drag handles, and the site renders them in that order. Each
 schema has `orderRankField()` + `orderRankOrdering`, their old `order` number field is

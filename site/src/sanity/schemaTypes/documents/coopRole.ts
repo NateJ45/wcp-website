@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 
 // A co-op job/role (shown on the Family Hub co-op jobs page, grouped by tier).
 export const coopRole = defineType({
@@ -48,17 +49,18 @@ export const coopRole = defineType({
       description: 'e.g. "$150 stipend". Only for Board roles.',
     }),
     defineField({ name: 'body', title: 'What they do', type: 'text', rows: 3 }),
-    defineField({ name: 'order', title: 'Sort order', type: 'number', initialValue: 0 }),
+    // Legacy manual sort — superseded by drag-to-reorder (orderRank), hidden.
+    // Note: roles are grouped by tier on the page, so dragging reorders WITHIN
+    // a tier; the tier is shown in the list so that's clear.
+    defineField({
+      name: 'order',
+      title: 'Sort order',
+      type: 'number',
+      initialValue: 0,
+      hidden: true,
+    }),
+    orderRankField({ type: 'coopRole' }),
   ],
-  orderings: [
-    {
-      title: 'Group, then order',
-      name: 'grouped',
-      by: [
-        { field: 'tier', direction: 'asc' },
-        { field: 'order', direction: 'asc' },
-      ],
-    },
-  ],
+  orderings: [orderRankOrdering],
   preview: { select: { title: 'name', subtitle: 'tier' } },
 });

@@ -145,7 +145,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open a page and find the **Sections** list on the left.',
-          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery"). Fill in its boxes.',
+          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery", "Tabs"). Fill in its boxes.',
           'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
           'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
           '**Publish** when you are happy.',

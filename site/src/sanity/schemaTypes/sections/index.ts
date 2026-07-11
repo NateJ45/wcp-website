@@ -25,6 +25,7 @@ import {
 } from './structured';
 import { latestPostsSection, upcomingEventsSection } from './blog';
 import { formSection, newsletterSignupSection } from './form';
+import { tabsSection } from './tabs';
 
 // Body sections, in the order they appear in the "add section" menu.
 const BODY_SECTIONS = [
@@ -41,6 +42,7 @@ const BODY_SECTIONS = [
   scheduleSection,
   stepListSection,
   compareSection,
+  tabsSection,
   gallerySection,
   splitMediaSection,
   latestPostsSection,

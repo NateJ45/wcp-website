@@ -27,7 +27,7 @@ const client = createClient({
   useCdn: false,
 });
 
-const TYPES = ['class', 'testimonial', 'schoolYearEvent'];
+const TYPES = ['class', 'testimonial', 'schoolYearEvent', 'coopRole'];
 
 async function run() {
   for (const type of TYPES) {

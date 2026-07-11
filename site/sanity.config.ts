@@ -2,6 +2,7 @@ import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { presentationTool } from 'sanity/presentation';
 import { media } from 'sanity-plugin-media';
+import { linkChecker } from 'sanity-plugin-link-checker';
 import DocumentsPane from 'sanity-plugin-documents-pane';
 import { SeoPreviewPane } from './src/sanity/components/SeoPreviewPane';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
@@ -93,6 +94,12 @@ export default defineConfig({
     // title, see where each image is used) and a browse option in every image
     // picker. Self-contained; no external provisioning.
     media(),
+    // Link Checker — a Studio tool that scans content for broken external links
+    // and dangling document references, with one click to the offending doc.
+    // Complements the CI link check (which only sees internal links in the built
+    // site). Free; external-link accuracy is best with a Sanity Function but the
+    // basic scan works without one.
+    linkChecker(),
   ],
   schema: { types: schemaTypes },
   document: {
