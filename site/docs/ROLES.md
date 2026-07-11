@@ -8,11 +8,11 @@ not in code. This doc is the how-to.
 
 Sanity's built-in roles are **coarse**, not per-field:
 
-| Role | Can do |
-| --- | --- |
-| **Administrator** | Everything, including managing members, billing, and API tokens. |
-| **Editor** | Create, edit, publish, and delete **all** content. Cannot manage members/billing. |
-| **Viewer** | Read-only. Can open the Studio and look, but not change anything. |
+| Role              | Can do                                                                            |
+| ----------------- | --------------------------------------------------------------------------------- |
+| **Administrator** | Everything, including managing members, billing, and API tokens.                  |
+| **Editor**        | Create, edit, publish, and delete **all** content. Cannot manage members/billing. |
+| **Viewer**        | Read-only. Can open the Studio and look, but not change anything.                 |
 
 There is **no built-in way** to say "this volunteer may edit News but not tuition."
 Truly granular, per-document or per-field permissions require **custom roles**, which are

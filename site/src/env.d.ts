@@ -35,6 +35,13 @@ declare namespace Cloudflare {
     FAMILY_HUB_PASSWORD: string;
     /** Sanity Editor token — server-only reads of the private (PII) dataset. */
     SANITY_TOKEN: string;
+    /** Resend API key for contact-form email. Optional — forms still store
+     *  submissions in Sanity when unset. See docs/FORMS.md. */
+    RESEND_API_KEY?: string;
+    /** Where contact-form emails go (defaults to the site's general email). */
+    CONTACT_TO?: string;
+    /** Verified Resend "from" address (defaults to the Resend test sender). */
+    CONTACT_FROM?: string;
   }
 }
 

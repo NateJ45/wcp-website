@@ -58,8 +58,9 @@ src/
     events.astro             # public Events page (upcoming dated events)
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
     preview/news/[slug].astro # SSR draft preview for a News post
+    thank-you.astro          # contact-form landing (no-JS submit target)
     family-hub/**            # SSR gated hub pages
-    api/                     # hub login/logout, draft-mode toggle
+    api/                     # hub login/logout, draft-mode toggle, contact (form → Sanity + Resend)
   components/
     sections/                # page-builder: SectionRenderer + one bridge per section type
     ui/, faq/, hub/, preview/
@@ -110,3 +111,4 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - [docs/SANITY.md](docs/SANITY.md) — Sanity project, the Studio, secrets, the auto-deploy webhook.
 - [docs/FAMILY_HUB.md](docs/FAMILY_HUB.md) — the gated family area and its password gate.
 - [docs/ROLES.md](docs/ROLES.md) — Sanity roles/access (owner-only admin task); what the tiers allow.
+- [docs/FORMS.md](docs/FORMS.md) — contact forms: how submissions flow, and the Resend email setup step.

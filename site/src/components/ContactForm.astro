@@ -1,0 +1,104 @@
+---
+/* ============================================================================
+   ContactForm — accessible contact/inquiry form, posts to /api/contact
+   ============================================================================
+   Progressive enhancement: with no JS the native POST redirects to /thank-you;
+   with JS it submits in the background and swaps in an inline thank-you. A
+   hidden honeypot field ("company") catches basic bots. Fixed fields keep it
+   simple and on-brand — the section only configures the topic/labels.
+   ============================================================================ */
+interface Props {
+  topic: string;
+  showPhone?: boolean;
+  buttonLabel?: string;
+  successMessage?: string;
+  formId: string;
+}
+const {
+  topic,
+  showPhone = true,
+  buttonLabel = 'Send message',
+  successMessage = 'Thank you! We have your message and will be in touch soon.',
+  formId,
+} = Astro.props;
+
+const field =
+  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+const label = 'block text-sm font-semibold text-heading';
+---
+
+<div class="mx-auto max-w-xl" data-contact-root>
+  <form
+    method="POST"
+    action="/api/contact"
+    class="grid gap-4"
+    data-contact-form
+    data-success={successMessage}
+  >
+    <input type="hidden" name="topic" value={topic} />
+    {/* Honeypot: hidden from people, tempting to bots. Real users leave it blank. */}
+    <div class="absolute -left-[9999px]" aria-hidden="true">
+      <label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+    </div>
+
+    <div>
+      <label class={label} for={`${formId}-name`}>Your name</label>
+      <input
+        class={field}
+        id={`${formId}-name`}
+        name="name"
+        type="text"
+        required
+        autocomplete="name"
+      />
+    </div>
+    <div>
+      <label class={label} for={`${formId}-email`}>Email</label>
+      <input
+        class={field}
+        id={`${formId}-email`}
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+      />
+    </div>
+    {
+      showPhone && (
+        <div>
+          <label class={label} for={`${formId}-phone`}>
+            Phone <span class="font-normal text-ink-muted">(optional)</span>
+          </label>
+          <input class={field} id={`${formId}-phone`} name="phone" type="tel" autocomplete="tel" />
+        </div>
+      )
+    }
+    <div>
+      <label class={label} for={`${formId}-message`}>Message</label>
+      <textarea class={field} id={`${formId}-message`} name="message" rows="5" required></textarea>
+    </div>
+
+    <p class="hidden text-sm text-destructive" data-form-error role="alert">
+      Something went wrong. Please try again, or email us directly.
+    </p>
+
+    <button
+      type="submit"
+      class="inline-flex items-center justify-center rounded-full bg-navy px-6 py-3 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+    >
+      {buttonLabel}
+    </button>
+  </form>
+
+  <div
+    class="hidden rounded-2xl border border-border bg-white p-6 text-center dark:bg-surface"
+    data-contact-success
+    role="status"
+  >
+    <p class="font-display text-xl text-navy dark:text-sky">{successMessage}</p>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/contact-form';
+</script>

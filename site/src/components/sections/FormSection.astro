@@ -1,0 +1,42 @@
+---
+/* ============================================================================
+   FormSection — page-builder bridge for the contact form
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import ContactForm from '@/components/ContactForm.astro';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section } = Astro.props;
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const formId = `form-${section._key}`;
+---
+
+<Section
+  bg={(section.background as never) ?? 'grey'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={titleId}
+>
+  <SectionHeader
+    eyebrow={header?.eyebrow}
+    title={header?.title ?? 'Get in touch'}
+    lead={header?.lead}
+    titleId={titleId}
+    as="h2"
+  />
+  <div class="mt-8">
+    <ContactForm
+      topic={(section.topic as string) ?? 'Contact us'}
+      showPhone={section.showPhone !== false}
+      buttonLabel={(section.buttonLabel as string) ?? 'Send message'}
+      successMessage={(section.successMessage as string) ?? undefined}
+      formId={formId}
+    />
+  </div>
+</Section>

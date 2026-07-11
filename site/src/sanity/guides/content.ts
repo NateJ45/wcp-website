@@ -90,6 +90,7 @@ export const guides: Guide[] = [
           '**Staff** — your teachers. Their names and bios come from here.',
           '**Tuition & Fees** — registration and participation fees, and how payments work.',
           '**FAQs**, **Testimonials** — the FAQ page and parent quotes.',
+          '**Form submissions** — messages people send through contact forms.',
           '**Family Hub** — the private, families-only content (announcements, documents, and more).',
         ],
       },
@@ -356,6 +357,40 @@ export const guides: Guide[] = [
         tone: 'default',
         title: 'This is different from the Family Hub calendar',
         text: 'These are public events anyone can see. The private, families-only calendar lives in the Family Hub.',
+      },
+    ],
+  },
+
+  {
+    slug: 'form-messages',
+    title: 'Read messages from your forms',
+    icon: '📨',
+    lead: 'When someone fills out a contact or tour form, the message lands here.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Every message sent through a form on the website is saved under **Form submissions**, so nothing gets lost. If email notifications are set up, you also get an email when one arrives.',
+      },
+      { kind: 'path', items: ['Form submissions', 'open a message', 'reply', 'mark Handled'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **Form submissions** in the left menu. Newest is on top.',
+          'Open a message to see the name, email, phone, and what they wrote.',
+          'Reply from your own email using the address shown.',
+          'Turn on **Handled?** so the board knows it has been taken care of.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Keep these private',
+        text: 'These messages include people’s contact details. Treat them as private, the same as the Family Hub.',
+      },
+      {
+        kind: 'p',
+        text: 'To put a form on a page, edit the page and add a **Contact form** section (see "Build or edit a page").',
       },
     ],
   },

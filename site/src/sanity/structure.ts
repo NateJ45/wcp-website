@@ -70,6 +70,7 @@ const PLACED = new Set([
   'page',
   'post',
   'event',
+  'submission',
   'coopRole',
   'update',
   'hubDocument',
@@ -116,6 +117,7 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('faqItem').title('FAQs').icon(emoji('❓')),
       S.documentTypeListItem('testimonial').title('Testimonials').icon(emoji('💬')),
       S.documentTypeListItem('schoolYearEvent').title('School-Year Events').icon(emoji('📅')),
+      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
 
       S.divider(),
 

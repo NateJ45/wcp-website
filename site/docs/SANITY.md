@@ -39,12 +39,13 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 
 **Family Hub (read live behind the gate):**
 
-| Type                   | What it feeds                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------------ |
-| **Update**             | School Updates feed (pin to surface on the hub home; target a class or all)          |
-| **Document / Form**    | Documents & Forms (link or uploaded file, grouped by category incl. meeting minutes) |
-| **Class Note**         | Per-class notes on each class hub page                                               |
-| **Directory — Family** | Family Directory (**PII**; only entries marked "Show in directory" appear)           |
+| Type                   | What it feeds                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| **Update**             | School Updates feed (pin to surface on the hub home; target a class or all)           |
+| **Document / Form**    | Documents & Forms (link or uploaded file, grouped by category incl. meeting minutes)  |
+| **Class Note**         | Per-class notes on each class hub page                                                |
+| **Directory — Family** | Family Directory (**PII**; only entries marked "Show in directory" appear)            |
+| **Form submission**    | Messages sent through website contact forms (**PII**; created by the site, read-only) |
 
 Editors get bold/italic/links/lists and a couple of headings — no raw HTML, no color or
 font controls, and (in the page builder) no spacing or layout knobs. They can't break the
