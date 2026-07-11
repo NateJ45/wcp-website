@@ -27,14 +27,14 @@ const chipClass: Record<string, string> = {
   sky: 'bg-sky-soft text-sky-ink',
   orange: 'bg-cream text-orange-ink',
   amber: 'bg-amber/15 text-amber-ink',
-  green: 'bg-[color-mix(in_oklab,var(--color-green)_12%,white)] text-green-ink',
-  navy: 'bg-navy/8 text-navy',
+  green: 'bg-green/12 text-green-ink',
+  navy: 'bg-navy/8 text-heading',
 };
 ---
 
 <Tag
   class={cn(
-    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-200',
+    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-200 dark:bg-surface',
     'hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0',
     className,
   )}
@@ -52,6 +52,6 @@ const chipClass: Record<string, string> = {
       </span>
     )
   }
-  <h3 class="text-navy">{title}</h3>
+  <h3 class="text-heading">{title}</h3>
   <div class="mt-2 leading-relaxed text-ink"><slot /></div>
 </Tag>

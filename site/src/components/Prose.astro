@@ -20,11 +20,11 @@ const { class: className } = Astro.props;
     // break-words so long unbreakable strings (email addresses, URLs) wrap
     // instead of forcing horizontal scroll at narrow widths (WCAG 1.4.10).
     'mx-auto max-w-3xl leading-relaxed break-words text-ink',
-    '[&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:text-navy',
-    '[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-bold [&_h3]:text-navy',
+    '[&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:text-heading',
+    '[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-bold [&_h3]:text-heading',
     '[&_a]:font-semibold [&_a]:break-words [&_a]:text-sky-ink [&_a]:underline [&_a]:underline-offset-2 [&_p]:mt-4',
     '[&_li]:pl-1 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6',
-    '[&_strong]:font-bold [&_strong]:text-navy',
+    '[&_strong]:font-bold [&_strong]:text-heading',
     className,
   )}
 >

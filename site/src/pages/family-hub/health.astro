@@ -81,21 +81,21 @@ const keepHome = [
     <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
         keepHome.map((k) => (
-          <li class="rounded-[var(--radius)] bg-white p-6 shadow-sm" data-reveal>
+          <li class="rounded-[var(--radius)] bg-white dark:bg-surface p-6 shadow-sm" data-reveal>
             <span
               class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
               aria-hidden="true"
             >
               <Icon name={k.icon} class="h-5 w-5" />
             </span>
-            <p class="font-bold text-navy">{k.title}</p>
+            <p class="font-bold text-heading">{k.title}</p>
             <p class="mt-1 text-sm leading-relaxed text-ink">{k.body}</p>
           </li>
         ))
       }
     </ul>
     <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-navy">Allergy awareness:</strong> if your child has a food allergy
+      <strong class="font-bold text-heading">Allergy awareness:</strong> if your child has a food allergy
       or any condition classroom helpers should know about, make sure it’s on file with your teacher and
       on your Emergency Contact Form. Questions? Contact your teacher directly.
     </Callout>

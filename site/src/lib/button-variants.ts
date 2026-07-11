@@ -28,12 +28,22 @@ export const buttonVariants = cva(
         accent: 'bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
         // Sky-ink fill, white text (5.4:1) — secondary emphasis.
         secondary: 'bg-secondary text-secondary-foreground hover:-translate-y-0.5',
-        // Navy outline on light backgrounds.
-        outline: 'border-2 border-navy bg-white text-navy hover:bg-navy hover:text-white',
-        // White outline on dark (navy) backgrounds.
+        // Navy outline on light backgrounds. In dark mode the surrounding
+        // page surface goes dark, so border/text swap to the light
+        // heading-tint (8.8:1 border, 10.3:1 text) and the hover-fill flips
+        // to that same tint with near-black text (11.9:1) instead of white.
+        outline:
+          'border-2 border-navy bg-white text-navy hover:bg-navy hover:text-white ' +
+          'dark:border-heading dark:bg-surface dark:text-heading dark:hover:bg-heading dark:hover:text-black',
+        // White outline on dark (navy) backgrounds — this variant is only
+        // ever used ON a navy band, which doesn't change in dark mode, so it
+        // stays constant regardless of the page-level toggle.
         'outline-white': 'border-2 border-white/60 text-white hover:bg-white/10',
-        // Minimal text button.
-        ghost: 'text-navy hover:bg-navy/8',
+        // Minimal text button. Navy text needs to lighten in dark mode since
+        // its surrounding surface goes dark; the hover wash is decorative
+        // (not text), so no AA requirement, but a light-tinted wash reads
+        // better against a dark page than a near-invisible navy one.
+        ghost: 'text-navy hover:bg-navy/8 dark:text-heading dark:hover:bg-heading/12',
       },
       size: {
         sm: 'px-5 py-2 text-sm',

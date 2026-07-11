@@ -37,11 +37,11 @@ const facts = [
   <div class="mx-auto max-w-3xl">
     {/* Facts */}
     <div data-reveal>
-      <h2 class="text-xl font-extrabold text-navy">At a glance</h2>
+      <h2 class="text-xl font-extrabold text-heading">At a glance</h2>
       <dl class="mt-6 grid gap-3 sm:grid-cols-2">
         {
           facts.map((f) => (
-            <div class="flex items-center gap-3 rounded-[var(--radius)] border border-border bg-white p-4">
+            <div class="flex items-center gap-3 rounded-[var(--radius)] border border-border bg-white dark:bg-surface p-4">
               <span
                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
                 aria-hidden="true"
@@ -52,7 +52,7 @@ const facts = [
                 <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
                   {f.label}
                 </dt>
-                <dd class="font-bold text-navy">{f.value}</dd>
+                <dd class="font-bold text-heading">{f.value}</dd>
               </div>
             </div>
           ))
@@ -70,7 +70,7 @@ const facts = [
 
     {/* Class-specific updates (Sanity later) */}
     <div class="mt-14" data-reveal>
-      <h2 class="text-xl font-extrabold text-navy">Class notes & updates</h2>
+      <h2 class="text-xl font-extrabold text-heading">Class notes & updates</h2>
       <p class="mt-2 text-ink">
         Notes from your teacher — supply reminders, special days, and what’s happening in the {
           c.name

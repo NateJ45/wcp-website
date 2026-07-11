@@ -44,16 +44,16 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
   <Section bg="grey" label="Contact details">
     <div class="mx-auto grid max-w-3xl gap-8 sm:grid-cols-2">
       <div data-reveal>
-        <h2 class="text-navy">Reach us</h2>
+        <h2 class="text-heading">Reach us</h2>
         <dl class="mt-4 space-y-3 text-ink">
           <div>
             <dt class="text-sm font-bold tracking-wide text-sky-ink uppercase">Phone</dt>
-            <dd><a href={`tel:${phoneDigits}`} class="text-navy underline">{site.phone}</a></dd>
+            <dd><a href={`tel:${phoneDigits}`} class="text-heading underline">{site.phone}</a></dd>
           </div>
           <div>
             <dt class="text-sm font-bold tracking-wide text-sky-ink uppercase">Email</dt>
             <dd>
-              <a href={`mailto:${site.email.general}`} class="text-navy underline"
+              <a href={`mailto:${site.email.general}`} class="text-heading underline"
                 >{site.email.general}</a
               >
             </dd>
@@ -61,7 +61,7 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
         </dl>
       </div>
       <div data-reveal>
-        <h2 class="text-navy">Visit</h2>
+        <h2 class="text-heading">Visit</h2>
         <address class="mt-4 leading-relaxed text-ink not-italic">
           {site.address.street}<br />
           {site.address.city}, {site.address.state}
@@ -86,12 +86,12 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
     {/* Parking & entry — genuinely useful for first-time tour visitors. */}
     <div class="mx-auto mt-8 max-w-3xl" data-reveal>
       <Callout tone="warm">
-        <strong class="font-bold text-navy">Parking &amp; entry:</strong>{' '}
+        <strong class="font-bold text-heading">Parking &amp; entry:</strong>{' '}
         {
           parkingNote ?? (
             <>
               Enter through the rear west doors — look for{' '}
-              <strong class="font-semibold text-navy">Door 5</strong>, a set of double white doors
+              <strong class="font-semibold text-heading">Door 5</strong>, a set of double white doors
               with white pillars on either side. Park near the concrete sidewalk by the rear doors.
             </>
           )

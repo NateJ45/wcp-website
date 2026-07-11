@@ -112,7 +112,7 @@ try {
       {
         coopPrinciples.map((p) => (
           <li
-            class="rounded-[var(--radius)] bg-white p-6 text-center shadow-sm sm:text-left"
+            class="rounded-[var(--radius)] bg-white dark:bg-surface p-6 text-center shadow-sm sm:text-left"
             data-reveal
           >
             <span
@@ -121,7 +121,7 @@ try {
             >
               <Icon name={p.icon} class="h-5 w-5" />
             </span>
-            <p class="font-bold text-navy">{p.title}</p>
+            <p class="font-bold text-heading">{p.title}</p>
             <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
           </li>
         ))
@@ -141,11 +141,11 @@ try {
       {
         coopTiers.map((tier) => (
           <div data-reveal>
-            <h3 class="text-lg font-extrabold text-navy">{tier.label}</h3>
+            <h3 class="text-lg font-extrabold text-heading">{tier.label}</h3>
             <p class="mt-1 text-sm leading-relaxed text-ink-muted">{tier.blurb}</p>
             <ul class="mt-5 grid gap-4 sm:grid-cols-2">
               {tier.roles.map((role) => (
-                <li class="flex gap-4 rounded-[var(--radius)] border border-border bg-white p-5">
+                <li class="flex gap-4 rounded-[var(--radius)] border border-border bg-white dark:bg-surface p-5">
                   <span
                     class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-white"
                     aria-hidden="true"
@@ -154,7 +154,7 @@ try {
                   </span>
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <span class="font-bold text-navy">{role.name}</span>
+                      <span class="font-bold text-heading">{role.name}</span>
                       {role.team && <span class="text-xs text-ink-muted">· {role.team}</span>}
                     </div>
                     <p class="mt-1 text-sm leading-relaxed text-ink">{role.body}</p>

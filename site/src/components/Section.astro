@@ -38,7 +38,13 @@ const {
 } = Astro.props;
 
 const bgClasses: Record<string, string> = {
-  white: 'bg-white',
+  // `white`/`grey`/`cream` are page surfaces, so they get a dark-mode
+  // counterpart. `grey`/`cream` route through our own --color-grey/
+  // --color-cream tokens (already flipped in globals.css's .dark block,
+  // zero extra work here); `white` is Tailwind's own literal color (used
+  // elsewhere for text/logos that must stay white on navy bands), so it
+  // needs its own dark: companion via the dedicated --color-surface token.
+  white: 'bg-white dark:bg-surface',
   grey: 'bg-grey',
   cream: 'bg-cream',
   // On navy: base text → white, and headings flipped from their default navy to

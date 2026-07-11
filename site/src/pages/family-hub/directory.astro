@@ -53,7 +53,7 @@ const points = [
         {
           points.map((p) => (
             <li
-              class="rounded-[var(--radius)] border border-border bg-white p-5 text-center"
+              class="rounded-[var(--radius)] border border-border bg-white dark:bg-surface p-5 text-center"
               data-reveal
             >
               <span
@@ -62,7 +62,7 @@ const points = [
               >
                 <Icon name={p.icon} class="h-5 w-5" />
               </span>
-              <p class="font-bold text-navy">{p.title}</p>
+              <p class="font-bold text-heading">{p.title}</p>
               <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
             </li>
           ))
@@ -77,7 +77,7 @@ const points = [
       />
 
       <Callout tone="sky" class="mt-10">
-        <strong class="font-bold text-navy">Your privacy:</strong> WCP never publishes family information.
+        <strong class="font-bold text-heading">Your privacy:</strong> WCP never publishes family information.
         Directory details stay behind this family sign-in, are shared only with your permission, and are
         kept out of the public website entirely.
       </Callout>

@@ -13,6 +13,7 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import { hubNav } from '@/data/hub-nav';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 import { site } from '@/data/site';
 
@@ -61,13 +62,13 @@ const groups = hubNav.slice(1);
               <ul
                 id={`hub-menu-${i}`}
                 data-dropdown-menu
-                class="absolute top-full left-0 z-50 mt-1.5 min-w-52 rounded-lg border border-border bg-white p-2 shadow-lg"
+                class="absolute top-full left-0 z-50 mt-1.5 min-w-52 rounded-lg border border-border bg-white p-2 shadow-lg dark:bg-surface"
               >
                 {group.links.map((l) => (
                   <li>
                     <a
                       href={l.href}
-                      class="flex items-center gap-2 rounded-md px-3 py-2 font-semibold text-navy hover:bg-grey hover:text-orange-ink"
+                      class="flex items-center gap-2 rounded-md px-3 py-2 font-semibold text-heading hover:bg-grey hover:text-orange-ink"
                       aria-current={!l.external && isActive(l.href) ? 'page' : undefined}
                       {...(l.external ? { target: '_blank', rel: 'noopener' } : {})}
                     >
@@ -86,6 +87,7 @@ const groups = hubNav.slice(1);
       </nav>
 
       <div class="flex shrink-0 items-center gap-2">
+        <ThemeToggle tone="onNavy" class="h-9 w-9 hover:bg-white/10" />
         <a
           href="/"
           class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
@@ -112,17 +114,20 @@ const groups = hubNav.slice(1);
       <a href="/family-hub" class="inline-flex items-center" aria-label="Family Hub home">
         <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-10 w-auto" />
       </a>
-      <button
-        type="button"
-        class="inline-flex h-11 w-11 items-center justify-center rounded-md text-white hover:bg-white/10"
-        aria-expanded="false"
-        aria-controls="mobile-nav"
-        aria-label="Menu"
-        data-nav-toggle
-      >
-        <Icon name="menu" class="menu-icon h-6 w-6" />
-        <Icon name="x" class="close-icon hidden h-6 w-6" />
-      </button>
+      <div class="flex items-center gap-1">
+        <ThemeToggle tone="onNavy" />
+        <button
+          type="button"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-md text-white hover:bg-white/10"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          aria-label="Menu"
+          data-nav-toggle
+        >
+          <Icon name="menu" class="menu-icon h-6 w-6" />
+          <Icon name="x" class="close-icon hidden h-6 w-6" />
+        </button>
+      </div>
     </div>
 
     <div id="mobile-nav" hidden class="border-t border-white/10 bg-navy">
@@ -181,6 +186,7 @@ const groups = hubNav.slice(1);
 
 <script>
   import '@/scripts/nav';
+  import '@/scripts/theme';
 </script>
 
 <style>

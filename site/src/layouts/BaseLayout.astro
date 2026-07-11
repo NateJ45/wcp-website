@@ -5,9 +5,6 @@
    FOUNDATION, edit with care. Owns the <head> (SEO, Open Graph, fonts,
    analytics), the page landmarks (header / main / footer), and the sitewide
    scripts. Page content goes in the <slot /> inside <main>.
-
-   Light theme only for now. The token system in globals.css is structured so a
-   dark mode could be added later without touching components.
    ============================================================================ */
 import '../styles/globals.css';
 import Analytics from '@/components/Analytics.astro';
@@ -93,9 +90,21 @@ const ogImageUrl = ogImage ? new URL(ogImage, site.url).toString() : undefined;
     <!-- Mark that JS is running BEFORE first paint, so the scroll-reveal
          hidden-state (scoped to .js in globals.css) only applies when JS can
          un-hide it. Without JS the class is absent and all content stays
-         visible. is:inline keeps it out of the bundle so it runs first. -->
+         visible. is:inline keeps it out of the bundle so it runs first.
+
+         Same script also applies a saved dark-mode choice before paint, so
+         there's no flash of the wrong theme. Light is the default: a visitor
+         who has never toggled has nothing in localStorage and stays light,
+         on every visit, forever — only an explicit click (src/scripts/theme.ts)
+         ever writes a preference. Deliberately does NOT check
+         prefers-color-scheme; "light by default" was an explicit choice, not
+         an oversight. -->
     <script is:inline>
       document.documentElement.classList.add('js');
+      if (localStorage.getItem('wcp-theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
     </script>
   </head>
 

@@ -36,6 +36,12 @@
 /* 1. Tailwind core — brings in preflight (reset) + the utility engine. -------- */
 @import 'tailwindcss';
 
+/* Dark mode is TOGGLED (a .dark class on <html>, set by a visitor's explicit
+   choice + remembered in localStorage — see BaseLayout.astro's anti-flash
+   script), not just prefers-color-scheme. This tells every `dark:` utility
+   below to key off that class instead of the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 2. Fonts -------------------------------------------------------------------
    Quicksand (body) is a variable font from Fontsource; Vite bundles + hashes
    its woff2 automatically. Captain Comic (headings) is licensed to WCP and
@@ -109,6 +115,19 @@
                              AA-safe — the on-brand way to get an "orange"
                              section without the failing white-on-orange. */
   --color-sky-soft: #eaf6fd; /* Soft sky tint. Callouts, gentle info panels. */
+
+  /* `surface` = the "white card/section" role, distinct from Tailwind's own
+     literal `white` (which many components also use for text/logos that
+     must stay white even on a dark navy band). Only `surface` gets a dark
+     override — flipping raw `white` globally would break every white-text-
+     on-navy usage site-wide. */
+  --color-surface: #ffffff;
+
+  /* `heading` = the color H1-H6 and navy-styled accent text actually render
+     in. Defaults to navy, but is a SEPARATE token from --color-navy (which
+     also drives the dark navy SECTION bands via bg-navy) precisely so dark
+     mode can lighten heading text without also lightening those bands. */
+  --color-heading: var(--color-navy);
 
   /* ---- Fonts ---- */
   --font-display: 'Captain Comic', system-ui, sans-serif; /* headings */
@@ -187,7 +206,7 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    color: var(--color-navy);
+    color: var(--color-heading);
     line-height: 1.12;
     text-wrap: balance;
   }
@@ -240,7 +259,7 @@
 
   ::selection {
     background-color: color-mix(in oklab, var(--color-sky) 30%, transparent);
-    color: var(--color-navy);
+    color: var(--color-heading);
   }
 
   /* Email addresses (and other long, space-free strings) are the #1 cause of
@@ -378,4 +397,67 @@
   --ring: #166fa8; /* focus ring — matches the base :focus-visible color */
 
   --destructive: #b42318; /* form errors / destructive actions (AA on white) */
+}
+
+/* ============================================================================
+   Dark mode overrides
+   ============================================================================
+   Applied whenever <html> carries a .dark class (see BaseLayout.astro's
+   anti-flash script — set from a visitor's explicit toggle choice, persisted
+   in localStorage; light is the default for first-time visitors).
+
+   The strategy: only tokens that represent a PAGE SURFACE or TEXT SITTING ON
+   ONE get touched here. Anything that's already a self-contained "island"
+   (button fills + their own foreground, badge/chip fills) stays exactly the
+   same in both modes — a navy button is a navy button regardless of page
+   theme, so --primary/--secondary/--accent and their *-foreground pairs are
+   deliberately absent below.
+
+   Two things worth knowing when reading this file:
+     1. Bright brand colors (orange/sky/green/amber) that FAIL as text on a
+        white page (see the two-tier note up top) actually PASS comfortably
+        as text on a dark page (7.7-11:1+, measured) — dark surfaces are far
+        more forgiving of saturated color. So the *-ink tokens simply borrow
+        the bright tier's value here; no separate "dark ink" shades needed.
+     2. --color-navy itself is NOT overridden. It drives both `text-navy`
+        (headings, via --color-heading defaulting to it) and `bg-navy` (the
+        dark navy SECTION bands used across Hero/CtaBanner/Footer/etc). Those
+        bands should look the same in dark mode; only heading TEXT needs to
+        lighten, which is why --color-heading is its own token instead of an
+        alias for --color-navy.
+   ============================================================================ */
+.dark {
+  /* Ink tier -> bright tier (see note 1 above). */
+  --color-orange-ink: var(--color-orange);
+  --color-sky-ink: var(--color-sky);
+  --color-green-ink: var(--color-green);
+  --color-amber-ink: var(--color-amber);
+
+  /* Heading/accent text: navy -> a light sky-tinted blue (10.3:1 on the dark
+     surface below), kept a distinct token from --color-navy (see note 2). */
+  --color-heading: #a9c6e8;
+
+  /* Body text + surfaces. */
+  --color-ink: #e9edf2; /* 15.4:1 on the dark surface below */
+  --color-ink-muted: #99a3b3; /* 7.1:1 */
+  --color-bg: #0d1219; /* page canvas */
+  --color-bg-soft: #161f2c; /* alternating-section bg (was --color-grey's role) */
+  --color-grey: #161f2c;
+  --color-surface: #1b2531; /* "white card" replacement — a touch lighter
+                                than the page canvas so cards read as raised */
+  --color-cream: #241a12; /* dark warm-tint surface (was the pale orange tint) */
+  --color-sky-soft: #10222c; /* dark soft-sky tint */
+
+  /* Shadcn-style semantic aliases (not consumed by hand-authored components
+     yet, but kept in sync for any future shadcn/ui primitive). */
+  --background: #0d1219;
+  --foreground: #e9edf2;
+  --card: #1b2531;
+  --card-foreground: #e9edf2;
+  --muted: #161f2c;
+  --muted-foreground: #99a3b3;
+  --border: rgba(255, 255, 255, 0.14);
+  --input: rgba(255, 255, 255, 0.2);
+  --ring: #40aaed;
+  --destructive: #ff6b6b; /* 6.8:1 on the dark surface */
 }

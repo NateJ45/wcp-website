@@ -46,7 +46,7 @@ const { steps, footnote, class: className } = Astro.props;
           {i + 1}
         </span>
         <div class="pt-1">
-          <h3 class="text-lg text-navy">{s.title}</h3>
+          <h3 class="text-lg text-heading">{s.title}</h3>
           <p class="mt-1 leading-relaxed text-ink">{s.body}</p>
           {s.note && (
             <p class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1 text-sm font-semibold text-orange-ink">
@@ -61,7 +61,7 @@ const { steps, footnote, class: className } = Astro.props;
 </ol>
 {
   footnote && (
-    <p class="mx-auto mt-2 max-w-2xl text-center font-display text-lg text-navy" data-reveal>
+    <p class="mx-auto mt-2 max-w-2xl text-center font-display text-lg text-heading" data-reveal>
       {footnote}
     </p>
   )

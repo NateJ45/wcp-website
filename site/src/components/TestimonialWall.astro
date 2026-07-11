@@ -30,7 +30,7 @@ const accents = ['border-t-orange', 'border-t-sky', 'border-t-green', 'border-t-
       <li class="mb-5 break-inside-avoid">
         <figure
           class={cn(
-            'relative rounded-[var(--radius)] border-t-4 bg-white p-6 shadow-sm',
+            'relative rounded-[var(--radius)] border-t-4 bg-white dark:bg-surface p-6 shadow-sm',
             'transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-md',
             'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
             accents[i % accents.length],
@@ -49,7 +49,7 @@ const accents = ['border-t-orange', 'border-t-sky', 'border-t-green', 'border-t-
           </div>
           <span class="sr-only">5 out of 5 stars</span>
           <blockquote class="relative mt-3 leading-relaxed text-ink">{t.quote}</blockquote>
-          <figcaption class="mt-4 font-bold text-navy">
+          <figcaption class="mt-4 font-bold text-heading">
             {t.author}
             <span class="mt-0.5 block text-sm font-normal text-ink-muted">{t.role}</span>
           </figcaption>

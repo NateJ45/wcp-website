@@ -33,7 +33,7 @@ const sourceNote: Record<NonNullable<Props['source']>, string> = {
 
 <div
   class={cn(
-    'mx-auto max-w-xl rounded-[var(--radius)] border-2 border-dashed border-border bg-white/70 px-6 py-12 text-center',
+    'mx-auto max-w-xl rounded-[var(--radius)] border-2 border-dashed border-border bg-white/70 px-6 py-12 text-center dark:bg-surface/70',
     className,
   )}
   data-reveal
@@ -44,7 +44,7 @@ const sourceNote: Record<NonNullable<Props['source']>, string> = {
   >
     <Icon name={icon} class="h-7 w-7" />
   </span>
-  <p class="text-lg font-bold text-navy">{title}</p>
+  <p class="text-lg font-bold text-heading">{title}</p>
   {
     source && (
       <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">

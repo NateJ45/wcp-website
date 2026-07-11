@@ -37,11 +37,11 @@ const {
   {/* Column headers — hidden when the rows stack (labels move inline). */}
   <div class="hidden gap-4 px-5 pb-3 sm:grid sm:grid-cols-[1.3fr_1fr_1fr]" aria-hidden="true">
     <span></span>
-    <span class="text-center font-display text-xl text-navy">{wcpLabel}</span>
+    <span class="text-center font-display text-xl text-heading">{wcpLabel}</span>
     <span class="text-center font-bold text-ink-muted">{typicalLabel}</span>
   </div>
 
-  <dl class="overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm">
+  <dl class="overflow-hidden rounded-[var(--radius)] border border-border bg-white dark:bg-surface shadow-sm">
     {
       rows.map((r, i) => (
         <div
@@ -50,9 +50,9 @@ const {
             i !== 0 && 'border-t border-border',
           )}
         >
-          <dt class="font-bold text-navy">{r.feature}</dt>
+          <dt class="font-bold text-heading">{r.feature}</dt>
           {/* WCP value — tinted lane + check. */}
-          <dd class="rounded-lg bg-sky-soft px-3 py-2 text-navy sm:text-center">
+          <dd class="rounded-lg bg-sky-soft px-3 py-2 text-heading sm:text-center">
             <span class="mb-1 block text-xs font-bold tracking-wide text-sky-ink uppercase sm:hidden">
               {wcpLabel}
             </span>

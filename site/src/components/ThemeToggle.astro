@@ -1,0 +1,45 @@
+---
+/* ============================================================================
+   ThemeToggle — light/dark switch
+   ============================================================================
+   A single icon button: sun in light mode, moon in dark mode (pure CSS swap
+   via the dark: variant — no JS needed for the icon itself). Clicking it
+   flips the `.dark` class on <html> and remembers the choice in localStorage
+   (see the click handler wired up in src/scripts/theme.ts). Light is the
+   default for first-time visitors — see the anti-flash script in
+   BaseLayout.astro, which is the only place that reads the stored preference
+   before paint.
+
+   `tone` lets the button read correctly against either a light header (navy
+   icon) or a navy header (white icon) — same as the site's other toggle-y
+   controls (hamburger, etc.).
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  tone?: 'default' | 'onNavy';
+  class?: string;
+}
+const { tone = 'default', class: className } = Astro.props;
+
+const toneClass =
+  tone === 'onNavy'
+    ? 'text-white hover:bg-white/10'
+    : 'text-heading hover:bg-navy/8 dark:hover:bg-heading/10';
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-pressed="false"
+  aria-label="Switch to dark mode"
+  class={cn(
+    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors',
+    toneClass,
+    className,
+  )}
+>
+  <Icon name="sun" class="h-5 w-5 dark:hidden" />
+  <Icon name="moon" class="hidden h-5 w-5 dark:block" />
+</button>
