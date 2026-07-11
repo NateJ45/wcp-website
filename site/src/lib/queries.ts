@@ -79,8 +79,6 @@ export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortNa
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
-export const PAGE_HERO_QUERY = `*[_type == "page" && slug == $slug][0]{ eyebrow, heroTitle, lead, seoTitle, seoDescription }`;
-
 export const SCHOOL_YEAR_EVENTS_QUERY = `*[_type == "schoolYearEvent"] | order(order asc){ month, title, body, icon, accent }`;
 
 export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(order asc){ name, days, time, age, monthly, annual, studentFee }`;

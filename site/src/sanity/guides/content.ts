@@ -81,6 +81,8 @@ export const guides: Guide[] = [
         kind: 'bullets',
         items: [
           '**Site Settings** — the school’s phone, email, address, and the current school year. Set once, used everywhere.',
+          '**Menus (header & footer)** — the links along the top of the site and in the footer.',
+          '**Pages** — every public page, built from stacked sections you can add, reorder, and edit. This is where you build a brand-new page too.',
           '**Classes** — one card per class, with its schedule, ages, and tuition.',
           '**Staff** — your teachers. Their names and bios come from here.',
           '**Tuition & Fees** — registration and participation fees, and how payments work.',
@@ -88,7 +90,121 @@ export const guides: Guide[] = [
           '**Family Hub** — the private, families-only content (announcements, documents, and more).',
         ],
       },
-      { kind: 'seealso', items: ['Words you might not know', 'Do it yourself vs. ask for help'] },
+      {
+        kind: 'seealso',
+        items: [
+          'Build or edit a page',
+          'Words you might not know',
+          'Do it yourself vs. ask for help',
+        ],
+      },
+    ],
+  },
+
+  {
+    slug: 'build-page',
+    title: 'Build or edit a page',
+    icon: '🧱',
+    lead: 'Pages are built from stacked sections. You can edit the words, add or remove sections, reorder them, and even make brand-new pages.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'How a page is put together' },
+      {
+        kind: 'p',
+        text: 'Every page is a **hero** (the big banner at the top) followed by a stack of **sections**. A section is one band of the page, like a row of cards, a set of photos, a quote, or a "get in touch" banner. You choose which sections a page has and what order they go in. You do not choose colors, fonts, or spacing, so whatever you build already looks like the rest of the site.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You pick the words and pictures. The design takes care of itself.',
+        text: 'Every section is pre-styled in the school’s look. That is on purpose: it means a page you build in five minutes still looks like it belongs, and nobody can accidentally make the site look off-brand.',
+      },
+      { kind: 'h', text: 'The easiest way to edit: click it on the page' },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Pages**, then click the page you want. A live preview of the page opens on the right.',
+          'Click any text or photo in the preview. The matching box opens on the left, ready to edit.',
+          'Type your change. You will see it update in the preview as you go.',
+          'When it looks right, click **Publish**.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'This is the "click anything to edit" view.',
+        text: 'The preview on the right is the real page. Clicking straight on the thing you want to change is usually faster than hunting through the boxes on the left.',
+      },
+      { kind: 'h', text: 'Add, remove, or reorder sections' },
+      {
+        kind: 'steps',
+        items: [
+          'Open a page and find the **Sections** list on the left.',
+          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery"). Fill in its boxes.',
+          'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
+          'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
+          '**Publish** when you are happy.',
+        ],
+      },
+      { kind: 'h', text: 'Make a brand-new page' },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Pages**, then click **Pages (section builder)** and the **＋** (new) button.',
+          'Give it a **Title**, then a **Slug** (the last part of the web address, like "summer-camp"). Use lowercase letters and dashes, no spaces.',
+          'Fill in the hero, then add sections one at a time until the page is built.',
+          'To put it in the top menu, open **Menus (header & footer)** and add a link to it (see "Edit the menus").',
+          '**Publish**. A couple of minutes later the new page is live on the website.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'The hero stays at the top.',
+        text: 'Every page needs exactly one hero banner at the very top, so that part is fixed and cannot be removed or moved. Everything below it is yours to arrange.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Edit the menus', 'Photos and images', 'Do it yourself vs. ask for help'],
+      },
+    ],
+  },
+
+  {
+    slug: 'edit-menus',
+    title: 'Edit the menus',
+    icon: '🔗',
+    lead: 'The links along the top of the site and down in the footer live in one place.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'One place for every menu.',
+        text: 'The top navigation bar, the footer columns, and the small legal links at the very bottom all come from **Menus (header & footer)**. Change a link once here and it updates everywhere that menu shows.',
+      },
+      { kind: 'path', items: ['Menus (header & footer)', 'edit', 'Publish'] },
+      { kind: 'h', text: 'Add a link to the top menu' },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Menus (header & footer)**.',
+          'In **Main navigation**, click **Add item**, then choose **Link**.',
+          'Type the label people will see, then pick **Link to a page** and choose the page. (For an outside website, pick **Web address** and paste the link instead.)',
+          '**Publish**.',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'A **dropdown** (a menu item with links tucked under it) is the "Group" option instead of "Link". Give the group a label, then add the links inside it.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'If a menu is left empty',
+        text: 'If you ever clear a menu out completely, the site falls back to its original built-in menu, so visitors are never left without navigation.',
+      },
+      { kind: 'seealso', items: ['Build or edit a page'] },
     ],
   },
 
@@ -311,6 +427,8 @@ export const guides: Guide[] = [
         items: [
           '**Publish** — the button that makes your changes go live on the public website.',
           '**Draft** — your unpublished work. Only you see it until you publish.',
+          '**Hero** — the big banner at the very top of a page, with the headline and main photo or video.',
+          '**Section** — one band of a page, like a row of cards, a photo gallery, or a quote. Pages are built by stacking sections.',
           '**Slug** — the last part of a web address. For the Twos class it is "twos". Click **Generate** and it fills itself in.',
           '**Reference** — a link from one thing to another. A class points at its teacher, so you set a fact once and reuse it.',
           '**Alt text** — a short description of a photo, for screen readers.',

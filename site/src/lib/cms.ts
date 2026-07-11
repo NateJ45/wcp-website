@@ -4,7 +4,6 @@ import {
   STAFF_QUERY,
   CLASS_FACTS_QUERY,
   SITE_SETTINGS_QUERY,
-  PAGE_HERO_QUERY,
   SCHOOL_YEAR_EVENTS_QUERY,
   NAVIGATION_QUERY,
   testimonialsQuery,
@@ -203,24 +202,6 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       instagram: doc.instagram ?? f.social.instagram,
     },
   } as unknown as T;
-}
-
-export interface PageHeroDoc {
-  eyebrow?: string;
-  heroTitle?: string;
-  lead?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-}
-
-/**
- * Fetch a page's hero copy (eyebrow/title/lead + SEO title/description) by its
- * page key (e.g. "home", "about", "classes/twos"), edited in Sanity under
- * Pages → Page copy. Returns null (not a fallback object) so callers can do
- * `pageHero?.heroTitle ?? '...'` per-field against their existing hardcoded copy.
- */
-export async function getPageHero(slug: string): Promise<PageHeroDoc | null> {
-  return cmsFetch<PageHeroDoc | null>(PAGE_HERO_QUERY, { slug }, null);
 }
 
 export interface SchoolYearEventDoc {

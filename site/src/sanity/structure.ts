@@ -59,6 +59,7 @@ function singleton(S: StructureBuilder, schemaType: string, title: string, icon:
 // Everything placed explicitly below — kept out of the fallback list.
 const PLACED = new Set([
   'siteSettings',
+  'navigation',
   'feeSchedule',
   'class',
   'staff',
@@ -83,8 +84,12 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
 
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
+      singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
 
-      // Page words — hero copy + legal pages
+      // Pages — the page builder. "Pages" holds every public page as an
+      // ordered stack of sections a volunteer can add / reorder / edit (and
+      // "＋ Create" makes a brand-new page). Legal pages keep their own simple
+      // long-form editor.
       S.listItem()
         .title('Pages')
         .id('pages')
@@ -93,7 +98,7 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title('Pages')
             .items([
-              S.documentTypeListItem('page').title('Page copy').icon(emoji('📝')),
+              S.documentTypeListItem('page').title('Pages (section builder)').icon(emoji('🧱')),
               S.documentTypeListItem('legalPage').title('Legal pages').icon(emoji('📜')),
             ]),
         ),

@@ -5,36 +5,35 @@ import { defineLocations, type PresentationPluginOptions } from 'sanity/presenta
 // =============================================================================
 // Maps each document type to the /preview/* route(s) it shows up on, so
 // clicking a document in the Studio's Presentation pane navigates the preview
-// iframe to the right page. Only maps types that have a real /preview route
-// today (index, tuition, about, faq, contact) — schoolYearEvent and legalPage
-// are a follow-up once those preview pages exist; mapping them early would
-// send editors to a 404.
+// iframe to the right page. Every `page` document is now a full page-builder
+// doc with its own /preview/[...slug] route, so `page` resolves generically
+// from the slug. Reference doc types (testimonial/class/staff/faqItem) can be
+// pulled into many pages at once — they map to the page where they most
+// prominently live as a sensible landing spot.
 // =============================================================================
-// Page slugs that actually have a /preview/* route built — see
-// src/pages/preview/. Keep in sync as more preview pages ship.
-const PREVIEWABLE_PAGE_SLUGS = new Set(['home', 'tuition', 'about', 'faq', 'contact']);
+
+// Turn a page slug into its /preview href ("home" is the site root).
+const previewHref = (slug?: string) => (slug === 'home' ? '/preview' : `/preview/${slug}`);
 
 export const resolve: PresentationPluginOptions['resolve'] = {
   locations: {
     page: defineLocations({
-      select: { slug: 'slug' },
+      select: { title: 'title', slug: 'slug' },
       resolve: (doc) => {
         const slug = doc?.slug;
-        if (!slug || !PREVIEWABLE_PAGE_SLUGS.has(slug)) {
-          return { locations: [], message: 'No preview page for this yet.' };
-        }
-        return {
-          locations: [{ title: slug, href: slug === 'home' ? '/preview' : `/preview/${slug}` }],
-        };
+        if (!slug) return { locations: [], message: 'Give this page a slug to preview it.' };
+        return { locations: [{ title: doc?.title ?? slug, href: previewHref(slug) }] };
       },
     }),
     siteSettings: {
       locations: [{ title: 'Site Settings', href: '/preview' }],
     },
+    navigation: {
+      locations: [{ title: 'Menus (header & footer)', href: '/preview' }],
+    },
     testimonial: {
-      // Testimonials appear on several public pages (co-op-life, why-wcp,
-      // classes/*), but only the homepage is in the wave-1 preview set —
-      // extend this list as more preview pages ship.
+      // Testimonials are pulled into several pages (home, co-op-life, why-wcp,
+      // classes/*); the homepage carries the featured wall, so land there.
       locations: [{ title: 'Home', href: '/preview' }],
     },
     class: defineLocations({
