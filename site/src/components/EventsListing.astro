@@ -1,0 +1,39 @@
+---
+/* ============================================================================
+   EventsListing — the /events page (Hero + upcoming events, or empty state)
+   ============================================================================ */
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import EventCard from '@/components/EventCard.astro';
+import type { EventDoc } from '@/lib/events';
+
+interface Props {
+  events: EventDoc[];
+  fallbackLocation?: string;
+}
+const { events, fallbackLocation = '' } = Astro.props;
+---
+
+<Hero
+  title="Events"
+  eyebrow="What's coming up"
+  lead="Open houses, tours, and community events at West Chester Preschool."
+  height="medium"
+/>
+<Section bg="white" labelledby="events-heading">
+  <h2 id="events-heading" class="sr-only">Upcoming events</h2>
+  {
+    events.length === 0 ? (
+      <div class="py-8 text-center">
+        <p class="text-lg text-ink-muted">No upcoming events on the calendar right now.</p>
+        <p class="mt-2 text-sm text-ink-muted">Check back soon, or reach out to schedule a tour.</p>
+      </div>
+    ) : (
+      <div class="grid gap-6 md:grid-cols-2">
+        {events.map((event) => (
+          <EventCard event={event} fallbackLocation={fallbackLocation} />
+        ))}
+      </div>
+    )
+  }
+</Section>

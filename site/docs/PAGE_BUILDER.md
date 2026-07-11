@@ -171,6 +171,18 @@ in [`portable-text.ts`](../src/lib/portable-text.ts)).
   query filters `publishedAt <= now()`.
 - Slug reserves the word `page` so it can't collide with the `/news/page/<n>` routes.
 
+## Events
+
+An `event` document ([`documents/event.ts`](../src/sanity/schemaTypes/documents/event.ts)):
+title, start/end datetimes, all-day flag, location, category, description, optional CTA.
+The static `/events` page ([`events.astro`](../src/pages/events.astro)) lists upcoming
+events (query filters `coalesce(endDate, startDate) >= now()`), and an
+`upcomingEventsSection` builder section shows the next few on any page (hides when empty).
+Date/time display and the "Add to Google Calendar" links live in
+[`lib/events.ts`](../src/lib/events.ts) — rendered in the school's Eastern timezone since
+Sanity stores datetimes in UTC. Distinct from `schoolYearEvent` (the co-op timeline) and
+the gated Family Hub calendar.
+
 ## Migration / seeding
 
 [`scripts/migrate-pagebuilder.mjs`](../scripts/migrate-pagebuilder.mjs) (with helpers

@@ -1,0 +1,64 @@
+---
+/* ============================================================================
+   EventCard — one upcoming event (Events page + "Upcoming events" section)
+   ============================================================================ */
+import {
+  formatEventWhen,
+  googleCalendarUrl,
+  EVENT_CATEGORY_LABELS,
+  type EventDoc,
+} from '@/lib/events';
+
+interface Props {
+  event: EventDoc;
+  /** School address, used when the event has no location of its own. */
+  fallbackLocation?: string;
+}
+const { event, fallbackLocation = '' } = Astro.props;
+const when = formatEventWhen(event);
+const categoryLabel = event.category ? (EVENT_CATEGORY_LABELS[event.category] ?? 'Event') : '';
+const location = event.location || fallbackLocation;
+const gcal = googleCalendarUrl(event, fallbackLocation);
+const hasCta = Boolean(event.ctaLabel && event.ctaUrl);
+---
+
+<article
+  class="flex flex-col gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface"
+>
+  <div class="flex items-center gap-2 text-xs font-semibold">
+    {
+      categoryLabel && (
+        <span class="rounded-full bg-amber/15 px-2.5 py-1 text-amber-ink">{categoryLabel}</span>
+      )
+    }
+  </div>
+  <div>
+    <h3 class="font-display text-xl leading-snug text-heading">{event.title}</h3>
+    <p class="mt-1 font-semibold text-navy dark:text-sky">{when}</p>
+    {
+      location && (
+        <p class="mt-1 text-sm text-ink-muted">
+          <span aria-hidden="true">📍</span> {location}
+        </p>
+      )
+    }
+  </div>
+  {event.description && <p class="text-sm leading-relaxed text-ink">{event.description}</p>}
+  <div class="mt-2 flex flex-wrap items-center gap-4 text-sm font-semibold">
+    <a href={gcal} target="_blank" rel="noopener" class="text-navy hover:underline dark:text-sky">
+      Add to calendar
+    </a>
+    {
+      hasCta && (
+        <a
+          href={event.ctaUrl}
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-1 rounded-full bg-navy px-4 py-2 text-white hover:bg-heading"
+        >
+          {event.ctaLabel} <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+</article>

@@ -69,6 +69,7 @@ const PLACED = new Set([
   'legalPage',
   'page',
   'post',
+  'event',
   'coopRole',
   'update',
   'hubDocument',
@@ -105,6 +106,7 @@ export const structure: StructureResolver = (S) =>
         ),
 
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
+      S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
 
       S.divider(),
 

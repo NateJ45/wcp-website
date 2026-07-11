@@ -22,6 +22,7 @@
         "http://localhost/contact/index.html",
         "http://localhost/news/index.html",
         "http://localhost/news/welcome-to-our-new-website/index.html",
+        "http://localhost/events/index.html",
         "http://localhost/404.html"
       ],
       "numberOfRuns": 1,

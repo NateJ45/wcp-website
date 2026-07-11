@@ -36,6 +36,7 @@ import { schoolYearEvent } from './documents/schoolYearEvent';
 import { legalPage } from './documents/legalPage';
 import { page } from './documents/page';
 import { post } from './documents/post';
+import { event } from './documents/event';
 import { coopRole } from './documents/coopRole';
 
 // Collections (Family Hub — gated)
@@ -72,6 +73,7 @@ export const schemaTypes = [
   legalPage,
   page,
   post,
+  event,
   coopRole,
   // Family Hub collections
   update,

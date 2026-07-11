@@ -55,6 +55,7 @@ src/
   pages/
     [...slug].astro          # STATIC public pages — getStaticPaths() reads page docs from Sanity
     news/                    # blog: index + /page/[n] pagination, [slug] article, rss.xml
+    events.astro             # public Events page (upcoming dated events)
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
     preview/news/[slug].astro # SSR draft preview for a News post
     family-hub/**            # SSR gated hub pages

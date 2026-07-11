@@ -84,6 +84,7 @@ export const guides: Guide[] = [
           '**Menus (header & footer)** — the links along the top of the site and in the footer.',
           '**Pages** — every public page, built from stacked sections you can add, reorder, and edit. This is where you build a brand-new page too.',
           '**News** — your blog: announcements, updates, and stories, shown newest first.',
+          '**Events** — upcoming open houses, tours, and community events.',
           '**Media** — every photo you have uploaded, in one searchable place.',
           '**Classes** — one card per class, with its schedule, ages, and tuition.',
           '**Staff** — your teachers. Their names and bios come from here.',
@@ -319,6 +320,43 @@ export const guides: Guide[] = [
         text: 'Open a post and the live preview shows exactly how it will look, and refreshes as you edit. Click text in the preview to jump straight to it.',
       },
       { kind: 'seealso', items: ['Schedule a change for later', 'Photos and images'] },
+    ],
+  },
+
+  {
+    slug: 'add-event',
+    title: 'Add an event',
+    icon: '📅',
+    lead: 'Put an open house, tour day, or community event on the public Events page.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Events** page shows what is coming up. An event drops off the page on its own once it has passed, so the list stays current with no cleanup.',
+      },
+      { kind: 'path', items: ['Events', '＋ new', 'fill in', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **Events** in the left menu, then **＋**.',
+          'Give it a title and pick the **Starts** date and time. Add an **Ends** time if it has one.',
+          'Turn on **All-day** for something without a set time (like a closure).',
+          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want.',
+          '**Publish**. Visitors get an "Add to calendar" button automatically.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Show events on another page',
+        text: 'On any page you build, you can add an **Upcoming events** section to show the next few events. It hides itself when nothing is coming up.',
+      },
+      {
+        kind: 'callout',
+        tone: 'default',
+        title: 'This is different from the Family Hub calendar',
+        text: 'These are public events anyone can see. The private, families-only calendar lives in the Family Hub.',
+      },
     ],
   },
 

@@ -27,4 +27,5 @@ export const routes = [
   '/terms',
   '/news',
   '/news/welcome-to-our-new-website',
+  '/events',
 ];

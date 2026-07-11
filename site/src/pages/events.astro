@@ -1,0 +1,31 @@
+---
+/* ============================================================================
+   /events — upcoming events, statically prerendered
+   ============================================================================
+   Rebuilt on publish (the Sanity webhook triggers it). Past events drop off
+   automatically because the query filters to events that have not ended.
+   Note: because this is static, an event only disappears after the next
+   rebuild once it ends — fine for a site that rebuilds on every content change.
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EventsListing from '@/components/EventsListing.astro';
+import { cmsFetch, getSiteSettings } from '@/lib/cms';
+import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
+import { site as siteFallback } from '@/data/site';
+import type { EventDoc } from '@/lib/events';
+
+const events = await cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []);
+const site = await getSiteSettings(siteFallback);
+const fallbackLocation = [site.address.street, site.address.city, site.address.state]
+  .filter(Boolean)
+  .join(', ');
+---
+
+<BaseLayout
+  title={`Events — ${siteFallback.name}`}
+  description="Upcoming open houses, tours, and community events at West Chester Preschool."
+>
+  <EventsListing events={events} fallbackLocation={fallbackLocation} />
+</BaseLayout>

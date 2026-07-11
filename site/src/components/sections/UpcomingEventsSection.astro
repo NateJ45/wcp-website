@@ -1,0 +1,68 @@
+---
+/* ============================================================================
+   UpcomingEventsSection — "Upcoming events" band (page-builder section)
+   ============================================================================
+   Config-only in Sanity (heading + count); the events are pulled from the
+   Events collection at build time. Hides itself when nothing is coming up, so
+   an editor can leave it on a page without ever showing an empty band.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import EventCard from '@/components/EventCard.astro';
+import { cmsFetch, getSiteSettings } from '@/lib/cms';
+import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
+import { site as siteFallback } from '@/data/site';
+import type { EventDoc } from '@/lib/events';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { withBase } from '@/lib/utils';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const limit = typeof section.limit === 'number' ? section.limit : 3;
+const linkLabel = (section.linkLabel as string) || 'See all events';
+const titleId = titleIdFor(section);
+
+const all = await cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []);
+const events = all.slice(0, limit);
+const siteData = await getSiteSettings(siteFallback);
+const fallbackLocation = [siteData.address.street, siteData.address.city, siteData.address.state]
+  .filter(Boolean)
+  .join(', ');
+---
+
+{
+  events.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'Upcoming events'}
+        lead={header?.lead}
+        titleId={titleId}
+        as="h2"
+      />
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        {events.map((event) => (
+          <EventCard event={event} fallbackLocation={fallbackLocation} />
+        ))}
+      </div>
+      <div class="mt-10 text-center">
+        <a
+          href={withBase('/events', linkBase)}
+          class="inline-flex items-center gap-1 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-navy hover:bg-grey dark:text-sky"
+        >
+          {linkLabel} <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </Section>
+  )
+}

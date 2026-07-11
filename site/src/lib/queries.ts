@@ -96,6 +96,15 @@ export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0
   "author": author->{ "name": name, honorific, role }
 }`;
 
+// -----------------------------------------------------------------------------
+// Events
+// -----------------------------------------------------------------------------
+
+const EVENT_FIELDS = `_id, title, startDate, endDate, allDay, location, category, description, ctaLabel, ctaUrl`;
+
+/** Upcoming events (not yet ended), soonest first — Events page + section. */
+export const UPCOMING_EVENTS_QUERY = `*[_type == "event" && coalesce(endDate, startDate) >= now()] | order(startDate asc){${EVENT_FIELDS}}`;
+
 export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, email, pullQuote, bio }`;
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
