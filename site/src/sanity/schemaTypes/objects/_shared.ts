@@ -119,7 +119,6 @@ export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy
       name: 'background',
       title: 'Background',
       type: 'string',
-      group: 'appearance',
       options: { list: BACKGROUND_OPTIONS, layout: 'radio' },
       initialValue: defaultBackground,
     }),
@@ -127,7 +126,6 @@ export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy
       name: 'seam',
       title: 'Cloud seam at top',
       type: 'boolean',
-      group: 'appearance',
       description:
         'Adds the soft cloud divider at the top of this band. Use only where the background colour changes from the section above.',
       initialValue: false,
@@ -136,7 +134,6 @@ export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy
       name: 'compact',
       title: 'Tighter spacing',
       type: 'boolean',
-      group: 'appearance',
       description: 'Reduces the vertical padding of this band.',
       initialValue: false,
     }),
