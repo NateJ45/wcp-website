@@ -10,18 +10,23 @@ import { defineLocations, type PresentationPluginOptions } from 'sanity/presenta
 // are a follow-up once those preview pages exist; mapping them early would
 // send editors to a 404.
 // =============================================================================
+// Page slugs that actually have a /preview/* route built — see
+// src/pages/preview/. Keep in sync as more preview pages ship.
+const PREVIEWABLE_PAGE_SLUGS = new Set(['home', 'tuition', 'about', 'faq', 'contact']);
+
 export const resolve: PresentationPluginOptions['resolve'] = {
   locations: {
     page: defineLocations({
       select: { slug: 'slug' },
-      resolve: (doc) => ({
-        locations: [
-          {
-            title: doc?.slug ?? 'Untitled page',
-            href: doc?.slug === 'home' ? '/preview' : `/preview/${doc?.slug ?? ''}`,
-          },
-        ],
-      }),
+      resolve: (doc) => {
+        const slug = doc?.slug;
+        if (!slug || !PREVIEWABLE_PAGE_SLUGS.has(slug)) {
+          return { locations: [], message: 'No preview page for this yet.' };
+        }
+        return {
+          locations: [{ title: slug, href: slug === 'home' ? '/preview' : `/preview/${slug}` }],
+        };
+      },
     }),
     siteSettings: {
       locations: [{ title: 'Site Settings', href: '/preview' }],
