@@ -25,8 +25,10 @@ import { projectId, dataset } from './src/sanity/env';
 // - document.actions / newDocumentOptions: enforce singletons — one Site
 //   Settings, one Tuition & Fees, with no duplicate/delete so nobody can create
 //   a confusing second copy.
-// - releases.enabled: false — the board doesn't use scheduled/content
-//   releases, so the tab is hidden to keep the nav simple.
+// - releases.enabled / scheduledDrafts.enabled: false — the board doesn't use
+//   content releases or scheduled publishing, so neither tab shows in the nav.
+//   Disabling `releases` alone surfaces the older "Scheduled Drafts" tool as a
+//   fallback, hence both need turning off to actually get rid of both tabs.
 // =============================================================================
 export default defineConfig({
   name: 'wcp',
@@ -35,6 +37,7 @@ export default defineConfig({
   dataset,
   theme: wcpStudioTheme,
   releases: { enabled: false },
+  scheduledDrafts: { enabled: false },
   plugins: [
     structureTool({ structure }),
     presentationTool({
