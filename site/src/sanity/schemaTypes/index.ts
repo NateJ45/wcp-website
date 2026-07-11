@@ -2,17 +2,29 @@
 // Sanity schema registry
 // =============================================================================
 // Every document/object type the Studio knows about. Grouped for clarity:
-// objects (embedded), singletons (one-of), then collections. Content that stays
-// on Google (Calendar, Fundraising per decision #4) is NOT modeled here.
+// shared objects (embedded), section palette, singletons, then collections.
+// Content that stays on Google (Calendar, Fundraising per decision #4) is NOT
+// modeled here.
 // =============================================================================
 
 // Objects (embedded / reusable)
 import { blockContent } from './blockContent';
+import { inlineText } from './objects/inlineText';
+import { richProse } from './objects/richProse';
 import { iconCard } from './objects/iconCard';
+import { sectionHeader } from './objects/sectionHeader';
+import { actionButton } from './objects/actionButton';
+import { callout } from './objects/callout';
+import { figureImage } from './objects/figureImage';
+import { navLink, navGroup } from './objects/navLink';
+
+// Page-builder section palette (hero + body sections)
+import { SECTION_OBJECT_TYPES } from './sections';
 
 // Singletons (single-instance settings)
 import { siteSettings } from './singletons/siteSettings';
 import { feeSchedule } from './singletons/feeSchedule';
+import { navigation } from './singletons/navigation';
 
 // Collections (public site)
 import { staff } from './documents/staff';
@@ -31,12 +43,23 @@ import { classNote } from './classNote';
 import { directoryEntry } from './directoryEntry';
 
 export const schemaTypes = [
-  // Objects
+  // Shared objects
   blockContent,
+  inlineText,
+  richProse,
   iconCard,
+  sectionHeader,
+  actionButton,
+  callout,
+  figureImage,
+  navLink,
+  navGroup,
+  // Section palette (hero + body sections)
+  ...SECTION_OBJECT_TYPES,
   // Singletons
   siteSettings,
   feeSchedule,
+  navigation,
   // Public collections
   staff,
   classType,
@@ -54,4 +77,4 @@ export const schemaTypes = [
 ];
 
 // Types treated as singletons (one instance, pinned; no create/delete/duplicate).
-export const SINGLETON_TYPES = new Set(['siteSettings', 'feeSchedule']);
+export const SINGLETON_TYPES = new Set(['siteSettings', 'feeSchedule', 'navigation']);

@@ -1,13 +1,16 @@
-import { defineType, defineField } from 'sanity';
+import { defineType, defineField, defineArrayMember } from 'sanity';
+import { BODY_SECTION_TYPE_NAMES } from '../sections';
 
 // =============================================================================
-// Page — the top-of-page copy for a marketing page
+// Page — a builder page (hero + a stack of sections)
 // =============================================================================
-// Holds the hero (eyebrow / title / intro) and the browser/search description
-// for a page, looked up by its slug (e.g. "home", "about", "tuition"). The
-// structured content on each page (classes, staff, fees, testimonials, FAQs)
-// comes from its own document type; this covers the page's headline words.
-// Leave a box blank to keep the page's built-in wording.
+// Every marketing page is one of these. The hero is a fixed field at the top
+// (every page has exactly one); the body is a free stack of sections chosen
+// from the palette. Create a new page here, compose it, give it a slug, add it
+// to the Menus, and publish — it goes live on the next rebuild.
+//
+// `slug` is a plain string (NOT Sanity's slug type) so it can contain slashes
+// like "classes/twos"; the regex keeps it URL-safe. "home" is the front page.
 // =============================================================================
 export const page = defineType({
   name: 'page',
@@ -15,42 +18,49 @@ export const page = defineType({
   type: 'document',
   icon: () => '📄',
   groups: [
+    { name: 'content', title: 'Content', default: true },
     { name: 'hero', title: 'Hero' },
     { name: 'seo', title: 'Search & sharing' },
+    { name: 'settings', title: 'Settings' },
   ],
   fields: [
     defineField({
       name: 'title',
-      title: 'Page (internal name)',
+      title: 'Page name (internal)',
       type: 'string',
+      group: 'settings',
       description: 'Just so you can find it in the list, e.g. "Home" or "About".',
       validation: (R) => R.required(),
     }),
     defineField({
       name: 'slug',
-      title: 'Page key',
+      title: 'Web address (slug)',
       type: 'string',
+      group: 'settings',
       description:
-        'Which page this is, e.g. "home", "about", "tuition". Do not change existing ones.',
-      validation: (R) => R.required(),
+        'The address after the domain, e.g. "about" → /about, "classes/twos" → /classes/twos. Use "home" for the front page. Lowercase, words separated by hyphens. Do not change an existing page\'s slug (it would break links).',
+      validation: (R) =>
+        R.required().custom((value) => {
+          if (typeof value !== 'string') return 'Required';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/.test(value))
+            return 'Use lowercase letters, numbers and hyphens (slashes allowed for sub-pages).';
+          return true;
+        }),
     }),
-    // Hero
     defineField({
-      name: 'eyebrow',
-      title: 'Eyebrow (small label above the title)',
-      type: 'string',
+      name: 'hero',
+      title: 'Hero',
+      type: 'heroObject',
       group: 'hero',
     }),
-    defineField({ name: 'heroTitle', title: 'Headline', type: 'string', group: 'hero' }),
-    defineField({ name: 'lead', title: 'Intro line', type: 'text', rows: 3, group: 'hero' }),
     defineField({
-      name: 'heroImage',
-      title: 'Hero photo',
-      type: 'image',
-      options: { hotspot: true },
-      group: 'hero',
+      name: 'sections',
+      title: 'Sections',
+      type: 'array',
+      group: 'content',
+      of: BODY_SECTION_TYPE_NAMES.map((name) => defineArrayMember({ type: name })),
+      description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
-    // SEO
     defineField({
       name: 'seoTitle',
       title: 'Browser tab / search title',
@@ -67,6 +77,18 @@ export const page = defineType({
       validation: (R) =>
         R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
     }),
+    defineField({
+      name: 'ogImage',
+      title: 'Social share image (optional)',
+      type: 'image',
+      options: { hotspot: true },
+      group: 'seo',
+    }),
   ],
-  preview: { select: { title: 'title', subtitle: 'slug' } },
+  preview: {
+    select: { title: 'title', slug: 'slug', media: 'hero.image' },
+    prepare({ title, slug, media }) {
+      return { title: title || '(untitled page)', subtitle: slug ? `/${slug}` : undefined, media };
+    },
+  },
 });
