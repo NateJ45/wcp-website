@@ -1,0 +1,58 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import ClassCard from '@/components/ClassCard.astro';
+import { titleIdFor, eyebrowTone, bandSize, slugHref, type SectionData } from './section-helpers';
+
+interface ClassItem {
+  name: string;
+  color?: 'amber' | 'green' | 'orange' | 'sky' | 'navy';
+  monthly?: string;
+  days?: string;
+  time?: string;
+  age?: string;
+  studentFee?: string;
+  slug?: string;
+}
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const classes = (section.classItems as ClassItem[] | undefined) ?? [];
+const cols =
+  classes.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <ul class={`mt-12 grid gap-6 ${cols}`}>
+    {
+      classes.map((c) => (
+        <ClassCard
+          as="li"
+          name={c.name}
+          color={c.color}
+          price={c.monthly}
+          cadence="/mo"
+          schedule={[c.days, c.time].filter(Boolean).join(' · ')}
+          age={c.age}
+          features={[c.studentFee ? `Student fee ${c.studentFee}` : ''].filter(Boolean)}
+          href={c.slug ? slugHref(`classes/${c.slug}`, linkBase) : undefined}
+        />
+      ))
+    }
+  </ul>
+</Section>

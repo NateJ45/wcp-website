@@ -1,0 +1,33 @@
+---
+import CtaBanner from '@/components/CtaBanner.astro';
+import ActionButtons from './ActionButtons.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import type { SectionData, ActionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const actions = (section.actions as ActionData[] | undefined) ?? [];
+const noteHtml = renderPortableText(section.note as never, linkBase);
+---
+
+<CtaBanner
+  title={section.title as string}
+  lead={section.lead as string | undefined}
+  tone={(section.tone as 'navy' | 'cream') ?? 'navy'}
+  seam={section.seam as boolean}
+  titleId={`sec-${section._key}`}
+>
+  <Fragment slot="actions">
+    <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+  </Fragment>
+  {
+    noteHtml && (
+      <Fragment slot="note">
+        <Fragment set:html={noteHtml} />
+      </Fragment>
+    )
+  }
+</CtaBanner>

@@ -1,0 +1,30 @@
+---
+/* Renders an actionButton[] array as Button components (hero + CTA rows). */
+import Button from '@/components/ui/Button.astro';
+import { linkHref, isExternal, type ActionData } from './section-helpers';
+
+interface Props {
+  actions?: ActionData[];
+  linkBase?: string;
+  size?: 'sm' | 'lg';
+}
+const { actions = [], linkBase = '', size = 'lg' } = Astro.props;
+---
+
+{
+  actions.map((a) => {
+    const href = linkHref(a, linkBase);
+    const ext = isExternal(href);
+    return (
+      <Button
+        href={href}
+        variant={(a.style ?? 'accent') as never}
+        size={size}
+        class="whitespace-nowrap"
+        {...(ext ? { target: '_blank', rel: 'noopener' } : {})}
+      >
+        {a.label}
+      </Button>
+    );
+  })
+}

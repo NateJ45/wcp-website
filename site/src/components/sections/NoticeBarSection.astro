@@ -1,0 +1,30 @@
+---
+import { slugHref, linkHref, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const label = section.linkLabel as string | undefined;
+const href = label
+  ? section.linkType === 'url'
+    ? linkHref({ linkType: 'url', url: section.url as string }, linkBase)
+    : slugHref(section.pageSlug as string | undefined, linkBase)
+  : undefined;
+---
+
+<div class="bg-cream">
+  <div
+    class="wcp-container flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-3 text-center text-sm"
+  >
+    <span class="font-semibold text-heading">{section.text}</span>
+    {
+      label && href && (
+        <a href={href} class="font-bold text-orange-ink underline underline-offset-2">
+          {label}
+        </a>
+      )
+    }
+  </div>
+</div>

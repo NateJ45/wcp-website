@@ -8,17 +8,22 @@
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
+import SanityImage from '@/components/SanityImage.astro';
 import { cn } from '@/lib/utils';
 import type { ImageMetadata } from 'astro';
+import type { SanityImageSource } from '@/lib/image';
 
 interface Props {
-  photo: ImageMetadata;
+  /** Local asset photo (bespoke pages). */
+  photo?: ImageMetadata;
+  /** Sanity-hosted photo (page builder). Takes precedence over `photo`. */
+  sanityImage?: SanityImageSource;
   name: string;
   role: string;
   email: string;
   class?: string;
 }
-const { photo, name, role, email, class: className } = Astro.props;
+const { photo, sanityImage, name, role, email, class: className } = Astro.props;
 ---
 
 <figure
@@ -29,14 +34,28 @@ const { photo, name, role, email, class: className } = Astro.props;
   data-reveal
 >
   <div class="aspect-[4/3] overflow-hidden">
-    <Image
-      src={photo}
-      alt={name}
-      class="h-full w-full object-cover"
-      widths={[320, 480, 640]}
-      sizes="(min-width: 1024px) 33vw, 50vw"
-      loading="lazy"
-    />
+    {
+      sanityImage ? (
+        <SanityImage
+          source={sanityImage}
+          alt={name}
+          class="h-full w-full object-cover"
+          sizes="(min-width: 1024px) 33vw, 50vw"
+          widths={[320, 480, 640]}
+        />
+      ) : (
+        photo && (
+          <Image
+            src={photo}
+            alt={name}
+            class="h-full w-full object-cover"
+            widths={[320, 480, 640]}
+            sizes="(min-width: 1024px) 33vw, 50vw"
+            loading="lazy"
+          />
+        )
+      )
+    }
   </div>
   <figcaption class="p-6">
     <p class="font-display text-xl text-heading">{name}</p>

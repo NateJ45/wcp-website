@@ -1,0 +1,40 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import CompareTable from '@/components/CompareTable.astro';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Row {
+  feature: string;
+  wcp?: string;
+  typical?: string;
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const titleId = titleIdFor(section);
+const rows = (section.rows as Row[] | undefined) ?? [];
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <div class="mt-12">
+    <CompareTable
+      rows={rows as never}
+      wcpLabel={section.wcpLabel as string | undefined}
+      typicalLabel={section.typicalLabel as string | undefined}
+    />
+  </div>
+</Section>

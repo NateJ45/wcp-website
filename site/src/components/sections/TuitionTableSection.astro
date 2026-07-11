@@ -1,0 +1,81 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import TuitionTable from '@/components/TuitionTable.astro';
+import Callout from '@/components/Callout.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface ClassItem {
+  name: string;
+  days?: string;
+  time?: string;
+  age?: string;
+  monthly?: string;
+  annual?: string;
+  studentFee?: string;
+}
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const classes = (section.classItems as ClassItem[] | undefined) ?? [];
+const fees =
+  (section.fees as { registrationFee?: string; participationFee?: string } | undefined) ?? {};
+const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
+
+const columns = [
+  'Class',
+  'Days',
+  'Time',
+  'Age by Sept 30',
+  'Monthly',
+  'Annual',
+  'Reg. fee',
+  'Deposit',
+  'Student fees',
+];
+const shortAge = (a?: string) => a?.match(/Age\s*\d+/i)?.[0] ?? a ?? '';
+const rows = classes.map((c) => [
+  c.name,
+  c.days ?? '',
+  c.time ?? '',
+  shortAge(c.age),
+  c.monthly ?? '',
+  c.annual ?? '',
+  fees.registrationFee ?? '',
+  fees.participationFee ?? '',
+  c.studentFee ?? '',
+]);
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <div class="mt-10" data-reveal>
+    <TuitionTable
+      caption={(section.caption as string) ?? 'Tuition and fees by class'}
+      columns={columns}
+      rows={rows}
+    />
+  </div>
+  {
+    callout && (
+      <Callout tone={callout.tone} class="mx-auto mt-8 max-w-3xl">
+        <Fragment set:html={renderPortableText(callout.body as never, linkBase)} />
+      </Callout>
+    )
+  }
+</Section>

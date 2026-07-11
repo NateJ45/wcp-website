@@ -1,0 +1,40 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import StepList from '@/components/StepList.astro';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Step {
+  title: string;
+  body?: string;
+  note?: string;
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const titleId = titleIdFor(section);
+const steps = ((section.steps as Step[] | undefined) ?? []).map((s) => ({
+  title: s.title,
+  body: s.body ?? '',
+  note: s.note,
+}));
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <div class="mt-12">
+    <StepList steps={steps} footnote={section.footnote as string | undefined} />
+  </div>
+</Section>

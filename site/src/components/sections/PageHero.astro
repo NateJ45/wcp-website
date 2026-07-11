@@ -1,0 +1,68 @@
+---
+/* Renders a page's hero object through Hero.astro, including the optional
+   crayon-underlined accent word and the action buttons. */
+import Hero from '@/components/Hero.astro';
+import Underline from '@/components/Underline.astro';
+import ActionButtons from './ActionButtons.astro';
+import type { ActionData } from './section-helpers';
+
+interface HeroData {
+  eyebrow?: string;
+  title: string;
+  accentWord?: string;
+  accentColor?: 'orange' | 'sky' | 'amber' | 'green';
+  lead?: string;
+  height?: 'tall' | 'medium';
+  mediaType?: 'none' | 'image' | 'video';
+  image?: unknown;
+  imageAlt?: string;
+  videoFile?: { url?: string };
+  videoWebm?: { url?: string };
+  actions?: ActionData[];
+}
+interface Props {
+  hero: HeroData;
+  linkBase?: string;
+}
+const { hero, linkBase = '' } = Astro.props;
+
+const hasImage = hero.mediaType !== 'none' && Boolean(hero.image);
+const isVideo = hero.mediaType === 'video';
+
+// Split the title so the accent word can carry the crayon underline. Only the
+// first exact occurrence is wrapped; the plain `title` prop still carries the
+// full headline for the accessible name / fallback.
+const word = hero.accentWord?.trim();
+const idx = word ? hero.title.indexOf(word) : -1;
+const before = idx >= 0 ? hero.title.slice(0, idx) : hero.title;
+const after = idx >= 0 ? hero.title.slice(idx + (word?.length ?? 0)) : '';
+const actions = hero.actions ?? [];
+---
+
+<Hero
+  eyebrow={hero.eyebrow}
+  title={hero.title}
+  lead={hero.lead}
+  height={hero.height ?? 'medium'}
+  sanityImage={hasImage ? (hero.image as never) : undefined}
+  imageAlt={hero.imageAlt}
+  video={isVideo ? hero.videoFile?.url : undefined}
+  videoWebm={isVideo ? hero.videoWebm?.url : undefined}
+>
+  {
+    idx >= 0 && word && (
+      <Fragment slot="title">
+        {before}
+        <Underline color={hero.accentColor ?? 'amber'}>{word}</Underline>
+        {after}
+      </Fragment>
+    )
+  }
+  {
+    actions.length > 0 && (
+      <Fragment slot="actions">
+        <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+      </Fragment>
+    )
+  }
+</Hero>

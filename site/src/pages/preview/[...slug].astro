@@ -1,0 +1,42 @@
+---
+/* ============================================================================
+   Preview route — draft-aware page builder (Studio Presentation only)
+   ============================================================================
+   One SSR route renders ANY builder page in draft mode for the Presentation
+   Tool: reads the perspective cookie, fetches the page + sections draft-aware
+   (stega on), and renders them through PageHero + SectionRenderer. `/preview`
+   resolves the home page. noindex via PreviewLayout.
+   ============================================================================ */
+export const prerender = false;
+
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import PreviewLayout from '@/layouts/PreviewLayout.astro';
+import PageHero from '@/components/sections/PageHero.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import { previewFetch, getPreviewSiteSettings } from '@/lib/cms-preview';
+import { PAGE_BY_SLUG_QUERY } from '@/lib/queries';
+import { site as siteFallback } from '@/data/site';
+
+const draftMode = Astro.cookies.has(perspectiveCookieName);
+const slug = (Astro.params.slug as string | undefined) || 'home';
+
+interface PageDoc {
+  title?: string;
+  seoTitle?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hero?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+const page = await previewFetch<PageDoc | null>(draftMode, PAGE_BY_SLUG_QUERY, { slug });
+const site = await getPreviewSiteSettings(draftMode, siteFallback);
+
+if (!page) {
+  return new Response(`No page found for "${slug}"`, { status: 404 });
+}
+---
+
+<PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode}>
+  {page.hero && <PageHero hero={page.hero} linkBase="/preview" />}
+  <SectionRenderer sections={page.sections} linkBase="/preview" site={site} />
+</PreviewLayout>

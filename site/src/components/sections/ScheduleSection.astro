@@ -1,0 +1,45 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import ScheduleTimeline from '@/components/ScheduleTimeline.astro';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Entry {
+  time?: string;
+  title: string;
+  description?: string;
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const titleId = titleIdFor(section);
+const entries = ((section.entries as Entry[] | undefined) ?? []).map((e) => ({
+  time: e.time,
+  title: e.title,
+  desc: e.description,
+}));
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  {
+    section.intro && (
+      <p class="mx-auto mt-4 max-w-2xl text-center leading-relaxed text-ink">{section.intro}</p>
+    )
+  }
+  <div class="mt-10">
+    <ScheduleTimeline entries={entries as never} />
+  </div>
+</Section>

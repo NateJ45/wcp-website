@@ -1,0 +1,33 @@
+---
+import Section from '@/components/Section.astro';
+import StatBlock from '@/components/StatBlock.astro';
+import type { SectionData } from './section-helpers';
+
+interface Stat {
+  value: string;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+  note?: string;
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const stats = (section.stats as Stat[] | undefined) ?? [];
+const num = (v: string) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
+---
+
+<Section bg="navy" seam label={section.ariaLabel as string}>
+  <ul class="grid grid-cols-2 gap-5 lg:grid-cols-4">
+    {
+      stats.map((s) => (
+        <li>
+          <StatBlock value={num(s.value)} prefix={s.prefix} suffix={s.suffix} label={s.label}>
+            {s.note}
+          </StatBlock>
+        </li>
+      ))
+    }
+  </ul>
+</Section>

@@ -1,0 +1,64 @@
+---
+/* ============================================================================
+   SectionRenderer — turns a page's `sections` array into rendered components
+   ============================================================================
+   The bridge between Sanity's page-builder data and the site's existing
+   components. Each section _type maps to a thin bridge component that unpacks
+   the Sanity fields into the real component's props. `linkBase` (''/'/preview')
+   keeps in-section links inside preview mode; `site` feeds the contact block.
+   ============================================================================ */
+import type { SectionData } from './section-helpers';
+import ProseSection from './ProseSection.astro';
+import CardGridSection from './CardGridSection.astro';
+import StatBandSection from './StatBandSection.astro';
+import CtaSection from './CtaSection.astro';
+import TestimonialSection from './TestimonialSection.astro';
+import TeacherSection from './TeacherSection.astro';
+import ClassCardsSection from './ClassCardsSection.astro';
+import FaqSection from './FaqSection.astro';
+import SchoolYearSection from './SchoolYearSection.astro';
+import TuitionTableSection from './TuitionTableSection.astro';
+import ScheduleSection from './ScheduleSection.astro';
+import StepListSection from './StepListSection.astro';
+import CompareSection from './CompareSection.astro';
+import GallerySection from './GallerySection.astro';
+import SplitMediaSection from './SplitMediaSection.astro';
+import NoticeBarSection from './NoticeBarSection.astro';
+import ContactDetailsSection from './ContactDetailsSection.astro';
+
+interface Props {
+  sections?: SectionData[];
+  linkBase?: string;
+  site?: unknown;
+}
+const { sections = [], linkBase = '', site } = Astro.props;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MAP: Record<string, any> = {
+  proseSection: ProseSection,
+  cardGridSection: CardGridSection,
+  statBandSection: StatBandSection,
+  ctaSection: CtaSection,
+  testimonialSection: TestimonialSection,
+  teacherSection: TeacherSection,
+  classCardsSection: ClassCardsSection,
+  faqSection: FaqSection,
+  schoolYearSection: SchoolYearSection,
+  tuitionTableSection: TuitionTableSection,
+  scheduleSection: ScheduleSection,
+  stepListSection: StepListSection,
+  compareSection: CompareSection,
+  gallerySection: GallerySection,
+  splitMediaSection: SplitMediaSection,
+  noticeBarSection: NoticeBarSection,
+  contactDetailsSection: ContactDetailsSection,
+};
+---
+
+{
+  sections.map((section) => {
+    const Comp = MAP[section._type];
+    if (!Comp) return null;
+    return <Comp section={section} linkBase={linkBase} site={site} />;
+  })
+}

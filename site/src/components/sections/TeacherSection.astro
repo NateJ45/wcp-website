@@ -1,0 +1,65 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import TeacherCard from '@/components/TeacherCard.astro';
+import Callout from '@/components/Callout.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { cn } from '@/lib/utils';
+
+interface Person {
+  name: string;
+  honorific?: string;
+  role?: string;
+  email?: string;
+  photo?: unknown;
+  bio?: unknown;
+}
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const people = (section.people as Person[] | undefined) ?? [];
+const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
+const cols = people.length <= 1 ? 'sm:grid-cols-1 max-w-md' : 'sm:grid-cols-2 max-w-3xl';
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <ul class={cn('mx-auto mt-12 grid gap-6', cols)}>
+    {
+      people.map((p) => (
+        <li>
+          <TeacherCard
+            sanityImage={p.photo as never}
+            name={[p.honorific, p.name].filter(Boolean).join(' ')}
+            role={p.role ?? ''}
+            email={p.email ?? ''}
+          >
+            <Fragment set:html={renderPortableText(p.bio as never, linkBase)} />
+          </TeacherCard>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    callout && (
+      <Callout tone={callout.tone} class="mx-auto mt-8 max-w-3xl">
+        <Fragment set:html={renderPortableText(callout.body as never, linkBase)} />
+      </Callout>
+    )
+  }
+</Section>

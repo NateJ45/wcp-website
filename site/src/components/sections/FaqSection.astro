@@ -1,0 +1,44 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Faq from '@/components/faq/Faq.astro';
+import FaqItem from '@/components/faq/FaqItem.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface QA {
+  question: string;
+  answer?: unknown;
+}
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const items = (section.items as QA[] | undefined) ?? [];
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  <Faq class="mt-10">
+    {
+      items.map((qa) => (
+        <FaqItem question={qa.question}>
+          <Fragment set:html={renderPortableText(qa.answer as never, linkBase)} />
+        </FaqItem>
+      ))
+    }
+  </Faq>
+</Section>

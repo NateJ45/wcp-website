@@ -1,0 +1,44 @@
+---
+/* ============================================================================
+   SanityImage — responsive <img> for a Sanity-hosted image
+   ============================================================================
+   The page builder's images live in Sanity, so they're served from Sanity's
+   CDN (responsive srcset + auto format) rather than Astro's local <Image>
+   pipeline. Alt is required at the schema level; pass it through here.
+   ============================================================================ */
+import { imageUrl, imageSrcSet, type SanityImageSource } from '@/lib/image';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  source: SanityImageSource;
+  alt: string;
+  class?: string;
+  sizes?: string;
+  widths?: number[];
+  loading?: 'eager' | 'lazy';
+  fetchpriority?: 'high' | 'auto';
+  /** Base width used for the fallback src. */
+  width?: number;
+}
+const {
+  source,
+  alt,
+  class: className,
+  sizes = '100vw',
+  widths,
+  loading = 'lazy',
+  fetchpriority = 'auto',
+  width = 1280,
+} = Astro.props;
+---
+
+<img
+  src={imageUrl(source, width)}
+  srcset={imageSrcSet(source, widths)}
+  sizes={sizes}
+  alt={alt}
+  class={cn(className)}
+  loading={loading}
+  fetchpriority={fetchpriority}
+  decoding="async"
+/>

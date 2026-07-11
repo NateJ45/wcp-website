@@ -1,0 +1,33 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Prose from '@/components/Prose.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const html = renderPortableText(section.body as never, linkBase);
+const narrow = section.narrow !== false;
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        class="mb-8"
+      />
+    )
+  }
+  <Prose class={narrow ? undefined : 'max-w-none'}><Fragment set:html={html} /></Prose>
+</Section>

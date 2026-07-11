@@ -1,0 +1,62 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Testimonial from '@/components/Testimonial.astro';
+import TestimonialWall from '@/components/TestimonialWall.astro';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Quote {
+  quote: string;
+  author?: string;
+  role?: string;
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const titleId = titleIdFor(section);
+const allItems = (section.items as Quote[] | undefined) ?? [];
+// Apply the limit here (GROQ can't slice by a coalesced value). Manual picks
+// and walls show everything; featured/tag grids cap at the section's limit.
+const limit = typeof section.limit === 'number' ? section.limit : 3;
+const isWall = section.layout === 'wall';
+const items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
+const confetti = Boolean(section.confetti);
+const accents = ['orange', 'sky', 'green'] as const;
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+  {
+    isWall ? (
+      <div class="mt-12">
+        <TestimonialWall items={items.map((t) => ({ ...t, author: t.author ?? '' })) as never} />
+      </div>
+    ) : (
+      <ul class="mt-12 grid gap-6 md:grid-cols-3">
+        {items.map((t, i) => (
+          <li class="h-full">
+            <Testimonial
+              quote={t.quote}
+              author={t.author ?? ''}
+              context={t.role}
+              accent={accents[i % accents.length]}
+              confetti={confetti}
+            />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Section>

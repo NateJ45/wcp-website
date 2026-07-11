@@ -8,11 +8,16 @@
    run through Astro's <Image> for responsive, optimized output.
    ============================================================================ */
 import { Image } from 'astro:assets';
+import SanityImage from '@/components/SanityImage.astro';
 import { cn } from '@/lib/utils';
 import type { ImageMetadata } from 'astro';
+import type { SanityImageSource } from '@/lib/image';
 
 interface Photo {
-  src: ImageMetadata;
+  /** Local asset (bespoke pages). */
+  src?: ImageMetadata;
+  /** Sanity-hosted photo (page builder). Takes precedence over `src`. */
+  sanityImage?: SanityImageSource;
   alt: string;
   caption?: string;
 }
@@ -29,14 +34,26 @@ const { photos, class: className } = Astro.props;
       <li data-reveal style={`--reveal-delay: ${i * 60}ms`}>
         <figure class="group overflow-hidden rounded-[var(--radius)] bg-navy shadow-sm">
           <div class="aspect-[4/3] overflow-hidden">
-            <Image
-              src={p.src}
-              alt={p.alt}
-              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-              widths={[400, 640, 800]}
-              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              loading="lazy"
-            />
+            {p.sanityImage ? (
+              <SanityImage
+                source={p.sanityImage}
+                alt={p.alt}
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                widths={[400, 640, 800]}
+              />
+            ) : (
+              p.src && (
+                <Image
+                  src={p.src}
+                  alt={p.alt}
+                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  widths={[400, 640, 800]}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  loading="lazy"
+                />
+              )
+            )}
           </div>
           {p.caption && (
             <figcaption class="px-3 py-2 text-sm text-white/90">{p.caption}</figcaption>

@@ -1,0 +1,99 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+import Callout from '@/components/Callout.astro';
+import Icon from '@/components/Icon.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { cn } from '@/lib/utils';
+
+interface Card {
+  icon?: string;
+  chip?: 'sky' | 'orange' | 'amber' | 'green' | 'navy';
+  title: string;
+  statValue?: string;
+  body?: string;
+}
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const titleId = titleIdFor(section);
+const cards = (section.cards as Card[] | undefined) ?? [];
+const columns = (section.columns as number | undefined) ?? 3;
+const layout = (section.layout as string | undefined) ?? 'card';
+const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
+
+const colClass: Record<number, string> = {
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-2 lg:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+};
+const grid = colClass[columns] ?? colClass[3];
+const chipTint: Record<string, string> = {
+  sky: 'bg-sky-soft text-sky-ink',
+  orange: 'bg-cream text-orange-ink',
+  amber: 'bg-amber/15 text-amber-ink',
+  green: 'bg-green/12 text-green-ink',
+  navy: 'bg-navy/8 text-heading',
+};
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+
+  {
+    layout === 'compactIcon' ? (
+      <ul class={cn('grid gap-6', section.header?.title && 'mt-12', grid)}>
+        {cards.map((c) => (
+          <li class="flex gap-4" data-reveal>
+            {c.icon && (
+              <span
+                class={cn(
+                  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                  chipTint[c.chip ?? 'sky'],
+                )}
+              >
+                <Icon name={c.icon} class="h-6 w-6" />
+              </span>
+            )}
+            <div>
+              <h3 class="text-heading">{c.title}</h3>
+              {c.body && <p class="mt-1 leading-relaxed text-ink">{c.body}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <ul class={cn('grid gap-6', section.header?.title && 'mt-12', grid)}>
+        {cards.map((c) => (
+          <FeatureCard as="li" icon={c.icon} chip={c.chip ?? 'sky'} title={c.title}>
+            {c.statValue && <span class="font-display text-3xl text-heading">{c.statValue}</span>}
+            {c.statValue ? <span class="mt-1 block">{c.body}</span> : c.body}
+          </FeatureCard>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    callout && (
+      <Callout tone={callout.tone} class="mx-auto mt-8 max-w-3xl">
+        <Fragment set:html={renderPortableText(callout.body as never, linkBase)} />
+      </Callout>
+    )
+  }
+</Section>
