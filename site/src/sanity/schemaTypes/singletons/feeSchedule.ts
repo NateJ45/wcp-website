@@ -12,7 +12,7 @@ export const feeSchedule = defineType({
   title: 'Tuition & Fees',
   type: 'document',
   groups: [
-    { name: 'enrollment', title: 'Enrollment fees', default: true },
+    { name: 'enrollment', title: 'Enrollment fees' },
     { name: 'student', title: 'Student fees' },
     { name: 'payment', title: 'How payments work' },
   ],

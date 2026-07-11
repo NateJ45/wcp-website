@@ -1,6 +1,5 @@
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
-import { visionTool } from '@sanity/vision';
 import { presentationTool } from 'sanity/presentation';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { structure } from './src/sanity/structure';
@@ -26,6 +25,8 @@ import { projectId, dataset } from './src/sanity/env';
 // - document.actions / newDocumentOptions: enforce singletons — one Site
 //   Settings, one Tuition & Fees, with no duplicate/delete so nobody can create
 //   a confusing second copy.
+// - releases.enabled: false — the board doesn't use scheduled/content
+//   releases, so the tab is hidden to keep the nav simple.
 // =============================================================================
 export default defineConfig({
   name: 'wcp',
@@ -33,9 +34,9 @@ export default defineConfig({
   projectId,
   dataset,
   theme: wcpStudioTheme,
+  releases: { enabled: false },
   plugins: [
     structureTool({ structure }),
-    visionTool(),
     presentationTool({
       resolve,
       previewUrl: {

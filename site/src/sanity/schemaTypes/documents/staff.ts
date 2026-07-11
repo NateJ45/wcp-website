@@ -12,7 +12,7 @@ export const staff = defineType({
   type: 'document',
   icon: () => '👩‍🏫',
   groups: [
-    { name: 'identity', title: 'Who they are', default: true },
+    { name: 'identity', title: 'Who they are' },
     { name: 'bio', title: 'Bio & quote' },
   ],
   fields: [

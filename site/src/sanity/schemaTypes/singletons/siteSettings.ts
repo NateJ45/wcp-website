@@ -11,7 +11,7 @@ export const siteSettings = defineType({
   title: 'Site Settings',
   type: 'document',
   groups: [
-    { name: 'identity', title: 'Identity', default: true },
+    { name: 'identity', title: 'Identity' },
     { name: 'contact', title: 'Contact' },
     { name: 'location', title: 'Location' },
     { name: 'year', title: 'School year' },

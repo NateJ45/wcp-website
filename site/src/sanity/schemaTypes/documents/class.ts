@@ -14,7 +14,7 @@ export const classType = defineType({
   type: 'document',
   icon: () => '🎒',
   groups: [
-    { name: 'basics', title: 'Basics', default: true },
+    { name: 'basics', title: 'Basics' },
     { name: 'schedule', title: 'Schedule & ages' },
     { name: 'tuition', title: 'Tuition & payment' },
     { name: 'details', title: 'Page details' },

@@ -15,7 +15,7 @@ export const page = defineType({
   type: 'document',
   icon: () => '📄',
   groups: [
-    { name: 'hero', title: 'Hero', default: true },
+    { name: 'hero', title: 'Hero' },
     { name: 'seo', title: 'Search & sharing' },
   ],
   fields: [
