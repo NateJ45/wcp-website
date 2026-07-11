@@ -6,8 +6,10 @@ import {
   SITE_SETTINGS_QUERY,
   PAGE_HERO_QUERY,
   SCHOOL_YEAR_EVENTS_QUERY,
+  NAVIGATION_QUERY,
   testimonialsQuery,
 } from '@/lib/queries';
+import { resolveNavigation, type SiteNavigation } from '@/lib/nav';
 
 // =============================================================================
 // CMS content client — for PUBLIC (static / prerendered) pages
@@ -234,4 +236,14 @@ export async function getSchoolYearEvents(
   fallback: SchoolYearEventDoc[] = [],
 ): Promise<SchoolYearEventDoc[]> {
   return cmsFetch<SchoolYearEventDoc[]>(SCHOOL_YEAR_EVENTS_QUERY, {}, fallback);
+}
+
+/**
+ * Fetch the editable site navigation (Menus) from Sanity, resolved to the
+ * NavItem/NavGroup shapes Header/Footer expect, falling back to src/data/nav.ts
+ * when the Studio has none. Build-time (static pages).
+ */
+export async function getNavigation(): Promise<SiteNavigation> {
+  const doc = await cmsFetch<unknown>(NAVIGATION_QUERY, {}, null);
+  return resolveNavigation(doc);
 }

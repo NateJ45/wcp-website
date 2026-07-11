@@ -2375,6 +2375,73 @@ P(
   ],
 );
 
+// ---------------------------------------------------------------- navigation
+const nl = (label, slug) => ({
+  _type: 'navLink',
+  _key: B.key(),
+  label,
+  linkType: 'page',
+  page: B.ref(B.pageId(slug)),
+});
+const nlUrl = (label, url) => ({ _type: 'navLink', _key: B.key(), label, linkType: 'url', url });
+const ng = (label, children) => ({ _type: 'navGroup', _key: B.key(), label, children });
+const col = (label, links) => ({ _key: B.key(), label, links });
+
+pages.push({
+  _id: 'navigation',
+  _type: 'navigation',
+  mainNav: [
+    nl('Home', 'home'),
+    nl('About', 'about'),
+    ng('Classes', [
+      nl('Twos Class', 'classes/twos'),
+      nl('Threes Class', 'classes/threes'),
+      nl('Pre-K Class', 'classes/pre-k'),
+      nl('Co-op Life', 'co-op-life'),
+    ]),
+    nl('Enroll', 'enroll'),
+    nl('Virtual Tour', 'virtual-tour'),
+    ng('Families', [
+      nl('Why WCP?', 'why-wcp'),
+      nlUrl('Enrolled Families', '/family-hub'),
+      nlUrl('Store', 'https://store.westchesterpreschool.org'),
+    ]),
+    nl('Contact', 'contact'),
+  ],
+  footerColumns: [
+    col('Classes', [
+      nl('Twos Class', 'classes/twos'),
+      nl('Threes Class', 'classes/threes'),
+      nl('Pre-K Class', 'classes/pre-k'),
+      nl('Co-op Life', 'co-op-life'),
+    ]),
+    col('Families', [
+      nl('Why WCP?', 'why-wcp'),
+      nl('A Day at WCP', 'a-day-at-wcp'),
+      nl('Tuition & Fees', 'tuition'),
+      nl('FAQ', 'faq'),
+      nlUrl('Enrolled Families', '/family-hub'),
+    ]),
+    col('Get Started', [
+      nl('Enroll', 'enroll'),
+      nl('Schedule a Tour', 'enroll'),
+      nl('Virtual Tour', 'virtual-tour'),
+      nl('Contact', 'contact'),
+    ]),
+    col('Get Involved', [
+      nl('Work With Us', 'work-with-us'),
+      nl('Donate', 'donate'),
+      nl('Newsletter', 'newsletter'),
+      nlUrl('Store', 'https://store.westchesterpreschool.org'),
+    ]),
+  ],
+  legalNav: [
+    nl('Accessibility', 'accessibility'),
+    nl('Privacy', 'privacy'),
+    nl('Terms of Use', 'terms'),
+  ],
+});
+
 // ---------------------------------------------------------------------------
 const tx = pages.reduce((t, doc) => t.createOrReplace(doc), client.transaction());
 await tx.commit();

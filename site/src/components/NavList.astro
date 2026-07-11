@@ -12,19 +12,25 @@
    unmounted).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { mainNav, isGroup } from '@/data/nav';
-import { cn } from '@/lib/utils';
+import { mainNav as mainNavFallback, isGroup, type NavItem } from '@/data/nav';
+import { cn, withBase } from '@/lib/utils';
 
 interface Props {
   idPrefix: string;
   variant: 'row' | 'compact' | 'mobile';
   /** 'overlay' = white text for the transparent header over photo/video. */
   tone?: 'default' | 'overlay';
+  /** Nav items (from Sanity, or the static fallback). */
+  items?: NavItem[];
+  /** '' in production, '/preview' inside the Presentation preview. */
+  linkBase?: string;
 }
-const { idPrefix, variant, tone = 'default' } = Astro.props;
+const { idPrefix, variant, tone = 'default', items, linkBase = '' } = Astro.props;
+const mainNav = items ?? mainNavFallback;
+const href = (h: string) => withBase(h, linkBase);
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const isActive = (h: string) => (h === '/' ? path === '/' : path.startsWith(h));
 const groupActive = (children: { href: string }[]) => children.some((c) => isActive(c.href));
 
 const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
@@ -41,7 +47,7 @@ const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
             </p>
             {item.children.map((c) => (
               <a
-                href={c.href}
+                href={href(c.href)}
                 class="block rounded-md px-2 py-2.5 font-semibold text-heading hover:bg-grey"
                 aria-current={isActive(c.href) ? 'page' : undefined}
                 {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
@@ -52,7 +58,7 @@ const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
           </div>
         ) : (
           <a
-            href={item.href}
+            href={href(item.href)}
             class="block rounded-md px-2 py-2.5 font-semibold text-heading hover:bg-grey"
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
@@ -85,7 +91,7 @@ const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
               {item.children.map((c) => (
                 <li>
                   <a
-                    href={c.href}
+                    href={href(c.href)}
                     class="flex items-center justify-between gap-2 rounded-md px-3 py-2 font-semibold text-heading hover:bg-grey hover:text-orange-ink"
                     aria-current={isActive(c.href) ? 'page' : undefined}
                     {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
@@ -106,7 +112,7 @@ const linkClass = cn('nav-link', tone === 'overlay' && 'nav-link--overlay');
         ) : (
           <li>
             <a
-              href={item.href}
+              href={href(item.href)}
               class={linkClass}
               aria-current={isActive(item.href) ? 'page' : undefined}
               data-active={isActive(item.href) ? '' : undefined}

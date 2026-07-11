@@ -8,12 +8,11 @@
    here — these pages must never appear in search results.
 
    Reuses the same Header/Footer components the public site uses so preview
-   pages visually match production, but note: Header/Footer fetch site settings
-   via src/lib/cms.ts's BUILD-TIME client internally, so they always show
-   PUBLISHED settings regardless of `draftMode` — only the page content
-   rendered in the default slot is draft-aware. Acceptable for v1: the whole
-   point of this feature is editing page/tuition/staff/faq content, not nav
-   chrome, and siteSettings rarely changes.
+   pages visually match production. `linkBase="/preview"` is threaded into the
+   chrome so nav/logo/CTA links stay inside the preview (clicking "About" goes
+   to /preview/about, keeping the editor in Presentation, not bouncing to the
+   published page). Header/Footer read published site settings/menus via the
+   build-time client — the page CONTENT in the slot is what's draft-aware.
    ============================================================================ */
 import '../styles/globals.css';
 import Header from '@/components/Header.astro';
@@ -36,9 +35,9 @@ const { title, draftMode } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="relative">
-    <Header />
+    <Header linkBase="/preview" />
     <main id="main"><slot /></main>
-    <Footer />
+    <Footer linkBase="/preview" />
 
     {
       draftMode && (

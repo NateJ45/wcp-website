@@ -9,14 +9,22 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import Seam from '@/components/Seam.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
-import { footerNav, legalNav } from '@/data/nav';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings } from '@/lib/cms';
+import { getSiteSettings, getNavigation } from '@/lib/cms';
+import { withBase } from '@/lib/utils';
+
+interface Props {
+  /** '' in production, '/preview' inside the Presentation preview. */
+  linkBase?: string;
+}
+const { linkBase = '' } = Astro.props;
+const href = (h: string) => withBase(h, linkBase);
 
 // Phone/email/address/social/etc. are edited in Sanity (Site Settings) and
-// merged over the static fallback here, so every `site.*` reference below
-// (and every page's footer) reflects the CMS.
+// merged over the static fallback here. Menus come from Sanity (Menus doc)
+// with the static nav.ts as fallback.
 const site = await getSiteSettings(siteFallback);
+const { footerNav, legalNav } = await getNavigation();
 
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
@@ -95,7 +103,7 @@ const year = new Date().getFullYear();
             {col.children.map((link) => (
               <li>
                 <a
-                  href={link.href}
+                  href={href(link.href)}
                   class="text-white/80 hover:text-white hover:underline"
                   {...(link.external ? { target: '_blank', rel: 'noopener' } : {})}
                 >
@@ -121,7 +129,7 @@ const year = new Date().getFullYear();
       <nav aria-label="Legal" class="flex flex-wrap gap-x-5 gap-y-2">
         {
           legalNav.map((link) => (
-            <a href={link.href} class="text-white/70 hover:text-white hover:underline">
+            <a href={href(link.href)} class="text-white/70 hover:text-white hover:underline">
               {link.label}
             </a>
           ))

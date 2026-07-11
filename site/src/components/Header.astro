@@ -29,12 +29,22 @@ import ThemeToggle from '@/components/ThemeToggle.astro';
 import wcpLogoNavy from '@/assets/brand/wcp-logo-navy.png';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings } from '@/lib/cms';
+import { getSiteSettings, getNavigation } from '@/lib/cms';
+import { withBase } from '@/lib/utils';
+
+interface Props {
+  /** '' in production, '/preview' inside the Presentation preview. */
+  linkBase?: string;
+}
+const { linkBase = '' } = Astro.props;
+const b = (h: string) => withBase(h, linkBase);
 
 // Phone/email/social/etc. are edited in Sanity (Site Settings) and merged
 // over the static fallback here, so every `site.*` reference below reflects
-// the CMS without touching the rest of this file.
+// the CMS without touching the rest of this file. Menus come from Sanity too
+// (Menus doc) with the static nav.ts as fallback.
 const site = await getSiteSettings(siteFallback);
+const { mainNav } = await getNavigation();
 
 const hasSocial = Boolean(site.social.facebook || site.social.instagram);
 ---
@@ -47,12 +57,12 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
   }
   <div class="sticky top-0 z-40 border-b border-border bg-white lg:hidden dark:bg-surface">
     <div class="wcp-container flex items-center justify-between gap-4 py-3">
-      <a href="/" class="inline-flex items-center" aria-label={`${site.name} home`}>
+      <a href={b('/')} class="inline-flex items-center" aria-label={`${site.name} home`}>
         <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-11 w-auto" />
       </a>
       <div class="flex items-center gap-1">
         <ThemeToggle />
-        <Button href="/enroll" variant="accent" size="sm">Enroll</Button>
+        <Button href={b('/enroll')} variant="accent" size="sm">Enroll</Button>
         <button
           type="button"
           class="inline-flex h-11 w-11 items-center justify-center rounded-md text-heading hover:bg-grey"
@@ -68,9 +78,9 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     </div>
     <div id="mobile-nav" hidden class="border-t border-border bg-white dark:bg-surface">
       <nav aria-label="Mobile" class="wcp-container py-4">
-        <NavList idPrefix="mobile" variant="mobile" />
+        <NavList idPrefix="mobile" variant="mobile" items={mainNav} linkBase={linkBase} />
         <div class="mt-3 border-t border-border pt-4">
-          <Button href="/enroll" variant="accent" class="w-full">Enroll Your Child</Button>
+          <Button href={b('/enroll')} variant="accent" class="w-full">Enroll Your Child</Button>
         </div>
       </nav>
     </div>
@@ -140,7 +150,7 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
         </div>
 
         {/* Big centered logo — rises in gently on first paint, like a sunrise. */}
-        <a href="/" class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
+        <a href={b('/')} class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
           <Image
             src={wcpLogoWhite}
             alt={site.name}
@@ -152,17 +162,17 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
 
         {/* CTAs */}
         <div class="flex w-40 items-center justify-end gap-2">
-          <Button href="/enroll" variant="outline-white" size="sm" class="whitespace-nowrap">
+          <Button href={b('/enroll')} variant="outline-white" size="sm" class="whitespace-nowrap">
             Setup a Tour
           </Button>
-          <Button href="/enroll" variant="accent" size="sm" class="whitespace-nowrap">
+          <Button href={b('/enroll')} variant="accent" size="sm" class="whitespace-nowrap">
             Enroll Now
           </Button>
         </div>
       </div>
 
       <nav aria-label="Primary" class="relative mt-3 border-t border-white/15 py-2">
-        <NavList idPrefix="big" variant="row" tone="overlay" />
+        <NavList idPrefix="big" variant="row" tone="overlay" items={mainNav} linkBase={linkBase} />
       </nav>
     </div>
   </div>
@@ -177,15 +187,15 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     class="wcp-compact-bar fixed inset-x-0 top-0 z-40 hidden border-b border-border bg-white/95 backdrop-blur lg:block dark:bg-surface/95"
   >
     <div class="wcp-container flex items-center justify-between gap-6 py-2.5">
-      <a href="/" class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
+      <a href={b('/')} class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
         <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-10 w-auto" />
       </a>
       <nav aria-label="Primary (compact)">
-        <NavList idPrefix="compact" variant="compact" />
+        <NavList idPrefix="compact" variant="compact" items={mainNav} linkBase={linkBase} />
       </nav>
       <div class="flex shrink-0 items-center gap-1">
         <ThemeToggle />
-        <Button href="/enroll" variant="accent" size="sm">Enroll</Button>
+        <Button href={b('/enroll')} variant="accent" size="sm">Enroll</Button>
       </div>
     </div>
   </div>
