@@ -1,0 +1,108 @@
+---
+/* ============================================================================
+   VideoSection — click-to-load YouTube/Vimeo (page-builder bridge)
+   ============================================================================
+   Shows a cover image + play button; the iframe is only inserted after a click
+   (src/scripts/embeds), so no YouTube/Vimeo request or cookie happens on a
+   normal page view. Falls back to YouTube's own thumbnail when no cover is set.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { parseVideo } from '@/lib/embeds';
+import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section } = Astro.props;
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const hasHeader = Boolean(header?.title);
+
+const video = parseVideo(section.videoUrl as string | undefined);
+const cover = section.thumbnail as SanityImageValue | undefined;
+const coverAlt = (cover?.alt as string) ?? '';
+const ytThumb = video.thumbnailUrl;
+const label = `Play video${header?.title ? `: ${header.title}` : ''}`;
+---
+
+<Section
+  bg={(section.background as never) ?? 'white'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={hasHeader ? titleId : undefined}
+  label={hasHeader ? undefined : 'Video'}
+>
+  {
+    hasHeader && (
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? ''}
+        lead={header?.lead}
+        titleId={titleId}
+        as="h2"
+      />
+    )
+  }
+
+  <figure class="mx-auto mt-8 max-w-3xl">
+    {
+      video.embedUrl ? (
+        <div
+          class="wcp-embed relative aspect-video overflow-hidden rounded-2xl bg-navy"
+          data-embed-video={video.embedUrl}
+          data-embed-title={header?.title ?? 'Video'}
+        >
+          <button
+            type="button"
+            class="wcp-embed-play group absolute inset-0 flex h-full w-full items-center justify-center"
+            aria-label={label}
+          >
+            {cover?.asset ? (
+              <SanityImage
+                source={cover as SanityImageSource}
+                alt={coverAlt}
+                widths={[640, 960, 1280]}
+                sizes="(max-width: 768px) 100vw, 768px"
+                class="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : ytThumb ? (
+              <img
+                src={ytThumb}
+                alt=""
+                class="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : null}
+            <span class="absolute inset-0 bg-navy/25 transition-colors group-hover:bg-navy/10" />
+            <span class="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/95 shadow-lg transition-transform group-hover:scale-105">
+              <svg
+                class="ml-1 h-7 w-7 text-navy"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      ) : (
+        <p class="text-center text-ink-muted">Add a YouTube or Vimeo link to show a video here.</p>
+      )
+    }
+    {
+      section.caption && (
+        <figcaption class="mt-3 text-center text-sm text-ink-muted">{section.caption}</figcaption>
+      )
+    }
+  </figure>
+</Section>
+
+<script>
+  import '@/scripts/embeds';
+</script>

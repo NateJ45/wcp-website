@@ -1,0 +1,43 @@
+---
+/* ============================================================================
+   PullQuoteSection — one large statement (page-builder bridge)
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import { bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section } = Astro.props;
+const quote = (section.quote as string) ?? '';
+const attribution = section.attribution as string | undefined;
+const isNavy = section.background === 'navy';
+---
+
+<Section
+  bg={(section.background as never) ?? 'cream'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  label="Statement"
+>
+  <figure class="mx-auto max-w-3xl text-center">
+    <blockquote
+      class:list={[
+        'font-display text-2xl leading-snug text-balance md:text-3xl',
+        isNavy ? 'text-white' : 'text-heading',
+      ]}
+    >
+      {quote}
+    </blockquote>
+    {
+      attribution && (
+        <figcaption
+          class:list={['mt-5 text-sm font-semibold', isNavy ? 'text-white/80' : 'text-ink-muted']}
+        >
+          — {attribution}
+        </figcaption>
+      )
+    }
+  </figure>
+</Section>

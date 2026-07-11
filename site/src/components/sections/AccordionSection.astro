@@ -1,0 +1,70 @@
+---
+/* ============================================================================
+   AccordionSection — collapsible rows (page-builder bridge)
+   ============================================================================
+   Built on native <details>/<summary>: accessible and keyboard-operable with
+   no JavaScript, and every row's content stays readable if scripts are off.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { renderPortableText } from '@/lib/portable-text';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const items =
+  (section.items as { _key?: string; label?: string; body?: unknown }[] | undefined) ?? [];
+const titleId = titleIdFor(section);
+const hasHeader = Boolean(header?.title);
+---
+
+<Section
+  bg={(section.background as never) ?? 'white'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={hasHeader ? titleId : undefined}
+  label={hasHeader ? undefined : 'More information'}
+>
+  {
+    hasHeader && (
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? ''}
+        lead={header?.lead}
+        titleId={titleId}
+        as="h2"
+      />
+    )
+  }
+
+  <div class="mx-auto mt-8 max-w-3xl divide-y divide-border rounded-2xl border border-border">
+    {
+      items.map((item) => (
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-semibold text-heading">
+            <span>{item.label}</span>
+            <svg
+              class="h-5 w-5 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 leading-relaxed text-ink [&_a]:font-semibold [&_a]:text-sky-ink [&_a]:underline [&_p]:mt-3 [&_p:first-child]:mt-0">
+            <Fragment set:html={renderPortableText(item.body as never, linkBase)} />
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</Section>

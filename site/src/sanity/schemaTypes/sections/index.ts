@@ -26,6 +26,14 @@ import {
 import { latestPostsSection, upcomingEventsSection } from './blog';
 import { formSection, newsletterSignupSection } from './form';
 import { tabsSection } from './tabs';
+import {
+  videoSection,
+  mapSection,
+  accordionSection,
+  quickFactsSection,
+  pullQuoteSection,
+  countdownSection,
+} from './extras';
 
 // Body sections, in the order they appear in the "add section" menu.
 const BODY_SECTIONS = [
@@ -43,6 +51,12 @@ const BODY_SECTIONS = [
   stepListSection,
   compareSection,
   tabsSection,
+  accordionSection,
+  quickFactsSection,
+  pullQuoteSection,
+  videoSection,
+  mapSection,
+  countdownSection,
   gallerySection,
   splitMediaSection,
   latestPostsSection,

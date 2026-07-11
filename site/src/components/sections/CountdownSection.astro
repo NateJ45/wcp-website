@@ -1,0 +1,66 @@
+---
+/* ============================================================================
+   CountdownSection — live countdown to a date (page-builder bridge)
+   ============================================================================
+   The ticking numbers are aria-hidden (a screen reader would find a
+   per-second live region maddening); the accessible name is the plain date,
+   which is also the no-JS fallback shown in the caption.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { formatDate } from '@/lib/utils';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section } = Astro.props;
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const hasHeader = Boolean(header?.title);
+const target = (section.targetDate as string) ?? '';
+const done = (section.completedMessage as string) ?? "It's here!";
+const whenText = formatDate(target, {
+  weekday: 'long',
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZone: 'America/New_York',
+});
+---
+
+<Section
+  bg={(section.background as never) ?? 'navy'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={hasHeader ? titleId : undefined}
+  label={hasHeader ? undefined : 'Countdown'}
+>
+  {
+    hasHeader && (
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? ''}
+        lead={header?.lead}
+        titleId={titleId}
+        as="h2"
+      />
+    )
+  }
+
+  <div
+    class="mx-auto mt-6 max-w-xl text-center"
+    data-countdown
+    data-target={target}
+    data-done={done}
+  >
+    <p class="sr-only">Counting down to {whenText}.</p>
+    <div class="flex justify-center gap-4 text-white" aria-hidden="true" data-countdown-display>
+    </div>
+    <p class="mt-5 text-white/80" data-countdown-caption>{whenText}</p>
+  </div>
+</Section>
+
+<script>
+  import '@/scripts/countdown';
+</script>

@@ -53,6 +53,12 @@ each maps 1:1 to an existing presentational component.
 | `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                      |
 | `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                             |
 | `tabsSection`             | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)    |
+| `accordionSection`        | `AccordionSection.astro`          | collapsible rows (native `<details>`, no-JS)                           |
+| `quickFactsSection`       | `QuickFactsSection.astro`         | icon + value + label facts (hours, ages, ratios)                       |
+| `pullQuoteSection`        | `PullQuoteSection.astro`          | one large statement / philosophy quote                                 |
+| `videoSection`            | `VideoSection.astro`              | YouTube/Vimeo, **click-to-load** (no iframe until clicked)             |
+| `mapSection`              | `MapSection.astro`                | Google Map + directions, **click-to-load**                             |
+| `countdownSection`        | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                    |
 | `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                        |
 | `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                          |
 | `noticeBarSection`        | cream announcement strip          | home announcement                                                      |
