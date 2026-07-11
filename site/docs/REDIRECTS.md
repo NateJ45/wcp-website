@@ -2,8 +2,32 @@
 
 When the real domain is pointed at this site, **old Squarespace URLs will 404** unless we
 redirect them. Search engines and anyone who bookmarked or linked an old page should land
-on the right new page, and Google should carry the ranking over. This is a one-time task
-done at cutover.
+on the right new page, and Google should carry the ranking over.
+
+## Already done (pulled from the old sitemap, 2026-07)
+
+The old public URLs were read straight from `westchesterpreschool.org/sitemap.xml`, and the
+`redirects` map in [`astro.config.mjs`](../astro.config.mjs) now covers every path that
+**changed**:
+
+| Old Squarespace URL | New URL           |
+| ------------------- | ----------------- |
+| `/home`             | `/`               |
+| `/twos-class`       | `/classes/twos`   |
+| `/threes-class`     | `/classes/threes` |
+| `/pre-k-class`      | `/classes/pre-k`  |
+| `/coop-life`        | `/co-op-life`     |
+| `/tour`             | `/virtual-tour`   |
+| `/families`         | `/family-hub`     |
+
+Pages whose path did **not** change (`/about`, `/tuition`, `/faq`, `/contact`, `/enroll`,
+`/donate`, `/newsletter`, `/work-with-us`, `/why-wcp`, `/a-day-at-wcp`) resolve directly
+and need no redirect. `/families` was the old password-protected families area (returns
+401, so it wasn't in the sitemap — found via the site nav); it maps to the new
+`/family-hub`. Plus friendly aliases `/blog` → `/news` and `/calendar` → `/events`.
+
+There should be nothing left to do here for the current set of pages. The rest of this doc
+is for adding more later.
 
 ## How to add redirects
 

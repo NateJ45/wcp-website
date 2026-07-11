@@ -44,16 +44,28 @@ export default defineConfig({
   output: 'static',
 
   // Redirects — old URLs → new, so links and search rankings survive the move
-  // off Squarespace. Add one line per old path when the domain is cut over
-  // (get the old URL list from the current site's sitemap). These emit real
-  // 301s via the Cloudflare adapter. See docs/REDIRECTS.md.
+  // off Squarespace. These emit real 301s via the Cloudflare adapter. See
+  // docs/REDIRECTS.md.
   redirects: {
-    // Friendly aliases (safe regardless of the old site):
+    // Friendly aliases:
     '/blog': '/news',
     '/calendar': '/events',
-    // Old Squarespace paths go here, e.g.:
-    // '/our-classes': '/classes/twos',
-    // '/about-us': '/about',
+    // Old Squarespace paths that CHANGED (pulled from the old sitemap.xml,
+    // 2026-07). Same-named pages (/about, /tuition, /faq, /contact, /enroll,
+    // /donate, /newsletter, /work-with-us, /why-wcp, /a-day-at-wcp) resolve
+    // directly on the new site and need no redirect.
+    '/home': '/',
+    '/twos-class': '/classes/twos',
+    '/threes-class': '/classes/threes',
+    '/pre-k-class': '/classes/pre-k',
+    '/coop-life': '/co-op-life',
+    '/tour': '/virtual-tour',
+    // The old families area was Squarespace's password-protected "/families"
+    // (the nav link families used; returns 401, so it's not in the sitemap).
+    // Send it to the new gated hub so those bookmarks land. Deep sub-pages
+    // under it can't be a static wildcard→one-page redirect, and were behind
+    // the login anyway, so families just re-enter the hub from here.
+    '/families': '/family-hub',
   },
 
   prefetch: {
