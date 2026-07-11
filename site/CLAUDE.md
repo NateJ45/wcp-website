@@ -59,6 +59,7 @@ src/
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
     preview/news/[slug].astro # SSR draft preview for a News post
     thank-you.astro          # contact-form landing (no-JS submit target)
+    search.astro             # site search (Pagefind UI over the build-time index)
     family-hub/**            # SSR gated hub pages
     api/                     # hub login/logout, draft-mode toggle, contact (form → Sanity + Resend)
   components/
@@ -98,6 +99,7 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - **Trailing slash:** static `output` + directory format means `/about` → 307 → `/about/` → 200. Expected, not a bug.
 - **Hero videos are gitignored** (`public/hero/*.mp4|webm`, belong in R2/Sanity), so they 404 on a clean build and the site degrades to the poster image. The link-check and tests skip them.
 - **Windows-only:** local `lhci autorun` can exit 1 on an `EPERM` temp-cleanup crash even when the audit passed. Linux CI is the real Lighthouse gate.
+- **Site search needs a build.** Pagefind indexes `dist/client` in the `postbuild` npm hook, so `/search` returns nothing under `astro dev` — test it against a real build. `data-pagefind-body` on `<main>` limits the index to page content (and skips the Studio).
 
 ## Deploy & CI
 

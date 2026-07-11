@@ -61,6 +61,25 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
         <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-11 w-auto" />
       </a>
       <div class="flex items-center gap-1">
+        <a
+          href={b('/search')}
+          aria-label="Search"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-md text-heading hover:bg-grey"
+        >
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+        </a>
         <ThemeToggle />
         <Button href={b('/enroll')} variant="accent" size="sm">Enroll</Button>
         <button
@@ -145,6 +164,21 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
             class="wcp-icon-btn"
           >
             <Icon name="mail" class="h-4 w-4" />
+          </a>
+          <a href={b('/search')} aria-label="Search the site" class="wcp-icon-btn">
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
           </a>
           <ThemeToggle tone="onNavy" class="h-9 w-9 hover:bg-white/16" />
         </div>
