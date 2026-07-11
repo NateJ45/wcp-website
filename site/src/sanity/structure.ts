@@ -2,6 +2,7 @@ import type { StructureResolver, StructureBuilder } from 'sanity/structure';
 import type { ComponentType } from 'react';
 import { guides } from './guides/content';
 import { makeGuideView } from './components/GuideView';
+import { WelcomePane } from './components/WelcomePane';
 
 // =============================================================================
 // Studio structure — the left-hand navigation a volunteer sees
@@ -83,6 +84,16 @@ export const structure: StructureResolver = (S) =>
   S.list()
     .title('West Chester Preschool')
     .items([
+      S.listItem()
+        .id('welcome')
+        .title('Welcome')
+        .icon(emoji('🏠'))
+        .child(
+          S.component(WelcomePane as never)
+            .id('welcome-pane')
+            .title('Welcome'),
+        ),
+
       howThisWorks(S),
 
       S.divider(),

@@ -2,6 +2,8 @@ import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { presentationTool } from 'sanity/presentation';
 import { media } from 'sanity-plugin-media';
+import DocumentsPane from 'sanity-plugin-documents-pane';
+import { SeoPreviewPane } from './src/sanity/components/SeoPreviewPane';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { structure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
@@ -43,7 +45,40 @@ export default defineConfig({
   releases: { enabled: false },
   scheduledDrafts: { enabled: true },
   plugins: [
-    structureTool({ structure }),
+    structureTool({
+      structure,
+      // Extra document tabs, added by type:
+      //  - page / post / legal: a read-only SEO + social-share preview.
+      //  - shared docs (class/staff/quote/FAQ): a "Used on" panel listing the
+      //    pages and posts that reference this one (answers "is it safe to
+      //    change/delete?"). Both are free — no plan gating.
+      defaultDocumentNode: (S, { schemaType }) => {
+        if (['page', 'post', 'legalPage'].includes(schemaType)) {
+          return S.document().views([
+            S.view.form(),
+            S.view
+              .component(SeoPreviewPane)
+              .title('SEO preview')
+              .icon(() => '🔎'),
+          ]);
+        }
+        if (['class', 'staff', 'testimonial', 'faqItem'].includes(schemaType)) {
+          return S.document().views([
+            S.view.form(),
+            S.view
+              .component(DocumentsPane)
+              .options({
+                query: `*[references($id)]{ _id, _type, title, name }`,
+                params: { id: `_id` },
+                options: { perspective: 'previewDrafts' },
+              })
+              .title('Used on')
+              .icon(() => '🔗'),
+          ]);
+        }
+        return S.document().views([S.view.form()]);
+      },
+    }),
     presentationTool({
       resolve,
       previewUrl: {

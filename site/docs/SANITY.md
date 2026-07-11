@@ -13,7 +13,7 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 
 - **Project ID:** `niemhgev` · **Dataset:** `production` (private) · **API version:** `2025-01-01`
 - **Studio config:** [sanity.config.ts](../sanity.config.ts) · schemas in [src/sanity/schemaTypes/](../src/sanity/schemaTypes/)
-- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), and `sanity-plugin-media` (the "Media" library tool — grid browse, tags, alt editing, usage)
+- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), `sanity-plugin-media` (the "Media" library), and `sanity-plugin-documents-pane` (a "Used on" tab). Custom panes: a **Welcome** dashboard (recent edits + orientation) and an **SEO preview** tab (Google + social card) — both free, added via `defaultDocumentNode` in `sanity.config.ts`. Growth-plan features (AI Assist, Comments/Tasks) are **not** enabled — see the note below.
 - **Read clients:** [src/lib/cms.ts](../src/lib/cms.ts) (public build-time reads),
   [src/lib/sanity.ts](../src/lib/sanity.ts) (gated hub, request-time),
   [src/lib/cms-preview.ts](../src/lib/cms-preview.ts) (Studio draft preview, stega on)
