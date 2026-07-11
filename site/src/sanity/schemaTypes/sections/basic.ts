@@ -28,6 +28,12 @@ export const proseSection = defineType({
       validation: (R) => R.required(),
     }),
     defineField({
+      name: 'callout',
+      title: 'Callout below (optional)',
+      type: 'callout',
+      group: 'content',
+    }),
+    defineField({
       name: 'narrow',
       title: 'Narrow column (centered)',
       type: 'boolean',

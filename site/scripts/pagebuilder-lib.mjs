@@ -49,6 +49,51 @@ export const li = (text) => ({
 
 export const ref = (id) => ({ _type: 'reference', _ref: id });
 
+// --- Rich Portable Text builders (h2/lists/bold/links) ----------------------
+// Inline part markers for p()/bullet(): plain string, strong(), or link().
+export const strong = (text) => ({ text, marks: ['strong'] });
+export const link = (text, href) => ({ text, href });
+
+const spansOf = (parts, markDefs) =>
+  parts.map((part) => {
+    if (typeof part === 'string') return { _type: 'span', _key: key(), text: part, marks: [] };
+    if (part.href) {
+      const k = key();
+      markDefs.push({ _type: 'link', _key: k, href: part.href });
+      return { _type: 'span', _key: key(), text: part.text, marks: [k] };
+    }
+    return { _type: 'span', _key: key(), text: part.text, marks: part.marks ?? [] };
+  });
+
+/** A normal paragraph block from mixed string/strong()/link() parts. */
+export const p = (...parts) => {
+  const markDefs = [];
+  return {
+    _type: 'block',
+    _key: key(),
+    style: 'normal',
+    markDefs,
+    children: spansOf(parts, markDefs),
+  };
+};
+
+/** A bullet-list item block from mixed parts. */
+export const bullet = (...parts) => {
+  const markDefs = [];
+  return {
+    _type: 'block',
+    _key: key(),
+    style: 'normal',
+    level: 1,
+    listItem: 'bullet',
+    markDefs,
+    children: spansOf(parts, markDefs),
+  };
+};
+
+export const h2 = (text) => block(text, 'h2');
+export const h3 = (text) => block(text, 'h3');
+
 // --- Image upload (idempotent via a local asset-id cache) -------------------
 export function makeUploader(client) {
   const map = existsSync(ASSET_MAP_PATH) ? JSON.parse(readFileSync(ASSET_MAP_PATH, 'utf8')) : {};

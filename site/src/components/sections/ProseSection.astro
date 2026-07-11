@@ -2,6 +2,7 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Prose from '@/components/Prose.astro';
+import Callout from '@/components/Callout.astro';
 import { renderPortableText } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
@@ -13,6 +14,7 @@ const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
 const html = renderPortableText(section.body as never, linkBase);
 const narrow = section.narrow !== false;
+const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -30,4 +32,11 @@ const narrow = section.narrow !== false;
     )
   }
   <Prose class={narrow ? undefined : 'max-w-none'}><Fragment set:html={html} /></Prose>
+  {
+    callout && (
+      <Callout tone={callout.tone} class="mx-auto mt-8 max-w-2xl">
+        <Fragment set:html={renderPortableText(callout.body as never, linkBase)} />
+      </Callout>
+    )
+  }
 </Section>
