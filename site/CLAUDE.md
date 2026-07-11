@@ -10,6 +10,15 @@ The **West Chester Preschool** website — a volunteer-run cooperative preschool
 
 The whole public site is a **Sanity page-builder**: non-technical volunteers log into the Studio and edit every page Squarespace-style (click-to-edit, add/reorder sections, build new pages) with no code changes. See [docs/PAGE_BUILDER.md](docs/PAGE_BUILDER.md).
 
+## Keep the docs in sync — on every change
+
+**A change is not done until the docs describing it match reality.** Treat documentation as part of the change, not a follow-up. On every add / remove / modify — a feature, file, command, config, secret, gotcha, section type, or field — before you consider the work finished:
+
+1. **Update the affected markdown.** Grep the docs for anything the change touches and fix it in the same commit: this file (`CLAUDE.md`), [`README.md`](../README.md), and [`docs/`](docs/) (`PAGE_BUILDER.md`, `SANITY.md`, `FAMILY_HUB.md`). New gotcha → add it to the Gotchas list. New command / secret / route → update the relevant section.
+2. **Update the in-Studio volunteer guide** ([`src/sanity/guides/content.ts`](src/sanity/guides/content.ts)) **whenever the change alters what a volunteer sees or does** — a new/removed/renamed section type, a changed field or workflow, a new editing surface. This is the Help & Guide a non-technical board member reads; stale steps there are worse than none. (Purely internal changes — refactors, build config, this kind of stega fix — don't need a guide edit, but consciously decide that each time.)
+
+The point: never leave stale docs that could mislead a later developer, AI, or staff member. If you changed it, the docs (and the guide, when volunteer-facing) change with it.
+
 ## The mental model: two content paths
 
 Everything here makes sense once you hold these two paths apart:
@@ -81,6 +90,7 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - **CI/Lighthouse builds need `SANITY_TOKEN`.** Since pages are CMS-driven, `getStaticPaths()` reads them from Sanity at build time — a tokenless build emits an empty site. All three workflows pass `secrets.SANITY_TOKEN`.
 - **`/studio` is blank under `npm run dev`.** The project folder path contains spaces (`West Chester Preschool Website`), which breaks Vite's dev-time Studio module loading. **Dev-only** — the production build and hosted Studio are fine. To edit locally, use the deployed Studio or `npx sanity dev`.
 - **Slug is a string + regex, not Sanity's `slug` type.** Sanity's slugify strips the slashes that `classes/twos` needs.
+- **Never compare a stega-encoded string in logic.** In the `/preview` path, stega encodes ~1KB of invisible marker characters into every string so click-to-edit works, so `tone === 'navy'` is `false` on an encoded value and the component picks the wrong branch (this once rendered the navy CTA as cream in preview only). Dropdown/enum fields that drive rendering are excluded from stega via the `filter` in [`src/lib/cms-preview.ts`](src/lib/cms-preview.ts) — **add any new logic-driving enum field to that `NON_STEGA_FIELDS` list.** Display strings stay encoded (that is the point).
 - **Trailing slash:** static `output` + directory format means `/about` → 307 → `/about/` → 200. Expected, not a bug.
 - **Hero videos are gitignored** (`public/hero/*.mp4|webm`, belong in R2/Sanity), so they 404 on a clean build and the site degrades to the poster image. The link-check and tests skip them.
 - **Windows-only:** local `lhci autorun` can exit 1 on an `EPERM` temp-cleanup crash even when the audit passed. Linux CI is the real Lighthouse gate.

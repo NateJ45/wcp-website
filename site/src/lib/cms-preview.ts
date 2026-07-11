@@ -18,6 +18,36 @@ import { env } from 'cloudflare:workers';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 import { SITE_SETTINGS_QUERY } from '@/lib/queries';
 
+// Fields chosen from a fixed dropdown / radio in the schema — NEVER free text an
+// editor types, and never displayed as prose. They drive class and component
+// selection in the .astro renderers (e.g. CtaBanner does `tone === 'navy'`, the
+// Section band does `bg === 'navy'`, Icon looks the name up in a map). Stega
+// encodes a ~1KB run of invisible marker characters into every string it touches
+// so click-to-edit knows which field to open; on a DISPLAY string that is the
+// whole point, but on one of these it silently breaks the exact-string
+// comparison (`"navy" + <markers>` !== `"navy"`), so the preview mis-renders
+// while the live static site is fine. Excluding them from stega loses nothing —
+// you pick these from a list, there is no text to click into — and fixes the
+// whole class of preview-only rendering drift at the source. See docs/PAGE_BUILDER.md.
+const NON_STEGA_FIELDS = new Set([
+  'tone',
+  'background',
+  'align',
+  'accentColor',
+  'chip',
+  'source',
+  'category',
+  'tag',
+  'columns',
+  'layout',
+  'mediaType',
+  'height',
+  'linkType',
+  'style',
+  'appearance',
+  'icon',
+]);
+
 export function getPreviewClient(draftMode: boolean): SanityClient {
   return createClient({
     projectId,
@@ -29,6 +59,10 @@ export function getPreviewClient(draftMode: boolean): SanityClient {
     stega: {
       enabled: draftMode,
       studioUrl: '/studio',
+      // Encode display strings (so they are click-to-edit) but skip the dropdown
+      // fields above, whose exact values are used in rendering logic.
+      filter: (props) =>
+        NON_STEGA_FIELDS.has(String(props.sourcePath.at(-1))) ? false : props.filterDefault(props),
     },
   });
 }

@@ -96,6 +96,16 @@ component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
   [`src/lib/utils.ts`](../src/lib/utils.ts) prefixes internal links with `/preview`
   inside the Presentation preview so click-through stays in draft mode. It is threaded
   through the renderer and the shared `Header`/`Footer`/`NavList` chrome.
+- **Stega vs. enum logic:** in the `/preview` path, Sanity's stega encoding hides a
+  ~1KB run of invisible marker characters in every string so click-to-edit knows which
+  field to open. That is correct for _displayed_ text but breaks any string used in
+  **rendering logic** — e.g. `CtaBanner` does `tone === 'navy'`, which is `false` once
+  `tone` carries stega markers, so the preview silently picks the wrong branch (the
+  navy CTA rendered cream in preview only). Dropdown/enum fields that drive rendering
+  are therefore excluded from stega by the `filter` /`NON_STEGA_FIELDS` list in
+  [`src/lib/cms-preview.ts`](../src/lib/cms-preview.ts). **When you add a new enum field
+  that a component compares or maps on, add it to that list.** Display strings stay
+  encoded so click-to-edit keeps working.
 
 ## Routing
 
