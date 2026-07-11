@@ -29,6 +29,7 @@ export const testimonialSection = defineType({
       options: {
         list: [
           { title: 'Featured quotes', value: 'featured' },
+          { title: 'All quotes', value: 'all' },
           { title: 'By class tag', value: 'tag' },
           { title: 'Pick specific ones', value: 'manual' },
         ],

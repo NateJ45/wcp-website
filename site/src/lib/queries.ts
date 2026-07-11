@@ -44,6 +44,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "testimonialSection" => {
       "items": select(
         source == "featured" => *[_type == "testimonial" && featured == true] | order(order asc){ quote, author, role },
+        source == "all" => *[_type == "testimonial"] | order(order asc){ quote, author, role },
         source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(order asc){ quote, author, role },
         source == "manual" => manualItems[]->{ quote, author, role }
       )

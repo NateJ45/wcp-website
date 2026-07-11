@@ -28,7 +28,28 @@ const A = {
   heroPoster: await up.upload('public/hero/wcp-hero-poster.webp'),
   heroMp4: await up.uploadFile('public/hero/wcp-hero.mp4'),
   heroWebm: await up.uploadFile('public/hero/wcp-hero.webm'),
+  outdoor: await up.upload('src/assets/photos/outdoor-exploration.jpg'),
+  firetruck: await up.upload('src/assets/photos/firetruck-field-trip.jpg'),
+  prekCircle: await up.upload('src/assets/photos/prek-circle-time.jpg'),
+  unicorn: await up.upload('src/assets/photos/unicorn-hug.jpg'),
+  dressUp: await up.upload('src/assets/photos/dress-up-play.jpg'),
+  gym: await up.upload('src/assets/photos/gym-playtime.jpg'),
+  twosHero: await up.upload('src/assets/photos/twos-hero.jpg'),
+  threesHero: await up.upload('src/assets/photos/threes-hero.jpg'),
+  prekHero: await up.upload('src/assets/photos/prek-hero.jpg'),
+  lisa: await up.upload('src/assets/staff/lisa-cortez.jpg'),
+  erin: await up.upload('src/assets/staff/erin-schmerr.jpg'),
 };
+
+// Ensure staff docs carry their photos — teacher sections dereference staff.photo.
+await client
+  .patch('staff-lisa')
+  .set({ photo: B.imageValue(A.lisa) })
+  .commit();
+await client
+  .patch('staff-erin')
+  .set({ photo: B.imageValue(A.erin) })
+  .commit();
 
 const pages = [];
 const P = (slug, title, hero, sections, seo = {}) =>
@@ -454,6 +475,186 @@ P(
       reachHeading: 'Reach us',
       visitHeading: 'Visit',
       showParking: true,
+    }),
+  ],
+);
+
+// ---------------------------------------------------------------- why-wcp
+P(
+  'why-wcp',
+  'Why WCP?',
+  B.hero({
+    eyebrow: 'Still Comparing Schools?',
+    title: 'Here is why families choose WCP.',
+    lead: 'We are not the biggest preschool in West Chester. We are the one families talk about for years after their kids graduate. Here is what makes the difference.',
+    height: 'tall',
+    mediaType: 'image',
+    assetId: A.outdoor,
+    imageAlt:
+      'A WCP teacher and a small group of children examining something together outdoors during a nature exploration activity',
+    actions: [
+      B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+    ],
+  }),
+  [
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'What Sets Us Apart',
+        'Six reasons families pick WCP',
+        'These are the things families tell us they wish they had known before they started looking.',
+      ),
+      cards: [
+        B.card(
+          'door-open',
+          'sky',
+          'You get a front-row seat',
+          'Most preschools keep parents at the door. At WCP you are in the classroom, watching your child make friends, solve problems, and grow in real time.',
+        ),
+        B.card(
+          'piggy-bank',
+          'green',
+          'Tuition that makes sense',
+          'Starting at $70 a month, WCP is one of the most affordable preschools in West Chester. The co-op model keeps costs low without cutting corners.',
+        ),
+        B.card(
+          'graduation-cap',
+          'orange',
+          'Teachers who know your child',
+          'Small classes and the same teachers every day. Our staff know every child by name, every quirk, every strength.',
+        ),
+        B.card(
+          'users',
+          'amber',
+          'A community that sticks around',
+          'WCP families become actual friends who stay in touch long after their kids move on.',
+        ),
+        B.card(
+          'award',
+          'sky',
+          'Kids leave ready for kindergarten',
+          'Our curriculum follows Ohio’s Early Learning Content Standards. By Pre-K graduation, their kindergarten teachers notice the difference.',
+        ),
+        B.card(
+          'heart',
+          'orange',
+          '55 years of doing this well',
+          'WCP has been here since 1969. Families keep coming back, often enrolling a second or third child before the first has finished.',
+        ),
+      ],
+    }),
+    B.statBand({
+      ariaLabel: 'West Chester Preschool by the numbers',
+      stats: [
+        {
+          value: '55',
+          suffix: '+',
+          label: 'Years in West Chester',
+          note: 'Founded in 1969 and still going strong.',
+        },
+        { value: '4', label: 'Classes for ages 2-5', note: 'Twos, Threes, and Pre-K AM and PM.' },
+        {
+          value: '70',
+          prefix: '$',
+          label: 'Tuition from, per month',
+          note: 'The co-op model keeps our tuition low.',
+        },
+        {
+          value: '100',
+          suffix: '%',
+          label: 'Ohio licensed',
+          note: 'Fully licensed and non-discriminatory. Every family is welcome.',
+        },
+      ],
+    }),
+    B.compare({
+      bg: 'white',
+      seam: true,
+      header: B.sh(
+        'How We Compare',
+        'WCP vs a typical preschool',
+        'An honest look at what makes the co-op model different.',
+      ),
+      rows: [
+        {
+          feature: 'Parent involvement in classroom',
+          wcp: 'Yes — 1–3× per month',
+          typical: 'Rarely or never',
+        },
+        {
+          feature: 'Monthly tuition (4-year-old)',
+          wcp: 'From $175–$200',
+          typical: 'Often $500–$1,500+',
+        },
+        { feature: 'Class size', wcp: 'Small, intentional', typical: 'Varies, often larger' },
+        { feature: 'Know every classmate’s family', wcp: 'Yes', typical: 'Unlikely' },
+        {
+          feature: 'Curriculum basis',
+          wcp: 'Ohio Early Learning Standards',
+          typical: 'Varies by school',
+        },
+        { feature: 'Parent community', wcp: 'Built in by design', typical: 'Up to you to find' },
+        { feature: 'State licensed', wcp: 'Yes, by ODJFS', typical: 'Varies' },
+        { feature: 'Non-discriminatory', wcp: 'Yes, always', typical: 'Varies' },
+      ],
+    }),
+    B.cardGrid({
+      bg: 'grey',
+      columns: 3,
+      header: B.sh(
+        'Your Child’s Progress',
+        'You will always know how your child is doing.',
+        'Between ClassDojo updates, your own classroom helper days, and formal conferences, you will never feel out of the loop.',
+      ),
+      cards: [
+        B.card(
+          'file-check',
+          'sky',
+          'Annual parent-teacher conferences',
+          'Threes and Pre-K families receive a formal conference each year where the teacher reviews your child’s development in detail. You can also request a conference at any time — no waiting for a scheduled slot.',
+        ),
+        B.card(
+          'graduation-cap',
+          'orange',
+          'Early Pre-K conferences',
+          'Pre-K conferences are scheduled early in the year specifically to help families make informed decisions about kindergarten readiness or whether an additional Pre-K year would benefit their child.',
+        ),
+        B.card(
+          'eye',
+          'green',
+          'You see it yourself',
+          'Because you help in the classroom 1–3 times a month, you do not have to wait for a conference to know how your child is doing. You watch them learn, grow, and make friends in real time.',
+        ),
+      ],
+    }),
+    B.schoolYear({
+      bg: 'white',
+      header: B.sh(
+        'The School Year',
+        'A year full of things to look forward to',
+        'WCP is not just classes. The school year is packed with events, celebrations, and community moments that families talk about long after their kids graduate.',
+      ),
+    }),
+    B.testimonials({
+      bg: 'grey',
+      source: 'all',
+      layout: 'wall',
+      header: B.sh(
+        'Family Stories',
+        'Heard directly from our community',
+        'Real families. Real words. Not ours.',
+      ),
+    }),
+    B.cta({
+      title: 'Come see it for yourself.',
+      lead: 'The best way to know if WCP is right for your family is to walk through the door. Meet the teachers, see the classrooms, and let your child spend time in the space.',
+      actions: [
+        B.act('Schedule a Tour', 'accent', { url: '/enroll' }),
+        B.act('View Tuition', 'outline-white', { url: '/tuition' }),
+      ],
+      note: CALL_NOTE,
     }),
   ],
 );
