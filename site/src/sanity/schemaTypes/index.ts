@@ -26,6 +26,7 @@ import { SECTION_OBJECT_TYPES } from './sections';
 import { siteSettings } from './singletons/siteSettings';
 import { feeSchedule } from './singletons/feeSchedule';
 import { navigation } from './singletons/navigation';
+import { closureAlert } from './singletons/closureAlert';
 
 // Collections (public site)
 import { staff } from './documents/staff';
@@ -66,6 +67,7 @@ export const schemaTypes = [
   siteSettings,
   feeSchedule,
   navigation,
+  closureAlert,
   // Public collections
   staff,
   classType,
@@ -87,4 +89,9 @@ export const schemaTypes = [
 ];
 
 // Types treated as singletons (one instance, pinned; no create/delete/duplicate).
-export const SINGLETON_TYPES = new Set(['siteSettings', 'feeSchedule', 'navigation']);
+export const SINGLETON_TYPES = new Set([
+  'siteSettings',
+  'feeSchedule',
+  'navigation',
+  'closureAlert',
+]);

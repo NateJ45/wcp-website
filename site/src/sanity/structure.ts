@@ -62,6 +62,7 @@ function singleton(S: StructureBuilder, schemaType: string, title: string, icon:
 const PLACED = new Set([
   'siteSettings',
   'navigation',
+  'closureAlert',
   'feeSchedule',
   'class',
   'staff',
@@ -99,6 +100,7 @@ export const structure: StructureResolver = (S, context) =>
 
       S.divider(),
 
+      singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
 

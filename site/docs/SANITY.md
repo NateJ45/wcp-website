@@ -27,6 +27,7 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 | **Page**              | Every public page, as a hero + a stack of sections (the page builder)           |
 | **News post**         | The News/blog feed (/news) — title, cover, summary, rich body, category         |
 | **Event**             | The public Events page (/events) — dated open houses, tours, closures           |
+| **Alert banner**      | Site-wide banner for snow days / urgent notices (singleton; toggle + message)   |
 | **Menus**             | The header and footer navigation (singleton)                                    |
 | **Class**             | Each class's schedule, ages, tuition — used on its page, the tuition table, hub |
 | **Staff**             | Teacher names and bios (one source, shown everywhere they appear)               |

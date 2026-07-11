@@ -80,6 +80,7 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
+          '**Alert banner** — a snow-day / urgent banner across the top of every page. Turn on, write a message, publish.',
           '**Site Settings** — the school’s phone, email, address, and the current school year. Set once, used everywhere.',
           '**Menus (header & footer)** — the links along the top of the site and in the footer.',
           '**Pages** — every public page, built from stacked sections you can add, reorder, and edit. This is where you build a brand-new page too.',
@@ -401,6 +402,39 @@ export const guides: Guide[] = [
       {
         kind: 'p',
         text: 'To put a form on a page, edit the page and add a **Contact form** section (see "Build or edit a page").',
+      },
+    ],
+  },
+
+  {
+    slug: 'alert-banner',
+    title: 'Post a closure or alert',
+    icon: '🚨',
+    lead: 'Show a banner at the top of every page — for a snow day, an early dismissal, or any urgent notice.',
+    diy: 'self',
+    body: [
+      { kind: 'path', items: ['Alert banner', 'turn on + write message', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **Alert banner** near the top of the left menu.',
+          'Turn on **Show this alert on the site?**',
+          'Write the **Message** (for example "Closed today due to snow. Class resumes tomorrow.").',
+          'Pick a **Style** — Info (blue), Warning (amber), or Urgent (red). Add a button link if useful.',
+          '**Publish**. It shows on every page a minute or two later.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'critical',
+        title: 'Remember to turn it off',
+        text: 'When the closure is over, come back, turn **Show this alert** off, and Publish. Otherwise the banner stays up.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'For a planned closure, schedule it',
+        text: 'You can prepare the message ahead of time and use **Schedule** so it appears on its own the morning of (see "Schedule a change for later").',
       },
     ],
   },

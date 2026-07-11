@@ -1,0 +1,78 @@
+---
+/* ============================================================================
+   ClosureBanner — the site-wide alert (snow days, urgent notices)
+   ============================================================================
+   Rendered at the very top of every page from BaseLayout when the Alert
+   singleton is active. Dismissible (remembered per-message, so a NEW alert
+   re-appears even if an old one was closed). Tones use the WCAG-AA "-ink"
+   shades so white text always clears contrast. Without JS it simply stays
+   visible — exactly what you want for a closure notice.
+   ============================================================================ */
+import type { ClosureAlert } from '@/lib/cms';
+
+interface Props {
+  alert: ClosureAlert;
+}
+const { alert } = Astro.props;
+const message = alert.message ?? '';
+
+// Theme-stable tone pairs (fixed hex, not the `-ink` tokens which flip bright
+// in dark mode). Each pair clears WCAG-AA contrast in both light and dark.
+const toneClass: Record<string, string> = {
+  info: 'bg-navy text-white',
+  warning: 'bg-amber text-navy',
+  urgent: 'bg-[#c1272d] text-white',
+};
+const bg = toneClass[alert.tone ?? 'warning'] ?? toneClass.warning;
+
+// A stable per-message key so dismiss is remembered until the message changes.
+function hash(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h).toString(36);
+}
+const key = `wcp-alert-${hash(message)}`;
+const href = alert.linkUrl;
+const external = href ? /^https?:\/\//.test(href) : false;
+---
+
+<div class={bg} data-alert data-alert-key={key} role="region" aria-label="Site notice">
+  <div
+    class="wcp-container flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-2.5 text-center text-sm font-medium"
+  >
+    <span>{message}</span>
+    {
+      href && (
+        <a
+          href={href}
+          class="font-semibold whitespace-nowrap underline underline-offset-2"
+          {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+        >
+          {alert.linkLabel ?? 'Details'}
+        </a>
+      )
+    }
+    <button
+      type="button"
+      data-alert-dismiss
+      aria-label="Dismiss this notice"
+      class="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full opacity-80 hover:bg-white/20 hover:opacity-100"
+    >
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/alert';
+</script>

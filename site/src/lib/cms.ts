@@ -6,9 +6,24 @@ import {
   SITE_SETTINGS_QUERY,
   SCHOOL_YEAR_EVENTS_QUERY,
   NAVIGATION_QUERY,
+  CLOSURE_ALERT_QUERY,
   testimonialsQuery,
 } from '@/lib/queries';
 import { resolveNavigation, type SiteNavigation } from '@/lib/nav';
+
+export interface ClosureAlert {
+  active?: boolean;
+  message?: string;
+  tone?: 'info' | 'warning' | 'urgent';
+  linkLabel?: string;
+  linkUrl?: string;
+}
+
+/** The site-wide alert banner, or null when it's off / has no message. */
+export async function getClosureAlert(): Promise<ClosureAlert | null> {
+  const alert = await cmsFetch<ClosureAlert | null>(CLOSURE_ALERT_QUERY, {}, null);
+  return alert?.active && alert.message ? alert : null;
+}
 
 // =============================================================================
 // CMS content client — for PUBLIC (static / prerendered) pages
