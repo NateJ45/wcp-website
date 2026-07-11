@@ -1,6 +1,7 @@
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { presentationTool } from 'sanity/presentation';
+import { media } from 'sanity-plugin-media';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { structure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
@@ -47,6 +48,11 @@ export default defineConfig({
         previewMode: { enable: '/api/draft-mode/enable' },
       },
     }),
+    // Media library — a WordPress/Squarespace-style asset manager. Adds a
+    // "Media" tool to the Studio nav (grid browse, search, tags, edit alt/
+    // title, see where each image is used) and a browse option in every image
+    // picker. Self-contained; no external provisioning.
+    media(),
   ],
   schema: { types: schemaTypes },
   document: {

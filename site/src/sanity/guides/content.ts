@@ -412,6 +412,20 @@ export const guides: Guide[] = [
         title: 'A quick word on alt text',
         text: '**Alt text** is a plain sentence describing the picture, like "A child painting at an easel". It helps visually impaired visitors and is good for search results. A few words is plenty.',
       },
+      { kind: 'h', text: 'The Media library' },
+      {
+        kind: 'p',
+        text: 'Click **Media** in the left menu to see every photo you have ever uploaded in one grid, like a photo album. You can search by name, add **tags** to group photos (for example "classroom" or "events"), fix a photo’s alt text, and see which pages use it. It is the easiest way to reuse a photo you have already uploaded instead of uploading it again.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Deleting from Media is forever',
+        text:
+          'Removing a photo from the Media library deletes it everywhere it is used. If a photo might still be on a page, leave it. When in doubt, ask ' +
+          SITE.contactName +
+          '.',
+      },
     ],
   },
 
