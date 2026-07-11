@@ -52,6 +52,24 @@ Editors get bold/italic/links/lists and a couple of headings — no raw HTML, no
 font controls, and (in the page builder) no spacing or layout knobs. They can't break the
 design. See [PAGE_BUILDER.md](PAGE_BUILDER.md) for why that brand-lock is deliberate.
 
+## Plan: what's free vs. paid (Growth)
+
+The project runs on Sanity's **free** plan. Most of what we use is free, but a few
+"Squarespace/WordPress-parity" features are **Growth-only** ($15/editor seat/mo) and are
+either not enabled or won't function until an upgrade:
+
+| Feature                                                                                                                    | Free?         | Notes                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- |
+| Page builder, News, Events, Media library, forms, newsletter, SEO preview, "Used on", Welcome dashboard, redirects, search | ✅ Free       | Everything the board uses day to day                                                      |
+| **Editor role** (edit without member/billing access)                                                                       | ❌ Growth     | Free has only **Administrator** + **Viewer** — see [ROLES.md](ROLES.md)                   |
+| **Scheduled publishing**                                                                                                   | ❌ Growth     | Config flag is on (activates on upgrade); the Schedule option just doesn't appear on free |
+| **Comments & Tasks** (collaboration)                                                                                       | ❌ Growth     | Not enabled                                                                               |
+| **AI Assist** (in-field AI, auto alt-text)                                                                                 | ❌ Growth     | Not installed                                                                             |
+| **Custom per-field roles**                                                                                                 | ❌ Enterprise | e.g. "edit News but not tuition"                                                          |
+
+To upgrade: manage.sanity.io → project → **Plan**. Then AI Assist and Comments/Tasks can be
+wired up, and scheduling + the Editor role start working.
+
 ## The Studio
 
 The Studio is embedded at **`/studio`** on the site (ships with the normal deploy) and

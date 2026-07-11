@@ -28,10 +28,12 @@ import { projectId, dataset } from './src/sanity/env';
 // - document.actions / newDocumentOptions: enforce singletons — one Site
 //   Settings, one Tuition & Fees, with no duplicate/delete so nobody can create
 //   a confusing second copy.
-// - scheduledDrafts.enabled: true — per-document scheduling, so a volunteer can
-//   set a page or (soon) a blog post to publish at a future date/time, like
-//   Squarespace/WordPress. Sanity publishes it on schedule server-side, which
-//   fires the same publish webhook and rebuilds the static site at that time.
+// - scheduledDrafts.enabled: true — per-document scheduling (publish at a future
+//   date/time, like Squarespace/WordPress); Sanity fires the publish webhook on
+//   schedule and the static site rebuilds then. NOTE: scheduling is a Growth-plan
+//   feature — on the FREE plan the option won't appear, so this flag simply
+//   activates it if/when the project upgrades. Harmless on free. (Same story for
+//   Comments/Tasks and AI Assist, which we deliberately have NOT added.)
 // - releases.enabled: false — the newer "Content Releases" bundle tool is more
 //   than the board needs (it groups many docs into one scheduled release);
 //   per-document scheduling above is the simpler fit, so we keep Releases off.

@@ -239,6 +239,15 @@ export const guides: Guide[] = [
         title: 'Changed your mind?',
         text: 'A scheduled item shows a little clock. Open it before its time and you can edit the schedule or cancel it and publish now instead.',
       },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: "Don't see a Schedule option?",
+        text:
+          'Scheduling is part of a paid Sanity plan. If the Publish button has no Schedule choice, the school is on the free plan, so just Publish when you want it live. Check with ' +
+          SITE.contactName +
+          ' if you need scheduling turned on.',
+      },
       { kind: 'seealso', items: ['Undo a change or see history'] },
     ],
   },
