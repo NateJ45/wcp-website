@@ -89,7 +89,7 @@ const faqs = [
       {
         classes.map((c) => (
           <li
-            class="flex flex-col rounded-[var(--radius)] border border-border bg-white dark:bg-surface p-6 shadow-sm"
+            class="flex flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
             data-reveal
           >
             <div class="flex items-center gap-3">
@@ -145,7 +145,7 @@ const faqs = [
       {
         studentFees.map((f) => (
           <div
-            class="flex items-center gap-4 rounded-[var(--radius)] bg-white dark:bg-surface p-5 shadow-sm"
+            class="flex items-center gap-4 rounded-[var(--radius)] bg-white p-5 shadow-sm dark:bg-surface"
             data-reveal
           >
             <span
@@ -175,7 +175,10 @@ const faqs = [
     <div class="mx-auto mt-6 grid max-w-4xl gap-6 sm:grid-cols-2">
       {
         enrollmentFees.map((f) => (
-          <div class="flex flex-col rounded-[var(--radius)] bg-white dark:bg-surface p-6 shadow-sm" data-reveal>
+          <div
+            class="flex flex-col rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
+            data-reveal
+          >
             <div class="flex items-center gap-3">
               <span
                 class="flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"

@@ -22,7 +22,10 @@ const { photo, name, role, email, class: className } = Astro.props;
 ---
 
 <figure
-  class={cn('overflow-hidden rounded-[var(--radius)] bg-white dark:bg-surface shadow-sm', className)}
+  class={cn(
+    'overflow-hidden rounded-[var(--radius)] bg-white shadow-sm dark:bg-surface',
+    className,
+  )}
   data-reveal
 >
   <div class="aspect-[4/3] overflow-hidden">

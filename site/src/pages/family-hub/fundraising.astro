@@ -71,7 +71,10 @@ const waysToRaise = [
     <ul class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
       {
         waysToRaise.map((w) => (
-          <li class="flex gap-4 rounded-[var(--radius)] bg-white dark:bg-surface p-6 shadow-sm" data-reveal>
+          <li
+            class="flex gap-4 rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
+            data-reveal
+          >
             <span
               class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
               aria-hidden="true"

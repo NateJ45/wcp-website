@@ -5,18 +5,18 @@ notes, and the family directory). The website reads it **server-side, with a tok
 behind the family gate** — the dataset is private, so PII never touches the public site
 or git. Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 
-- **Project ID:** `niemhgev`  ·  **Dataset:** `production` (private)
+- **Project ID:** `niemhgev` · **Dataset:** `production` (private)
 - **Studio config:** [sanity.config.ts](../sanity.config.ts) · schemas in [src/sanity/schemaTypes/](../src/sanity/schemaTypes/)
 - **Read client:** [src/lib/sanity.ts](../src/lib/sanity.ts) (server-only, token, `useCdn: false`)
 
 ## Content types (what board members can edit)
 
-| Type | What it feeds |
-| --- | --- |
-| **Update** | School Updates feed (pin to surface on the hub home; target a class or all) |
-| **Document / Form** | Documents & Forms (link or uploaded file, grouped by category incl. meeting minutes) |
-| **Class Note** | Per-class notes on each class hub page |
-| **Directory — Family** | Family Directory (**PII**; only entries marked "Show in directory" appear) |
+| Type                   | What it feeds                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| **Update**             | School Updates feed (pin to surface on the hub home; target a class or all)          |
+| **Document / Form**    | Documents & Forms (link or uploaded file, grouped by category incl. meeting minutes) |
+| **Class Note**         | Per-class notes on each class hub page                                               |
+| **Directory — Family** | Family Directory (**PII**; only entries marked "Show in directory" appear)           |
 
 Editors get bold/italic/links/lists and a couple of headings — no raw HTML, no color or
 font controls. They can't break the design.
@@ -29,10 +29,10 @@ one-time **admin** actions that your Editor token can't do (they require your ow
 
 ### 1. Add CORS origins (required — the Studio can't talk to Sanity without this)
 
-Easiest: open the deployed `/studio`, and on the *"Connect this Studio to your project"*
+Easiest: open the deployed `/studio`, and on the _"Connect this Studio to your project"_
 screen click **Add CORS origin** — it pre-fills the current URL. Do this for each origin
 you'll use. Or add them in one place at
-**manage.sanity.io → project `niemhgev` → API → CORS Origins** (check *Allow credentials*):
+**manage.sanity.io → project `niemhgev` → API → CORS Origins** (check _Allow credentials_):
 
 - your live site origin, e.g. `https://www.westchesterpreschool.org`
 - `https://westchesterpreschool.sanity.studio` (if you deploy the hosted Studio, below)
@@ -89,10 +89,10 @@ when Sanity tells it a document was published.
    **classic** token with the `repo` scope:
    - github.com/settings/tokens → **Generate new token (classic)** → check the
      **`repo`** scope box → generate.
-   - *(If you'd rather use a fine-grained token: scope it to just `wcp-website` with
+   - _(If you'd rather use a fine-grained token: scope it to just `wcp-website` with
      **Contents: Read and write** — GitHub's docs don't explicitly confirm this works
      for this endpoint, so try it and fall back to the classic token above if the
-     webhook gets a 403.)*
+     webhook gets a 403.)_
    - Copy it — you'll paste it directly into Sanity's webhook config in step 3, not
      anywhere else.
 

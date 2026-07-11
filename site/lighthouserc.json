@@ -1,5 +1,5 @@
 {
-  "//": "Lighthouse CI runs against the built static output (dist/client) so dev-server quirks never affect scores. The url list is EXPLICIT on purpose: with staticDistDir alone, lhci auto-discovers pages but caps at 5, testing a near-random subset. Listing URLs covers every distinct template and skips non-page stubs. Accessibility is a HARD gate (must hold 100); performance / best-practices / SEO are warnings so normal CI variance doesn't block a PR. Add a representative URL per template as pages are built. Run locally: npm run build && npx lhci autorun",
+  "//": "Lighthouse CI runs against the built static output (dist/client) so dev-server quirks never affect scores. The url list is EXPLICIT on purpose: with staticDistDir alone, lhci auto-discovers pages but caps at 5, testing a near-random subset. Listing URLs covers every distinct template and skips non-page stubs. Accessibility is a HARD gate (must hold 100); performance / best-practices / SEO are warnings so normal CI variance doesn't block a PR. Add a representative URL per template as pages are built. Every Family Hub route (including /family-hub itself) is SSR-only (`export const prerender = false`, session-gated) and is never emitted into dist/client, so none belong in this list — see tests/routes.ts, which excludes them for the same reason. Run locally: npm run build && npx lhci autorun",
   "ci": {
     "collect": {
       "staticDistDir": "./dist/client",
@@ -20,7 +20,6 @@
         "http://localhost/faq/index.html",
         "http://localhost/enroll/index.html",
         "http://localhost/contact/index.html",
-        "http://localhost/family-hub/index.html",
         "http://localhost/404.html"
       ],
       "numberOfRuns": 1,

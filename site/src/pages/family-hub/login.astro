@@ -39,7 +39,7 @@ const hasError = Astro.url.searchParams.get('error') === '1';
     <form
       method="POST"
       action="/api/hub-login"
-      class="mx-auto flex max-w-sm flex-col gap-4 rounded-[var(--radius)] bg-white dark:bg-surface p-8 shadow-sm"
+      class="mx-auto flex max-w-sm flex-col gap-4 rounded-[var(--radius)] bg-white p-8 shadow-sm dark:bg-surface"
       data-reveal
     >
       <input type="hidden" name="to" value={safeTo} />
@@ -51,7 +51,7 @@ const hasError = Astro.url.searchParams.get('error') === '1';
           required
           autocomplete="current-password"
           autofocus
-          class="w-full rounded-lg border-2 border-border bg-white dark:bg-surface px-4 py-3 text-heading focus-visible:border-sky-ink"
+          class="w-full rounded-lg border-2 border-border bg-white px-4 py-3 text-heading focus-visible:border-sky-ink dark:bg-surface"
         />
       </label>
       {
