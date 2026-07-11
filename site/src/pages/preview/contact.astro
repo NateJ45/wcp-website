@@ -1,34 +1,43 @@
 ---
 /* ============================================================================
-   Contact page (minimal — full contact form comes with the form handler phase)
+   Contact — Studio-only PREVIEW (draft-aware mirror of /contact)
+   ============================================================================
+   See src/pages/preview/tuition.astro for the pattern this follows.
    ============================================================================ */
-import BaseLayout from '@/layouts/BaseLayout.astro';
+export const prerender = false;
+
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import PreviewLayout from '@/layouts/PreviewLayout.astro';
 import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings, cmsFetch, getPageHero } from '@/lib/cms';
-import { SITE_SETTINGS_PARKING_NOTE_QUERY } from '@/lib/queries';
+import { previewFetch, getPreviewSiteSettings } from '@/lib/cms-preview';
+import { PAGE_HERO_QUERY, SITE_SETTINGS_PARKING_NOTE_QUERY } from '@/lib/queries';
 
-// Phone/email/address/etc. are edited in Sanity (Site Settings) and merged
-// over the static fallback here.
-const site = await getSiteSettings(siteFallback);
-const parkingNote = await cmsFetch<string | null>(SITE_SETTINGS_PARKING_NOTE_QUERY, {}, null);
-const hero = await getPageHero('contact');
+const draftMode = Astro.cookies.has(perspectiveCookieName);
+
+const site = await getPreviewSiteSettings(draftMode, siteFallback);
+const parkingNote = await previewFetch<string | null>(
+  draftMode,
+  SITE_SETTINGS_PARKING_NOTE_QUERY,
+  {},
+);
+const hero = await previewFetch<{ eyebrow?: string; heroTitle?: string; lead?: string } | null>(
+  draftMode,
+  PAGE_HERO_QUERY,
+  { slug: 'contact' },
+);
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 ---
 
-<BaseLayout
-  title="Contact — West Chester Preschool"
-  description="Get in touch with West Chester Preschool. Call, email, or visit us at 9463 Cincinnati Columbus Rd, West Chester, OH."
->
+<PreviewLayout title="Contact — Preview" draftMode={draftMode}>
   <Hero
     eyebrow={hero?.eyebrow ?? 'Get In Touch'}
     title={hero?.heroTitle ?? 'We would love to hear from you.'}
-    lead={hero?.lead ??
-      'Call, email, or stop by. We are a parent-run school and we actually reply.'}
+    lead={hero?.lead ?? ''}
   >
     <Fragment slot="actions">
       <Button href={`tel:${phoneDigits}`} variant="accent" size="lg">Call {site.phone}</Button>
@@ -80,21 +89,11 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
       </div>
     </div>
 
-    {/* Parking & entry — genuinely useful for first-time tour visitors. */}
     <div class="mx-auto mt-8 max-w-3xl" data-reveal>
       <Callout tone="warm">
         <strong class="font-bold text-heading">Parking &amp; entry:</strong>{' '}
-        {
-          parkingNote ?? (
-            <>
-              Enter through the rear west doors — look for{' '}
-              <strong class="font-semibold text-heading">Door 5</strong>, a set of double white
-              doors with white pillars on either side. Park near the concrete sidewalk by the rear
-              doors.
-            </>
-          )
-        }
+        {parkingNote ?? ''}
       </Callout>
     </div>
   </Section>
-</BaseLayout>
+</PreviewLayout>

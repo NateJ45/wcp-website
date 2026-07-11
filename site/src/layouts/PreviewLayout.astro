@@ -1,0 +1,57 @@
+---
+/* ============================================================================
+   PreviewLayout — Studio-only shell for /preview/* pages
+   ============================================================================
+   Deliberately NOT BaseLayout: skips Analytics, canonical/OG tags, and hub-
+   chrome branching, none of which belong on a draft-content page only the
+   Presentation Tool's iframe ever loads. `noindex, nofollow` is non-negotiable
+   here — these pages must never appear in search results.
+
+   Reuses the same Header/Footer components the public site uses so preview
+   pages visually match production, but note: Header/Footer fetch site settings
+   via src/lib/cms.ts's BUILD-TIME client internally, so they always show
+   PUBLISHED settings regardless of `draftMode` — only the page content
+   rendered in the default slot is draft-aware. Acceptable for v1: the whole
+   point of this feature is editing page/tuition/staff/faq content, not nav
+   chrome, and siteSettings rarely changes.
+   ============================================================================ */
+import '../styles/globals.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
+
+interface Props {
+  title: string;
+  draftMode: boolean;
+}
+const { title, draftMode } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+  </head>
+  <body class="relative">
+    <Header />
+    <main id="main"><slot /></main>
+    <Footer />
+
+    {
+      draftMode && (
+        <>
+          <VisualEditingOverlay client:only="react" />
+          <a
+            href="/api/draft-mode/disable"
+            class="fixed right-4 bottom-4 z-50 rounded-full bg-navy px-4 py-2 text-sm font-bold text-white shadow-lg hover:bg-heading"
+          >
+            Exit preview
+          </a>
+        </>
+      )
+    }
+  </body>
+</html>

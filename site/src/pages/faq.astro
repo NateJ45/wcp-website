@@ -16,6 +16,7 @@ import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 import { cmsFetch, getPageHero } from '@/lib/cms';
+import { FAQ_ITEMS_QUERY } from '@/lib/queries';
 
 // Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "faq").
 const hero = await getPageHero('faq');
@@ -148,11 +149,7 @@ interface FaqDoc {
   category: string;
   order: number;
 }
-const faqDocs = await cmsFetch<FaqDoc[]>(
-  `*[_type == "faqItem"] | order(category asc, order asc){ question, answer, category, order }`,
-  {},
-  [],
-);
+const faqDocs = await cmsFetch<FaqDoc[]>(FAQ_ITEMS_QUERY, {}, []);
 const toParas = (pt?: FaqDoc['answer']) =>
   (pt ?? [])
     .filter((b) => b._type === 'block')

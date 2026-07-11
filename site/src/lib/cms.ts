@@ -1,5 +1,13 @@
 import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
+import {
+  STAFF_QUERY,
+  CLASS_FACTS_QUERY,
+  SITE_SETTINGS_QUERY,
+  PAGE_HERO_QUERY,
+  SCHOOL_YEAR_EVENTS_QUERY,
+  testimonialsQuery,
+} from '@/lib/queries';
 
 // =============================================================================
 // CMS content client — for PUBLIC (static / prerendered) pages
@@ -68,11 +76,7 @@ export interface StaffDoc {
 
 /** Fetch one staff member by document id (e.g. "staff-erin"), for a teacher card. */
 export async function getStaff(id: string): Promise<StaffDoc | null> {
-  return cmsFetch<StaffDoc | null>(
-    `*[_id == $id][0]{ name, honorific, role, years, email, pullQuote, bio }`,
-    { id },
-    null,
-  );
+  return cmsFetch<StaffDoc | null>(STAFF_QUERY, { id }, null);
 }
 
 export interface ClassFactsDoc {
@@ -89,11 +93,7 @@ export interface ClassFactsDoc {
 
 /** Fetch one class's schedule/tuition facts by document id (e.g. "class-twos"). */
 export async function getClassFacts(id: string): Promise<ClassFactsDoc | null> {
-  return cmsFetch<ClassFactsDoc | null>(
-    `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`,
-    { id },
-    null,
-  );
+  return cmsFetch<ClassFactsDoc | null>(CLASS_FACTS_QUERY, { id }, null);
 }
 
 export interface TestimonialDoc {
@@ -113,14 +113,8 @@ export async function getTestimonials(
   opts: { tag?: string; featuredOnly?: boolean; limit?: number } = {},
   fallback: TestimonialDoc[] = [],
 ): Promise<TestimonialDoc[]> {
-  const { tag, featuredOnly, limit } = opts;
-  const filters = [
-    '_type == "testimonial"',
-    tag ? `$tag in tags` : null,
-    featuredOnly ? 'featured == true' : null,
-  ].filter(Boolean);
-  const range = limit ? `[0...${limit}]` : '';
-  const query = `*[${filters.join(' && ')}] | order(order asc)${range}{ quote, author, role, tags, featured }`;
+  const { tag } = opts;
+  const query = testimonialsQuery(opts);
   const result = await cmsFetch<TestimonialDoc[]>(query, tag ? { tag } : {}, []);
   return result.length > 0 ? result : fallback;
 }
@@ -158,11 +152,7 @@ interface SiteSettingsDoc {
  * existing `site.phone` / `site.email.general` reference keeps working.
  */
 export async function getSiteSettings<T extends Record<string, unknown>>(fallback: T): Promise<T> {
-  const doc = await cmsFetch<SiteSettingsDoc>(
-    `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, closureStatement, facebook, instagram, storeUrl, license, licenseAuthority }`,
-    {},
-    {},
-  );
+  const doc = await cmsFetch<SiteSettingsDoc>(SITE_SETTINGS_QUERY, {}, {});
   if (!doc || Object.keys(doc).length === 0) return fallback;
 
   const f = fallback as unknown as {
@@ -228,11 +218,7 @@ export interface PageHeroDoc {
  * `pageHero?.heroTitle ?? '...'` per-field against their existing hardcoded copy.
  */
 export async function getPageHero(slug: string): Promise<PageHeroDoc | null> {
-  return cmsFetch<PageHeroDoc | null>(
-    `*[_type == "page" && slug == $slug][0]{ eyebrow, heroTitle, lead, seoTitle, seoDescription }`,
-    { slug },
-    null,
-  );
+  return cmsFetch<PageHeroDoc | null>(PAGE_HERO_QUERY, { slug }, null);
 }
 
 export interface SchoolYearEventDoc {
@@ -247,9 +233,5 @@ export interface SchoolYearEventDoc {
 export async function getSchoolYearEvents(
   fallback: SchoolYearEventDoc[] = [],
 ): Promise<SchoolYearEventDoc[]> {
-  return cmsFetch<SchoolYearEventDoc[]>(
-    `*[_type == "schoolYearEvent"] | order(order asc){ month, title, body, icon, accent }`,
-    {},
-    fallback,
-  );
+  return cmsFetch<SchoolYearEventDoc[]>(SCHOOL_YEAR_EVENTS_QUERY, {}, fallback);
 }

@@ -12,13 +12,14 @@ import Section from '@/components/Section.astro';
 import Prose from '@/components/Prose.astro';
 import { site } from '@/data/site';
 import { cmsFetch } from '@/lib/cms';
+import { LEGAL_PAGE_LAST_UPDATED_QUERY } from '@/lib/queries';
 
 // "Last updated" is edited in Sanity (Pages → Legal pages → Terms). The
 // policy body stays hand-written here for correct semantic HTML (headings/
 // lists) — the Sanity `legalPage.body` only stores flat paragraphs.
 const lastUpdatedIso = await cmsFetch<string | null>(
-  `*[_type == "legalPage" && slug == "terms"][0].lastUpdated`,
-  {},
+  LEGAL_PAGE_LAST_UPDATED_QUERY,
+  { slug: 'terms' },
   null,
 );
 const updated = lastUpdatedIso

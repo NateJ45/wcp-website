@@ -1,8 +1,20 @@
 ---
 /* ============================================================================
-   Tuition & Fees page  (real copy + rates, extraction Parts 3 & 4)
+   Tuition & Fees — Studio-only PREVIEW (draft-aware mirror of /tuition)
+   ============================================================================
+   Same shared UI components and derived-data logic as src/pages/tuition.astro,
+   but request-time + draft-aware: reads via previewFetch (perspective flips to
+   'drafts' + stega turns on when the Presentation Tool's cookie is present),
+   wrapped in PreviewLayout instead of BaseLayout, and skips cmsFetch's
+   fallback-to-hardcoded-copy behavior on purpose — an editor should see real
+   (possibly empty) Sanity state here, not silently-substituted built-in copy.
+   Never linked to from any production page; excluded from tests/routes.ts by
+   the same prerender=false mechanism that already excludes /family-hub.
    ============================================================================ */
-import BaseLayout from '@/layouts/BaseLayout.astro';
+export const prerender = false;
+
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import PreviewLayout from '@/layouts/PreviewLayout.astro';
 import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
@@ -12,11 +24,16 @@ import Callout from '@/components/Callout.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
-import { cmsFetch, getPageHero } from '@/lib/cms';
-import { CLASS_ROWS_QUERY, FEE_SCHEDULE_QUERY } from '@/lib/queries';
+import { previewFetch } from '@/lib/cms-preview';
+import { PAGE_HERO_QUERY, CLASS_ROWS_QUERY, FEE_SCHEDULE_QUERY } from '@/lib/queries';
 
-// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "tuition").
-const hero = await getPageHero('tuition');
+const draftMode = Astro.cookies.has(perspectiveCookieName);
+
+const hero = await previewFetch<{
+  eyebrow?: string;
+  heroTitle?: string;
+  lead?: string;
+} | null>(draftMode, PAGE_HERO_QUERY, { slug: 'tuition' });
 
 const why = [
   {
@@ -56,24 +73,6 @@ const tuitionColumns = [
   'Deposit',
   'Student fees',
 ];
-// Tuition rows — built from the Sanity classes + fee schedule so the figures
-// are edited in ONE place. Falls back to the built-in rows if Sanity is empty.
-const tuitionRowsFallback = [
-  ['Twos', 'Thursdays', '9:30 am – 12:00 pm', 'Age 2', '$70', '$630', '$100', '$100', '$45'],
-  ['Threes', 'Mon – Wed', '9:30 am – 12:00 pm', 'Age 3', '$150', '$1,350', '$100', '$100', '$45'],
-  [
-    'Pre-K AM',
-    'Mon – Thurs',
-    '9:15 am – 12:00 pm',
-    'Age 4',
-    '$200',
-    '$1,800',
-    '$100',
-    '$100',
-    '$50',
-  ],
-  ['Pre-K PM', 'Mon – Wed', '12:30 pm – 3:15 pm', 'Age 4', '$175', '$1,575', '$100', '$100', '$50'],
-];
 interface ClassRow {
   name: string;
   days: string;
@@ -83,26 +82,24 @@ interface ClassRow {
   annual: string;
   studentFee: string;
 }
-const classDocs = await cmsFetch<ClassRow[]>(CLASS_ROWS_QUERY, {}, []);
-const feeDoc = await cmsFetch<{ registrationFee?: string; participationFee?: string }>(
+const classDocs = await previewFetch<ClassRow[]>(draftMode, CLASS_ROWS_QUERY, {});
+const feeDoc = await previewFetch<{ registrationFee?: string; participationFee?: string }>(
+  draftMode,
   FEE_SCHEDULE_QUERY,
-  {},
   {},
 );
 const shortAge = (a?: string) => a?.match(/Age\s*\d+/i)?.[0] ?? a ?? '';
-const tuitionRows = classDocs.length
-  ? classDocs.map((c) => [
-      c.name,
-      c.days,
-      c.time,
-      shortAge(c.age),
-      c.monthly,
-      c.annual,
-      feeDoc.registrationFee ?? '$100',
-      feeDoc.participationFee ?? '$100',
-      c.studentFee,
-    ])
-  : tuitionRowsFallback;
+const tuitionRows = classDocs.map((c) => [
+  c.name,
+  c.days,
+  c.time,
+  shortAge(c.age),
+  c.monthly,
+  c.annual,
+  feeDoc.registrationFee ?? '',
+  feeDoc.participationFee ?? '',
+  c.studentFee,
+]);
 
 const fees = [
   {
@@ -153,15 +150,11 @@ const timeline = [
 ];
 ---
 
-<BaseLayout
-  title="Tuition & Fees — West Chester Preschool"
-  description="2026-27 tuition rates and fees for West Chester Preschool. The co-op model keeps tuition lower than most West Chester preschools, starting at $70 a month."
->
+<PreviewLayout title="Tuition & Fees — Preview" draftMode={draftMode}>
   <Hero
     eyebrow={hero?.eyebrow ?? '2026-27 Tuition Rates'}
     title={hero?.heroTitle ?? 'Quality early education. At a price that works.'}
-    lead={hero?.lead ??
-      'The co-op model keeps our tuition lower than most preschools in West Chester, without cutting corners on teaching quality or class experience.'}
+    lead={hero?.lead ?? ''}
   >
     <Fragment slot="actions">
       <Button href="/enroll" variant="accent" size="lg">Enroll Now</Button>
@@ -226,10 +219,6 @@ const timeline = [
     </ul>
   </Section>
 
-  {
-    /* Navy timeline band — top seam clouds up into the fee section above; flows
-      into the navy CTA below (its seam is off). */
-  }
   <Section bg="navy" seam labelledby="reg-timeline">
     <SectionHeader
       eyebrow="Registration Timeline"
@@ -265,4 +254,4 @@ const timeline = [
     </Fragment>
     <Fragment slot="note">Call {site.phone} or email {site.email.general}</Fragment>
   </CtaBanner>
-</BaseLayout>
+</PreviewLayout>

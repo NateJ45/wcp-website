@@ -12,6 +12,8 @@
 # The single shared password families enter to reach the gated Family Hub.
 FAMILY_HUB_PASSWORD="change-me"
 
-# Sanity Editor API token — server-only. Reads (and writes) gated hub content.
+# Sanity Editor API token — server-only. Reads (and writes) gated hub content,
+# and (via src/lib/cms-preview.ts) reads draft content for the Studio-only
+# /preview/* Presentation Tool routes.
 # Create one at manage.sanity.io → project → API → Tokens (Editor role).
 SANITY_TOKEN="change-me"
