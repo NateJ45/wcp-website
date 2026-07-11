@@ -24,8 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Needs the Sanity read token: pages are CMS-driven now, so without it
+      # the build emits an empty site and lhci audits nothing (or a 404 root).
       - name: Build
         run: npm run build
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
 
       # Accessibility is a hard gate (minScore 1) in lighthouserc.json;
       # performance / best-practices / SEO are warnings.

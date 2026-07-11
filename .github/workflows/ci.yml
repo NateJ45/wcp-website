@@ -34,8 +34,14 @@ jobs:
       - name: Format check (prettier)
         run: npm run format:check
 
+      # Pages are now CMS-driven: [...slug].astro's getStaticPaths() reads the
+      # page documents from Sanity at build time, so the build needs a read
+      # token to emit any pages (without it the site builds empty and the link
+      # check below sees only a broken root). Same secret the Deploy job uses.
       - name: Build
         run: npm run build
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
 
       - name: Check internal links
         run: npm run check:links
@@ -58,9 +64,14 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       # Runs the reflow (320px), smoke, and axe accessibility suites against a
-      # fresh production build (see playwright.config.ts webServer).
+      # fresh production build (see playwright.config.ts webServer). That
+      # webServer runs `npm run build`, which reads the CMS page docs from
+      # Sanity — so the token has to be present here too, or the build serves
+      # an empty site and the webServer health check times out.
       - name: Run tests (reflow · smoke · a11y)
         run: npm test
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
