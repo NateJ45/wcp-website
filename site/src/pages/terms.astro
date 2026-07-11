@@ -11,8 +11,23 @@ import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import Prose from '@/components/Prose.astro';
 import { site } from '@/data/site';
+import { cmsFetch } from '@/lib/cms';
 
-const updated = 'July 2026';
+// "Last updated" is edited in Sanity (Pages → Legal pages → Terms). The
+// policy body stays hand-written here for correct semantic HTML (headings/
+// lists) — the Sanity `legalPage.body` only stores flat paragraphs.
+const lastUpdatedIso = await cmsFetch<string | null>(
+  `*[_type == "legalPage" && slug == "terms"][0].lastUpdated`,
+  {},
+  null,
+);
+const updated = lastUpdatedIso
+  ? new Date(lastUpdatedIso).toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    })
+  : 'July 2026';
 ---
 
 <BaseLayout

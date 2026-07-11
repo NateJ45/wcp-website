@@ -1,0 +1,56 @@
+---
+/* ============================================================================
+   HubEmptyState — a designed "content lands here" panel for hub sections
+   ============================================================================
+   Used where a section's real data comes from a live source that isn't wired
+   yet (Sanity content, Google Calendar, Google Sheets) or is opt-in PII. It
+   reads as intentional — "here's what will appear and where it comes from" —
+   not as a broken/TODO state. Pass `source` for a standard provenance line, or
+   slot in custom content.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  icon?: string;
+  title: string;
+  source?: 'sanity' | 'google-calendar' | 'google-sheets' | 'directory' | 'health';
+  class?: string;
+}
+const { icon = 'sparkles', title, source, class: className } = Astro.props;
+
+const sourceNote: Record<NonNullable<Props['source']>, string> = {
+  sanity:
+    'This will publish from our content system and appear here automatically — visible only to signed-in families.',
+  'google-calendar': 'This syncs live from the school’s Google Calendar once connected.',
+  'google-sheets': 'This syncs live from the treasurer’s tracking sheet once connected.',
+  directory:
+    'Family details load here once families opt in — visible only to signed-in families, never on the public site.',
+  health:
+    'Your child’s specific details load here securely — visible only to signed-in families, never on the public site.',
+};
+---
+
+<div
+  class={cn(
+    'mx-auto max-w-xl rounded-[var(--radius)] border-2 border-dashed border-border bg-white/70 px-6 py-12 text-center',
+    className,
+  )}
+  data-reveal
+>
+  <span
+    class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+    aria-hidden="true"
+  >
+    <Icon name={icon} class="h-7 w-7" />
+  </span>
+  <p class="text-lg font-bold text-navy">{title}</p>
+  {
+    source && (
+      <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
+        {sourceNote[source]}
+      </p>
+    )
+  }
+  <slot />
+</div>

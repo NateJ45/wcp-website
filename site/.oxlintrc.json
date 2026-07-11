@@ -12,7 +12,13 @@
   },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "import/no-unassigned-import": "off"
+    "import/no-unassigned-import": "off",
+    "no-underscore-dangle": [
+      "warn",
+      { "allow": ["_id", "_type", "_key", "_ref", "_rev", "_createdAt", "_updatedAt"] }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/no-array-index-key": "off"
   },
   "ignorePatterns": ["dist/**", ".astro/**", ".wrangler/**", "node_modules/**", "public/**"]
 }

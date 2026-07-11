@@ -1,0 +1,73 @@
+---
+/* ============================================================================
+   Family Hub — sign-in (public: the one un-gated /family-hub page)
+   ============================================================================
+   Enrolled families enter the single shared password. The form POSTs to
+   /api/hub-login, which verifies it against the FAMILY_HUB_PASSWORD secret and
+   sets the session flag the middleware checks. prerender=false so the session
+   check runs at request time.
+   ============================================================================ */
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import Button from '@/components/ui/Button.astro';
+import { site } from '@/data/site';
+
+// Already signed in? Skip the form.
+const to = Astro.url.searchParams.get('to');
+const safeTo = to && to.startsWith('/family-hub') ? to : '/family-hub';
+if (await Astro.session?.get('familyAuthed')) {
+  return Astro.redirect(safeTo);
+}
+const hasError = Astro.url.searchParams.get('error') === '1';
+---
+
+<BaseLayout
+  title="Family Sign-In — West Chester Preschool"
+  description="Sign in to the West Chester Preschool Family Hub."
+>
+  <Hero
+    eyebrow="Enrolled Families"
+    title="Family sign-in"
+    lead="Enter the shared family password to reach your hub. New each school year — check your welcome email or ask the board."
+    height="medium"
+  />
+
+  <Section bg="grey" label="Sign in">
+    <form
+      method="POST"
+      action="/api/hub-login"
+      class="mx-auto flex max-w-sm flex-col gap-4 rounded-[var(--radius)] bg-white p-8 shadow-sm"
+      data-reveal
+    >
+      <input type="hidden" name="to" value={safeTo} />
+      <label class="block text-left">
+        <span class="mb-1 block text-sm font-bold text-navy">Family password</span>
+        <input
+          type="password"
+          name="password"
+          required
+          autocomplete="current-password"
+          autofocus
+          class="w-full rounded-lg border-2 border-border bg-white px-4 py-3 text-navy focus-visible:border-sky-ink"
+        />
+      </label>
+      {
+        hasError && (
+          <p role="alert" class="text-sm font-semibold text-orange-ink">
+            That password didn’t match. Please try again.
+          </p>
+        )
+      }
+      <Button type="submit" variant="primary" size="lg" class="w-full">Sign in</Button>
+    </form>
+    <p class="mx-auto mt-6 max-w-sm text-center text-sm text-ink-muted">
+      Don’t have this year’s password? Email
+      <a href={`mailto:${site.email.general}`} class="font-semibold text-sky-ink underline">
+        {site.email.general}
+      </a>.
+    </p>
+  </Section>
+</BaseLayout>

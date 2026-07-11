@@ -8,8 +8,18 @@ import Section from '@/components/Section.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
-import { site } from '@/data/site';
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings, cmsFetch, getPageHero } from '@/lib/cms';
 
+// Phone/email/address/etc. are edited in Sanity (Site Settings) and merged
+// over the static fallback here.
+const site = await getSiteSettings(siteFallback);
+const parkingNote = await cmsFetch<string | null>(
+  `*[_type == "siteSettings"][0].parkingNote`,
+  {},
+  null,
+);
+const hero = await getPageHero('contact');
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 ---
 
@@ -18,9 +28,10 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
   description="Get in touch with West Chester Preschool. Call, email, or visit us at 9463 Cincinnati Columbus Rd, West Chester, OH."
 >
   <Hero
-    eyebrow="Get In Touch"
-    title="We would love to hear from you."
-    lead="Call, email, or stop by. We are a parent-run school and we actually reply."
+    eyebrow={hero?.eyebrow ?? 'Get In Touch'}
+    title={hero?.heroTitle ?? 'We would love to hear from you.'}
+    lead={hero?.lead ??
+      'Call, email, or stop by. We are a parent-run school and we actually reply.'}
   >
     <Fragment slot="actions">
       <Button href={`tel:${phoneDigits}`} variant="accent" size="lg">Call {site.phone}</Button>
@@ -75,10 +86,16 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
     {/* Parking & entry — genuinely useful for first-time tour visitors. */}
     <div class="mx-auto mt-8 max-w-3xl" data-reveal>
       <Callout tone="warm">
-        <strong class="font-bold text-navy">Parking &amp; entry:</strong> Enter through the rear west
-        doors — look for <strong class="font-semibold text-navy">Door 5</strong>, a set of double
-        white doors with white pillars on either side. Park near the concrete sidewalk by the rear
-        doors.
+        <strong class="font-bold text-navy">Parking &amp; entry:</strong>{' '}
+        {
+          parkingNote ?? (
+            <>
+              Enter through the rear west doors — look for{' '}
+              <strong class="font-semibold text-navy">Door 5</strong>, a set of double white doors
+              with white pillars on either side. Park near the concrete sidewalk by the rear doors.
+            </>
+          )
+        }
       </Callout>
     </div>
   </Section>

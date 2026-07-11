@@ -1,0 +1,17 @@
+# =============================================================================
+# Local runtime secrets for `astro dev` / `wrangler dev` — TEMPLATE
+# =============================================================================
+# Copy this to `.dev.vars` (gitignored) and set real values. Unlike PUBLIC_*
+# vars, these are SERVER-ONLY secrets and are never inlined into client HTML.
+#
+# In PRODUCTION, set them as Cloudflare secrets (not in wrangler.jsonc):
+#   npx wrangler secret put FAMILY_HUB_PASSWORD
+#   npx wrangler secret put SANITY_TOKEN
+# =============================================================================
+
+# The single shared password families enter to reach the gated Family Hub.
+FAMILY_HUB_PASSWORD="change-me"
+
+# Sanity Editor API token — server-only. Reads (and writes) gated hub content.
+# Create one at manage.sanity.io → project → API → Tokens (Editor role).
+SANITY_TOKEN="change-me"

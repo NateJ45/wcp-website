@@ -1,0 +1,115 @@
+---
+/* ============================================================================
+   Family Hub — School Updates (GATED, reads from Sanity)
+   ============================================================================
+   Announcements come from Sanity (`update` docs), read server-side with the
+   token behind the gate — no CORS needed for this path. Falls back to the
+   empty-state when there's nothing to show (or Sanity is unreachable).
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+interface Block {
+  _type: string;
+  children?: { text?: string }[];
+}
+interface Update {
+  _id: string;
+  title: string;
+  publishedAt: string;
+  pinned?: boolean;
+  audience?: string;
+  body?: Block[];
+}
+
+let updates: Update[] = [];
+try {
+  updates = await sanityFetch<Update[]>(
+    `*[_type == "update"] | order(pinned desc, publishedAt desc){ _id, title, publishedAt, pinned, audience, body }`,
+  );
+} catch {
+  updates = [];
+}
+
+const audienceLabel: Record<string, string> = {
+  twos: 'Twos',
+  threes: 'Threes',
+  'pre-k-am': 'Pre-K AM',
+  'pre-k-pm': 'Pre-K PM',
+};
+// Minimal Portable Text → paragraphs (full rich rendering comes with the other
+// content types). Extracts plain text per block.
+const paragraphs = (body?: Block[]) =>
+  (body ?? [])
+    .filter((b) => b._type === 'block')
+    .map((b) => (b.children ?? []).map((c) => c.text ?? '').join(''))
+    .filter(Boolean);
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+---
+
+<HubShell
+  title="School Updates"
+  intro="Announcements from the Board and Administrator throughout the year. New posts surface on the hub home; older ones live here."
+  current="/family-hub/updates"
+  pageTitle="Updates — WCP Family Hub"
+>
+  <Section bg="white" labelledby="updates-feed">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="Announcements"
+        title="The latest from the Board"
+        titleId="updates-feed"
+        align="left"
+        lead="Reminders, schedule changes, and school news — newest first. The most recent posts also appear on your hub home."
+      />
+
+      {
+        updates.length === 0 ? (
+          <HubEmptyState
+            icon="newspaper"
+            title="No announcements posted yet"
+            source="sanity"
+            class="mt-8"
+          />
+        ) : (
+          <ul class="mt-8 space-y-5">
+            {updates.map((u) => (
+              <li
+                class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm"
+                data-reveal
+              >
+                <div class="flex flex-wrap items-center gap-2">
+                  {u.pinned && (
+                    <span class="rounded-full bg-amber/25 px-2.5 py-0.5 text-xs font-bold text-orange-ink">
+                      📌 Pinned
+                    </span>
+                  )}
+                  <span class="text-sm text-ink-muted">{fmtDate(u.publishedAt)}</span>
+                  {u.audience && u.audience !== 'all' && (
+                    <span class="rounded-full bg-sky/15 px-2.5 py-0.5 text-xs font-semibold text-sky-ink">
+                      {audienceLabel[u.audience] ?? u.audience}
+                    </span>
+                  )}
+                </div>
+                <h3 class="mt-2 text-lg font-extrabold text-navy">{u.title}</h3>
+                {paragraphs(u.body).length > 0 && (
+                  <div class="mt-2 space-y-2 leading-relaxed text-ink">
+                    {paragraphs(u.body).map((p) => (
+                      <p>{p}</p>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </Section>
+</HubShell>

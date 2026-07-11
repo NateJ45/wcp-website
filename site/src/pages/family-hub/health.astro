@@ -1,0 +1,118 @@
+---
+/* ============================================================================
+   Family Hub — Health & Safety (GATED)
+   ============================================================================
+   General illness/closure policy is static (non-PII). Each child's specific
+   emergency contacts, allergies, and medical notes are PII — they load from
+   Sanity behind the gate and are never hardcoded or public.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
+import Callout from '@/components/Callout.astro';
+import Button from '@/components/ui/Button.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+
+const keepHome = [
+  {
+    icon: 'heart-pulse',
+    title: 'Fever',
+    body: 'Stay home until fever-free for 24 hours without fever-reducing medication.',
+  },
+  {
+    icon: 'info',
+    title: 'Vomiting or diarrhea',
+    body: 'Stay home until symptom-free for 24 hours.',
+  },
+  {
+    icon: 'eye',
+    title: 'Pink eye',
+    body: 'Stay home until cleared by a doctor or symptom-free for 24 hours.',
+  },
+  {
+    icon: 'shield-check',
+    title: 'Antibiotics',
+    body: 'Children must be on antibiotics for at least 24 hours before returning to school.',
+  },
+  {
+    icon: 'bell',
+    title: 'Contagious illness',
+    body: 'Notify your teacher right away so other families can be alerted. Names are never shared.',
+  },
+];
+---
+
+<HubShell
+  title="Health & Safety"
+  intro="Emergency contacts, illness policies, immunization requirements, and what to do when your child isn’t feeling well."
+  current="/family-hub/health"
+  pageTitle="Health & Safety — WCP Family Hub"
+>
+  {/* Per-child info (Sanity, PII) */}
+  <Section bg="white" labelledby="your-child">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="On File"
+        title="Your child’s health info"
+        titleId="your-child"
+        align="left"
+        lead="Your emergency contacts, immunization status, and any allergies or medical notes you’ve shared with the school."
+      />
+      <HubEmptyState
+        icon="heart-pulse"
+        title="Your child’s details appear here"
+        source="health"
+        class="mt-8"
+      />
+    </div>
+  </Section>
+
+  {/* When to keep home (general policy) */}
+  <Section bg="grey" labelledby="keep-home">
+    <SectionHeader
+      eyebrow="Illness Policy"
+      title="When to keep your child home"
+      titleId="keep-home"
+      lead="When in doubt, keep them home. These guidelines protect every family at WCP."
+    />
+    <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        keepHome.map((k) => (
+          <li class="rounded-[var(--radius)] bg-white p-6 shadow-sm" data-reveal>
+            <span
+              class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
+              aria-hidden="true"
+            >
+              <Icon name={k.icon} class="h-5 w-5" />
+            </span>
+            <p class="font-bold text-navy">{k.title}</p>
+            <p class="mt-1 text-sm leading-relaxed text-ink">{k.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
+      <strong class="font-bold text-navy">Allergy awareness:</strong> if your child has a food allergy
+      or any condition classroom helpers should know about, make sure it’s on file with your teacher and
+      on your Emergency Contact Form. Questions? Contact your teacher directly.
+    </Callout>
+  </Section>
+
+  {/* Closures + handbook */}
+  <Section bg="navy" seam labelledby="health-more">
+    <div class="mx-auto max-w-2xl text-center">
+      <h2 id="health-more" class="text-white">Closures & the full policy</h2>
+      <p class="mx-auto mt-3 max-w-xl text-white/85">
+        WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather closures — if
+        Lakota closes, WCP closes. The complete health policy lives in the Family Handbook, and Ohio licensing
+        requirements always apply.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <Button href="/family-hub/documents" variant="accent" size="md">Open the Handbook</Button>
+      </div>
+    </div>
+  </Section>
+</HubShell>

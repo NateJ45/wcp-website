@@ -22,25 +22,45 @@ import prekCircleTime from '@/assets/photos/prek-circle-time.jpg';
 import twosHero from '@/assets/photos/twos-hero.jpg';
 import lisaCortez from '@/assets/staff/lisa-cortez.jpg';
 import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
+import { getStaff, getClassFacts, toParagraphs, getPageHero } from '@/lib/cms';
+
+// Teacher pull-quotes/bios and the class-finder facts are edited once in
+// Sanity (Staff / Classes) and read here, so they stay in sync with every
+// other page that shows them.
+const hero = await getPageHero('virtual-tour');
+const lisa = await getStaff('staff-lisa');
+const erin = await getStaff('staff-erin');
+const [twosFacts, threesFacts, amFacts, pmFacts] = await Promise.all([
+  getClassFacts('class-twos'),
+  getClassFacts('class-threes'),
+  getClassFacts('class-pre-k-am'),
+  getClassFacts('class-pre-k-pm'),
+]);
 
 const teachers = [
   {
     photo: lisaCortez,
     name: 'Meet Mrs. Lisa',
-    role: 'Pre-K Teacher · 10 years at WCP',
+    role: lisa?.role ?? 'Pre-K Teacher · 10 years at WCP',
     quote:
+      lisa?.pullQuote ??
       'Through play, I nurture curiosity, creativity, and a genuine love for learning, in a place where every child belongs.',
-    bio: 'Mrs. Lisa leads both the AM and PM Pre-K sessions. Her youngest child is also WCP alumni. She brings patience, structure, and genuine warmth to every morning and afternoon.',
+    bio:
+      toParagraphs(lisa?.bio)[0] ??
+      'Mrs. Lisa leads both the AM and PM Pre-K sessions. Her youngest child is also WCP alumni. She brings patience, structure, and genuine warmth to every morning and afternoon.',
     href: '/classes/pre-k',
     linkLabel: 'Learn About Pre-K',
   },
   {
     photo: erinSchmerr,
     name: 'Meet Mrs. Erin',
-    role: 'Twos & Threes Teacher · 3 years at WCP',
+    role: erin?.role ?? 'Twos & Threes Teacher · 3 years at WCP',
     quote:
+      erin?.pullQuote ??
       'The Twos and Threes years are when kids figure out they love school. I get to be the person who makes that happen.',
-    bio: 'Mrs. Erin leads every Twos and Threes session. She knows every child by name before the second week of school. Her classes are gentle, play-forward, and built around sensory exploration and early social skills.',
+    bio:
+      toParagraphs(erin?.bio)[0] ??
+      'Mrs. Erin leads every Twos and Threes session. She knows every child by name before the second week of school. Her classes are gentle, play-forward, and built around sensory exploration and early social skills.',
     href: '/classes/twos',
     linkLabel: 'Explore the Twos Class',
   },
@@ -100,11 +120,11 @@ const classes = [
   {
     name: 'Twos',
     color: 'orange' as const,
-    price: '$70',
-    schedule: 'Thursdays · 9:30–12:00 pm',
-    age: 'Age 2 by Sept 30',
+    price: twosFacts?.monthly ?? '$70',
+    schedule: twosFacts ? `${twosFacts.days} · ${twosFacts.time}` : 'Thursdays · 9:30–12:00 pm',
+    age: twosFacts?.age ?? 'Age 2 by Sept 30',
     features: [
-      '7 children max',
+      twosFacts?.classSizeCap ? `${twosFacts.classSizeCap} children max` : '7 children max',
       '1 teacher + 2 parent helpers',
       'Gentle, play-based intro to school',
     ],
@@ -113,11 +133,11 @@ const classes = [
   {
     name: 'Threes',
     color: 'sky' as const,
-    price: '$150',
-    schedule: 'Mon–Wed · 9:30–12:00 pm',
-    age: 'Age 3 by Sept 30',
+    price: threesFacts?.monthly ?? '$150',
+    schedule: threesFacts ? `${threesFacts.days} · ${threesFacts.time}` : 'Mon–Wed · 9:30–12:00 pm',
+    age: threesFacts?.age ?? 'Age 3 by Sept 30',
     features: [
-      '12 children max',
+      threesFacts?.classSizeCap ? `${threesFacts.classSizeCap} children max` : '12 children max',
       '1 teacher + 2 parent helpers',
       'More structure, more friendships',
     ],
@@ -126,19 +146,27 @@ const classes = [
   {
     name: 'Pre-K AM',
     color: 'green' as const,
-    price: '$200',
-    schedule: 'Mon–Thurs · 9:15–12:00 pm',
-    age: 'Age 4 by Sept 30',
-    features: ['12 children max', '1 teacher + 1 parent helper', 'Handwriting Without Tears'],
+    price: amFacts?.monthly ?? '$200',
+    schedule: amFacts ? `${amFacts.days} · ${amFacts.time}` : 'Mon–Thurs · 9:15–12:00 pm',
+    age: amFacts?.age ?? 'Age 4 by Sept 30',
+    features: [
+      amFacts?.classSizeCap ? `${amFacts.classSizeCap} children max` : '12 children max',
+      '1 teacher + 1 parent helper',
+      'Handwriting Without Tears',
+    ],
     href: '/classes/pre-k',
   },
   {
     name: 'Pre-K PM',
     color: 'amber' as const,
-    price: '$175',
-    schedule: 'Mon–Wed · 12:30–3:15 pm',
-    age: 'Age 4 by Sept 30',
-    features: ['12 children max', 'Same curriculum as AM', 'Great for afternoon kids'],
+    price: pmFacts?.monthly ?? '$175',
+    schedule: pmFacts ? `${pmFacts.days} · ${pmFacts.time}` : 'Mon–Wed · 12:30–3:15 pm',
+    age: pmFacts?.age ?? 'Age 4 by Sept 30',
+    features: [
+      pmFacts?.classSizeCap ? `${pmFacts.classSizeCap} children max` : '12 children max',
+      'Same curriculum as AM',
+      'Great for afternoon kids',
+    ],
     href: '/classes/pre-k',
   },
 ];
@@ -149,9 +177,10 @@ const classes = [
   description="Take a look inside West Chester Preschool: our classrooms, gymnasium, playground, and the teachers your child will love — before you ever visit."
 >
   <Hero
-    eyebrow="See Our School · Photos Inside"
-    title="Take a look around before you visit."
-    lead="Browse the classrooms, hear from our teachers, and explore the spaces your child will love. Then book a tour or jump straight to enrollment."
+    eyebrow={hero?.eyebrow ?? 'See Our School · Photos Inside'}
+    title={hero?.heroTitle ?? 'Take a look around before you visit.'}
+    lead={hero?.lead ??
+      'Browse the classrooms, hear from our teachers, and explore the spaces your child will love. Then book a tour or jump straight to enrollment.'}
     image={gymPlaytime}
     imageAlt="A WCP teacher and children playing together on the gymnasium floor"
   >

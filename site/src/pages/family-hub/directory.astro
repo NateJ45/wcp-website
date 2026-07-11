@@ -1,0 +1,86 @@
+---
+/* ============================================================================
+   Family Hub — Family Directory (GATED, PII)
+   ============================================================================
+   Real family names/photos/contact info are PII: they load from Sanity behind
+   this gate, only for families who opt in, and never touch git or the public
+   site. This page is layout + privacy framing + an empty-state only.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
+import Callout from '@/components/Callout.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+
+const points = [
+  {
+    icon: 'lock',
+    title: 'Families only',
+    body: 'The directory is visible only to signed-in WCP families — never on the public site or in search results.',
+  },
+  {
+    icon: 'hand',
+    title: 'Opt-in',
+    body: 'Your family appears only if you choose to share. You decide exactly what to list.',
+  },
+  {
+    icon: 'heart-handshake',
+    title: 'For connecting',
+    body: 'Built to help families set up playdates, carpools, and friendships outside the classroom.',
+  },
+];
+---
+
+<HubShell
+  title="Family Directory"
+  intro="Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom."
+  current="/family-hub/directory"
+  pageTitle="Family Directory — WCP Family Hub"
+>
+  <Section bg="white" labelledby="directory">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="This Year’s Families"
+        title="The WCP family directory"
+        titleId="directory"
+        align="left"
+      />
+
+      <ul class="mt-8 grid gap-4 sm:grid-cols-3">
+        {
+          points.map((p) => (
+            <li
+              class="rounded-[var(--radius)] border border-border bg-white p-5 text-center"
+              data-reveal
+            >
+              <span
+                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                aria-hidden="true"
+              >
+                <Icon name={p.icon} class="h-5 w-5" />
+              </span>
+              <p class="font-bold text-navy">{p.title}</p>
+              <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <HubEmptyState
+        icon="contact"
+        title="Family cards will appear here"
+        source="directory"
+        class="mt-10"
+      />
+
+      <Callout tone="sky" class="mt-10">
+        <strong class="font-bold text-navy">Your privacy:</strong> WCP never publishes family information.
+        Directory details stay behind this family sign-in, are shared only with your permission, and are
+        kept out of the public website entirely.
+      </Callout>
+    </div>
+  </Section>
+</HubShell>

@@ -15,6 +15,10 @@ import Callout from '@/components/Callout.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "work-with-us").
+const hero = await getPageHero('work-with-us');
 
 const why = [
   {
@@ -64,9 +68,10 @@ const role = [
   description="Teach at West Chester Preschool, a cooperative preschool where teachers are valued, supported, and part of the community. See the role and how to apply."
 >
   <Hero
-    eyebrow="Join Our Team"
-    title="Work with us. Teach with purpose."
-    lead="WCP is a cooperative preschool where teachers are valued, supported, and genuinely part of the community. If you love early childhood education, we would love to meet you."
+    eyebrow={hero?.eyebrow ?? 'Join Our Team'}
+    title={hero?.heroTitle ?? 'Work with us. Teach with purpose.'}
+    lead={hero?.lead ??
+      'WCP is a cooperative preschool where teachers are valued, supported, and genuinely part of the community. If you love early childhood education, we would love to meet you.'}
   >
     <Fragment slot="actions">
       <Button

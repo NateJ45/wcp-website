@@ -15,6 +15,10 @@ import Icon from '@/components/Icon.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "enroll").
+const hero = await getPageHero('enroll');
 
 const steps = [
   {
@@ -79,9 +83,10 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
   description="Enroll your child at West Chester Preschool for 2026-27. Reach out to schedule a tour and we will walk you through the paperwork."
 >
   <Hero
-    eyebrow="Now Enrolling 2026-27"
-    title="Let’s get your child started."
-    lead="Enrollment for 2026-27 is open. Reach out and we will schedule a tour, answer your questions, and walk you through everything."
+    eyebrow={hero?.eyebrow ?? 'Now Enrolling 2026-27'}
+    title={hero?.heroTitle ?? 'Let’s get your child started.'}
+    lead={hero?.lead ??
+      'Enrollment for 2026-27 is open. Reach out and we will schedule a tour, answer your questions, and walk you through everything.'}
   >
     <Fragment slot="actions">
       <Button href={`tel:${phoneDigits}`} variant="accent" size="lg">Call {site.phone}</Button>

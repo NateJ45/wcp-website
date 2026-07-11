@@ -1,75 +1,52 @@
 ---
 /* ============================================================================
-   Family Hub landing — STUB. This whole /family-hub/* section becomes the
-   PASSWORD-GATED, server-rendered area for enrolled families in Phase 4
-   (directory, map, calendar, documents, budget, etc. from Sanity). For now
-   this is a public explainer page. Do NOT put any family PII here.
+   Family Hub — landing (GATED)
+   ============================================================================
+   prerender=false so the middleware runs the sign-in check at request time.
+   Only signed-in families reach this. Content is deliberately non-sensitive
+   (welcome + quick links); the real family data lives in the section pages,
+   sourced from Sanity behind this same gate.
    ============================================================================ */
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import Hero from '@/components/Hero.astro';
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
-import Button from '@/components/ui/Button.astro';
-import { site } from '@/data/site';
+import { hubNav } from '@/data/hub-nav';
 
-const previews = [
-  {
-    icon: 'calendar-days',
-    chip: 'sky' as const,
-    title: 'Calendar & events',
-    body: 'Every school date, meeting, and celebration in one place.',
-  },
-  {
-    icon: 'users',
-    chip: 'orange' as const,
-    title: 'Family directory',
-    body: 'Connect with other WCP families, behind a secure login.',
-  },
-  {
-    icon: 'file-check',
-    chip: 'green' as const,
-    title: 'Documents & forms',
-    body: 'Handbook, licensing forms, and orientation materials.',
-  },
-];
+// Quick-link cards for the two most-used groups (Information + Community).
+const quickLinks = hubNav
+  .filter((g) => g.label === 'Information' || g.label === 'Community')
+  .flatMap((g) => g.links)
+  .filter((l) => !l.external);
 ---
 
-<BaseLayout
-  title="Enrolled Families — West Chester Preschool"
-  description="The West Chester Preschool Family Hub: calendar, directory, documents, and resources for enrolled families."
+<HubShell
+  title="Welcome back, WCP family."
+  intro="Everything you need for the school year, all in one place. Pick a section above, or jump in below."
+  current="/family-hub"
+  pageTitle="Family Hub — West Chester Preschool"
 >
-  <Hero
-    eyebrow="Members Only"
-    title="Welcome back, WCP family."
-    lead="Everything you need for the school year, all in one place. This area is for enrolled families and will be password-protected."
-  >
-    <Fragment slot="actions">
-      <Button href="/enroll" variant="accent" size="lg">Not enrolled yet? Start here</Button>
-    </Fragment>
-  </Hero>
-
-  <Section bg="grey" labelledby="hub-preview">
+  <Section bg="white" labelledby="hub-quicklinks">
     <SectionHeader
-      eyebrow="Coming Soon"
-      title="What lives in the Family Hub"
-      titleId="hub-preview"
-      lead="Secure sign-in for enrolled families arrives with the Family Hub build."
+      eyebrow="Your Shortcuts"
+      title="Jump right in"
+      titleId="hub-quicklinks"
+      lead="The things families reach for most, one tap away."
     />
-    <ul class="mt-12 grid gap-6 sm:grid-cols-3">
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {
-        previews.map((p) => (
-          <FeatureCard as="li" icon={p.icon} chip={p.chip} title={p.title}>
-            {p.body}
-          </FeatureCard>
+        quickLinks.map((link) => (
+          <li>
+            <a href={link.href} class="block h-full no-underline">
+              <FeatureCard icon={link.icon} chip="sky" title={link.label}>
+                Open {link.label.toLowerCase()}.
+              </FeatureCard>
+            </a>
+          </li>
         ))
       }
     </ul>
-    <p class="mx-auto mt-10 max-w-2xl text-center text-sm text-ink-muted">
-      Questions? Email
-      <a href={`mailto:${site.email.general}`} class="font-semibold text-sky-ink underline">
-        {site.email.general}
-      </a>.
-    </p>
   </Section>
-</BaseLayout>
+</HubShell>

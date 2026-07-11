@@ -20,3 +20,30 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// =============================================================================
+// Cloudflare runtime — server-only secrets & bindings
+// =============================================================================
+// Astro 6+ removed `Astro.locals.runtime.env`. Server code now reads Worker
+// secrets/bindings via `import { env } from 'cloudflare:workers'`, whose value
+// is typed by the global `Cloudflare.Env` interface (interfaces merge, so this
+// augments whatever `wrangler types` generates). Sessions use the "SESSION" KV
+// binding automatically; we only type the secrets/bindings we touch directly.
+declare namespace Cloudflare {
+  interface Env {
+    /** Shared password for the gated Family Hub (Cloudflare secret in prod). */
+    FAMILY_HUB_PASSWORD: string;
+    /** Sanity Editor token — server-only reads of the private (PII) dataset. */
+    SANITY_TOKEN: string;
+  }
+}
+
+// The `cloudflare:workers` virtual module is provided by workerd at runtime and
+// bundled by the adapter at build time; TypeScript still needs this ambient
+// declaration to resolve the `import { env } from 'cloudflare:workers'` we use
+// for server secrets. We only consume `env`, typed as our Cloudflare.Env above.
+// (If `wrangler types` is ever adopted, drop this in favor of the generated
+// worker-configuration.d.ts.)
+declare module 'cloudflare:workers' {
+  export const env: Cloudflare.Env;
+}

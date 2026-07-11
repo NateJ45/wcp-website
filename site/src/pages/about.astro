@@ -17,10 +17,21 @@ import Callout from '@/components/Callout.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getStaff, toParagraphs, getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "about").
+const hero = await getPageHero('about');
 
 import aboutHero from '@/assets/photos/about-hero.jpg';
 import lisaCortez from '@/assets/staff/lisa-cortez.jpg';
 import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
+
+// Teacher names/roles/bios are edited once in Sanity (Staff) and read here, so
+// they stay consistent with the class pages and virtual tour.
+const lisa = await getStaff('staff-lisa');
+const erin = await getStaff('staff-erin');
+const lisaBio = toParagraphs(lisa?.bio);
+const erinBio = toParagraphs(erin?.bio);
 
 const approach = [
   {
@@ -73,9 +84,10 @@ const facilities = [
   description="Built by parents, run by community. West Chester Preschool has been a cornerstone of West Chester, Ohio for over 55 years — a parent-run cooperative preschool for children ages 2-5."
 >
   <Hero
-    eyebrow={`Founded ${site.founded} · West Chester, Ohio`}
-    title="Built by parents. Run by community."
-    lead={`West Chester Preschool has been a cornerstone of this community for over 55 years. We are a parent-run cooperative preschool for children ages 2-5, and there is nothing else quite like us in Cincinnati.`}
+    eyebrow={hero?.eyebrow ?? `Founded ${site.founded} · West Chester, Ohio`}
+    title={hero?.heroTitle ?? 'Built by parents. Run by community.'}
+    lead={hero?.lead ??
+      `West Chester Preschool has been a cornerstone of this community for over 55 years. We are a parent-run cooperative preschool for children ages 2-5, and there is nothing else quite like us in Cincinnati.`}
     image={aboutHero}
     imageAlt="A black-and-white photo of children playing in a West Chester Preschool classroom"
   >
@@ -141,25 +153,41 @@ const facilities = [
       <li>
         <TeacherCard
           photo={lisaCortez}
-          name="Ms. Lisa Cortez"
-          role="Pre-K · 10 years at WCP"
-          email={site.teachers.lisa}
+          name={lisa ? [lisa.honorific, lisa.name].filter(Boolean).join(' ') : 'Ms. Lisa Cortez'}
+          role={lisa?.role ?? 'Pre-K · 10 years at WCP'}
+          email={lisa?.email ?? site.teachers.lisa}
         >
-          Lisa brings creativity, curiosity, and genuine warmth to every session. Her classroom is
-          built around hands-on activities that develop social skills, early literacy, math,
-          science, and the arts. Her youngest child is also WCP alumni.
+          {
+            lisaBio.length > 0 ? (
+              lisaBio.map((p) => <p class="mt-2 first:mt-0">{p}</p>)
+            ) : (
+              <p>
+                Lisa brings creativity, curiosity, and genuine warmth to every session. Her
+                classroom is built around hands-on activities that develop social skills, early
+                literacy, math, science, and the arts. Her youngest child is also WCP alumni.
+              </p>
+            )
+          }
         </TeacherCard>
       </li>
       <li>
         <TeacherCard
           photo={erinSchmerr}
-          name="Ms. Erin Schmerr"
-          role="Threes and Twos · 3 years at WCP"
-          email={site.teachers.erin}
+          name={erin ? [erin.honorific, erin.name].filter(Boolean).join(' ') : 'Ms. Erin Schmerr'}
+          role={erin?.role ?? 'Threes and Twos · 3 years at WCP'}
+          email={erin?.email ?? site.teachers.erin}
         >
-          Erin is a Cincinnati native with nearly 20 years in education, social work, and childcare.
-          She came to WCP as a parent, fell in love with the school, and never left. She also runs a
-          photography business in her spare time.
+          {
+            erinBio.length > 0 ? (
+              erinBio.map((p) => <p class="mt-2 first:mt-0">{p}</p>)
+            ) : (
+              <p>
+                Erin is a Cincinnati native with nearly 20 years in education, social work, and
+                childcare. She came to WCP as a parent, fell in love with the school, and never
+                left. She also runs a photography business in her spare time.
+              </p>
+            )
+          }
         </TeacherCard>
       </li>
     </ul>

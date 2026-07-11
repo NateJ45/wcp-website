@@ -1,0 +1,50 @@
+name: Deploy
+
+# Two triggers:
+#  - push to main: code changes go live automatically.
+#  - repository_dispatch (type "sanity-publish"): fired by a Sanity webhook
+#    whenever a document is published, so CMS edits go live too — see
+#    site/docs/SANITY.md for the webhook setup.
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [sanity-publish]
+
+defaults:
+  run:
+    working-directory: site
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # SANITY_TOKEN is read via `import.meta.env.SANITY_TOKEN` at build time
+      # by src/lib/cms.ts (public-page reads) — see site/.env locally. Setting
+      # it as a real env var here does the same job without a checked-in file.
+      - name: Build
+        run: npm run build
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+
+      # Deploys with the adapter-generated config (dist/server/wrangler.json),
+      # NOT the source wrangler.jsonc — see site/docs/ for why the plain
+      # `wrangler deploy` 404s every sub-route on this hybrid static+SSR build.
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 7e75a15ddc72aae04dca71aca5c7294b
+          workingDirectory: site
+          command: deploy -c dist/server/wrangler.json

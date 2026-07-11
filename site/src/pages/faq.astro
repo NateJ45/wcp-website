@@ -15,8 +15,21 @@ import FaqItem from '@/components/faq/FaqItem.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { cmsFetch, getPageHero } from '@/lib/cms';
 
-const categories = [
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "faq").
+const hero = await getPageHero('faq');
+
+// Category display config (labels + order) — the copy for the group headers.
+const catConfig = [
+  { id: 'coop', eyebrow: 'About the Co-op', title: 'How the cooperative model works' },
+  { id: 'classes', eyebrow: 'Classes and Schedules', title: 'What classes are available and when' },
+  { id: 'enrollment', eyebrow: 'Enrollment and Fees', title: 'How to join and what it costs' },
+  { id: 'about', eyebrow: 'About WCP', title: 'The school itself' },
+];
+
+// The hardcoded Q&A below is the FALLBACK — used only if Sanity has no FAQs.
+const fallbackCategories = [
   {
     eyebrow: 'About the Co-op',
     title: 'How the cooperative model works',
@@ -126,6 +139,42 @@ const categories = [
     ],
   },
 ];
+
+// Load FAQs from Sanity (editable by the board). Group by category; if Sanity
+// has none, fall back to the built-in copy above.
+interface FaqDoc {
+  question: string;
+  answer?: { _type: string; children?: { text?: string }[] }[];
+  category: string;
+  order: number;
+}
+const faqDocs = await cmsFetch<FaqDoc[]>(
+  `*[_type == "faqItem"] | order(category asc, order asc){ question, answer, category, order }`,
+  {},
+  [],
+);
+const toParas = (pt?: FaqDoc['answer']) =>
+  (pt ?? [])
+    .filter((b) => b._type === 'block')
+    .map((b) => (b.children ?? []).map((c) => c.text ?? '').join(''))
+    .filter(Boolean);
+
+const grouped = catConfig
+  .map((cat) => ({
+    ...cat,
+    items: faqDocs
+      .filter((f) => f.category === cat.id)
+      .map((f) => ({ q: f.question, a: toParas(f.answer) })),
+  }))
+  .filter((cat) => cat.items.length > 0);
+
+// Normalize the fallback's single-string answers into paragraph arrays.
+const fallbackDisplay = fallbackCategories.map((cat) => ({
+  ...cat,
+  items: cat.items.map((it) => ({ q: it.q, a: [it.a] })),
+}));
+
+const categories = grouped.length > 0 ? grouped : fallbackDisplay;
 ---
 
 <BaseLayout
@@ -133,9 +182,10 @@ const categories = [
   description="Answers to common questions about West Chester Preschool: the co-op model, classes and schedules, enrollment, fees, and the school itself."
 >
   <Hero
-    eyebrow="Common Questions Answered"
-    title="Got questions? We have answers."
-    lead="Everything families ask us before and after enrolling, all in one place. If you don’t find what you need, just reach out."
+    eyebrow={hero?.eyebrow ?? 'Common Questions Answered'}
+    title={hero?.heroTitle ?? 'Got questions? We have answers.'}
+    lead={hero?.lead ??
+      'Everything families ask us before and after enrolling, all in one place. If you don’t find what you need, just reach out.'}
   >
     <Fragment slot="actions">
       <Button href="/contact" variant="accent" size="lg">Ask Us Directly</Button>
@@ -148,7 +198,11 @@ const categories = [
         <SectionHeader eyebrow={cat.eyebrow} title={cat.title} titleId={`faq-${cat.id}`} />
         <Faq class="mt-10">
           {cat.items.map((item) => (
-            <FaqItem question={item.q}>{item.a}</FaqItem>
+            <FaqItem question={item.q}>
+              {item.a.map((p) => (
+                <p class="mt-3 first:mt-0">{p}</p>
+              ))}
+            </FaqItem>
           ))}
         </Faq>
       </Section>

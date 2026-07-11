@@ -5,6 +5,7 @@ import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 import partytown from '@astrojs/partytown';
 import react from '@astrojs/react';
+import sanity from '@sanity/astro';
 import tailwindcss from '@tailwindcss/vite';
 
 // =============================================================================
@@ -52,9 +53,32 @@ export default defineConfig({
   // leaves images broken in production on a static site.)
   adapter: cloudflare({ imageService: 'compile' }),
 
-  integrations: [sitemap(), partytown({ config: { forward: ['dataLayer.push'] } }), react()],
+  integrations: [
+    // Sanity: mounts the embedded Studio at /studio and exposes the client.
+    // projectId/dataset are public (bundled into the Studio); the read token is
+    // a server-only secret used elsewhere (see src/lib/sanity.ts). Studio auth
+    // is Sanity's own login, separate from the family gate.
+    sanity({
+      projectId: 'niemhgev',
+      dataset: 'production',
+      useCdn: false,
+      studioBasePath: '/studio',
+    }),
+    sitemap(),
+    partytown({ config: { forward: ['dataLayer.push'] } }),
+    react(),
+  ],
 
   vite: {
     plugins: [tailwindcss()],
+    // @sanity/ui (pulled in by the Help & Guide center's GuideView component)
+    // ships an ESM build that rolldown/Vite's dependency pre-bundler mis-scans
+    // on this machine (MISSING_EXPORT errors for styled-components — a known
+    // issue on this Astro 7 + Cloudflare + Vite 7 stack, see project notes on
+    // the /studio-in-dev path-with-spaces bug). Excluding it from pre-bundling
+    // lets Vite dev start; it's still fully bundled correctly at `astro build`.
+    optimizeDeps: {
+      exclude: ['@sanity/ui', 'styled-components'],
+    },
   },
 });

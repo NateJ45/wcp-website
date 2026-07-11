@@ -1,0 +1,39 @@
+---
+/* ============================================================================
+   HubFooter — slim footer for gated hub pages
+   ============================================================================
+   Deliberately minimal (no marketing nav/CTAs): copyright, one link back to the
+   public site, and quick contact. Matches the navy hub chrome.
+   ============================================================================ */
+import { site } from '@/data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-white/10 bg-navy text-white/70">
+  <div class="wcp-container flex flex-col items-center gap-2 py-8 text-center text-sm">
+    <p>© {year} {site.name} · Family Hub</p>
+    <p class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+      <a
+        href="/"
+        class="font-semibold text-white/80 underline-offset-2 hover:text-white hover:underline"
+      >
+        Main site
+      </a>
+      <span aria-hidden="true">·</span>
+      <a
+        href={`mailto:${site.email.general}`}
+        class="font-semibold text-white/80 underline-offset-2 hover:text-white hover:underline"
+      >
+        {site.email.general}
+      </a>
+      <span aria-hidden="true">·</span>
+      <a
+        href={`tel:${site.phone.replace(/[^0-9+]/g, '')}`}
+        class="font-semibold text-white/80 underline-offset-2 hover:text-white hover:underline"
+      >
+        {site.phone}
+      </a>
+    </p>
+  </div>
+</footer>

@@ -1,0 +1,203 @@
+---
+/* ============================================================================
+   Family Hub — Co-op Jobs (GATED)
+   ============================================================================
+   How WCP is organized + the role descriptions (from src/data/hub/coop-roles.ts).
+   Role definitions only — who holds each job is live assignment data that loads
+   from Sanity behind the gate, never hardcoded here.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
+import Button from '@/components/ui/Button.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { site } from '@/data/site';
+import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
+import { sanityFetch } from '@/lib/sanity';
+
+const TIER_META: Record<string, { label: string; blurb: string }> = {
+  board: {
+    label: 'Executive Board',
+    blurb:
+      'Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and oversee school operations.',
+  },
+  chairs: {
+    label: 'Cabinet Chairs',
+    blurb: 'Each chair leads a small team of co-op members and reports to a Board officer.',
+  },
+  reps: {
+    label: 'Class Representatives',
+    blurb: 'One per class — the link between families, the teacher, and the Board.',
+  },
+  committee: {
+    label: 'Committee Members',
+    blurb:
+      'The hands-on roles that keep everything running — most are light, predictable commitments.',
+  },
+};
+const TIER_ORDER = ['board', 'chairs', 'reps', 'committee'];
+
+interface CoopRoleDoc {
+  name: string;
+  tier: string;
+  icon?: string;
+  team?: string;
+  reportsTo?: string;
+  stipend?: string;
+  body?: string;
+}
+let coopTiers = coopTiersFallback;
+try {
+  const roleDocs = await sanityFetch<CoopRoleDoc[]>(
+    `*[_type == "coopRole"] | order(order asc){ name, tier, icon, team, reportsTo, stipend, body }`,
+  );
+  if (roleDocs.length > 0) {
+    coopTiers = TIER_ORDER.filter((t) => roleDocs.some((r) => r.tier === t)).map((t) => ({
+      key: t,
+      label: TIER_META[t]?.label ?? t,
+      blurb: TIER_META[t]?.blurb ?? '',
+      roles: roleDocs
+        .filter((r) => r.tier === t)
+        .map((r) => ({
+          name: r.name,
+          icon: r.icon ?? 'users',
+          team: r.team,
+          reportsTo: r.reportsTo,
+          stipend: r.stipend,
+          body: r.body ?? '',
+        })),
+    }));
+  }
+} catch {
+  coopTiers = coopTiersFallback;
+}
+---
+
+<HubShell
+  title="Co-op Jobs"
+  intro="How WCP is run, the roles families fill each year, and the org chart that ties it together. Your job assignment lives here once it’s set."
+  current="/family-hub/coop-jobs"
+  pageTitle="Co-op Jobs — WCP Family Hub"
+>
+  {/* Your assignment (Sanity later) */}
+  <Section bg="white" labelledby="your-job">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="Your Role"
+        title="Your co-op job this year"
+        titleId="your-job"
+        align="left"
+      />
+      <HubEmptyState
+        icon="clipboard-list"
+        title="Your assignment will show here"
+        source="sanity"
+        class="mt-8"
+      />
+    </div>
+  </Section>
+
+  {/* How WCP is organized */}
+  <Section bg="grey" labelledby="how-organized">
+    <SectionHeader
+      eyebrow="How WCP Is Organized"
+      title="Run by its families"
+      titleId="how-organized"
+      lead="Our teachers and administrator are the only paid staff. Every other role is filled by a parent volunteer — the Executive Board sets direction, Cabinet Chairs lead the programs, and committee members do the hands-on work."
+    />
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        coopPrinciples.map((p) => (
+          <li
+            class="rounded-[var(--radius)] bg-white p-6 text-center shadow-sm sm:text-left"
+            data-reveal
+          >
+            <span
+              class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+              aria-hidden="true"
+            >
+              <Icon name={p.icon} class="h-5 w-5" />
+            </span>
+            <p class="font-bold text-navy">{p.title}</p>
+            <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* Role descriptions */}
+  <Section bg="white" labelledby="roles">
+    <SectionHeader
+      eyebrow="Available Roles"
+      title="Co-op job descriptions"
+      titleId="roles"
+      lead="Every family holds one job for the full school year, assigned based on your availability and preferences."
+    />
+    <div class="mx-auto mt-12 max-w-4xl space-y-12">
+      {
+        coopTiers.map((tier) => (
+          <div data-reveal>
+            <h3 class="text-lg font-extrabold text-navy">{tier.label}</h3>
+            <p class="mt-1 text-sm leading-relaxed text-ink-muted">{tier.blurb}</p>
+            <ul class="mt-5 grid gap-4 sm:grid-cols-2">
+              {tier.roles.map((role) => (
+                <li class="flex gap-4 rounded-[var(--radius)] border border-border bg-white p-5">
+                  <span
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-white"
+                    aria-hidden="true"
+                  >
+                    <Icon name={role.icon} class="h-5 w-5" />
+                  </span>
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span class="font-bold text-navy">{role.name}</span>
+                      {role.team && <span class="text-xs text-ink-muted">· {role.team}</span>}
+                    </div>
+                    <p class="mt-1 text-sm leading-relaxed text-ink">{role.body}</p>
+                    {(role.stipend || role.reportsTo) && (
+                      <p class="mt-2 flex flex-wrap gap-2">
+                        {role.stipend && (
+                          <span class="rounded-full bg-green/15 px-2.5 py-0.5 text-xs font-semibold text-green-ink">
+                            {role.stipend}
+                          </span>
+                        )}
+                        {role.reportsTo && (
+                          <span class="rounded-full bg-grey px-2.5 py-0.5 text-xs font-semibold text-ink-muted">
+                            {role.reportsTo}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  {/* Org chart + questions */}
+  <Section bg="navy" seam labelledby="coop-help">
+    <div class="mx-auto max-w-2xl text-center">
+      <h2 id="coop-help" class="text-white">Questions about co-op jobs?</h2>
+      <p class="mx-auto mt-3 max-w-xl text-white/85">
+        The Secretary is the first stop for job questions, swaps, and clarifications — she’ll route
+        it to the right chair or raise it to the Board. The full org chart is in Documents.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <Button href={`mailto:${site.email.general}`} variant="accent" size="md"
+          >Email the Secretary</Button
+        >
+        <Button href="/family-hub/documents" variant="outline-white" size="md"
+          >View the Org Chart</Button
+        >
+      </div>
+    </div>
+  </Section>
+</HubShell>

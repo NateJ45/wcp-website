@@ -1,0 +1,21 @@
+---
+/* ============================================================================
+   Family Hub — Twos Classroom (GATED)
+   ============================================================================
+   Class facts + pay button + class-notes empty-state. Content is driven by
+   src/data/classes.ts via <ClassHubBody>. Class-specific notes fill from Sanity.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import ClassHubBody from '@/components/hub/ClassHubBody.astro';
+---
+
+<HubShell
+  title="Twos Classroom"
+  intro="A gentle first taste of school, in a small group."
+  current="/family-hub/twos"
+  pageTitle="Twos Classroom — WCP Family Hub"
+>
+  <ClassHubBody slug="twos" />
+</HubShell>

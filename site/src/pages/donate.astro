@@ -19,6 +19,10 @@ import CtaBanner from '@/components/CtaBanner.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "donate").
+const hero = await getPageHero('donate');
 
 const tiers = [
   {
@@ -117,9 +121,10 @@ const moreWays = [
   description="Support West Chester Preschool. Every dollar goes directly toward enriching classrooms, supporting teachers, and keeping our parent-run co-op strong since 1969."
 >
   <Hero
-    eyebrow="Support West Chester Preschool"
-    title="Help a child’s school year shine."
-    lead="WCP has been a cornerstone of the West Chester community since 1969. Every dollar donated goes directly toward enriching classrooms, supporting teachers, and keeping our co-op strong for the families who need us most."
+    eyebrow={hero?.eyebrow ?? 'Support West Chester Preschool'}
+    title={hero?.heroTitle ?? 'Help a child’s school year shine.'}
+    lead={hero?.lead ??
+      'WCP has been a cornerstone of the West Chester community since 1969. Every dollar donated goes directly toward enriching classrooms, supporting teachers, and keeping our co-op strong for the families who need us most.'}
   >
     <Fragment slot="actions">
       <Button href="#give" variant="accent" size="lg">Make a Donation</Button>

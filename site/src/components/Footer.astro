@@ -10,7 +10,13 @@ import Icon from '@/components/Icon.astro';
 import Seam from '@/components/Seam.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 import { footerNav, legalNav } from '@/data/nav';
-import { site } from '@/data/site';
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings } from '@/lib/cms';
+
+// Phone/email/address/social/etc. are edited in Sanity (Site Settings) and
+// merged over the static fallback here, so every `site.*` reference below
+// (and every page's footer) reflects the CMS.
+const site = await getSiteSettings(siteFallback);
 
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
@@ -122,13 +128,32 @@ const year = new Date().getFullYear();
         }
       </nav>
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p>&copy; {year} {site.name}. All rights reserved.</p>
+        <p>&copy; <span data-year>{year}</span> {site.name}. All rights reserved.</p>
         <p>
           A secular, non-discriminatory cooperative preschool. Founded {site.founded}. {
             site.license
           }.
         </p>
       </div>
+      <p class="text-center sm:text-left">
+        Designed by{' '}
+        <a
+          href="https://nixoncreativestudio.com"
+          target="_blank"
+          rel="noopener"
+          class="font-semibold text-white/70 hover:text-white hover:underline"
+        >
+          Nixon Creative Studio
+        </a>
+      </p>
     </div>
   </div>
 </footer>
+
+<script>
+  // Belt-and-suspenders: `year` above is baked in at build time, so if the
+  // static site sits unrebuilt across a New Year the footer would read stale
+  // until the next deploy. This corrects it client-side on every page view.
+  const yearEl = document.querySelector('[data-year]');
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+</script>

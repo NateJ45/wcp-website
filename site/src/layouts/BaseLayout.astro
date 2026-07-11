@@ -13,6 +13,8 @@ import '../styles/globals.css';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import HubHeader from '@/components/hub/HubHeader.astro';
+import HubFooter from '@/components/hub/HubFooter.astro';
 import { site } from '@/data/site';
 
 interface Props {
@@ -23,9 +25,21 @@ interface Props {
   /** Absolute or root-relative OG image. Defaults to the sitewide card. */
   ogImage?: string;
   ogType?: 'website' | 'article';
+  /**
+   * Which chrome to render. 'site' = the public marketing header/footer
+   * (default). 'hub' = the dedicated Family Hub header/footer (its own nav,
+   * one link back to the public site). Used by HubShell for gated pages.
+   */
+  chrome?: 'site' | 'hub';
 }
 
-const { title, description = site.tagline, ogImage, ogType = 'website' } = Astro.props;
+const {
+  title,
+  description = site.tagline,
+  ogImage,
+  ogType = 'website',
+  chrome = 'site',
+} = Astro.props;
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
 // og:image is only emitted when a page provides one — no broken default image
@@ -99,12 +113,12 @@ const ogImageUrl = ogImage ? new URL(ogImage, site.url).toString() : undefined;
     <!-- body is `relative` so the big header's absolute overlay (Header.astro,
          `data-big-header`) positions against the full document, not just the
          viewport — it scrolls away naturally with the page instead of
-         behaving like `fixed`. -->
-    <Header />
+         behaving like `fixed`. The hub uses its own solid, in-flow chrome. -->
+    {chrome === 'hub' ? <HubHeader /> : <Header />}
 
     <main id="main" tabindex="-1"><slot /></main>
 
-    <Footer />
+    {chrome === 'hub' ? <HubFooter /> : <Footer />}
 
     <!-- Scroll-reveal observer. Adds .is-visible to [data-reveal] elements as
          they enter the viewport. Under reduced-motion (or no IntersectionObserver)

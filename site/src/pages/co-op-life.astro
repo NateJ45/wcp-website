@@ -15,6 +15,10 @@ import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 import { schoolYear } from '@/data/school-year';
+import { getTestimonials, getSchoolYearEvents, getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "co-op-life").
+const hero = await getPageHero('co-op-life');
 import firetruckFieldTrip from '@/assets/photos/firetruck-field-trip.jpg';
 
 const commitments = [
@@ -134,6 +138,21 @@ const coopStories = [
     accent: 'green' as const,
   },
 ];
+
+// Testimonials + school-year events are edited in Sanity; the arrays above
+// are the fallback if Sanity is ever empty.
+const accentCycle = ['orange', 'sky', 'green'] as const;
+const coopStoriesDocs = await getTestimonials({ featuredOnly: true, limit: 3 }, []);
+const coopStoriesDisplay =
+  coopStoriesDocs.length > 0
+    ? coopStoriesDocs.map((t, i) => ({
+        quote: t.quote,
+        author: t.author ?? '',
+        context: t.role ?? '',
+        accent: accentCycle[i % accentCycle.length],
+      }))
+    : coopStories;
+const yearEvents = await getSchoolYearEvents(schoolYear);
 ---
 
 <BaseLayout
@@ -141,9 +160,10 @@ const coopStories = [
   description="WCP is a cooperative preschool: the families run the school alongside the teachers. Here is what the co-op commitment actually involves, and why families love it."
 >
   <Hero
-    eyebrow="Parent-Run Since 1969"
-    title="You are not just a parent here. You are an owner."
-    lead="A cooperative preschool means the families enrolled run the school alongside the teachers. It takes more than dropping off. It gives back far more too."
+    eyebrow={hero?.eyebrow ?? 'Parent-Run Since 1969'}
+    title={hero?.heroTitle ?? 'You are not just a parent here. You are an owner.'}
+    lead={hero?.lead ??
+      'A cooperative preschool means the families enrolled run the school alongside the teachers. It takes more than dropping off. It gives back far more too.'}
     image={firetruckFieldTrip}
     imageAlt="WCP children on a field trip to a local fire station, exploring the fire truck with a parent volunteer and firefighter"
   >
@@ -218,7 +238,7 @@ const coopStories = [
       titleId="school-year"
       lead="WCP is not just classes. The school year is packed with events, celebrations, and community moments that families talk about long after their kids graduate."
     />
-    <SchoolYear events={schoolYear} class="mt-12" />
+    <SchoolYear events={yearEvents} class="mt-12" />
   </Section>
 
   {/* Stay Connected — ClassDojo */}
@@ -254,7 +274,7 @@ const coopStories = [
     />
     <ul class="mt-12 grid gap-6 md:grid-cols-3">
       {
-        coopStories.map((t) => (
+        coopStoriesDisplay.map((t) => (
           <li class="h-full">
             <Testimonial
               quote={t.quote}

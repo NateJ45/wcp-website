@@ -12,6 +12,7 @@ dist/
 .astro/
 .wrangler/
 .output/
+.sanity/
 
 # ---- Secrets — keep API keys and tokens out of the repo ---------------------
 # .env.example / .dev.vars.example ARE committed as templates for new setups.

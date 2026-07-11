@@ -1,0 +1,143 @@
+---
+/* ============================================================================
+   Family Hub — Handbook & Documents (GATED)
+   ============================================================================
+   Document library, editable in Sanity (Family Hub → Documents & Forms).
+   Links point to the school's shared Drive/Canva files (gated content, not
+   public). Falls back to the built-in list from src/data/hub/documents.ts if
+   Sanity is ever empty or unreachable.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import Callout from '@/components/Callout.astro';
+import Icon from '@/components/Icon.astro';
+import Button from '@/components/ui/Button.astro';
+import { documentGroups as fallbackGroups, driveFolderUrl } from '@/data/hub/documents';
+import { sanityFetch } from '@/lib/sanity';
+
+const GROUP_META: Record<string, { label: string; action: string; intro?: string }> = {
+  required: {
+    label: 'Required Forms',
+    action: 'Open form',
+    intro:
+      'Ohio state licensing requires these four on file before your child’s first day. New families, start here.',
+  },
+  handbook: { label: 'Handbooks & Policies', action: 'Open document' },
+  orient: { label: 'Orientation Materials', action: 'View' },
+  minutes: { label: 'Meeting Minutes', action: 'Open document' },
+};
+const GROUP_ORDER = ['required', 'handbook', 'orient', 'minutes'];
+
+interface HubDocDoc {
+  title: string;
+  category: string;
+  description?: string;
+  icon?: string;
+  link?: string;
+  order: number;
+}
+let documentGroups = fallbackGroups;
+try {
+  const docs = await sanityFetch<HubDocDoc[]>(
+    `*[_type == "hubDocument" && sourceType == "link" && defined(link)] | order(category asc, order asc){ title, category, description, icon, link, order }`,
+  );
+  if (docs.length > 0) {
+    documentGroups = GROUP_ORDER.filter((k) => docs.some((d) => d.category === k)).map((k) => ({
+      key: k,
+      label: GROUP_META[k]?.label ?? k,
+      action: GROUP_META[k]?.action ?? 'Open',
+      intro: GROUP_META[k]?.intro,
+      docs: docs
+        .filter((d) => d.category === k)
+        .map((d) => ({
+          name: d.title,
+          meta: d.description,
+          icon: d.icon ?? 'file-text',
+          href: d.link ?? '#',
+        })),
+    }));
+  }
+} catch {
+  documentGroups = fallbackGroups;
+}
+---
+
+<HubShell
+  title="Handbook & Documents"
+  intro="Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to."
+  current="/family-hub/documents"
+  pageTitle="Documents — WCP Family Hub"
+>
+  <Section bg="white" label="Documents and forms">
+    <div class="mx-auto max-w-3xl">
+      <Callout tone="warm" class="mb-12">
+        <strong class="font-bold text-navy">New families:</strong> the four Required Forms below must
+        be on file before your child’s first day — Ohio state licensing requires them.
+      </Callout>
+
+      <div class="space-y-14">
+        {
+          documentGroups.map((group) => (
+            <div data-reveal>
+              <h2 class="border-b-2 border-border pb-2 text-xl font-extrabold text-navy">
+                {group.label}
+              </h2>
+              {group.intro && <p class="mt-3 leading-relaxed text-ink">{group.intro}</p>}
+              <ul class="mt-6 grid gap-3">
+                {group.docs.map((doc) => (
+                  <li>
+                    <a
+                      href={doc.href}
+                      target="_blank"
+                      rel="noopener"
+                      class="group flex items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-4 no-underline transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-sky-ink hover:shadow-sm"
+                    >
+                      <span
+                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                        aria-hidden="true"
+                      >
+                        <Icon name={doc.icon} class="h-5 w-5" />
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block font-bold text-navy">{doc.name}</span>
+                        {doc.meta && <span class="block text-sm text-ink-muted">{doc.meta}</span>}
+                      </span>
+                      <span class="hidden shrink-0 items-center gap-1 text-sm font-semibold text-sky-ink sm:inline-flex">
+                        {group.action}
+                        <Icon name="external-link" class="h-4 w-4" />
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-14 rounded-[var(--radius)] bg-grey p-8 text-center" data-reveal>
+        <span
+          class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white"
+          aria-hidden="true"
+        >
+          <Icon name="folder-open" class="h-6 w-6" />
+        </span>
+        <p class="text-lg font-bold text-navy">Need a file that isn’t listed?</p>
+        <p class="mx-auto mt-1 max-w-md text-ink">
+          Every WCP document lives in our shared Google Drive folder.
+        </p>
+        {
+          driveFolderUrl !== '#' ? (
+            <Button href={driveFolderUrl} variant="primary" size="md" class="mt-5">
+              Open Google Drive
+            </Button>
+          ) : (
+            <p class="mt-4 text-sm text-ink-muted">(Drive folder link is added during setup.)</p>
+          )
+        }
+      </div>
+    </div>
+  </Section>
+</HubShell>

@@ -23,6 +23,16 @@
     "directory": "./dist",
     "binding": "ASSETS",
   },
+  // Session storage for the gated Family Hub (Astro Sessions API). The adapter
+  // uses the KV binding named "SESSION" automatically. Local `astro dev` uses a
+  // local (miniflare) KV, so no cloud namespace is needed to develop/test.
+  // Namespace created 2026-07-10 via `wrangler kv namespace create SESSION`.
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "7c54b45ecc2745b68975c21085de1b66",
+    },
+  ],
   "observability": {
     "enabled": true,
   },

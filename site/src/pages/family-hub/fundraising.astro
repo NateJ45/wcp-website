@@ -1,0 +1,107 @@
+---
+/* ============================================================================
+   Family Hub — Fundraising (GATED)
+   ============================================================================
+   Active campaigns + year totals come live from the treasurer's Google Sheet
+   (fetched server-side inside the gate — decision #4). The "ways we raise" and
+   "where it goes" context is static. No hardcoded dollar figures.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+
+const waysToRaise = [
+  {
+    icon: 'hand-heart',
+    title: 'Dine to Donate',
+    body: 'Local restaurants give back a share of sales on WCP nights. Show up hungry — a portion of your bill comes back to the school.',
+  },
+  {
+    icon: 'party-popper',
+    title: 'Spring Raffle',
+    body: 'Our biggest event of the year: themed baskets, donated prizes, and tickets sold across the community.',
+  },
+  {
+    icon: 'shopping-bag',
+    title: 'Seasonal Sales',
+    body: 'Smaller fundraisers through the year — spirit wear, holiday items, and one-off sales run by the Fundraising Committee.',
+  },
+  {
+    icon: 'gift',
+    title: 'Direct Giving',
+    body: 'Prefer to give directly? Donations are welcome any time and go straight into the classrooms.',
+  },
+];
+---
+
+<HubShell
+  title="Fundraising"
+  intro="What we’re raising money for this year, what’s active right now, and how you can help. Every dollar goes back into the classrooms."
+  current="/family-hub/fundraising"
+  pageTitle="Fundraising — WCP Family Hub"
+>
+  <Section bg="white" labelledby="active-now">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="Happening Now"
+        title="Active fundraisers"
+        titleId="active-now"
+        align="left"
+      />
+      <HubEmptyState
+        icon="party-popper"
+        title="Current campaigns & totals will show here"
+        source="google-sheets"
+        class="mt-8"
+      />
+    </div>
+  </Section>
+
+  <Section bg="grey" labelledby="ways">
+    <SectionHeader
+      eyebrow="How We Raise"
+      title="The ways WCP fundraises"
+      titleId="ways"
+      lead="A handful of friendly, low-pressure efforts across the year — join what fits your family."
+    />
+    <ul class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
+      {
+        waysToRaise.map((w) => (
+          <li class="flex gap-4 rounded-[var(--radius)] bg-white p-6 shadow-sm" data-reveal>
+            <span
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
+              aria-hidden="true"
+            >
+              <Icon name={w.icon} class="h-5 w-5" />
+            </span>
+            <div>
+              <p class="font-bold text-navy">{w.title}</p>
+              <p class="mt-1 text-sm leading-relaxed text-ink">{w.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section bg="navy" seam labelledby="where-it-goes">
+    <div class="mx-auto max-w-2xl text-center">
+      <span
+        class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-amber"
+        aria-hidden="true"
+      >
+        <Icon name="graduation-cap" class="h-7 w-7" />
+      </span>
+      <h2 id="where-it-goes" class="text-white">Where your money goes</h2>
+      <p class="mx-auto mt-3 max-w-xl text-white/85">
+        Every dollar raised goes straight back into the classrooms — supplies, enrichment,
+        playground upkeep, and the special days that make WCP feel like home. No overhead, no
+        salaries skimmed off the top.
+      </p>
+    </div>
+  </Section>
+</HubShell>

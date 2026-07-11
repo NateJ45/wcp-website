@@ -1,0 +1,70 @@
+---
+/* ============================================================================
+   Family Hub — School Calendar (GATED)
+   ============================================================================
+   Events come live from the school Google Calendar (fetched server-side inside
+   the gate — architecture decision #4). Until that's wired, an event-type
+   legend + an empty-state stand in. No hardcoded event data.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
+import Callout from '@/components/Callout.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+
+const eventTypes = [
+  { icon: 'school', label: 'Class days', tint: 'bg-sky/15 text-sky-ink' },
+  { icon: 'snowflake', label: 'Closures', tint: 'bg-grey text-ink-muted' },
+  { icon: 'users', label: 'Board meetings', tint: 'bg-navy/10 text-navy' },
+  { icon: 'party-popper', label: 'Fundraisers', tint: 'bg-amber/25 text-orange-ink' },
+  { icon: 'gift', label: 'Family events', tint: 'bg-green/15 text-green-ink' },
+];
+---
+
+<HubShell
+  title="School Calendar"
+  intro="Class days, closures, board meetings, fundraisers, and family events. All the dates that matter this school year, in one place."
+  current="/family-hub/calendar"
+  pageTitle="Calendar — WCP Family Hub"
+>
+  <Section bg="white" labelledby="upcoming">
+    <div class="mx-auto max-w-3xl">
+      <SectionHeader
+        eyebrow="This School Year"
+        title="What’s coming up"
+        titleId="upcoming"
+        align="left"
+      />
+
+      {/* Legend */}
+      <ul class="mt-6 flex flex-wrap gap-2">
+        {
+          eventTypes.map((t) => (
+            <li
+              class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${t.tint}`}
+            >
+              <Icon name={t.icon} class="h-4 w-4" />
+              {t.label}
+            </li>
+          ))
+        }
+      </ul>
+
+      <HubEmptyState
+        icon="calendar-days"
+        title="Upcoming events will list here"
+        source="google-calendar"
+        class="mt-8"
+      />
+
+      <Callout tone="sky" class="mt-10">
+        <strong class="font-bold text-navy">Weather closures:</strong> WCP follows
+        <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes —
+        watch your email and our Facebook page for school-specific updates.
+      </Callout>
+    </div>
+  </Section>
+</HubShell>

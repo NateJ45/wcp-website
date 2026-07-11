@@ -1,0 +1,21 @@
+---
+/* ============================================================================
+   Family Hub — Threes Classroom (GATED)
+   ============================================================================
+   Class facts + pay button + class-notes empty-state. Content is driven by
+   src/data/classes.ts via <ClassHubBody>. Class-specific notes fill from Sanity.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import ClassHubBody from '@/components/hub/ClassHubBody.astro';
+---
+
+<HubShell
+  title="Threes Classroom"
+  intro="A joyful first real school experience."
+  current="/family-hub/threes"
+  pageTitle="Threes Classroom — WCP Family Hub"
+>
+  <ClassHubBody slug="threes" />
+</HubShell>

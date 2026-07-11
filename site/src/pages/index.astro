@@ -19,6 +19,10 @@ import Underline from '@/components/Underline.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getTestimonials, getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "home").
+const hero = await getPageHero('home');
 
 const reasons = [
   {
@@ -41,8 +45,9 @@ const reasons = [
   },
 ];
 
-// Real, approved family quotes (from the content extraction).
-const testimonials = [
+// Real, approved family quotes — editable in Sanity (Testimonials, "Feature
+// this one?"); the array below is only the fallback if Sanity has none.
+const testimonialsFallback = [
   {
     quote:
       'My only regret is not finding this place sooner. I have complete confidence that my son is prepared for kindergarten because of his time at WCP.',
@@ -65,13 +70,25 @@ const testimonials = [
     accent: 'green' as const,
   },
 ];
+const accentCycle = ['orange', 'sky', 'green'] as const;
+const featuredDocs = await getTestimonials({ featuredOnly: true, limit: 3 }, []);
+const testimonials =
+  featuredDocs.length > 0
+    ? featuredDocs.map((t, i) => ({
+        quote: t.quote,
+        author: t.author ?? '',
+        context: t.role ?? '',
+        accent: accentCycle[i % accentCycle.length],
+      }))
+    : testimonialsFallback;
 ---
 
 <BaseLayout title={`${site.name} — Parent-run preschool in West Chester, OH`}>
   <Hero
-    eyebrow="Now Enrolling 2026-27"
-    title="Where little ones learn, grow, and belong."
-    lead="West Chester Preschool is a cooperative preschool in West Chester, Ohio. Play-based learning, experienced teachers, and a parent community unlike any other."
+    eyebrow={hero?.eyebrow ?? 'Now Enrolling 2026-27'}
+    title={hero?.heroTitle ?? 'Where little ones learn, grow, and belong.'}
+    lead={hero?.lead ??
+      'West Chester Preschool is a cooperative preschool in West Chester, Ohio. Play-based learning, experienced teachers, and a parent community unlike any other.'}
     image="/hero/wcp-hero-poster.webp"
     imageAlt="Children playing together at West Chester Preschool"
     video="/hero/wcp-hero.mp4"

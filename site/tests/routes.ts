@@ -1,5 +1,10 @@
-// Every public route on the site — the single source of truth for the sweeps.
-// Add a route here when a new page ships and it's covered by all suites.
+// Every public, PRERENDERED route on the site — the single source of truth for
+// the sweeps. The suites serve the static `dist/client`, so only build-time HTML
+// pages belong here. The Family Hub (`/family-hub/**`) is on-demand SSR behind a
+// password gate (prerender=false), so it is NOT in dist/client and is excluded
+// here. The gate flow is verified separately (see the dev-server curl checks);
+// SSR a11y/reflow coverage lands when the hub pages get their real content.
+// Add a route here when a new PRERENDERED page ships.
 export const routes = [
   '/',
   '/about',
@@ -14,7 +19,6 @@ export const routes = [
   '/enroll',
   '/contact',
   '/virtual-tour',
-  '/family-hub',
   '/work-with-us',
   '/donate',
   '/newsletter',

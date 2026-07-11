@@ -1,0 +1,21 @@
+---
+/* ============================================================================
+   Family Hub — Pre-K AM Classroom (GATED)
+   ============================================================================
+   Class facts + pay button + class-notes empty-state. Content is driven by
+   src/data/classes.ts via <ClassHubBody>. Class-specific notes fill from Sanity.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import ClassHubBody from '@/components/hub/ClassHubBody.astro';
+---
+
+<HubShell
+  title="Pre-K AM Classroom"
+  intro="Kindergarten readiness, four mornings a week."
+  current="/family-hub/pre-k-am"
+  pageTitle="Pre-K AM Classroom — WCP Family Hub"
+>
+  <ClassHubBody slug="pre-k-am" />
+</HubShell>

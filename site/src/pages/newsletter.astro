@@ -14,6 +14,10 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "newsletter").
+const hero = await getPageHero('newsletter');
 
 const perks = [
   {
@@ -42,9 +46,10 @@ const perks = [
   description="Get West Chester Preschool news before anyone else: school updates, enrollment reminders, and event dates. A few times a year. No spam."
 >
   <Hero
-    eyebrow="Stay in the Loop"
-    title="Get WCP news before anyone else."
-    lead="We send a short newsletter a few times a year with school updates, enrollment reminders, event dates, and the occasional peek inside our classrooms. No spam. Unsubscribe any time."
+    eyebrow={hero?.eyebrow ?? 'Stay in the Loop'}
+    title={hero?.heroTitle ?? 'Get WCP news before anyone else.'}
+    lead={hero?.lead ??
+      'We send a short newsletter a few times a year with school updates, enrollment reminders, event dates, and the occasional peek inside our classrooms. No spam. Unsubscribe any time.'}
   >
     <Fragment slot="actions">
       <Button href="#signup" variant="accent" size="lg">Sign Up</Button>

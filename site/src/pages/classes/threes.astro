@@ -16,30 +16,47 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 import erinSchmerr from '@/assets/staff/erin-schmerr.jpg';
 import threesHero from '@/assets/photos/threes-hero.jpg';
+import { getStaff, getClassFacts, toParagraphs, getTestimonials, getPageHero } from '@/lib/cms';
+
+// Class schedule/tuition facts and the teacher's bio are edited in Sanity
+// (Classes / Staff) and read here at build time, so the numbers below always
+// match Tuition, the Family Hub, and every other page that shows them.
+const hero = await getPageHero('classes/threes');
+const classFacts = await getClassFacts('class-threes');
+const erin = await getStaff('staff-erin');
+const erinBio = toParagraphs(erin?.bio);
+const [threesQuote] = await getTestimonials({ tag: 'threes', limit: 1 }, [
+  {
+    quote:
+      'Our first year at WCP has been amazing. My son loves his teacher and his friends. The teachers and parents here are a blessing, I could not recommend this school more.',
+    author: 'Amber Cron',
+    role: 'Threes Parent',
+  },
+]);
 
 const glance = [
   {
     icon: 'calendar-days',
     chip: 'green' as const,
-    title: 'Mon, Tue, Wed',
+    title: classFacts?.days ?? 'Mon, Tue, Wed',
     body: 'Three mornings a week gives kids real routine and rhythm.',
   },
   {
     icon: 'clock',
     chip: 'sky' as const,
-    title: '9:30 am – 12:00 pm',
+    title: classFacts?.time ?? '9:30 am – 12:00 pm',
     body: 'Drop off, enjoy your morning, and pick up at noon.',
   },
   {
     icon: 'cake',
     chip: 'amber' as const,
-    title: 'Age 3 by Sept 30',
+    title: classFacts?.age ?? 'Age 3 by Sept 30',
     body: 'Your child must turn 3 by September 30 of the enrollment year.',
   },
   {
     icon: 'piggy-bank',
     chip: 'orange' as const,
-    title: '$150 per month',
+    title: classFacts?.monthly ? `${classFacts.monthly} per month` : '$150 per month',
     body: '$100 registration fee holds your spot at sign-up. $100 deposit due at the May Gathering.',
   },
 ];
@@ -47,7 +64,9 @@ const classSize = [
   {
     icon: 'users',
     chip: 'green' as const,
-    title: '12 children, max',
+    title: classFacts?.classSizeCap
+      ? `${classFacts.classSizeCap} children, max`
+      : '12 children, max',
     body: 'Small enough for individual attention, large enough for real friendships.',
   },
   {
@@ -133,9 +152,10 @@ const learn = [
   description="The Threes class at West Chester Preschool meets Monday through Wednesday. More structure, more creativity, and more time with friends."
 >
   <Hero
-    eyebrow="Now Enrolling 2026-27 · Ages 3+"
-    title="Building independence, one morning at a time."
-    lead="The Threes class meets Monday through Wednesday. Kids this age are ready for more structure, more creativity, and more time with friends."
+    eyebrow={hero?.eyebrow ?? 'Now Enrolling 2026-27 · Ages 3+'}
+    title={hero?.heroTitle ?? 'Building independence, one morning at a time.'}
+    lead={hero?.lead ??
+      'The Threes class meets Monday through Wednesday. Kids this age are ready for more structure, more creativity, and more time with friends.'}
     image={threesHero}
     imageAlt="A Threes-class group exploring a creek with a parent volunteer during an outdoor nature walk"
   >
@@ -228,20 +248,29 @@ const learn = [
     <div class="mx-auto mt-12 grid max-w-4xl items-start gap-8 md:grid-cols-2">
       <TeacherCard
         photo={erinSchmerr}
-        name="Mrs. Erin Schmerr"
-        role="Twos & Threes · 3 years at WCP"
-        email={site.teachers.erin}
+        name={erin ? [erin.honorific, erin.name].filter(Boolean).join(' ') : 'Mrs. Erin Schmerr'}
+        role={erin?.role ?? 'Twos & Threes · 3 years at WCP'}
+        email={erin?.email ?? site.teachers.erin}
       >
-        Erin is a Cincinnati native with nearly 20 years of experience in education, social work,
-        and childcare. She holds a degree in Social Work from Xavier University and also serves as
-        WCP’s school administrator. She came to WCP as a parent, fell in love with the school, and
-        never left. In her spare time she runs a photography business and loves to travel.
+        {
+          erinBio.length > 0 ? (
+            erinBio.map((p) => <p class="mt-2 first:mt-0">{p}</p>)
+          ) : (
+            <p>
+              Erin is a Cincinnati native with nearly 20 years of experience in education, social
+              work, and childcare. She holds a degree in Social Work from Xavier University and also
+              serves as WCP’s school administrator. She came to WCP as a parent, fell in love with
+              the school, and never left. In her spare time she runs a photography business and
+              loves to travel.
+            </p>
+          )
+        }
       </TeacherCard>
       <div class="md:pt-4">
         <Testimonial
-          quote="Our first year at WCP has been amazing. My son loves his teacher and his friends. The teachers and parents here are a blessing — I could not recommend this school more."
-          author="Amber Cron"
-          context="Threes Parent"
+          quote={threesQuote.quote}
+          author={threesQuote.author ?? ''}
+          context={threesQuote.role ?? 'Threes Parent'}
           accent="green"
         />
         <p class="mt-6 text-center md:text-left" data-reveal>

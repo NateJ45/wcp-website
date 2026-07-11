@@ -1,0 +1,88 @@
+---
+/* ============================================================================
+   ClassHubBody — shared content for a Family Hub class page
+   ============================================================================
+   Given a class slug, renders the class facts (schedule/age/tuition), the pay
+   button, a class-updates empty-state (fills from Sanity later), and a link to
+   the public class page for the full program description. Keeps the four class
+   pages down to a few lines each.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import Icon from '@/components/Icon.astro';
+import Button from '@/components/ui/Button.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { classBySlug, payUrl, type WcpClass } from '@/data/classes';
+
+interface Props {
+  slug: WcpClass['slug'];
+}
+const { slug } = Astro.props;
+const c = classBySlug[slug];
+
+// Both Pre-K classes share one public marketing page.
+const publicHref =
+  slug === 'pre-k-am' || slug === 'pre-k-pm' ? '/classes/pre-k' : `/classes/${slug}`;
+
+const facts = [
+  { icon: 'calendar-days', label: 'Days', value: c.days },
+  { icon: 'clock', label: 'Time', value: c.time },
+  { icon: c.icon, label: 'Ages', value: c.age },
+  { icon: 'circle-dollar-sign', label: 'Monthly tuition', value: `${c.monthly} / month` },
+  { icon: 'coins', label: 'Annual tuition', value: c.annual },
+  { icon: 'palette', label: 'Student fee', value: `${c.studentFee} / year` },
+];
+---
+
+<Section bg="white" label={`${c.name} class details`}>
+  <div class="mx-auto max-w-3xl">
+    {/* Facts */}
+    <div data-reveal>
+      <h2 class="text-xl font-extrabold text-navy">At a glance</h2>
+      <dl class="mt-6 grid gap-3 sm:grid-cols-2">
+        {
+          facts.map((f) => (
+            <div class="flex items-center gap-3 rounded-[var(--radius)] border border-border bg-white p-4">
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                aria-hidden="true"
+              >
+                <Icon name={f.icon} class="h-5 w-5" />
+              </span>
+              <div>
+                <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                  {f.label}
+                </dt>
+                <dd class="font-bold text-navy">{f.value}</dd>
+              </div>
+            </div>
+          ))
+        }
+      </dl>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <Button href={payUrl(c.payId)} target="_blank" rel="noopener" variant="primary" size="md">
+          Pay {c.name} Tuition
+        </Button>
+        <Button href={publicHref} variant="outline" size="md">
+          See the full {c.name} program
+        </Button>
+      </div>
+    </div>
+
+    {/* Class-specific updates (Sanity later) */}
+    <div class="mt-14" data-reveal>
+      <h2 class="text-xl font-extrabold text-navy">Class notes & updates</h2>
+      <p class="mt-2 text-ink">
+        Notes from your teacher — supply reminders, special days, and what’s happening in the {
+          c.name
+        }
+        room.
+      </p>
+      <HubEmptyState
+        icon="megaphone"
+        title="No class notes posted yet"
+        source="sanity"
+        class="mt-6"
+      />
+    </div>
+  </div>
+</Section>

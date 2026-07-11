@@ -16,6 +16,7 @@ import PhotoGallery from '@/components/PhotoGallery.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { getClassFacts, getPageHero } from '@/lib/cms';
 
 import prekCircleTime from '@/assets/photos/prek-circle-time.jpg';
 import unicornHug from '@/assets/photos/unicorn-hug.jpg';
@@ -23,6 +24,17 @@ import dressUpPlay from '@/assets/photos/dress-up-play.jpg';
 import gymPlaytime from '@/assets/photos/gym-playtime.jpg';
 import outdoorExploration from '@/assets/photos/outdoor-exploration.jpg';
 import firetruckFieldTrip from '@/assets/photos/firetruck-field-trip.jpg';
+
+// Hero copy + each class's age/tuition line are edited in Sanity (Pages, and
+// Classes for the numbers), so this page can never drift from the class pages
+// or the tuition table.
+const hero = await getPageHero('a-day-at-wcp');
+const [twosFacts, threesFacts, amFacts, pmFacts] = await Promise.all([
+  getClassFacts('class-twos'),
+  getClassFacts('class-threes'),
+  getClassFacts('class-pre-k-am'),
+  getClassFacts('class-pre-k-pm'),
+]);
 
 const everyDay = [
   {
@@ -216,9 +228,10 @@ const galleryPhotos = [
   description="What a day at West Chester Preschool actually looks like: full daily schedules for Twos, Threes, and Pre-K AM/PM, plus photos from our classrooms."
 >
   <Hero
-    eyebrow="A Peek Inside a WCP Morning"
-    title="What a day at WCP actually looks like."
-    lead="Every session at WCP is a mix of free play, guided activities, snack, and outdoor time. Here is a full look at how each class spends their morning, or afternoon."
+    eyebrow={hero?.eyebrow ?? 'A Peek Inside a WCP Morning'}
+    title={hero?.heroTitle ?? 'What a day at WCP actually looks like.'}
+    lead={hero?.lead ??
+      'Every session at WCP is a mix of free play, guided activities, snack, and outdoor time. Here is a full look at how each class spends their morning, or afternoon.'}
     image={prekCircleTime}
     imageAlt="A teacher reads to a class of children sitting together on the classroom rug during circle time"
   >
@@ -258,7 +271,8 @@ const galleryPhotos = [
       place.
     </p>
     <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
-      Age requirement: must be 2 by September 30 &middot; Tuition: $70 per month
+      Age requirement: must be {twosFacts?.age?.match(/\d+/)?.[0] ?? '2'} by September 30 &middot; Tuition:
+      {twosFacts?.monthly ?? '$70'} per month
     </p>
     <p class="text-center" data-reveal>
       <a href="/classes/twos" class="font-bold text-sky-ink underline underline-offset-2">
@@ -280,7 +294,8 @@ const galleryPhotos = [
       play.
     </p>
     <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
-      Age requirement: must be 3 by September 30 &middot; Tuition: $150 per month
+      Age requirement: must be {threesFacts?.age?.match(/\d+/)?.[0] ?? '3'} by September 30 &middot; Tuition:
+      {threesFacts?.monthly ?? '$150'} per month
     </p>
     <p class="text-center" data-reveal>
       <a href="/classes/threes" class="font-bold text-sky-ink underline underline-offset-2">
@@ -301,7 +316,8 @@ const galleryPhotos = [
       calendar, fine motor work, centers, snack, and outdoor play.
     </p>
     <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
-      Age requirement: must be 4 by September 30 &middot; Tuition: $200 per month
+      Age requirement: must be {amFacts?.age?.match(/\d+/)?.[0] ?? '4'} by September 30 &middot; Tuition:
+      {amFacts?.monthly ?? '$200'} per month
     </p>
     <p class="text-center" data-reveal>
       <a href="/classes/pre-k" class="font-bold text-sky-ink underline underline-offset-2">
@@ -322,7 +338,8 @@ const galleryPhotos = [
       Great for families who need mornings free or whose child does better later in the day.
     </p>
     <p class="mx-auto mb-10 max-w-2xl text-center text-sm font-semibold text-sky-ink" data-reveal>
-      Age requirement: must be 4 by September 30 &middot; Tuition: $175 per month
+      Age requirement: must be {pmFacts?.age?.match(/\d+/)?.[0] ?? '4'} by September 30 &middot; Tuition:
+      {pmFacts?.monthly ?? '$175'} per month
     </p>
     <p class="text-center" data-reveal>
       <a href="/classes/pre-k" class="font-bold text-sky-ink underline underline-offset-2">

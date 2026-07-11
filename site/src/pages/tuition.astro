@@ -12,6 +12,10 @@ import Callout from '@/components/Callout.astro';
 import CtaBanner from '@/components/CtaBanner.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { cmsFetch, getPageHero } from '@/lib/cms';
+
+// Hero eyebrow/title/lead are edited in Sanity (Pages → Page copy → "tuition").
+const hero = await getPageHero('tuition');
 
 const why = [
   {
@@ -51,7 +55,9 @@ const tuitionColumns = [
   'Deposit',
   'Student fees',
 ];
-const tuitionRows = [
+// Tuition rows — built from the Sanity classes + fee schedule so the figures
+// are edited in ONE place. Falls back to the built-in rows if Sanity is empty.
+const tuitionRowsFallback = [
   ['Twos', 'Thursdays', '9:30 am – 12:00 pm', 'Age 2', '$70', '$630', '$100', '$100', '$45'],
   ['Threes', 'Mon – Wed', '9:30 am – 12:00 pm', 'Age 3', '$150', '$1,350', '$100', '$100', '$45'],
   [
@@ -67,6 +73,39 @@ const tuitionRows = [
   ],
   ['Pre-K PM', 'Mon – Wed', '12:30 pm – 3:15 pm', 'Age 4', '$175', '$1,575', '$100', '$100', '$50'],
 ];
+interface ClassRow {
+  name: string;
+  days: string;
+  time: string;
+  age: string;
+  monthly: string;
+  annual: string;
+  studentFee: string;
+}
+const classDocs = await cmsFetch<ClassRow[]>(
+  `*[_type == "class"] | order(order asc){ name, days, time, age, monthly, annual, studentFee }`,
+  {},
+  [],
+);
+const feeDoc = await cmsFetch<{ registrationFee?: string; participationFee?: string }>(
+  `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`,
+  {},
+  {},
+);
+const shortAge = (a?: string) => a?.match(/Age\s*\d+/i)?.[0] ?? a ?? '';
+const tuitionRows = classDocs.length
+  ? classDocs.map((c) => [
+      c.name,
+      c.days,
+      c.time,
+      shortAge(c.age),
+      c.monthly,
+      c.annual,
+      feeDoc.registrationFee ?? '$100',
+      feeDoc.participationFee ?? '$100',
+      c.studentFee,
+    ])
+  : tuitionRowsFallback;
 
 const fees = [
   {
@@ -122,9 +161,10 @@ const timeline = [
   description="2026-27 tuition rates and fees for West Chester Preschool. The co-op model keeps tuition lower than most West Chester preschools, starting at $70 a month."
 >
   <Hero
-    eyebrow="2026-27 Tuition Rates"
-    title="Quality early education. At a price that works."
-    lead="The co-op model keeps our tuition lower than most preschools in West Chester, without cutting corners on teaching quality or class experience."
+    eyebrow={hero?.eyebrow ?? '2026-27 Tuition Rates'}
+    title={hero?.heroTitle ?? 'Quality early education. At a price that works.'}
+    lead={hero?.lead ??
+      'The co-op model keeps our tuition lower than most preschools in West Chester, without cutting corners on teaching quality or class experience.'}
   >
     <Fragment slot="actions">
       <Button href="/enroll" variant="accent" size="lg">Enroll Now</Button>
