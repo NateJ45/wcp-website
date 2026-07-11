@@ -35,12 +35,12 @@ const { steps, footnote, class: className } = Astro.props;
         {/* Dashed connector — drawn between badges, not after the last one. */}
         {i !== steps.length - 1 && (
           <span
-            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-orange/40"
+            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-navy/40"
             aria-hidden="true"
           />
         )}
         <span
-          class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange font-display text-lg text-ink shadow-sm"
+          class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent font-display text-lg text-accent-foreground shadow-sm"
           aria-hidden="true"
         >
           {i + 1}

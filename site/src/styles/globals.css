@@ -358,13 +358,17 @@
   --secondary: #166fa8;
   --secondary-foreground: #ffffff;
 
-  /* Accent = the TRUE brand orange, with dark ink text (7.46:1) instead of
-     white — white-on-orange fails (2.33:1), but ink-on-orange clears AA
-     comfortably, so the "Enroll" CTA can be the real, vibrant brand color
-     instead of the darker orange-ink shade (which reads as brown/rust when
-     used as a large fill, not just as small text). */
-  --accent: #ff8c00;
-  --accent-foreground: #1a1a1a;
+  /* Accent = TRUE brand navy, white text (9.75:1). Neither true orange
+     (#ff8c00) nor true sky blue (#40aaed) can pair with white text and clear
+     AA — both need to darken well past "vibrant" before 4.5:1, which is
+     exactly the muddier ink shades this was trying to avoid. Navy is the one
+     brand color dark enough to need NO adjustment at all: real, unaltered
+     brand color + white text, zero compromise. Deliberate tradeoff: the
+     "Enroll" CTA now reads the same navy as the `primary` button, so the two
+     are no longer visually distinct actions — decided in favor of true brand
+     color + maximum contrast over that distinction. */
+  --accent: #01457e;
+  --accent-foreground: #ffffff;
 
   --muted: #eff0f1;
   --muted-foreground: #5f6573;

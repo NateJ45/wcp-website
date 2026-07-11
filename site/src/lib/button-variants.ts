@@ -8,11 +8,11 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // `buttonVariants` and pass the class, or use the <Button> component.
 //
 // ACCESSIBILITY: every variant below meets WCAG AA. There is deliberately no
-// bright-sky filled variant with white text (fails at 2.56:1) — `secondary`
-// uses sky-INK instead. `accent`, though, IS the true brand orange: white
-// text on it fails (2.33:1), but dark ink text clears AA comfortably
-// (7.46:1), so the "Enroll" CTA gets the real, vibrant brand color instead of
-// a darker/browner ink-orange fill.
+// bright-orange or bright-sky filled variant with white text — both fail
+// (2.33:1 / 2.56:1) and can't be brightened past ~AA-boundary without losing
+// "vibrant". `accent` is TRUE brand navy (9.75:1, zero adjustment needed,
+// see globals.css) — a deliberate choice to keep the real brand color and
+// max contrast over having `accent` look visually distinct from `primary`.
 // Focus rings come from the global :focus-visible rule in globals.css.
 // =============================================================================
 export const buttonVariants = cva(
@@ -24,7 +24,7 @@ export const buttonVariants = cva(
       variant: {
         // Navy fill, white text (9.75:1) — the safe default action.
         primary: 'bg-navy text-white hover:-translate-y-0.5 hover:shadow-lg',
-        // True brand-orange fill, dark ink text (7.46:1) — the warm "Enroll" CTA.
+        // True brand-navy fill, white text (9.75:1) — the "Enroll" CTA.
         accent: 'bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
         // Sky-ink fill, white text (5.4:1) — secondary emphasis.
         secondary: 'bg-secondary text-secondary-foreground hover:-translate-y-0.5',
