@@ -14,10 +14,11 @@ import tailwindcss from '@tailwindcss/vite';
 // FOUNDATION, edit with care. Mirrors the proven nixoncreativestudio setup.
 //
 // `output: 'static'` prerenders every public marketing page to plain HTML at
-// build time (fast, cheap, great Lighthouse). The Cloudflare adapter stays
-// installed so the gated Family Hub can opt individual routes into server
-// rendering later with `export const prerender = false` — those SSR routes are
-// where the family-hub password check and any Sanity PII reads will live.
+// build time (fast, cheap, great Lighthouse). The Cloudflare adapter also
+// renders the gated Family Hub, where every route opts into server rendering
+// with `export const prerender = false` (see src/middleware.ts) — those SSR
+// routes are where the family-hub password check and any Sanity PII reads
+// live, confirmed working in production.
 //
 // Deploy target is a Cloudflare WORKER with a static-assets binding (see
 // wrangler.jsonc), NOT Cloudflare Pages. `npm run deploy` runs the build then

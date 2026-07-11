@@ -7,9 +7,8 @@
   // @astrojs/cloudflare adapter reads this file and emits the real deploy
   // config into dist/server/wrangler.json, then `wrangler deploy` ships it.
   //
-  // When the gated Family Hub is built (Phase 4), the adapter also injects a
-  // SESSION KV binding for Astro's Sessions API — that is the plumbing the
-  // shared-password gate will use. A real KV namespace id gets added here then.
+  // The gated Family Hub uses a SESSION KV binding for Astro's Sessions API —
+  // that is the plumbing behind the shared-password gate. Live in production.
   // ===========================================================================
   "compatibility_date": "2026-07-10",
   // nodejs_compat polyfills Node globals (process, Buffer, ...) in the workerd
