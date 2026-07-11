@@ -41,6 +41,16 @@ import { event } from './documents/event';
 import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { coopRole } from './documents/coopRole';
+import {
+  program,
+  boardMember,
+  partner,
+  credential,
+  campaign,
+  jobPosting,
+  resource,
+  photoAlbum,
+} from './documents/extras';
 
 // Collections (Family Hub — gated)
 import { update } from './update';
@@ -81,6 +91,15 @@ export const schemaTypes = [
   submission,
   subscriber,
   coopRole,
+  // Future-proofing collections (surfaced via community.ts sections)
+  program,
+  boardMember,
+  partner,
+  credential,
+  campaign,
+  jobPosting,
+  resource,
+  photoAlbum,
   // Family Hub collections
   update,
   hubDocument,

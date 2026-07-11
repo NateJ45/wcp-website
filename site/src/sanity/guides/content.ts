@@ -667,6 +667,54 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'community-content',
+    title: 'Programs, board, downloads & more',
+    icon: '🌟',
+    lead: 'A few simple lists — programs, board, partners, downloads, jobs, photo albums — that appear on your pages as ready-made sections.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Under **Community & content** in the left menu you will find a few small collections. Each one powers a matching **section** you can add to any page. You keep the list up to date here, and the page updates itself, so you never type the same thing in two places.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Programs** — enrichment, summer, or special offerings. Shows as a row of cards (the *Programs* section).',
+          '**Board / leadership** — your officers, separate from teaching Staff. Shows as a people grid (the *Board* section).',
+          '**Partners / sponsors** and **Accreditations** — logos. Show as a tidy logo row (the *Logo strip* section).',
+          '**Fundraising campaigns** — one active campaign with a goal. Shows as a progress bar (the *Fundraising progress* section).',
+          '**Job postings** — open positions. Show as a list (the *Open positions* section).',
+          '**Downloads & resources** — a handbook, calendar, or form, as an uploaded file or a link (the *Downloads* section).',
+          '**Photo albums** — a reusable set of photos you can show on any page (the *Photo album* section).',
+        ],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Add or edit items in the collection (for example **Programs**), then **Publish**.',
+          'Open the **page** where you want them shown.',
+          'Add the matching section (for example **Programs**) and **Publish** the page.',
+          'The section fills itself from the list, and re-orders when you drag the list.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Empty sections hide themselves.',
+        text: 'If a list has nothing in it yet, its section simply does not appear on the page, so you can add the section first and fill the list later with nothing looking broken in between. (The *Open positions* section is the one exception: it shows a friendly "nothing open right now" message.)',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Drag to reorder.',
+        text: 'Programs, board members, partners, accreditations, job postings, and downloads all use the same drag handle you know from Classes and Testimonials: grab it on the left and drag to set the order the page shows.',
+      },
+      { kind: 'seealso', items: ['Build or edit a page', 'Photos and images'] },
+    ],
+  },
+
+  {
     slug: 'glossary',
     title: 'Words you might not know',
     icon: '📖',

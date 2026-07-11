@@ -32,9 +32,11 @@ page {
 
 ## The section palette
 
-17 body section types + the hero. Registered in
+35 body section types + the hero. Registered in
 [`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts);
-each maps 1:1 to an existing presentational component.
+each maps 1:1 to an existing presentational component. Some are **pull-based**:
+they hold only config (heading + band) and fetch their content from a collection
+at build time, hiding the whole band when there's nothing to show.
 
 | Section type              | Renders through                   | Used for                                                               |
 | ------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
@@ -63,6 +65,17 @@ each maps 1:1 to an existing presentational component.
 | `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                          |
 | `noticeBarSection`        | cream announcement strip          | home announcement                                                      |
 | `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                     |
+| `latestPostsSection`      | `PostCard.astro` grid             | **pull** — newest News posts                                           |
+| `upcomingEventsSection`   | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                           |
+| `formSection`             | `ContactForm.astro`               | tour / contact / inquiry forms                                         |
+| `newsletterSignupSection` | `NewsletterForm.astro`            | email signup                                                           |
+| `programCardsSection`     | card grid                         | **pull** — Program docs (enrichment / summer offerings)                |
+| `boardMembersSection`     | people grid                       | **pull** — Board / leadership docs                                     |
+| `logoStripSection`        | logo row                          | **pull** — Partners **or** Accreditations (config picks which)         |
+| `campaignSection`         | progress bar                      | **pull** — the one active Fundraising campaign                         |
+| `jobsSection`             | posting list                      | **pull** — open Job postings (shows an empty-message when none)        |
+| `downloadsSection`        | resource list                     | **pull** — Resource docs (optionally one category)                     |
+| `albumSection`            | `PhotoGallery.astro`              | a referenced Photo album                                               |
 
 **Reference vs. inline.** Sections that can pull from existing docs
 (`testimonial`, `staff`, `class`, `faqItem`, `schoolYearEvent`) offer a `source`

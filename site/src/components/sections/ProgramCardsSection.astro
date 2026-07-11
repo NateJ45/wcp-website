@@ -1,0 +1,74 @@
+---
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import Icon from '@/components/Icon.astro';
+import { cmsFetch } from '@/lib/cms';
+import { PROGRAMS_QUERY } from '@/lib/queries';
+import type { SanityImageSource, SanityImageValue } from '@/lib/image';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Program {
+  name?: string;
+  icon?: string;
+  ageRange?: string;
+  schedule?: string;
+  summary?: string;
+  image?: SanityImageValue | null;
+}
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const programs = await cmsFetch<Program[]>(PROGRAMS_QUERY, {}, []);
+---
+
+{
+  programs.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'Our programs'}
+        lead={header?.lead}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        as="h2"
+      />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {programs.map((p) => (
+          <article class="flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm dark:bg-surface">
+            {p.image?.asset && (
+              <SanityImage
+                source={p.image as SanityImageSource}
+                alt={(p.image.alt as string) ?? p.name ?? ''}
+                widths={[400, 640]}
+                sizes="(max-width: 768px) 100vw, 400px"
+                class="aspect-[16/9] w-full object-cover"
+              />
+            )}
+            <div class="flex flex-1 flex-col p-5">
+              <div class="flex items-center gap-2">
+                {p.icon && (
+                  <span class="flex h-9 w-9 items-center justify-center rounded-full bg-sky/15 text-sky-ink">
+                    <Icon name={p.icon} class="h-5 w-5" />
+                  </span>
+                )}
+                <h3 class="font-display text-xl text-heading">{p.name}</h3>
+              </div>
+              {(p.ageRange || p.schedule) && (
+                <p class="mt-1 text-sm font-semibold text-ink-muted">
+                  {[p.ageRange, p.schedule].filter(Boolean).join(' · ')}
+                </p>
+              )}
+              {p.summary && <p class="mt-2 text-sm text-ink-muted">{p.summary}</p>}
+            </div>
+          </article>
+        ))}
+      </div>
+    </Section>
+  )
+}

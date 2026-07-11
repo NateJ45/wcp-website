@@ -105,6 +105,19 @@ const EVENT_FIELDS = `_id, title, startDate, endDate, allDay, location, category
 /** Upcoming events (not yet ended), soonest first — Events page + section. */
 export const UPCOMING_EVENTS_QUERY = `*[_type == "event" && coalesce(endDate, startDate) >= now()] | order(startDate asc){${EVENT_FIELDS}}`;
 
+// -----------------------------------------------------------------------------
+// Future-proofing collections (programs, board, partners, campaigns, jobs, …)
+// -----------------------------------------------------------------------------
+
+export const PROGRAMS_QUERY = `*[_type == "program"] | order(orderRank){ name, icon, ageRange, schedule, summary, image }`;
+export const BOARD_MEMBERS_QUERY = `*[_type == "boardMember"] | order(orderRank){ name, role, bio, photo, email }`;
+export const PARTNERS_QUERY = `*[_type == "partner"] | order(orderRank){ name, logo, url }`;
+export const CREDENTIALS_QUERY = `*[_type == "credential"] | order(orderRank){ name, logo, url }`;
+export const ACTIVE_CAMPAIGN_QUERY = `*[_type == "campaign" && active == true] | order(_createdAt desc)[0]{ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`;
+export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | order(orderRank){ title, type, summary, body, applyUrl }`;
+export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
+export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;
+
 export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, email, pullQuote, bio }`;
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;

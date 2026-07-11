@@ -38,6 +38,19 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 | **Legal page**        | Privacy / Terms / Accessibility long-form bodies                                |
 | **Site Settings**     | Phone, email, address, social, current school year (singleton, used everywhere) |
 
+**Community & content** (each surfaces through a matching page-builder section; empty ones simply don't render):
+
+| Type                        | What it feeds                                                                            |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| **Program**                 | Enrichment / summer / curriculum offerings (Programs section)                            |
+| **Board / leadership**      | Public officers and leaders, separate from teaching Staff (Board section)                |
+| **Partner / sponsor**       | Community partner logos (Logo strip section, "Partners")                                 |
+| **Accreditation / license** | Trust badges — accreditation, license, membership (Logo strip section, "Accreditations") |
+| **Fundraising campaign**    | The active campaign + goal/raised (Fundraising progress section, one active at a time)   |
+| **Job posting**             | Open teaching / board positions (Open positions section)                                 |
+| **Resource / download**     | Handbook, calendar, forms — uploaded file or link (Downloads section)                    |
+| **Photo album**             | A reusable set of photos shown as a gallery (Photo album section)                        |
+
 **Family Hub (read live behind the gate):**
 
 | Type                      | What it feeds                                                                                 |

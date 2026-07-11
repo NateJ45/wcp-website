@@ -1,0 +1,56 @@
+---
+/* ============================================================================
+   AlbumSection — a reusable Photo Album shown as a gallery
+   ============================================================================
+   The section holds a reference to a photoAlbum document; the album (title +
+   photos) is dereferenced at build time and rendered through the shared
+   PhotoGallery. Hides when the album is missing or has no photos.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import PhotoGallery from '@/components/PhotoGallery.astro';
+import { cmsFetch } from '@/lib/cms';
+import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
+import type { SanityImageValue } from '@/lib/image';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Album {
+  title?: string;
+  description?: string;
+  photos?: SanityImageValue[];
+}
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+
+const albumRef = (section.album as { _ref?: string } | undefined)?._ref;
+const album = albumRef
+  ? await cmsFetch<Album | null>(PHOTO_ALBUM_QUERY, { id: albumRef }, null)
+  : null;
+const photos = (album?.photos ?? [])
+  .filter((p) => p?.asset)
+  .map((p) => ({ sanityImage: p, alt: (p.alt as string) ?? '', caption: p.caption }));
+---
+
+{
+  photos.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? album?.title ?? 'Photos'}
+        lead={header?.lead ?? album?.description}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        as="h2"
+      />
+      <div class="mt-10">
+        <PhotoGallery photos={photos as never} />
+      </div>
+    </Section>
+  )
+}

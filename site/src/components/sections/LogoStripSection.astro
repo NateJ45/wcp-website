@@ -1,0 +1,75 @@
+---
+/* ============================================================================
+   LogoStripSection — a row of partner/sponsor or accreditation logos
+   ============================================================================
+   Config picks the source (Partners vs Accreditations); the logos are pulled
+   from that collection at build time and the band hides when empty. Logos sit
+   on a neutral row, greyed until hover, and link out when a URL is set.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { cmsFetch } from '@/lib/cms';
+import { PARTNERS_QUERY, CREDENTIALS_QUERY } from '@/lib/queries';
+import type { SanityImageSource, SanityImageValue } from '@/lib/image';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Logo {
+  name?: string;
+  logo?: SanityImageValue | null;
+  url?: string;
+}
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const isCredentials = (section.source as string) === 'credentials';
+const logos = await cmsFetch<Logo[]>(isCredentials ? CREDENTIALS_QUERY : PARTNERS_QUERY, {}, []);
+---
+
+{
+  logos.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'grey'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      {header?.title && (
+        <SectionHeader
+          eyebrow={header.eyebrow}
+          title={header.title}
+          lead={header.lead}
+          titleId={titleId}
+          eyebrowTone={eyebrowTone(section.background)}
+          as="h2"
+        />
+      )}
+      <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-8">
+        {logos.map((l) => {
+          const img = l.logo?.asset ? (
+            <SanityImage
+              source={l.logo as SanityImageSource}
+              alt={(l.logo.alt as string) ?? l.name ?? ''}
+              widths={[160, 320]}
+              sizes="160px"
+              class="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16"
+            />
+          ) : (
+            <span class="font-display text-lg text-ink-muted">{l.name}</span>
+          );
+          return (
+            <li>
+              {l.url ? (
+                <a href={l.url} target="_blank" rel="noopener" title={l.name}>
+                  {img}
+                </a>
+              ) : (
+                img
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  )
+}

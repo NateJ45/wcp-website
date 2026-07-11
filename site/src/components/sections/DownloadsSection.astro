@@ -1,0 +1,127 @@
+---
+/* ============================================================================
+   DownloadsSection — handbook, calendar, forms and other resources
+   ============================================================================
+   Pulls Resource documents at build time, optionally filtered to one category,
+   and hides when empty. Each row links to an uploaded file or an external URL;
+   the icon signals which without relying on color alone.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { cmsFetch } from '@/lib/cms';
+import { RESOURCES_QUERY } from '@/lib/queries';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Resource {
+  title?: string;
+  category?: string;
+  description?: string;
+  url?: string;
+  fileUrl?: string;
+}
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const cat = (section.category as string) || 'all';
+
+const CATEGORY_LABEL: Record<string, string> = {
+  handbook: 'Handbook & policies',
+  calendar: 'Calendar',
+  forms: 'Enrollment & forms',
+  other: 'Other',
+};
+
+const all = await cmsFetch<Resource[]>(RESOURCES_QUERY, {}, []);
+const resources = all.filter(
+  (r) => (cat === 'all' || r.category === cat) && Boolean(r.fileUrl || r.url),
+);
+---
+
+{
+  resources.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'Downloads & resources'}
+        lead={header?.lead}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        as="h2"
+      />
+      <ul class="mx-auto mt-10 grid max-w-3xl gap-3">
+        {resources.map((r) => {
+          const href = r.fileUrl ?? r.url ?? '#';
+          const isFile = Boolean(r.fileUrl);
+          return (
+            <li>
+              <a
+                href={href}
+                class="group flex items-center gap-4 rounded-2xl border border-border bg-white p-4 shadow-sm transition hover:border-sky hover:shadow-md dark:bg-surface"
+                {...(isFile ? {} : { target: '_blank', rel: 'noopener' })}
+              >
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink">
+                  {isFile ? (
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <path d="M7 10l5 5 5-5" />
+                      <path d="M12 15V3" />
+                    </svg>
+                  ) : (
+                    <svg
+                      class="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M15 3h6v6" />
+                      <path d="M10 14 21 3" />
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    </svg>
+                  )}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block font-semibold text-heading group-hover:text-navy dark:group-hover:text-sky">
+                    {r.title}
+                    <span class="sr-only">{isFile ? ' (download)' : ' (opens in a new tab)'}</span>
+                  </span>
+                  {r.description && (
+                    <span class="mt-0.5 block text-sm text-ink-muted">{r.description}</span>
+                  )}
+                  {cat === 'all' && r.category && (
+                    <span class="mt-1 inline-block text-xs font-semibold text-ink-muted">
+                      {CATEGORY_LABEL[r.category] ?? r.category}
+                    </span>
+                  )}
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="text-ink-muted group-hover:text-navy dark:group-hover:text-sky"
+                >
+                  →
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  )
+}

@@ -76,6 +76,14 @@ const PLACED = new Set([
   'submission',
   'subscriber',
   'coopRole',
+  'program',
+  'boardMember',
+  'partner',
+  'credential',
+  'campaign',
+  'jobPosting',
+  'resource',
+  'photoAlbum',
   'update',
   'hubDocument',
   'classNote',
@@ -154,6 +162,66 @@ export const structure: StructureResolver = (S, context) =>
       }),
       S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
+
+      S.divider(),
+
+      // Community & content — the future-proofing collections that feed the
+      // Programs / Board / Logo strip / Campaign / Jobs / Downloads / Album
+      // page-builder sections. Drag to reorder the list-style ones.
+      S.listItem()
+        .title('Community & content')
+        .id('community')
+        .icon(emoji('🌟'))
+        .child(
+          S.list()
+            .title('Community & content')
+            .items([
+              orderableDocumentListDeskItem({
+                type: 'program',
+                S,
+                context,
+                title: 'Programs',
+                icon: emoji('🧩'),
+              }),
+              orderableDocumentListDeskItem({
+                type: 'boardMember',
+                S,
+                context,
+                title: 'Board / leadership',
+                icon: emoji('🧑‍💼'),
+              }),
+              orderableDocumentListDeskItem({
+                type: 'partner',
+                S,
+                context,
+                title: 'Partners / sponsors',
+                icon: emoji('🤝'),
+              }),
+              orderableDocumentListDeskItem({
+                type: 'credential',
+                S,
+                context,
+                title: 'Accreditations',
+                icon: emoji('🏅'),
+              }),
+              orderableDocumentListDeskItem({
+                type: 'jobPosting',
+                S,
+                context,
+                title: 'Job postings',
+                icon: emoji('📋'),
+              }),
+              orderableDocumentListDeskItem({
+                type: 'resource',
+                S,
+                context,
+                title: 'Downloads & resources',
+                icon: emoji('📁'),
+              }),
+              S.documentTypeListItem('campaign').title('Fundraising campaigns').icon(emoji('💛')),
+              S.documentTypeListItem('photoAlbum').title('Photo albums').icon(emoji('📸')),
+            ]),
+        ),
 
       S.divider(),
 

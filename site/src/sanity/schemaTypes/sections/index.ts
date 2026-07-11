@@ -34,6 +34,15 @@ import {
   pullQuoteSection,
   countdownSection,
 } from './extras';
+import {
+  programCardsSection,
+  boardMembersSection,
+  logoStripSection,
+  campaignSection,
+  jobsSection,
+  downloadsSection,
+  albumSection,
+} from './community';
 
 // Body sections, in the order they appear in the "add section" menu.
 const BODY_SECTIONS = [
@@ -65,6 +74,13 @@ const BODY_SECTIONS = [
   newsletterSignupSection,
   noticeBarSection,
   contactDetailsSection,
+  programCardsSection,
+  boardMembersSection,
+  logoStripSection,
+  campaignSection,
+  jobsSection,
+  downloadsSection,
+  albumSection,
 ];
 
 /** All section object types to register in the schema. */

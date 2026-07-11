@@ -1,0 +1,81 @@
+---
+/* ============================================================================
+   BoardMembersSection — the officers / leadership grid (page-builder section)
+   ============================================================================
+   Config-only in Sanity (heading + band); the people are pulled from the
+   Board collection at build time and hidden when empty. Separate from the
+   teaching Staff so a co-op board roster can change independently.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { cmsFetch } from '@/lib/cms';
+import { BOARD_MEMBERS_QUERY } from '@/lib/queries';
+import type { SanityImageSource, SanityImageValue } from '@/lib/image';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface Member {
+  name?: string;
+  role?: string;
+  bio?: string;
+  photo?: SanityImageValue | null;
+  email?: string;
+}
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const members = await cmsFetch<Member[]>(BOARD_MEMBERS_QUERY, {}, []);
+---
+
+{
+  members.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'Our board'}
+        lead={header?.lead}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        as="h2"
+      />
+      <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {members.map((m) => (
+          <li class="flex flex-col items-center rounded-2xl border border-border bg-white p-6 text-center shadow-sm dark:bg-surface">
+            {m.photo?.asset ? (
+              <SanityImage
+                source={m.photo as SanityImageSource}
+                alt={(m.photo.alt as string) ?? m.name ?? ''}
+                widths={[112, 224]}
+                sizes="112px"
+                class="h-28 w-28 rounded-full object-cover"
+              />
+            ) : (
+              <span
+                class="flex h-28 w-28 items-center justify-center rounded-full bg-sky/15 font-display text-3xl text-sky-ink"
+                aria-hidden="true"
+              >
+                {(m.name ?? '?').charAt(0)}
+              </span>
+            )}
+            <h3 class="mt-4 font-display text-xl text-heading">{m.name}</h3>
+            {m.role && <p class="text-sm font-semibold text-sky-ink">{m.role}</p>}
+            {m.bio && <p class="mt-2 text-sm text-ink-muted">{m.bio}</p>}
+            {m.email && (
+              <a
+                href={`mailto:${m.email}`}
+                class="mt-3 text-sm font-semibold text-navy underline underline-offset-2 dark:text-sky"
+              >
+                Email {(m.name ?? '').split(' ')[0]}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}
