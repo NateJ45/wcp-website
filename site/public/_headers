@@ -6,9 +6,15 @@
 # =============================================================================
 
 # ---- Site-wide security headers (Lighthouse "Trust & Safety" wins) ----------
+# X-Frame-Options is SAMEORIGIN, not DENY: the Sanity Studio's Presentation
+# Tool embeds pages in a same-origin iframe (/studio's Presentation pane) to
+# drive click-to-edit — DENY blocked that with a silent "refused to connect"
+# whenever an editor navigated off /preview/* to a real page mid-session.
+# SAMEORIGIN still blocks third-party/cross-origin framing (the actual
+# clickjacking risk DENY was added for).
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Cross-Origin-Opener-Policy: same-origin
