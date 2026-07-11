@@ -71,6 +71,31 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
   }
 }`;
 
+// -----------------------------------------------------------------------------
+// Blog / News
+// -----------------------------------------------------------------------------
+
+const POST_CARD_FIELDS = `
+  title, "slug": slug.current, publishedAt, category, excerpt,
+  coverImage, "author": author->{ "name": name, honorific }
+`;
+
+/** Every post's slug — drives getStaticPaths for /news/[slug]. */
+export const ALL_POST_SLUGS_QUERY = `*[_type == "post" && defined(slug.current)].slug.current`;
+
+/** All published posts, newest first (News index + pagination). */
+export const POSTS_QUERY = `*[_type == "post" && defined(slug.current) && publishedAt <= now()] | order(publishedAt desc){${POST_CARD_FIELDS}}`;
+
+/** The most recent posts, for the homepage "Latest news" section. */
+export const LATEST_POSTS_QUERY = `*[_type == "post" && defined(slug.current) && publishedAt <= now()] | order(publishedAt desc)[0...12]{${POST_CARD_FIELDS}}`;
+
+/** One full post by slug (News article page + preview). */
+export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0]{
+  title, "slug": slug.current, publishedAt, category, excerpt, body, coverImage,
+  ogImage, seoTitle, seoDescription,
+  "author": author->{ "name": name, honorific, role }
+}`;
+
 export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, email, pullQuote, bio }`;
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;

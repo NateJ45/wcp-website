@@ -25,4 +25,6 @@ export const routes = [
   '/accessibility',
   '/privacy',
   '/terms',
+  '/news',
+  '/news/welcome-to-our-new-website',
 ];

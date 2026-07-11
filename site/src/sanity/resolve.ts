@@ -25,6 +25,14 @@ export const resolve: PresentationPluginOptions['resolve'] = {
         return { locations: [{ title: doc?.title ?? slug, href: previewHref(slug) }] };
       },
     }),
+    post: defineLocations({
+      select: { title: 'title', slug: 'slug.current' },
+      resolve: (doc) => {
+        const slug = doc?.slug;
+        if (!slug) return { locations: [], message: 'Give this post a slug to preview it.' };
+        return { locations: [{ title: doc?.title ?? slug, href: `/preview/news/${slug}` }] };
+      },
+    }),
     siteSettings: {
       locations: [{ title: 'Site Settings', href: '/preview' }],
     },

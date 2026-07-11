@@ -54,7 +54,9 @@ npm run deploy       # build + wrangler deploy -c dist/server/wrangler.json  (se
 src/
   pages/
     [...slug].astro          # STATIC public pages — getStaticPaths() reads page docs from Sanity
+    news/                    # blog: index + /page/[n] pagination, [slug] article, rss.xml
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
+    preview/news/[slug].astro # SSR draft preview for a News post
     family-hub/**            # SSR gated hub pages
     api/                     # hub login/logout, draft-mode toggle
   components/

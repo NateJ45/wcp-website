@@ -20,6 +20,8 @@
         "http://localhost/faq/index.html",
         "http://localhost/enroll/index.html",
         "http://localhost/contact/index.html",
+        "http://localhost/news/index.html",
+        "http://localhost/news/welcome-to-our-new-website/index.html",
         "http://localhost/404.html"
       ],
       "numberOfRuns": 1,

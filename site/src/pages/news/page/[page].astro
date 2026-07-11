@@ -1,0 +1,38 @@
+---
+/* ============================================================================
+   /news/page/[page] — News index pages 2+ (page 1 lives at /news).
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import NewsListing from '@/components/NewsListing.astro';
+import { cmsFetch } from '@/lib/cms';
+import { POSTS_QUERY } from '@/lib/queries';
+import { NEWS_PAGE_SIZE } from '@/lib/news';
+import type { PostSummary } from '@/components/PostCard.astro';
+import { site } from '@/data/site';
+
+export async function getStaticPaths() {
+  const posts = await cmsFetch<PostSummary[]>(POSTS_QUERY, {}, []);
+  const totalPages = Math.max(1, Math.ceil(posts.length / NEWS_PAGE_SIZE));
+  // Page 1 is /news (index.astro); emit only 2..totalPages here.
+  const pages: { params: { page: string }; props: { page: number } }[] = [];
+  for (let p = 2; p <= totalPages; p++) {
+    pages.push({ params: { page: String(p) }, props: { page: p } });
+  }
+  return pages;
+}
+
+const { page } = Astro.props as { page: number };
+const posts = await cmsFetch<PostSummary[]>(POSTS_QUERY, {}, []);
+const totalPages = Math.max(1, Math.ceil(posts.length / NEWS_PAGE_SIZE));
+const start = (page - 1) * NEWS_PAGE_SIZE;
+const pagePosts = posts.slice(start, start + NEWS_PAGE_SIZE);
+---
+
+<BaseLayout
+  title={`News (page ${page}) — ${site.name}`}
+  description="Announcements, updates, and stories from West Chester Preschool."
+>
+  <NewsListing posts={pagePosts} page={page} totalPages={totalPages} />
+</BaseLayout>

@@ -150,6 +150,27 @@ its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSetti
   holds plain-language walkthroughs ("Build or edit a page", "Edit the menus", etc.)
   rendered in a read-only Help & Guide pane.
 
+## News / blog
+
+Separate from the page builder but built on the same pieces. A `post` document
+([`documents/post.ts`](../src/sanity/schemaTypes/documents/post.ts)) has a title,
+slug, `publishedAt`, category, author (→ staff), cover, excerpt, SEO fields, and a
+rich `postBody` (headings/lists/links + inline images, rendered by `renderPostBody`
+in [`portable-text.ts`](../src/lib/portable-text.ts)).
+
+- **Routes:** `/news` ([`news/index.astro`](../src/pages/news/index.astro)) + `/news/page/[page]`
+  (pagination, `NEWS_PAGE_SIZE` in [`lib/news.ts`](../src/lib/news.ts)), the article at
+  [`news/[slug].astro`](../src/pages/news/[slug].astro), an RSS feed at
+  [`news/rss.xml.ts`](../src/pages/news/rss.xml.ts), and a draft preview at
+  `preview/news/[slug].astro`. `PostArticle.astro` renders both the public post and the
+  preview so they never drift.
+- **Homepage:** the `latestPostsSection` builder section pulls the newest posts
+  automatically (bridge fetches them at build time — the editor only sets a heading and
+  count).
+- **Scheduling:** posts use Sanity scheduled publishing to go live later; the index
+  query filters `publishedAt <= now()`.
+- Slug reserves the word `page` so it can't collide with the `/news/page/<n>` routes.
+
 ## Migration / seeding
 
 [`scripts/migrate-pagebuilder.mjs`](../scripts/migrate-pagebuilder.mjs) (with helpers

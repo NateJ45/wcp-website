@@ -1,0 +1,83 @@
+---
+/* ============================================================================
+   PostArticle — a full News post (used by /news/[slug] AND the preview route)
+   ============================================================================
+   One renderer so the public post and the Studio draft preview never drift.
+   A Hero (the cover photo, or a navy band) carries the title + meta and gives
+   the marketing overlay header its clearance; the rich body follows below.
+   `linkBase` keeps the back-link and in-body links inside /preview/* in preview.
+   ============================================================================ */
+import type { PortableTextBlock } from '@portabletext/types';
+import Hero from '@/components/Hero.astro';
+import Prose from '@/components/Prose.astro';
+import Section from '@/components/Section.astro';
+import { renderPostBody } from '@/lib/portable-text';
+import { withBase, formatDate } from '@/lib/utils';
+import type { SanityImageSource, SanityImageValue } from '@/lib/image';
+
+interface Author {
+  name?: string;
+  honorific?: string;
+  role?: string;
+}
+export interface PostDoc {
+  title?: string;
+  publishedAt?: string;
+  category?: string;
+  excerpt?: string;
+  body?: PortableTextBlock[];
+  coverImage?: SanityImageValue | null;
+  author?: Author | null;
+  // Used by the route for <head> SEO/sharing, not rendered in the article body.
+  ogImage?: SanityImageValue | null;
+  seoTitle?: string;
+  seoDescription?: string;
+}
+
+interface Props {
+  post: PostDoc;
+  linkBase?: string;
+}
+const { post, linkBase = '' } = Astro.props;
+const bodyHtml = renderPostBody(post.body, linkBase);
+const cover = post.coverImage;
+const categoryLabel = post.category
+  ? post.category.charAt(0).toUpperCase() + post.category.slice(1)
+  : '';
+const authorName = post.author
+  ? [post.author.honorific, post.author.name].filter(Boolean).join(' ')
+  : '';
+const dateStr = formatDate(post.publishedAt);
+const eyebrow = [categoryLabel, dateStr].filter(Boolean).join(' · ');
+---
+
+<article>
+  <Hero
+    title={post.title ?? 'News'}
+    eyebrow={eyebrow}
+    lead={post.excerpt}
+    height="medium"
+    sanityImage={cover?.asset ? (cover as unknown as SanityImageSource) : undefined}
+    imageAlt={cover?.alt ?? post.title ?? ''}
+  />
+  <Section bg="white">
+    <div class="mx-auto max-w-3xl">
+      <div class="flex items-center justify-between text-sm">
+        <a
+          href={withBase('/news', linkBase)}
+          class="inline-flex items-center gap-1 font-semibold text-navy hover:underline dark:text-sky"
+        >
+          <span aria-hidden="true">←</span> All news
+        </a>
+        {authorName && <span class="text-ink-muted">by {authorName}</span>}
+      </div>
+      {
+        bodyHtml && (
+          <Prose class="mt-8 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-amber [&_blockquote]:pl-4 [&_blockquote]:text-ink-muted [&_blockquote]:italic [&_figcaption]:mt-2 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-ink-muted [&_figure]:my-8 [&_img]:mx-auto [&_img]:rounded-2xl [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6">
+            <Fragment set:html={bodyHtml} />
+          </Prose>
+        )
+      }
+    </div>
+  </Section>
+</article>

@@ -1,0 +1,25 @@
+---
+/* ============================================================================
+   /news — the News index (page 1). Pages 2+ live at /news/page/[page].
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import NewsListing from '@/components/NewsListing.astro';
+import { cmsFetch } from '@/lib/cms';
+import { POSTS_QUERY } from '@/lib/queries';
+import { NEWS_PAGE_SIZE } from '@/lib/news';
+import type { PostSummary } from '@/components/PostCard.astro';
+import { site } from '@/data/site';
+
+const posts = await cmsFetch<PostSummary[]>(POSTS_QUERY, {}, []);
+const totalPages = Math.max(1, Math.ceil(posts.length / NEWS_PAGE_SIZE));
+const pagePosts = posts.slice(0, NEWS_PAGE_SIZE);
+---
+
+<BaseLayout
+  title={`News — ${site.name}`}
+  description="Announcements, updates, and stories from West Chester Preschool."
+>
+  <NewsListing posts={pagePosts} page={1} totalPages={totalPages} />
+</BaseLayout>

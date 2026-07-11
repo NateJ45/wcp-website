@@ -14,6 +14,19 @@ const builder = imageUrlBuilder({ projectId, dataset });
 /** The image-source shape @sanity/image-url accepts (Sanity image object / ref). */
 export type SanityImageSource = Parameters<typeof builder.image>[0];
 
+/**
+ * A Sanity image FIELD value as returned by GROQ — an object with an `asset`
+ * plus our schema's `alt`/`caption`. Distinct from SanityImageSource (a broad
+ * union that also allows bare strings/refs), so callers can test `.asset` and
+ * read `.alt` without narrowing. Cast to SanityImageSource at the builder call.
+ */
+export interface SanityImageValue {
+  asset?: unknown;
+  alt?: string;
+  caption?: string;
+  [key: string]: unknown;
+}
+
 /** A URL builder for a Sanity image (chain .width(), .height(), etc.). */
 export function urlForImage(source: SanityImageSource) {
   return builder.image(source).auto('format').fit('max');

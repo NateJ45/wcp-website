@@ -1,0 +1,32 @@
+---
+/* ============================================================================
+   /preview/news/[slug] — draft-aware News post preview (Studio only)
+   ============================================================================
+   Mirrors /news/[slug] but reads drafts (stega on) and renders in the
+   noindex PreviewLayout, so a volunteer gets click-to-edit + auto-refresh on
+   a post before it is published. Same PostArticle renderer as production.
+   ============================================================================ */
+export const prerender = false;
+
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import PreviewLayout from '@/layouts/PreviewLayout.astro';
+import PostArticle, { type PostDoc } from '@/components/PostArticle.astro';
+import { previewFetch } from '@/lib/cms-preview';
+import { POST_BY_SLUG_QUERY } from '@/lib/queries';
+
+const draftMode = Astro.cookies.has(perspectiveCookieName);
+const slug = Astro.params.slug as string;
+const post = await previewFetch<PostDoc | null>(draftMode, POST_BY_SLUG_QUERY, { slug });
+
+if (!post) {
+  return new Response(`No post found for "${slug}"`, { status: 404 });
+}
+---
+
+<PreviewLayout
+  title={`${post.title ?? slug} — Preview`}
+  draftMode={draftMode}
+  pageId={`post-${slug}`}
+>
+  <PostArticle post={post} linkBase="/preview" />
+</PreviewLayout>

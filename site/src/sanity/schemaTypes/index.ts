@@ -11,6 +11,7 @@
 import { blockContent } from './blockContent';
 import { inlineText } from './objects/inlineText';
 import { richProse } from './objects/richProse';
+import { postBody } from './objects/postBody';
 import { iconCard } from './objects/iconCard';
 import { sectionHeader } from './objects/sectionHeader';
 import { actionButton } from './objects/actionButton';
@@ -34,6 +35,7 @@ import { faqItem } from './documents/faqItem';
 import { schoolYearEvent } from './documents/schoolYearEvent';
 import { legalPage } from './documents/legalPage';
 import { page } from './documents/page';
+import { post } from './documents/post';
 import { coopRole } from './documents/coopRole';
 
 // Collections (Family Hub — gated)
@@ -47,6 +49,7 @@ export const schemaTypes = [
   blockContent,
   inlineText,
   richProse,
+  postBody,
   iconCard,
   sectionHeader,
   actionButton,
@@ -68,6 +71,7 @@ export const schemaTypes = [
   schoolYearEvent,
   legalPage,
   page,
+  post,
   coopRole,
   // Family Hub collections
   update,

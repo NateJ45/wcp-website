@@ -23,6 +23,7 @@ import {
   gallerySection,
   splitMediaSection,
 } from './structured';
+import { latestPostsSection } from './blog';
 
 // Body sections, in the order they appear in the "add section" menu.
 const BODY_SECTIONS = [
@@ -41,6 +42,7 @@ const BODY_SECTIONS = [
   compareSection,
   gallerySection,
   splitMediaSection,
+  latestPostsSection,
   noticeBarSection,
   contactDetailsSection,
 ];

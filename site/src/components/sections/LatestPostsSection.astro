@@ -1,0 +1,62 @@
+---
+/* ============================================================================
+   LatestPostsSection — the "Latest news" homepage band (page-builder section)
+   ============================================================================
+   Config-only in Sanity (heading + how many + link label); the posts are
+   pulled automatically from the News collection at build time, so the section
+   never needs manual updating. Renders a PostCard grid + a "read all" link.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import PostCard, { type PostSummary } from '@/components/PostCard.astro';
+import { cmsFetch } from '@/lib/cms';
+import { LATEST_POSTS_QUERY } from '@/lib/queries';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { withBase } from '@/lib/utils';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section, linkBase = '' } = Astro.props;
+
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const limit = typeof section.limit === 'number' ? section.limit : 3;
+const linkLabel = (section.linkLabel as string) || 'Read all news';
+const titleId = titleIdFor(section);
+
+const all = await cmsFetch<PostSummary[]>(LATEST_POSTS_QUERY, {}, []);
+const posts = all.slice(0, limit);
+---
+
+{
+  posts.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'white'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'Latest news'}
+        lead={header?.lead}
+        titleId={titleId}
+        as="h2"
+      />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <PostCard post={post} linkBase={linkBase} />
+        ))}
+      </div>
+      <div class="mt-10 text-center">
+        <a
+          href={withBase('/news', linkBase)}
+          class="inline-flex items-center gap-1 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-navy hover:bg-grey dark:text-sky"
+        >
+          {linkLabel} <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </Section>
+  )
+}

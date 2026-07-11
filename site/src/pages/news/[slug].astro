@@ -1,0 +1,38 @@
+---
+/* ============================================================================
+   /news/[slug] — a single News post, statically prerendered.
+   ============================================================================
+   getStaticPaths reads every post slug from Sanity at build time. New posts
+   go live on the next rebuild (the Sanity publish webhook triggers it), or at
+   their scheduled time.
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostArticle, { type PostDoc } from '@/components/PostArticle.astro';
+import { cmsFetch } from '@/lib/cms';
+import { ALL_POST_SLUGS_QUERY, POST_BY_SLUG_QUERY } from '@/lib/queries';
+import { imageUrl, type SanityImageSource } from '@/lib/image';
+import { site } from '@/data/site';
+
+export async function getStaticPaths() {
+  const slugs = await cmsFetch<string[]>(ALL_POST_SLUGS_QUERY, {}, []);
+  return slugs.map((slug) => ({ params: { slug }, props: { slug } }));
+}
+
+const { slug } = Astro.props as { slug: string };
+const post = await cmsFetch<PostDoc | null>(POST_BY_SLUG_QUERY, { slug }, null);
+
+if (!post) {
+  return new Response(`No post found for "${slug}"`, { status: 404 });
+}
+
+const shareImg = post.ogImage ?? post.coverImage;
+const ogImage = shareImg?.asset ? imageUrl(shareImg as SanityImageSource, 1200) : undefined;
+const title = post.seoTitle ?? `${post.title} — ${site.name}`;
+const description = post.seoDescription ?? post.excerpt;
+---
+
+<BaseLayout title={title} description={description} ogImage={ogImage} ogType="article">
+  <PostArticle post={post} />
+</BaseLayout>

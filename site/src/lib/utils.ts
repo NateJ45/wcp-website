@@ -27,3 +27,22 @@ export function withBase(href: string | undefined, base = ''): string {
   if (h === base || h.startsWith(`${base}/`)) return h; // already prefixed
   return `${base}${h}`;
 }
+
+/**
+ * formatDate — a human date like "March 4, 2026" from an ISO string.
+ * Fixed to en-US + UTC so the build and the browser agree (avoids a date
+ * shifting by a day depending on the server's timezone). Used by News posts
+ * and Events.
+ */
+export function formatDate(iso: string | undefined, opts?: Intl.DateTimeFormatOptions): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+    ...opts,
+  });
+}

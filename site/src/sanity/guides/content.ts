@@ -83,6 +83,8 @@ export const guides: Guide[] = [
           '**Site Settings** — the school’s phone, email, address, and the current school year. Set once, used everywhere.',
           '**Menus (header & footer)** — the links along the top of the site and in the footer.',
           '**Pages** — every public page, built from stacked sections you can add, reorder, and edit. This is where you build a brand-new page too.',
+          '**News** — your blog: announcements, updates, and stories, shown newest first.',
+          '**Media** — every photo you have uploaded, in one searchable place.',
           '**Classes** — one card per class, with its schedule, ages, and tuition.',
           '**Staff** — your teachers. Their names and bios come from here.',
           '**Tuition & Fees** — registration and participation fees, and how payments work.',
@@ -278,6 +280,45 @@ export const guides: Guide[] = [
           SITE.contactName +
           '.',
       },
+    ],
+  },
+
+  {
+    slug: 'write-post',
+    title: 'Write a news post',
+    icon: '📰',
+    lead: 'Share an announcement, update, or story on the News page.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **News** page is your blog. Posts show newest first, and the three most recent also appear on the homepage. Writing one is like writing a document.',
+      },
+      { kind: 'path', items: ['News', '＋ new', 'write', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **News** in the left menu, then the **＋** (new) button.',
+          'Type a **Title**, then click **Generate** next to the slug to make its web address.',
+          'Pick a **Category**, add a short **Summary** (this shows on the News list and when the post is shared), and a **Cover image** if you have one.',
+          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos.',
+          'Add **Alt text** to any photo you place in the body.',
+          '**Publish**. To post it on a future day instead, use **Schedule** (see "Schedule a change for later").',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Feature it on the homepage',
+        text: 'Every new post already appears in the homepage news row automatically (newest three). There is nothing extra to do.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Preview as you write',
+        text: 'Open a post and the live preview shows exactly how it will look, and refreshes as you edit. Click text in the preview to jump straight to it.',
+      },
+      { kind: 'seealso', items: ['Schedule a change for later', 'Photos and images'] },
     ],
   },
 

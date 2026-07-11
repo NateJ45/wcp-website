@@ -1,0 +1,64 @@
+---
+/* ============================================================================
+   NewsListing — the /news index grid + pagination (shared by page 1 and 2+)
+   ============================================================================ */
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import PostCard, { type PostSummary } from '@/components/PostCard.astro';
+import { withBase } from '@/lib/utils';
+
+interface Props {
+  posts: PostSummary[];
+  page: number;
+  totalPages: number;
+  linkBase?: string;
+}
+const { posts, page, totalPages, linkBase = '' } = Astro.props;
+const pageHref = (n: number) => withBase(n <= 1 ? '/news' : `/news/page/${n}`, linkBase);
+const pagerLink =
+  'inline-flex items-center gap-1 rounded-full border border-border px-4 py-2 text-sm font-semibold text-navy hover:bg-grey dark:text-sky';
+---
+
+<Hero
+  title="News"
+  eyebrow="From West Chester Preschool"
+  lead="Announcements, updates, and stories from our cooperative preschool."
+  height="medium"
+/>
+<Section bg="white" labelledby="news-heading">
+  <h2 id="news-heading" class="sr-only">News posts</h2>
+  {
+    posts.length === 0 ? (
+      <p class="py-8 text-center text-ink-muted">No posts yet. Check back soon.</p>
+    ) : (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <PostCard post={post} linkBase={linkBase} />
+        ))}
+      </div>
+    )
+  }
+  {
+    totalPages > 1 && (
+      <nav class="mt-12 flex items-center justify-center gap-4" aria-label="News pagination">
+        {page > 1 ? (
+          <a href={pageHref(page - 1)} class={pagerLink}>
+            <span aria-hidden="true">←</span> Newer
+          </a>
+        ) : (
+          <span />
+        )}
+        <span class="text-sm text-ink-muted">
+          Page {page} of {totalPages}
+        </span>
+        {page < totalPages ? (
+          <a href={pageHref(page + 1)} class={pagerLink}>
+            Older <span aria-hidden="true">→</span>
+          </a>
+        ) : (
+          <span />
+        )}
+      </nav>
+    )
+  }
+</Section>
