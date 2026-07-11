@@ -26,10 +26,13 @@ import { projectId, dataset } from './src/sanity/env';
 // - document.actions / newDocumentOptions: enforce singletons — one Site
 //   Settings, one Tuition & Fees, with no duplicate/delete so nobody can create
 //   a confusing second copy.
-// - releases.enabled / scheduledDrafts.enabled: false — the board doesn't use
-//   content releases or scheduled publishing, so neither tab shows in the nav.
-//   Disabling `releases` alone surfaces the older "Scheduled Drafts" tool as a
-//   fallback, hence both need turning off to actually get rid of both tabs.
+// - scheduledDrafts.enabled: true — per-document scheduling, so a volunteer can
+//   set a page or (soon) a blog post to publish at a future date/time, like
+//   Squarespace/WordPress. Sanity publishes it on schedule server-side, which
+//   fires the same publish webhook and rebuilds the static site at that time.
+// - releases.enabled: false — the newer "Content Releases" bundle tool is more
+//   than the board needs (it groups many docs into one scheduled release);
+//   per-document scheduling above is the simpler fit, so we keep Releases off.
 // =============================================================================
 export default defineConfig({
   name: 'wcp',
@@ -38,7 +41,7 @@ export default defineConfig({
   dataset,
   theme: wcpStudioTheme,
   releases: { enabled: false },
-  scheduledDrafts: { enabled: false },
+  scheduledDrafts: { enabled: true },
   plugins: [
     structureTool({ structure }),
     presentationTool({

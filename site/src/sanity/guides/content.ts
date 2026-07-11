@@ -209,6 +209,79 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'schedule',
+    title: 'Schedule a change for later',
+    icon: '🗓️',
+    lead: 'Write something now and have it go live on its own at a future date and time.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Handy for an announcement that should appear on a certain day, or a page you want to prepare ahead of time. Instead of clicking **Publish**, you tell the site when to publish it for you.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Make your edits as usual (they save as a draft).',
+          'Next to the green **Publish** button, click the small arrow to open its menu and choose **Schedule**.',
+          'Pick the date and time you want it to go live, and confirm.',
+          'That is it. You can close the Studio. At that time it publishes on its own, and the website updates a couple of minutes later.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Changed your mind?',
+        text: 'A scheduled item shows a little clock. Open it before its time and you can edit the schedule or cancel it and publish now instead.',
+      },
+      { kind: 'seealso', items: ['Undo a change or see history'] },
+    ],
+  },
+
+  {
+    slug: 'history',
+    title: 'Undo a change or see history',
+    icon: '⏪',
+    lead: 'Every change is remembered, so you can look back and roll one back.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You have a safety net.',
+        text: 'Sanity keeps a history of edits to each thing you work on. If something got changed by mistake, you can see what it was before and put it back.',
+      },
+      { kind: 'h', text: 'See what changed' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page, class, post, or other item you want to check.',
+          'Click the **⋯** menu at the top right and choose **Review changes** (or the history/clock icon).',
+          'Scroll the timeline on the right to see each past version and exactly what was edited.',
+        ],
+      },
+      { kind: 'h', text: 'Put an old version back' },
+      {
+        kind: 'steps',
+        items: [
+          'In that history view, find the version you want.',
+          'Use its menu to **Restore** it. That brings the old wording back as your current draft.',
+          'Review it, then **Publish** to make it live again.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'default',
+        title: 'How far back it goes',
+        text:
+          'How long history is kept depends on the plan the school is on. Recent changes are always there; very old ones may not be. When in doubt, ask ' +
+          SITE.contactName +
+          '.',
+      },
+    ],
+  },
+
+  {
     slug: 'edit-class',
     title: 'Add or change a class',
     icon: '🎒',
