@@ -24,7 +24,7 @@ import {
   splitMediaSection,
 } from './structured';
 import { latestPostsSection, upcomingEventsSection } from './blog';
-import { formSection } from './form';
+import { formSection, newsletterSignupSection } from './form';
 
 // Body sections, in the order they appear in the "add section" menu.
 const BODY_SECTIONS = [
@@ -46,6 +46,7 @@ const BODY_SECTIONS = [
   latestPostsSection,
   upcomingEventsSection,
   formSection,
+  newsletterSignupSection,
   noticeBarSection,
   contactDetailsSection,
 ];

@@ -71,6 +71,7 @@ const PLACED = new Set([
   'post',
   'event',
   'submission',
+  'subscriber',
   'coopRole',
   'update',
   'hubDocument',
@@ -118,6 +119,7 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('testimonial').title('Testimonials').icon(emoji('💬')),
       S.documentTypeListItem('schoolYearEvent').title('School-Year Events').icon(emoji('📅')),
       S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
+      S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 
       S.divider(),
 

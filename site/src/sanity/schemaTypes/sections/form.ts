@@ -52,3 +52,45 @@ export const formSection = defineType({
     },
   },
 });
+
+// =============================================================================
+// newsletterSignupSection — an email sign-up form
+// =============================================================================
+// Just an email (and optionally a name). Stores subscribers in Sanity and, if a
+// provider key is set, pushes to the email service. Renders through
+// NewsletterSection.astro → NewsletterSignup.astro.
+// =============================================================================
+export const newsletterSignupSection = defineType({
+  name: 'newsletterSignupSection',
+  title: 'Newsletter sign-up',
+  type: 'object',
+  fields: [
+    defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
+    defineField({
+      name: 'askName',
+      title: 'Ask for a name too?',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'buttonLabel',
+      title: 'Button label',
+      type: 'string',
+      initialValue: 'Subscribe',
+    }),
+    defineField({
+      name: 'successMessage',
+      title: 'Thank-you message',
+      type: 'text',
+      rows: 2,
+      initialValue: "You're on the list! Watch your inbox for our next update.",
+    }),
+    ...bandFields('cream'),
+  ],
+  preview: {
+    select: { title: 'header.title' },
+    prepare({ title }) {
+      return { title: title || 'Newsletter sign-up', subtitle: 'Email capture' };
+    },
+  },
+});

@@ -38,6 +38,7 @@ import { page } from './documents/page';
 import { post } from './documents/post';
 import { event } from './documents/event';
 import { submission } from './documents/submission';
+import { subscriber } from './documents/subscriber';
 import { coopRole } from './documents/coopRole';
 
 // Collections (Family Hub — gated)
@@ -76,6 +77,7 @@ export const schemaTypes = [
   post,
   event,
   submission,
+  subscriber,
   coopRole,
   // Family Hub collections
   update,

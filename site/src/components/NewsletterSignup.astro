@@ -1,0 +1,80 @@
+---
+/* ============================================================================
+   NewsletterSignup — email sign-up, posts to /api/subscribe
+   ============================================================================
+   Reuses the contact-form progressive-enhancement script (same data-contact-*
+   hooks, different action): inline thank-you with JS, native POST → /thank-you
+   without. Honeypot for spam.
+   ============================================================================ */
+interface Props {
+  askName?: boolean;
+  buttonLabel?: string;
+  successMessage?: string;
+  source: string;
+  formId: string;
+}
+const {
+  askName = false,
+  buttonLabel = 'Subscribe',
+  successMessage = "You're on the list!",
+  source,
+  formId,
+} = Astro.props;
+
+const field =
+  'w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+---
+
+<div class="mx-auto max-w-md" data-contact-root>
+  <form method="POST" action="/api/subscribe" class="grid gap-3" data-contact-form>
+    <input type="hidden" name="source" value={source} />
+    <div class="absolute -left-[9999px]" aria-hidden="true">
+      <label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    {
+      askName && (
+        <div>
+          <label class="sr-only" for={`${formId}-name`}>
+            Your name
+          </label>
+          <input
+            class={field}
+            id={`${formId}-name`}
+            name="name"
+            type="text"
+            placeholder="Your name"
+            autocomplete="name"
+          />
+        </div>
+      )
+    }
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <label class="sr-only" for={`${formId}-email`}>Email address</label>
+      <input
+        class={field}
+        id={`${formId}-email`}
+        name="email"
+        type="email"
+        required
+        placeholder="you@example.com"
+        autocomplete="email"
+      />
+      <button
+        type="submit"
+        class="shrink-0 rounded-full bg-navy px-6 py-2.5 font-semibold whitespace-nowrap text-white transition-colors hover:bg-heading disabled:opacity-60"
+      >
+        {buttonLabel}
+      </button>
+    </div>
+    <p class="hidden text-sm text-destructive" data-form-error role="alert">
+      Something went wrong. Please try again.
+    </p>
+  </form>
+  <div class="hidden text-center" data-contact-success role="status">
+    <p class="font-display text-lg text-navy dark:text-sky">{successMessage}</p>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/contact-form';
+</script>

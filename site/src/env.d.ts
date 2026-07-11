@@ -42,6 +42,13 @@ declare namespace Cloudflare {
     CONTACT_TO?: string;
     /** Verified Resend "from" address (defaults to the Resend test sender). */
     CONTACT_FROM?: string;
+    /** Newsletter provider: "buttondown" | "mailchimp". Unset = store-only. */
+    NEWSLETTER_PROVIDER?: string;
+    BUTTONDOWN_API_KEY?: string;
+    MAILCHIMP_API_KEY?: string;
+    MAILCHIMP_LIST_ID?: string;
+    /** Mailchimp datacenter prefix, e.g. "us21" (the tail of your API key). */
+    MAILCHIMP_SERVER_PREFIX?: string;
   }
 }
 

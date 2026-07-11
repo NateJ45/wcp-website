@@ -1,0 +1,42 @@
+---
+/* ============================================================================
+   NewsletterSection — page-builder bridge for the newsletter sign-up
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import NewsletterSignup from '@/components/NewsletterSignup.astro';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+
+interface Props {
+  section: SectionData;
+  linkBase?: string;
+}
+const { section } = Astro.props;
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const formId = `nl-${section._key}`;
+---
+
+<Section
+  bg={(section.background as never) ?? 'cream'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={titleId}
+>
+  <SectionHeader
+    eyebrow={header?.eyebrow}
+    title={header?.title ?? 'Join our newsletter'}
+    lead={header?.lead}
+    titleId={titleId}
+    as="h2"
+  />
+  <div class="mt-8">
+    <NewsletterSignup
+      askName={section.askName === true}
+      buttonLabel={(section.buttonLabel as string) ?? 'Subscribe'}
+      successMessage={(section.successMessage as string) ?? undefined}
+      source={`page:${titleId}`}
+      formId={formId}
+    />
+  </div>
+</Section>

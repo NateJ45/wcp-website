@@ -42,6 +42,21 @@ emails/month, 100/day). Steps:
 That's it — new submissions will email `CONTACT_TO` (with the visitor's address as
 reply-to) and continue to be saved in the Studio.
 
+## Newsletter sign-up
+
+The same machinery powers the **Newsletter sign-up** section (add it to any page). It
+posts to [`/api/subscribe`](../src/pages/api/subscribe.ts), which **always** stores the
+subscriber in Sanity (**Newsletter subscribers**) and, if a provider is configured, also
+adds them to your email list. Pick a provider by setting secrets (like the Resend step
+above):
+
+- **Buttondown** (simplest): `NEWSLETTER_PROVIDER=buttondown` + `BUTTONDOWN_API_KEY`.
+- **Mailchimp**: `NEWSLETTER_PROVIDER=mailchimp` + `MAILCHIMP_API_KEY` +
+  `MAILCHIMP_LIST_ID` + `MAILCHIMP_SERVER_PREFIX` (e.g. `us21`).
+
+Until a provider is set it is store-only — you can export the list from the Studio.
+Subscribers are deduped by email, so the same person signing up twice is harmless.
+
 ## Spam
 
 A honeypot field blocks basic bots with zero friction (no CAPTCHA). If spam ever becomes a

@@ -91,6 +91,7 @@ export const guides: Guide[] = [
           '**Tuition & Fees** — registration and participation fees, and how payments work.',
           '**FAQs**, **Testimonials** — the FAQ page and parent quotes.',
           '**Form submissions** — messages people send through contact forms.',
+          '**Newsletter subscribers** — people who signed up for the newsletter.',
           '**Family Hub** — the private, families-only content (announcements, documents, and more).',
         ],
       },
