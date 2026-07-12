@@ -581,3 +581,58 @@
   --ring: #40aaed;
   --destructive: #ff6b6b; /* 6.8:1 on the dark surface */
 }
+
+/* ============================================================================
+   Collapsible hub rail (desktop)
+   ============================================================================
+   Driven by `data-rail-collapsed` on <html> (applied pre-paint + persisted in
+   localStorage; see BaseLayout + src/scripts/hub-rail.ts). Only the desktop
+   rail (`.hub-rail-aside`) reacts — the mobile drawer is always full. Collapsed
+   = icons only: labels go sr-only (kept as accessible names, plus native
+   `title` tooltips on each link), group headers hide, icons center.
+   ============================================================================ */
+.hub-rail-aside {
+  width: 14rem; /* w-56 expanded */
+  transition: width 0.2s ease;
+}
+html[data-rail-collapsed] .hub-rail-aside {
+  width: 4.5rem;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-label] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-group],
+html[data-rail-collapsed] .hub-rail-aside [data-rail-logo] {
+  display: none;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-top] {
+  justify-content: center;
+}
+html[data-rail-collapsed] .hub-rail-aside .hub-rail-link {
+  justify-content: center;
+  padding-inline: 0.5rem;
+}
+html[data-rail-collapsed] .hub-rail-aside .rail-toggle-icon {
+  transform: rotate(180deg);
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
+  flex: 0 0 auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-rail-aside {
+    transition: none;
+  }
+}

@@ -2,13 +2,20 @@
 /* ============================================================================
    HubRail — the Family Hub's persistent navigation.
    ============================================================================
-   Rendered as the sticky left rail on desktop and as the slide-in drawer's
-   contents on mobile (see BaseLayout hub branch + hub-drawer.ts). One flat,
-   grouped list built from src/data/hub-nav.ts — no dropdowns. Active state is
-   derived from the URL. Sign out posts to /api/hub-logout (unchanged); the
-   ThemeToggle here is the hub's only light/dark control (HubHeader used to
-   carry it — theme.ts's [data-theme-toggle] query keeps this instance and the
-   drawer's copy in sync). Theme-aware via brand tokens; no hardcoded hex.
+   Rendered as the sticky left rail on desktop (with `collapsible`) and as the
+   slide-in drawer's contents on mobile (see BaseLayout hub branch +
+   hub-drawer.ts). One flat, grouped list built from src/data/hub-nav.ts.
+
+   COLLAPSIBLE (desktop only): the `collapsible` instance renders a toggle that
+   flips `data-rail-collapsed` on <html> (persisted, pre-paint — see BaseLayout +
+   hub-rail.ts). The collapse CSS (globals.css, scoped to `.hub-rail-aside`)
+   shrinks the rail to icons only: labels become sr-only (kept as accessible
+   names), group headers hide, icons center. Every link carries `title` so the
+   hidden label shows as a native tooltip when collapsed.
+
+   Sign out posts to /api/hub-logout. The ThemeToggle here is the hub's only
+   light/dark control. Theme-aware via brand tokens; no hardcoded hex except the
+   active-link fill (a fixed navy island — see the style note below).
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
@@ -16,6 +23,12 @@ import ThemeToggle from '@/components/ThemeToggle.astro';
 import { hubNav } from '@/data/hub-nav';
 import { site } from '@/data/site';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+
+interface Props {
+  /** Desktop rail: render the collapse toggle. The mobile drawer omits it. */
+  collapsible?: boolean;
+}
+const { collapsible = false } = Astro.props;
 
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const norm = (p: string) => p.replace(/\/+$/, '') || '/';
@@ -26,40 +39,69 @@ const groups = hubNav.slice(1);
 ---
 
 <div class="flex h-full flex-col gap-1 bg-navy px-3 py-4 text-white/85">
-  <a
-    href="/family-hub"
-    class="mb-2 inline-flex items-center gap-2 px-2 pb-3"
-    aria-label="Family Hub home"
-  >
-    <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-9 w-auto" />
-  </a>
+  <div class="mb-2 flex items-center justify-between gap-2 px-2 pb-3" data-rail-top>
+    <a
+      href="/family-hub"
+      class="inline-flex items-center"
+      aria-label="Family Hub home"
+      data-rail-logo
+    >
+      <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-9 w-auto" />
+    </a>
+    {
+      collapsible && (
+        <button
+          type="button"
+          data-rail-toggle
+          aria-expanded="true"
+          aria-label="Collapse navigation"
+          class="rail-icon-btn"
+        >
+          <Icon name="chevrons-left" class="rail-toggle-icon h-5 w-5" />
+        </button>
+      )
+    }
+  </div>
 
   <nav aria-label="Family Hub" class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
     <a
       href={homeLink.href}
       class="hub-rail-link"
+      title={homeLink.label}
       aria-current={isActive(homeLink.href) ? 'page' : undefined}
     >
-      <Icon name={homeLink.icon} class="h-4 w-4" />
-      <span>{homeLink.label}</span>
+      <Icon name={homeLink.icon} class="h-4 w-4 shrink-0" />
+      <span class="flex-1" data-rail-label>{homeLink.label}</span>
     </a>
 
     {
       groups.map((group) => (
         <div class="mt-3">
-          <p class="px-3 pb-1 text-[0.62rem] font-extrabold tracking-wider text-amber uppercase">
+          <p
+            class="px-3 pb-1 text-[0.62rem] font-extrabold tracking-wider text-amber uppercase"
+            data-rail-group
+          >
             {group.label}
           </p>
           {group.links.map((l) => (
             <a
               href={l.href}
               class="hub-rail-link"
+              title={l.label}
               aria-current={!l.external && isActive(l.href) ? 'page' : undefined}
               {...(l.external ? { target: '_blank', rel: 'noopener' } : {})}
             >
-              <Icon name={l.icon} class="h-4 w-4" />
-              <span class="flex-1">{l.label}</span>
-              {l.external && <Icon name="external-link" class="h-3.5 w-3.5 text-white/50" />}
+              <Icon name={l.icon} class="h-4 w-4 shrink-0" />
+              <span class="flex-1" data-rail-label>
+                {l.label}
+              </span>
+              {l.external && (
+                <Icon
+                  name="external-link"
+                  class="h-3.5 w-3.5 shrink-0 text-white/50"
+                  data-rail-label
+                />
+              )}
             </a>
           ))}
         </div>
@@ -67,14 +109,14 @@ const groups = hubNav.slice(1);
     }
   </nav>
 
-  <div class="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+  <div
+    class="mt-3 flex items-center justify-between gap-1 border-t border-white/10 pt-3"
+    data-rail-footer
+  >
     <form method="POST" action="/api/hub-logout" class="flex-1">
-      <button
-        type="submit"
-        class="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-      >
-        <Icon name="log-out" class="h-4 w-4" />
-        Sign out
+      <button type="submit" class="hub-rail-link w-full" title="Sign out">
+        <Icon name="log-out" class="h-4 w-4 shrink-0" />
+        <span class="flex-1 text-left" data-rail-label>Sign out</span>
       </button>
     </form>
     <ThemeToggle tone="onNavy" />
@@ -113,8 +155,26 @@ const groups = hubNav.slice(1);
     color: #ffffff;
     font-weight: 800;
   }
+  .rail-icon-btn {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .rail-icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .hub-rail-link {
+    .hub-rail-link,
+    .rail-icon-btn {
       transition: none;
     }
   }

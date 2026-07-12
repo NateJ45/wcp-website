@@ -50,4 +50,28 @@ test.describe('Family Hub shell', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(drawer).toHaveAttribute('aria-hidden', 'true');
   });
+
+  test('desktop rail collapses to icons and keeps accessible names', async ({ page }) => {
+    await page.goto('/family-hub', { waitUntil: 'load' });
+    await settle(page);
+
+    const aside = page.locator('.hub-rail-aside');
+    const toggle = page.locator('[data-rail-toggle]');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const expandedWidth = (await aside.boundingBox())!.width;
+
+    await toggle.click();
+    await expect(page.locator('html')).toHaveAttribute('data-rail-collapsed', '');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const collapsedWidth = (await aside.boundingBox())!.width;
+    expect(collapsedWidth).toBeLessThan(expandedWidth - 60);
+
+    // Labels are visually hidden but stay in the a11y tree (accessible names).
+    await expect(aside.locator('nav a').first()).toHaveText(/Home/);
+
+    // Toggling back restores the wide rail.
+    await toggle.click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-rail-collapsed', '');
+    expect((await aside.boundingBox())!.width).toBeGreaterThan(collapsedWidth + 60);
+  });
 });

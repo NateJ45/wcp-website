@@ -13,7 +13,6 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
-import HubFooter from '@/components/hub/HubFooter.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import { site } from '@/data/site';
 import { getClosureAlert } from '@/lib/cms';
@@ -144,6 +143,11 @@ const closureAlert = await getClosureAlert();
         document.documentElement.classList.add('dark');
         document.documentElement.style.colorScheme = 'dark';
       }
+      // Apply the saved hub-rail collapsed state before paint (no flash of the
+      // wide rail). Only the desktop rail (.hub-rail-aside) reads this.
+      if (localStorage.getItem('wcp-rail') === 'collapsed') {
+        document.documentElement.setAttribute('data-rail-collapsed', '');
+      }
     </script>
   </head>
 
@@ -168,8 +172,8 @@ const closureAlert = await getClosureAlert();
     {
       chrome === 'hub' ? (
         <div class="flex min-h-screen">
-          <aside class="sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto lg:block">
-            <HubRail />
+          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 overflow-y-auto lg:block">
+            <HubRail collapsible />
           </aside>
 
           {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
@@ -182,7 +186,10 @@ const closureAlert = await getClosureAlert();
             <HubRail />
           </aside>
 
-          <div class="flex min-w-0 flex-1 flex-col">
+          {/* Content column IS the grey app canvas (bg-grey), so short pages
+              don't show a mismatched empty band under the content. No footer —
+              the hub is an app surface, not a marketing page. */}
+          <div class="flex min-w-0 flex-1 flex-col bg-grey">
             <HubTopBar title={hubTitle} />
             {/* data-pagefind-body: site search (Pagefind) indexes only the main
                 content of real pages, not the header/footer chrome — and because
@@ -191,7 +198,6 @@ const closureAlert = await getClosureAlert();
             <main id="main" tabindex="-1" data-pagefind-body class="flex-1">
               <slot />
             </main>
-            <HubFooter />
           </div>
         </div>
       ) : (
@@ -211,6 +217,7 @@ const closureAlert = await getClosureAlert();
     <script>
       import '@/scripts/reveal';
       import '@/scripts/hub-drawer';
+      import '@/scripts/hub-rail';
       import '@/scripts/theme';
     </script>
   </body>
