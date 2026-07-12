@@ -34,7 +34,7 @@ already meets.
 
 - **Shell** — persistent left rail: logo (sun + cloud emblem) at top, sections grouped
   (*News & Events / Resources / Money / Community*), an SVG icon per item, active item in
-  navy-on-orange, and a **"Back to Main Site"** link pinned to the bottom.
+  navy-on-orange, and a **"Sign out"** link pinned to the bottom (ends the session).
 - **Home** —
   - Greeting (time-of-day) + a warm tagline.
   - **Community chips:** days-'til-first-day countdown, families count, today's date.
@@ -117,7 +117,7 @@ None reaches into another's internals.
   `aria-current="page"`.
 - All text and UI meets WCAG AA. Reuse the measured AA-safe brand "ink" shades; the active nav
   is navy-on-orange (passes), never white-on-orange (fails).
-- Icon-only controls (menu, close, back) have accessible names; decorative SVGs are
+- Icon-only controls (menu, close) have accessible names; decorative SVGs are
   `aria-hidden`.
 - 320px reflow: no horizontal scroll anywhere in the shell, Home, or drawer.
 - Lighthouse a11y stays 100 (CI gate). Motion is opt-in and reduced-motion-safe.
@@ -145,18 +145,17 @@ The design covers the **whole hub**, but implementation ships in two low-risk ph
 - Manual: full keyboard pass through rail and drawer; reduced-motion pass; confirm each
   widget's empty-state renders when its Sanity source is empty.
 
-## Open questions (confirm before/with the plan)
+## Decisions (resolved 2026-07-12)
 
-1. **Keep a real "Sign out"?** "Back to Main Site" replaces the *label*, but it is a link to the
-   public site, not a session end. On shared devices, ending the session still matters.
-   Recommendation: keep a small, secondary **Sign out** (e.g. in the rail footer next to "Back
-   to Main Site"), so we do not lose the ability to end a session.
-2. **Families count** — derive from `directoryEntry` count with an optional manual override
-   (recommended), or a manual field only?
-3. **School-year dates** — on `siteSettings` (recommended, one place) or a dedicated
-   `schoolYear` doc?
-4. **Home replaces the current landing quick-link grid** entirely (recommended — the rail plus
-   widgets supersede it). Confirm nothing on the old landing needs to survive as-is.
+1. **Sign out, not "Back to Main Site."** The rail's bottom link is a real **Sign out** that
+   ends the session (POSTs to `/api/hub-logout`, which already exists). The "Back to Main Site"
+   link is dropped.
+2. **Families count is derived** from the count of `directoryEntry` docs, with an optional
+   `siteSettings.familyCount` override for when the directory is not fully loaded.
+3. **School-year dates** (`yearStart`, `yearEnd`, `firstDay`) live on **`siteSettings`** — one
+   place, no separate doc.
+4. **The Home replaces the old landing quick-link grid** entirely; the rail plus widgets
+   supersede it.
 
 ## Docs to update when this ships (per the repo's keep-docs-in-sync rule)
 
