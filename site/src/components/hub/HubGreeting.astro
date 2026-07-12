@@ -23,7 +23,11 @@ const { tagline, yearStart, yearEnd, firstDay, familyCount } = Astro.props;
 // Greeting: Eastern wall-clock hour, not server UTC. hourCycle 'h23' avoids the
 // "24" some ICU implementations return for midnight under hour12:false.
 const nyHour = Number(
-  new Date().toLocaleString('en-US', { timeZone: 'America/New_York', hourCycle: 'h23' }),
+  new Date().toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    hourCycle: 'h23',
+  }),
 );
 const greeting = nyHour < 12 ? 'Good morning' : nyHour < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -58,18 +62,20 @@ if (daysToFirstDay !== null && daysToFirstDay > 0) {
   statusChip = { icon: 'sun', text: 'Enjoy your summer!' };
 }
 
-// Progress bar: only when both bounds are set; clamps outside the range so a
-// stale/inverted pair of dates never produces a negative width or NaN.
+// Progress bar: only when both bounds are set AND form a real span (yearEnd
+// strictly after yearStart) — an equal or inverted pair would divide by zero
+// (or a negative span), so guard the denominator before dividing, matching
+// fundraising.astro's `pctOf` guard pattern. Clamps outside the range so a
+// stale date never produces a negative width either.
+const yearSpanMs = yearStart && yearEnd ? new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime() : 0;
 const yearPct =
-  yearStart && yearEnd
+  yearStart && yearEnd && yearSpanMs > 0
     ? Math.min(
         100,
         Math.max(
           0,
           Math.round(
-            ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) /
-              (new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime())) *
-              100,
+            ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) / yearSpanMs) * 100,
           ),
         ),
       )
