@@ -3,24 +3,31 @@
    HubShell — shared frame for every gated Family Hub page
    ============================================================================
    Renders inside BaseLayout with the dedicated hub chrome (chrome="hub"): the
-   HubRail carries all the section navigation + Sign out, so this shell only
-   adds a compact navy title band (eyebrow + page title + intro) above the
-   page content. `title` also becomes the mobile HubTopBar's heading. Every
-   hub page must set `export const prerender = false` so the middleware gate
-   runs.
+   HubRail carries all the section navigation + Sign out. `title` also becomes
+   the mobile HubTopBar's heading. Every hub page must set `export const
+   prerender = false` so the middleware gate runs.
+
+   Two header modes:
+     - default: the compact navy title band (used by the update detail page,
+       which wants the post title on navy).
+     - `bare`: no band — the page renders its own HubPageHeader on the grey
+       app canvas (the Phase 2 app-surface pattern used by every section page
+       and Home). `title` is still passed through for the topbar/tab title.
    ============================================================================ */
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 interface Props {
   title: string;
   intro?: string;
-  /** Legacy: active nav state is now derived in HubHeader from the URL. */
+  /** Legacy: active nav state is now derived from the URL. */
   current?: string;
   /** Browser tab title (defaults to "<title> — WCP Family Hub"). */
   pageTitle?: string;
   description?: string;
+  /** Suppress the navy title band; the page owns its header (HubPageHeader). */
+  bare?: boolean;
 }
-const { title, intro, pageTitle, description } = Astro.props;
+const { title, intro, pageTitle, description, bare = false } = Astro.props;
 ---
 
 <BaseLayout
@@ -29,13 +36,19 @@ const { title, intro, pageTitle, description } = Astro.props;
   title={pageTitle ?? `${title} — WCP Family Hub`}
   description={description ?? 'The West Chester Preschool Family Hub for enrolled families.'}
 >
-  <section class="bg-navy text-white" aria-labelledby="hub-page-title">
-    <div class="wcp-container py-12 text-center lg:py-16">
-      <p class="text-sm font-bold tracking-wide text-amber uppercase">Family Hub</p>
-      <h1 id="hub-page-title" class="mt-2 text-white">{title}</h1>
-      {intro && <p class="mx-auto mt-3 max-w-2xl text-white/85">{intro}</p>}
-    </div>
-  </section>
+  {
+    !bare && (
+      <section class="bg-navy text-white" aria-labelledby="hub-page-title">
+        <div class="wcp-container py-12 text-center lg:py-16">
+          <p class="text-sm font-bold tracking-wide text-amber uppercase">Family Hub</p>
+          <h1 id="hub-page-title" class="mt-2 text-white">
+            {title}
+          </h1>
+          {intro && <p class="mx-auto mt-3 max-w-2xl text-white/85">{intro}</p>}
+        </div>
+      </section>
+    )
+  }
 
   <slot />
 </BaseLayout>

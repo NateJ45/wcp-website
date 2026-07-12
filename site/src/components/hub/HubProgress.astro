@@ -1,0 +1,52 @@
+---
+/* ============================================================================
+   HubProgress — shared accessible progress bar for the Family Hub
+   ============================================================================
+   One component behind every hub progress bar (fundraising campaigns, the
+   school-year bar, future budget bars) so they share fill/track/height and one
+   correct ARIA implementation. `value`/`max` are the raw numbers; the rendered
+   width and aria-valuenow are the clamped 0-100 percentage (max<=0 → 0, so a
+   zero/absent goal never divides by zero or renders NaN).
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  value: number;
+  max?: number;
+  /** Accessible label, e.g. "Spring Raffle progress". */
+  label: string;
+  /** Fill color class. Default: sky-ink (AA on the track). */
+  fill?: string;
+  /** Track color class. */
+  track?: string;
+  /** Bar height class. */
+  height?: string;
+  /** Optional spoken value, e.g. "$500 of $1,000 raised". */
+  valueText?: string;
+  class?: string;
+}
+const {
+  value,
+  max = 100,
+  label,
+  fill = 'bg-sky-ink',
+  track = 'bg-navy/10 dark:bg-white/15',
+  height = 'h-2.5',
+  valueText,
+  class: className,
+} = Astro.props;
+
+const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((value / max) * 100))) : 0;
+---
+
+<div
+  class={cn('overflow-hidden rounded-full', height, track, className)}
+  role="progressbar"
+  aria-label={label}
+  aria-valuenow={pct}
+  aria-valuemin={0}
+  aria-valuemax={100}
+  aria-valuetext={valueText}
+>
+  <div class={cn('h-full rounded-full', fill)} style={`width: ${pct}%`}></div>
+</div>

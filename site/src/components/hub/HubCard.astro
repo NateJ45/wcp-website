@@ -1,0 +1,102 @@
+---
+/* ============================================================================
+   HubCard — the ONE content-card primitive for the Family Hub app surface
+   ============================================================================
+   Every panel/card on a hub page routes through this so the whole hub shares
+   one card vocabulary (no more per-page hand-rolled class strings). Matches the
+   look of HomeWidgetCard (the home dashboard's widget shell), which keeps its
+   own equal-height flex layout for the widget grid.
+
+   Modes:
+     - Plain panel:        <HubCard>…body…</HubCard>
+     - Titled panel:       <HubCard icon="…" title="…"> + optional slot="action"
+     - Interactive link:   <HubCard as="a" href="…">  (auto hover-lift)
+     - List item:          <HubCard as="li" …>
+   For a link ROW (icon + text + action on one line), give NO icon/title and pass
+   `class="flex items-center gap-4 p-4"` — the card becomes a styled flex row.
+
+   Icon-chip color convention (pass via `iconChip`, default is neutral):
+     - Neutral / structural (default): bg-sky/15 text-sky-ink
+     - Class-specific content:         classStyles(slug).iconChip
+     - Semantic, only where meaningful: money/positive → bg-green/15 text-green-ink;
+       health/caution → bg-orange/15 text-orange-ink;
+       celebration → bg-amber/25 text-orange-ink
+   Solid-navy icon circles are reserved for a single page-level emphasis moment,
+   never per-row. Nested cards are banned — a HubCard never contains a HubCard.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  as?: 'div' | 'a' | 'li';
+  href?: string;
+  icon?: string;
+  /** Chip color classes for the header icon. Default: neutral sky. */
+  iconChip?: string;
+  title?: string;
+  /** Adds the hover lift. Auto-true when it's a link. */
+  interactive?: boolean;
+  empty?: boolean;
+  emptyText?: string;
+  /** Scroll-reveal entrance (geometry-based, visible-by-default). */
+  reveal?: boolean;
+  class?: string;
+  // Pass-through for target/rel/aria-*/data-* on the root element.
+  [key: string]: unknown;
+}
+const {
+  as = 'div',
+  href,
+  icon,
+  iconChip = 'bg-sky/15 text-sky-ink',
+  title,
+  interactive,
+  empty = false,
+  emptyText = 'Nothing here yet.',
+  reveal = true,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const isLink = as === 'a' || Boolean(href);
+const isInteractive = interactive ?? isLink;
+const Tag = isLink ? 'a' : as;
+const hasHeader = Boolean(icon) || Boolean(title);
+
+const base = 'rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface';
+const interactiveClasses = isInteractive
+  ? 'no-underline transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0'
+  : '';
+---
+
+<Tag
+  class={cn(base, interactiveClasses, className)}
+  href={isLink ? href : undefined}
+  data-reveal={reveal ? true : undefined}
+  {...rest}
+>
+  {
+    hasHeader && (
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          {icon && (
+            <span
+              class={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                iconChip,
+              )}
+              aria-hidden="true"
+            >
+              <Icon name={icon} class="h-5 w-5" />
+            </span>
+          )}
+          {title && <h3 class="text-base font-extrabold text-heading">{title}</h3>}
+        </div>
+        <slot name="action" />
+      </div>
+    )
+  }
+  <div class={hasHeader ? 'mt-4' : ''}>
+    {empty ? <p class="text-sm leading-relaxed text-ink-muted">{emptyText}</p> : <slot />}
+  </div>
+</Tag>

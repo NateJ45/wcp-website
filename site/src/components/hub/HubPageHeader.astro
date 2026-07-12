@@ -1,0 +1,75 @@
+---
+/* ============================================================================
+   HubPageHeader — compact, left-aligned app page header for hub inner pages
+   ============================================================================
+   Replaces the old tall, centered navy title band (see HubShell `bare`). Reads
+   like an app page-title bar (Linear/Notion/Stripe), warmed with the brand
+   display font and an optional accent icon chip. Contains the page <h1>.
+
+   Deliberately NO uppercase eyebrow: repeating a "FAMILY HUB" kicker on every
+   page is an AI-slop tell. The rail already tells you where you are.
+
+   Pass `slot="action"` for a right-aligned primary action (a <Button>), and
+   `backHref` for a back link above the title (e.g. the update detail page).
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  icon?: string;
+  /** Chip color classes. Default: neutral sky. Pass classStyles(slug).iconChip for a class page. */
+  iconChip?: string;
+  backHref?: string;
+  backLabel?: string;
+  /** id for the <h1>, so the wrapping <Section> can aria-labelledby it. */
+  titleId?: string;
+  class?: string;
+}
+const {
+  title,
+  subtitle,
+  icon,
+  iconChip = 'bg-sky/15 text-sky-ink',
+  backHref,
+  backLabel = 'Back',
+  titleId = 'hub-page-title',
+  class: className,
+} = Astro.props;
+---
+
+<div class={cn('mb-8', className)} data-reveal>
+  {
+    backHref && (
+      <a
+        href={backHref}
+        class="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-ink hover:underline"
+      >
+        <Icon name="arrow-right" class="h-4 w-4 rotate-180" />
+        {backLabel}
+      </a>
+    )
+  }
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="flex items-start gap-3">
+      {
+        icon && (
+          <span
+            class={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', iconChip)}
+            aria-hidden="true"
+          >
+            <Icon name={icon} class="h-6 w-6" />
+          </span>
+        )
+      }
+      <div>
+        <h1 id={titleId} class="text-2xl font-extrabold text-balance text-heading sm:text-3xl">
+          {title}
+        </h1>
+        {subtitle && <p class="mt-1 max-w-2xl leading-relaxed text-ink-muted">{subtitle}</p>}
+      </div>
+    </div>
+    <div class="shrink-0 empty:hidden"><slot name="action" /></div>
+  </div>
+</div>
