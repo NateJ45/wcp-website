@@ -1,0 +1,56 @@
+---
+/* ============================================================================
+   MeetingMinutesWidget — hubDocument docs in the "minutes" category, the
+   same source the Documents page's "Meeting Minutes" group reads. Filtered
+   client-side (matches documents.astro's own pattern) since there is no
+   dedicated minutes-only route to link out to — "See all" goes to Documents.
+   ============================================================================ */
+import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import Icon from '@/components/Icon.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+interface HubDocDoc {
+  title: string;
+  category: string;
+  order: number;
+  href?: string;
+}
+let minutes: HubDocDoc[] = [];
+try {
+  const docs = await sanityFetch<HubDocDoc[]>(
+    `*[_type == "hubDocument" && category == "minutes" && (defined(link) || defined(file.asset))] | order(order asc){
+      title, category, order,
+      "href": select(sourceType == "file" => file.asset->url, link)
+    }`,
+  );
+  minutes = docs.filter((d) => d.href).slice(0, 3);
+} catch {
+  minutes = [];
+}
+---
+
+<HomeWidgetCard
+  icon="file-text"
+  title="Meeting Minutes"
+  seeAllHref="/family-hub/documents"
+  empty={minutes.length === 0}
+  emptyText="Board meeting minutes will list here once posted."
+>
+  <ul class="space-y-3">
+    {
+      minutes.map((m) => (
+        <li>
+          <a
+            href={m.href}
+            target="_blank"
+            rel="noopener"
+            class="flex items-center gap-2 font-semibold text-heading hover:underline"
+          >
+            <Icon name="file-text" class="h-4 w-4 shrink-0 text-sky-ink" />
+            <span class="truncate">{m.title}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</HomeWidgetCard>
