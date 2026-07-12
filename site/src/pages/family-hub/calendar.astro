@@ -2,21 +2,25 @@
 /* ============================================================================
    Family Hub — School Calendar (GATED)
    ============================================================================
-   Events come live from the school Google Calendar (fetched server-side inside
-   the gate — architecture decision #4). Until that's wired, an event-type
-   legend + an empty-state stand in. No hardcoded event data.
+   Two live sources, both read server-side inside the gate:
+     1. The next few `event` docs (UPCOMING_EVENTS_QUERY) — the same Sanity
+        events the public Events page and the home widget use — rendered as a
+        compact upcoming list so the page has real value, not just an iframe.
+     2. The full school Google Calendar, click-to-load (privacy: nothing loads
+        from Google until the family clicks). No hardcoded event data.
    ============================================================================ */
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
-import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, UPCOMING_EVENTS_QUERY } from '@/lib/queries';
+import { EVENT_TZ } from '@/lib/events';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
@@ -26,12 +30,29 @@ interface HubPageDoc {
   sections?: any[];
 }
 
+interface EventDoc {
+  _id: string;
+  title: string;
+  startDate: string;
+  allDay?: boolean;
+  location?: string;
+  category?: string;
+}
+
 let calId = '';
 try {
   calId =
     (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].googleCalendarId`)) ?? '';
 } catch {
   calId = '';
+}
+
+// The next few events, from the same `event` docs the home widget reads.
+let events: EventDoc[] = [];
+try {
+  events = (await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY)).slice(0, 6);
+} catch {
+  events = [];
 }
 
 let doc: HubPageDoc | null = null;
@@ -48,6 +69,15 @@ const calEmbedUrl = calId
   ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calId)}&ctz=America/New_York&mode=MONTH&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0`
   : '';
 
+// ALWAYS format in the school's zone — the Workers runtime Date is UTC, so an
+// evening event would otherwise show the wrong day. (Documented gotcha.)
+const fmtMonth = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', timeZone: EVENT_TZ });
+const fmtDayNum = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { day: 'numeric', timeZone: EVENT_TZ });
+const fmtWeekday = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: EVENT_TZ });
+
 const eventTypes = [
   { icon: 'school', label: 'Class days', tint: 'bg-sky/15 text-sky-ink' },
   { icon: 'snowflake', label: 'Closures', tint: 'bg-grey text-ink-muted' },
@@ -57,79 +87,121 @@ const eventTypes = [
 ];
 ---
 
-<HubShell
-  title={title}
-  intro={intro}
-  current="/family-hub/calendar"
-  pageTitle="Calendar — WCP Family Hub"
->
-  <Section bg="white" labelledby="upcoming">
-    <div class="mx-auto max-w-3xl">
-      <SectionHeader
-        eyebrow="This School Year"
-        title="What’s coming up"
-        titleId="upcoming"
-        align="left"
-      />
+<HubShell title={title} bare pageTitle="Calendar — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="calendar-days" />
 
-      {/* Legend */}
-      <ul class="mt-6 flex flex-wrap gap-2">
+      {/* What's coming up — the next few events + the event-type legend */}
+      <div aria-labelledby="upcoming">
+        <h2 id="upcoming" class="text-xl font-extrabold text-heading">What’s coming up</h2>
+
+        {/* Legend: what the colors on the calendar mean */}
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {
+            eventTypes.map((t) => (
+              <li
+                class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${t.tint}`}
+              >
+                <Icon name={t.icon} class="h-4 w-4" />
+                {t.label}
+              </li>
+            ))
+          }
+        </ul>
+
         {
-          eventTypes.map((t) => (
-            <li
-              class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${t.tint}`}
-            >
-              <Icon name={t.icon} class="h-4 w-4" />
-              {t.label}
-            </li>
-          ))
+          events.length > 0 ? (
+            <ul class="mt-6 grid gap-3">
+              {events.map((e) => (
+                <HubCard as="li" class="flex items-center gap-4 p-4">
+                  <span class="flex w-12 shrink-0 flex-col items-center">
+                    <span class="text-xs font-bold text-sky-ink uppercase">
+                      {fmtMonth(e.startDate)}
+                    </span>
+                    <span class="text-xl font-extrabold text-heading">
+                      {fmtDayNum(e.startDate)}
+                    </span>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-bold text-heading">{e.title}</p>
+                    <p class="text-sm text-ink-muted">
+                      {fmtWeekday(e.startDate)}
+                      {e.location ? ` · ${e.location}` : ''}
+                    </p>
+                  </div>
+                </HubCard>
+              ))}
+            </ul>
+          ) : (
+            <HubEmptyState
+              icon="calendar-days"
+              title="Upcoming events will list here"
+              source="google-calendar"
+              class="mt-6"
+            />
+          )
         }
-      </ul>
+      </div>
 
+      {/* The full school calendar — privacy-preserving click-to-load embed */}
       {
-        calEmbedUrl ? (
-          <div
-            class="relative mt-8 h-[620px] overflow-hidden rounded-[var(--radius)] border border-border bg-grey"
-            data-embed-calendar={calEmbedUrl}
-            data-embed-title="West Chester Preschool calendar"
-          >
-            <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
-              <span
-                class="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white"
-                aria-hidden="true"
+        calEmbedUrl && (
+          <div class="mt-12" aria-labelledby="full-calendar">
+            <h2 id="full-calendar" class="text-xl font-extrabold text-heading">
+              The full school calendar
+            </h2>
+            <p class="mt-1 max-w-2xl text-ink-muted">
+              Month view of every dated item. It opens from Google Calendar only when you click, so
+              nothing loads from Google until you ask.
+            </p>
+            <HubCard class="mt-6 overflow-hidden p-0">
+              <div
+                class="relative h-[620px] bg-grey"
+                data-embed-calendar={calEmbedUrl}
+                data-embed-title="West Chester Preschool calendar"
               >
-                <Icon name="calendar-days" class="h-7 w-7" />
-              </span>
-              <div>
-                <p class="font-bold text-heading">The WCP school calendar</p>
-                <p class="mt-1 text-sm text-ink-muted">
-                  Opens from Google Calendar when you click, so nothing loads from Google until you
-                  ask.
-                </p>
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
+                  <span
+                    class="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white"
+                    aria-hidden="true"
+                  >
+                    <Icon name="calendar-days" class="h-7 w-7" />
+                  </span>
+                  <div>
+                    <p class="font-bold text-heading">The WCP school calendar</p>
+                    <p class="mt-1 text-sm text-ink-muted">
+                      Opens from Google Calendar when you click, so nothing loads from Google until
+                      you ask.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="wcp-embed-open rounded-full bg-navy px-6 py-2.5 font-semibold text-white transition hover:bg-navy/90"
+                  >
+                    Show the calendar
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                class="wcp-embed-open rounded-full bg-navy px-6 py-2.5 font-semibold text-white transition hover:bg-navy/90"
-              >
-                Show the calendar
-              </button>
-            </div>
+            </HubCard>
           </div>
-        ) : (
-          <HubEmptyState
-            icon="calendar-days"
-            title="Upcoming events will list here"
-            source="google-calendar"
-            class="mt-8"
-          />
         )
       }
 
-      <Callout tone="sky" class="mt-10">
-        <strong class="font-bold text-heading">Weather closures:</strong> WCP follows
-        <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes —
-        watch your email and our Facebook page for school-specific updates.
-      </Callout>
+      {/* Weather closures — neutral info note (was a Callout side-stripe) */}
+      <HubCard class="mt-12 flex items-start gap-4 p-4">
+        <span
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+          aria-hidden="true"
+        >
+          <Icon name="snowflake" class="h-5 w-5" />
+        </span>
+        <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
+          <strong class="font-bold text-heading">Weather closures:</strong> WCP follows
+          <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes —
+          watch your email and our Facebook page for school-specific updates.
+        </p>
+      </HubCard>
     </div>
   </Section>
 
