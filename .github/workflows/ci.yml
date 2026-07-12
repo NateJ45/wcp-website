@@ -34,6 +34,11 @@ jobs:
       - name: Format check (prettier)
         run: npm run format:check
 
+      # Pure-function unit tests (Vitest): hub date math + Portable Text
+      # heading normalization. Hermetic — no browser, no Sanity token.
+      - name: Unit tests (vitest)
+        run: npm run test:unit
+
       # Pages are now CMS-driven: [...slug].astro's getStaticPaths() reads the
       # page documents from Sanity at build time, so the build needs a read
       # token to emit any pages (without it the site builds empty and the link
