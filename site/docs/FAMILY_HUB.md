@@ -65,12 +65,12 @@ current live hub (tuition rates + pay buttons, the document library, class facts
 role descriptions, health/illness policy, event-type legend, and so on). Where a section's
 real data is live or private, it shows a designed empty-state that names its source:
 
-| Section                                                | Live data source (to wire)                      |
-| ------------------------------------------------------ | ----------------------------------------------- |
-| Calendar                                               | Google Calendar (server-side fetch in the gate) |
-| Fundraising                                            | Google Sheets (treasurer's tracker)             |
-| Updates, Documents, Tuition, Classes, Co-op assignment | Sanity                                          |
-| Directory, Health (per-child)                          | Sanity — opt-in PII, gated only                 |
+| Section                                                | Live data source (to wire)                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Calendar                                               | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load embed)     |
+| Fundraising                                            | Sanity `campaign` docs (Treasurer updates raised amount in the Studio) — **wired** |
+| Updates, Documents, Tuition, Classes, Co-op assignment | Sanity                                                                             |
+| Directory, Health (per-child)                          | Sanity — opt-in PII, gated only                                                    |
 
 Interim content lives in typed data files under `src/data/hub/` and `src/data/classes.ts`,
 so moving a section to Sanity is a change of data source, not a page rewrite. Nothing in
