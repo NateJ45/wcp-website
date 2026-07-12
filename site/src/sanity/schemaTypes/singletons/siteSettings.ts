@@ -123,6 +123,14 @@ export const siteSettings = defineType({
       group: 'year',
       description: 'e.g. "WCP follows Lakota Local Schools for weather closures."',
     }),
+    defineField({
+      name: 'googleCalendarId',
+      title: 'Google Calendar ID (Family Hub calendar)',
+      type: 'string',
+      group: 'year',
+      description:
+        'The public Google Calendar ID (e.g. abc123@group.calendar.google.com). Make the school calendar public in Google Calendar settings, paste its ID here, and it appears on the Family Hub Calendar page. Leave blank to hide the calendar.',
+    }),
 
     // Social & store
     defineField({ name: 'facebook', title: 'Facebook URL', type: 'url', group: 'social' }),

@@ -14,6 +14,18 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Icon from '@/components/Icon.astro';
 import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+let calId = '';
+try {
+  calId =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].googleCalendarId`)) ?? '';
+} catch {
+  calId = '';
+}
+const calEmbedUrl = calId
+  ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calId)}&ctz=America/New_York&mode=MONTH&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0`
+  : '';
 
 const eventTypes = [
   { icon: 'school', label: 'Class days', tint: 'bg-sky/15 text-sky-ink' },
@@ -53,12 +65,44 @@ const eventTypes = [
         }
       </ul>
 
-      <HubEmptyState
-        icon="calendar-days"
-        title="Upcoming events will list here"
-        source="google-calendar"
-        class="mt-8"
-      />
+      {
+        calEmbedUrl ? (
+          <div
+            class="relative mt-8 h-[620px] overflow-hidden rounded-[var(--radius)] border border-border bg-grey"
+            data-embed-calendar={calEmbedUrl}
+            data-embed-title="West Chester Preschool calendar"
+          >
+            <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
+              <span
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white"
+                aria-hidden="true"
+              >
+                <Icon name="calendar-days" class="h-7 w-7" />
+              </span>
+              <div>
+                <p class="font-bold text-heading">The WCP school calendar</p>
+                <p class="mt-1 text-sm text-ink-muted">
+                  Opens from Google Calendar when you click, so nothing loads from Google until you
+                  ask.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="wcp-embed-open rounded-full bg-navy px-6 py-2.5 font-semibold text-white transition hover:bg-navy/90"
+              >
+                Show the calendar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <HubEmptyState
+            icon="calendar-days"
+            title="Upcoming events will list here"
+            source="google-calendar"
+            class="mt-8"
+          />
+        )
+      }
 
       <Callout tone="sky" class="mt-10">
         <strong class="font-bold text-heading">Weather closures:</strong> WCP follows
@@ -67,4 +111,8 @@ const eventTypes = [
       </Callout>
     </div>
   </Section>
+
+  <script>
+    import '@/scripts/embeds';
+  </script>
 </HubShell>

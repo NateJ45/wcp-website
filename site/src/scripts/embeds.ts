@@ -17,19 +17,21 @@ function makeIframe(src: string, title: string): HTMLIFrameElement {
   return iframe;
 }
 
-document.querySelectorAll<HTMLElement>('[data-embed-video], [data-embed-map]').forEach((el) => {
-  const button = el.querySelector<HTMLButtonElement>('.wcp-embed-play, .wcp-embed-open');
-  if (!button) return;
-  button.addEventListener(
-    'click',
-    () => {
-      const src = el.dataset.embedVideo || el.dataset.embedMap;
-      if (!src) return;
-      const title = el.dataset.embedTitle || 'Embedded content';
-      const iframe = makeIframe(src, title);
-      el.replaceChildren(iframe);
-      iframe.focus();
-    },
-    { once: true },
-  );
-});
+document
+  .querySelectorAll<HTMLElement>('[data-embed-video], [data-embed-map], [data-embed-calendar]')
+  .forEach((el) => {
+    const button = el.querySelector<HTMLButtonElement>('.wcp-embed-play, .wcp-embed-open');
+    if (!button) return;
+    button.addEventListener(
+      'click',
+      () => {
+        const src = el.dataset.embedVideo || el.dataset.embedMap || el.dataset.embedCalendar;
+        if (!src) return;
+        const title = el.dataset.embedTitle || 'Embedded content';
+        const iframe = makeIframe(src, title);
+        el.replaceChildren(iframe);
+        iframe.focus();
+      },
+      { once: true },
+    );
+  });
