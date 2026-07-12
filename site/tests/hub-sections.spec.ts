@@ -13,6 +13,7 @@ const ROUTES = [
   '/family-hub/fundraising',
   '/family-hub/coop-jobs',
   '/family-hub/health',
+  '/family-hub/calendar',
 ];
 
 for (const route of ROUTES) {

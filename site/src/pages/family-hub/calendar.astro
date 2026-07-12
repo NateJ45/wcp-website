@@ -78,12 +78,15 @@ const fmtDayNum = (iso: string) =>
 const fmtWeekday = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: EVENT_TZ });
 
+// Legend: a neutral (AA in both themes) label carries the meaning; the color
+// is a decorative icon. Coloring the label text on a soft tint fails AA in
+// dark mode (bright ink on the dark tint), so the tint stays off the text.
 const eventTypes = [
-  { icon: 'school', label: 'Class days', tint: 'bg-sky/15 text-sky-ink' },
-  { icon: 'snowflake', label: 'Closures', tint: 'bg-grey text-ink-muted' },
-  { icon: 'users', label: 'Board meetings', tint: 'bg-navy/10 text-heading' },
-  { icon: 'party-popper', label: 'Fundraisers', tint: 'bg-amber/25 text-orange-ink' },
-  { icon: 'gift', label: 'Family events', tint: 'bg-green/15 text-green-ink' },
+  { icon: 'school', label: 'Class days', color: 'text-sky-ink' },
+  { icon: 'snowflake', label: 'Closures', color: 'text-ink-muted' },
+  { icon: 'users', label: 'Board meetings', color: 'text-heading' },
+  { icon: 'party-popper', label: 'Fundraisers', color: 'text-orange-ink' },
+  { icon: 'gift', label: 'Family events', color: 'text-green-ink' },
 ];
 ---
 
@@ -96,19 +99,20 @@ const eventTypes = [
       <div aria-labelledby="upcoming">
         <h2 id="upcoming" class="text-xl font-extrabold text-heading">What’s coming up</h2>
 
-        {/* Legend: what the colors on the calendar mean */}
-        <ul class="mt-4 flex flex-wrap gap-2">
+        {
+          /* Legend: what the colors on the calendar mean. On a white card so the
+            soft tint chips keep AA contrast (tint-over-grey darkens them). */
+        }
+        <HubCard class="mt-4 flex flex-wrap gap-x-5 gap-y-2 p-4">
           {
             eventTypes.map((t) => (
-              <li
-                class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${t.tint}`}
-              >
-                <Icon name={t.icon} class="h-4 w-4" />
+              <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-heading">
+                <Icon name={t.icon} class={`h-4 w-4 ${t.color}`} />
                 {t.label}
-              </li>
+              </span>
             ))
           }
-        </ul>
+        </HubCard>
 
         {
           events.length > 0 ? (
