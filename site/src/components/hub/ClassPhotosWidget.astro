@@ -1,0 +1,18 @@
+---
+/* ============================================================================
+   ClassPhotosWidget — permanent empty-state.
+   ============================================================================
+   No `classPhoto`/gallery doc type exists in this repo yet. This card names
+   what will show here so the dashboard reads as "coming soon", not broken,
+   matching the Calendar page's pre-googleCalendarId empty state. Wire this up
+   for real once a photo-gallery schema exists — do not fake content here.
+   ============================================================================ */
+import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+---
+
+<HomeWidgetCard
+  icon="camera"
+  title="Class Photos"
+  empty
+  emptyText="Class photos will appear here once the photo gallery is set up."
+/>
