@@ -1,40 +1,91 @@
 ---
 /* ============================================================================
-   FundraisingWidget — the single most-recent active `campaign` doc's
-   progress bar, a compact version of the Fundraising page's full list.
+   FundraisingWidget — the year's running total, live from the treasurer's
+   Fundraising sheet tab (same Board-editable sheet id as the Budget widget).
+   Falls back to the most recent active Sanity `campaign` doc if the sheet is
+   unreachable, then to the designed empty state — never a broken card.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { ACTIVE_CAMPAIGN_QUERY } from '@/lib/queries';
+import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
+import { budgetSheetIdFallback } from '@/data/hub/live-links';
 
+let sheetId = budgetSheetIdFallback;
+try {
+  sheetId =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
+    budgetSheetIdFallback;
+} catch {
+  sheetId = budgetSheetIdFallback;
+}
+
+const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
+const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
+const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
+const activeCount = fundraisers.filter((f) => f.status === 'active').length;
+const upcomingCount = fundraisers.filter((f) => f.status === 'upcoming').length;
+
+// Sheet unreachable → the old Sanity-campaign path.
 interface Campaign {
   title?: string;
   goalAmount?: number;
   raisedAmount?: number;
 }
 let campaign: Campaign | null = null;
-try {
-  campaign = await sanityFetch<Campaign | null>(ACTIVE_CAMPAIGN_QUERY);
-} catch {
-  campaign = null;
+if (fundraisers.length === 0) {
+  try {
+    campaign = await sanityFetch<Campaign | null>(ACTIVE_CAMPAIGN_QUERY);
+  } catch {
+    campaign = null;
+  }
 }
 
 const money = (n?: number) => `$${Math.round(n ?? 0).toLocaleString('en-US')}`;
-const pct =
+const campaignPct =
   campaign?.goalAmount && campaign.goalAmount > 0
     ? Math.min(100, Math.round(((campaign.raisedAmount ?? 0) / campaign.goalAmount) * 100))
     : 0;
+
+const statusLine = [
+  activeCount > 0 ? `${activeCount} active now` : null,
+  upcomingCount > 0 ? `${upcomingCount} coming up` : null,
+]
+  .filter(Boolean)
+  .join(' · ');
 ---
 
 <HomeWidgetCard
   icon="party-popper"
   title="Fundraising"
   seeAllHref="/family-hub/fundraising"
-  empty={!campaign}
+  empty={fundraisers.length === 0 && !campaign}
   emptyText="Current campaigns and totals will show here once one is active."
 >
   {
-    campaign && (
+    fundraisers.length > 0 ? (
+      <div>
+        <div class="flex items-end justify-between gap-3">
+          <p class="font-display text-2xl text-heading">
+            {money(totalRaised)}
+            <span class="font-sans text-xs font-normal text-ink-muted"> raised this year</span>
+          </p>
+          <p class="text-xs font-semibold text-ink-muted">{money(totalGoal)} goal</p>
+        </div>
+        <HubProgress
+          class="mt-2"
+          value={totalRaised}
+          max={totalGoal}
+          fill="bg-amber"
+          label="Fundraising progress this year"
+          valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
+        />
+        <p class="mt-2 text-sm text-ink-muted">
+          {statusLine || 'Every dollar goes back to our classrooms.'}
+        </p>
+      </div>
+    ) : campaign ? (
       <div>
         <p class="font-semibold text-heading">{campaign.title}</p>
         {campaign.goalAmount && campaign.goalAmount > 0 && (
@@ -46,19 +97,16 @@ const pct =
               </p>
               <p class="text-xs font-semibold text-ink-muted">{money(campaign.goalAmount)} goal</p>
             </div>
-            <div
-              class="mt-1.5 h-2.5 overflow-hidden rounded-full bg-navy/10 dark:bg-white/15"
-              role="progressbar"
-              aria-label={`${campaign.title ?? 'Campaign'} progress`}
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <div class="h-full rounded-full bg-amber" style={`width: ${pct}%`} />
-            </div>
+            <HubProgress
+              class="mt-1.5"
+              value={campaignPct}
+              fill="bg-amber"
+              label={`${campaign.title ?? 'Campaign'} progress`}
+              valueText={`${money(campaign.raisedAmount)} of ${money(campaign.goalAmount)} raised`}
+            />
           </>
         )}
       </div>
-    )
+    ) : null
   }
 </HomeWidgetCard>

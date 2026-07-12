@@ -2,7 +2,10 @@
 /* ============================================================================
    Family Hub — Fundraising (GATED, page-builder)
    ============================================================================
-   FIXED widget: the active campaigns + progress bars (Sanity `campaign` docs).
+   FIXED widgets: (1) featured Sanity `campaign` docs with donate links, when
+   the Board publishes any, and (2) the year-at-a-glance — every fundraiser in
+   the treasurer's Fundraising sheet tab with live totals and status chips
+   (the treasurer edits the sheet; this page updates on the next visit).
    The rest (ways we raise, where it goes) is a hubPage the Board edits in the
    Studio; falls back to the built-in content if no hubPage doc exists yet.
    ============================================================================ */
@@ -19,6 +22,8 @@ import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
+import { budgetSheetIdFallback } from '@/data/hub/live-links';
 import { site } from '@/data/site';
 
 interface Campaign {
@@ -51,6 +56,27 @@ try {
 } catch {
   doc = null;
 }
+
+// Year at a glance — live from the treasurer's Fundraising sheet tab.
+let sheetId = budgetSheetIdFallback;
+try {
+  sheetId =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
+    budgetSheetIdFallback;
+} catch {
+  sheetId = budgetSheetIdFallback;
+}
+const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
+const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
+const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
+const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
+
+// Status chips: neutral label text + a colored dot (the dark-mode tint rule).
+const STATUS_META: Record<FundraiserStatus, { label: string; dot: string }> = {
+  active: { label: 'Active', dot: 'bg-sky' },
+  upcoming: { label: 'Soon', dot: 'bg-amber' },
+  complete: { label: 'Done', dot: 'bg-green' },
+};
 const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
 const title = doc?.heading || 'Fundraising';
 const intro =
@@ -97,21 +123,16 @@ const waysToRaise = [
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="party-popper" />
 
-      {/* FIXED: active campaigns + progress bars (Sanity campaign docs) */}
-      <div aria-labelledby="active-now">
-        <h2 id="active-now" class="text-xl font-extrabold text-heading">Active fundraisers</h2>
-        <p class="mt-1 max-w-2xl text-ink-muted">
-          What’s live right now, and how close each one is to its goal.
-        </p>
-        {
-          campaigns.length === 0 ? (
-            <HubEmptyState
-              icon="party-popper"
-              title="Current campaigns & totals will show here"
-              source="google-sheets"
-              class="mt-6"
-            />
-          ) : (
+      {/* FIXED: featured campaigns (Sanity docs with donate links), when any. */}
+      {
+        campaigns.length > 0 && (
+          <div aria-labelledby="active-now">
+            <h2 id="active-now" class="text-xl font-extrabold text-heading">
+              Featured right now
+            </h2>
+            <p class="mt-1 max-w-2xl text-ink-muted">
+              What’s live right now, and how close each one is to its goal.
+            </p>
             <ul class="mt-6 space-y-4">
               {campaigns.map((c) => (
                 <HubCard as="li">
@@ -151,6 +172,92 @@ const waysToRaise = [
                 </HubCard>
               ))}
             </ul>
+          </div>
+        )
+      }
+
+      {/* FIXED: the year at a glance — live from the treasurer's sheet. */}
+      <div class={campaigns.length > 0 ? 'mt-12' : ''} aria-labelledby="year-glance">
+        <h2 id="year-glance" class="text-xl font-extrabold text-heading">This year so far</h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          Every fundraiser on this year’s calendar, with live totals from the treasurer’s tracking
+          sheet.
+        </p>
+        {
+          fundraisers.length === 0 ? (
+            campaigns.length === 0 && (
+              <HubEmptyState
+                icon="party-popper"
+                title="Current campaigns & totals will show here"
+                source="google-sheets"
+                class="mt-6"
+              />
+            )
+          ) : (
+            <>
+              <HubCard class="mt-6">
+                <div class="flex items-end justify-between gap-4">
+                  <p class="font-display text-3xl text-heading">
+                    {money(totalRaised)}
+                    <span class="font-sans text-sm font-normal text-ink-muted">
+                      {' '}
+                      of {money(totalGoal)} annual goal
+                    </span>
+                  </p>
+                  <p class="text-lg font-bold text-heading">{totalPct}%</p>
+                </div>
+                <HubProgress
+                  class="mt-2"
+                  height="h-4"
+                  value={totalRaised}
+                  max={totalGoal}
+                  fill="bg-amber"
+                  label="Fundraising progress this year"
+                  valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
+                />
+                <p class="mt-2 text-sm text-ink-muted">Every dollar goes back to our classrooms.</p>
+              </HubCard>
+
+              {/* grid-cols-1 at base: see the bento note on the hub home. */}
+              <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {fundraisers.map((f) => (
+                  <HubCard as="li" class="p-4">
+                    <div class="flex items-center justify-between gap-3">
+                      <p class="min-w-0 truncate font-bold text-heading" title={f.name}>
+                        {f.name}
+                      </p>
+                      <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-grey px-2.5 py-0.5 text-xs font-semibold text-heading">
+                        <span
+                          class={`h-1.5 w-1.5 rounded-full ${STATUS_META[f.status].dot}`}
+                          aria-hidden="true"
+                        />
+                        {STATUS_META[f.status].label}
+                      </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                      <span class="font-semibold text-heading">
+                        {money(f.raised)}
+                        {f.goal > 0 && (
+                          <span class="font-normal text-ink-muted"> / {money(f.goal)}</span>
+                        )}
+                      </span>
+                      {f.timeframe && <span class="text-ink-muted">{f.timeframe}</span>}
+                    </div>
+                    {f.goal > 0 && (
+                      <HubProgress
+                        class="mt-2"
+                        height="h-1.5"
+                        value={f.raised}
+                        max={f.goal}
+                        fill="bg-amber"
+                        label={`${f.name} progress`}
+                        valueText={`${money(f.raised)} of ${money(f.goal)} raised`}
+                      />
+                    )}
+                  </HubCard>
+                ))}
+              </ul>
+            </>
           )
         }
       </div>

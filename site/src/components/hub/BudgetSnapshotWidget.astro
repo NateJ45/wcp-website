@@ -1,16 +1,120 @@
 ---
 /* ============================================================================
-   BudgetSnapshotWidget — permanent empty-state.
+   BudgetSnapshotWidget — live numbers from the treasurer's Google Sheet
    ============================================================================
-   No budget/treasury schema exists in this repo yet. Same honesty-over-
-   fabrication rule as ClassPhotosWidget — see that file's comment.
+   Reads the "Budget" tab of the Budget Sheet (Board-editable sheet id on
+   siteSettings, working fallback in live-links.ts) server-side behind the
+   gate: cash balance + a health badge, revenue/expense progress vs budget,
+   and the year-to-date net. The treasurer edits the sheet; the hub updates
+   on the next visit. Any fetch/parse failure falls back to the designed
+   empty state — never a broken card.
+
+   Health badge is a THEME-STABLE solid fill (hardcoded dark hexes + white
+   text, like classStyles().badge) — the -ink tokens flip bright in dark mode
+   and white-on-bright fails AA. Deliberately no celebratory styling: the
+   card must read the same in strong and stressed months.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { getBudgetSnapshot, type BudgetSnapshot } from '@/lib/gsheets';
+import { budgetSheetIdFallback } from '@/data/hub/live-links';
+
+let sheetId = budgetSheetIdFallback;
+try {
+  sheetId =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
+    budgetSheetIdFallback;
+} catch {
+  sheetId = budgetSheetIdFallback;
+}
+
+const snap: BudgetSnapshot | null = await getBudgetSnapshot(sheetId);
+
+const money = (n: number) => `$${Math.round(Math.abs(n)).toLocaleString('en-US')}`;
+const net = snap ? snap.revenueActual - snap.expensesActual : 0;
+
+// Old-hub health thresholds, restated in brand-safe colors.
+const health = !snap
+  ? null
+  : snap.cash > 50_000
+    ? { label: 'Strong', fill: 'bg-[#0e7b2e]' }
+    : snap.cash > 20_000
+      ? { label: 'Healthy', fill: 'bg-[#9e5c0a]' }
+      : { label: 'Watch closely', fill: 'bg-[#a85300]' };
 ---
 
 <HomeWidgetCard
   icon="piggy-bank"
   title="Budget Snapshot"
-  empty
+  seeAllHref="/family-hub/documents"
+  seeAllLabel="Full reports"
+  empty={!snap}
   emptyText="A budget summary will appear here once the treasurer's tracking sheet is connected."
-/>
+>
+  {
+    snap && health && (
+      <div>
+        <div class="flex items-baseline justify-between gap-3">
+          <div>
+            <p class="text-[0.68rem] font-bold tracking-wide text-ink-muted uppercase">
+              School account balance
+            </p>
+            <p class="font-display text-3xl text-heading">{money(snap.cash)}</p>
+          </div>
+          <span class={`rounded-full px-2.5 py-0.5 text-xs font-bold text-white ${health.fill}`}>
+            {health.label}
+          </span>
+        </div>
+        <p class="mt-1 text-xs text-ink-muted">As of {snap.monthLabel}</p>
+
+        <div class="mt-4 space-y-3">
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold">
+              <span class="text-ink-muted">Revenue</span>
+              <span class="text-heading">
+                {money(snap.revenueActual)}
+                <span class="font-normal text-ink-muted"> / {money(snap.revenueBudgeted)}</span>
+              </span>
+            </div>
+            <HubProgress
+              class="mt-1"
+              height="h-2"
+              value={snap.revenueActual}
+              max={snap.revenueBudgeted}
+              fill="bg-green"
+              label="Revenue collected vs budget"
+              valueText={`${money(snap.revenueActual)} of ${money(snap.revenueBudgeted)} collected`}
+            />
+          </div>
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold">
+              <span class="text-ink-muted">Expenses</span>
+              <span class="text-heading">
+                {money(snap.expensesActual)}
+                <span class="font-normal text-ink-muted"> / {money(snap.expensesBudgeted)}</span>
+              </span>
+            </div>
+            <HubProgress
+              class="mt-1"
+              height="h-2"
+              value={snap.expensesActual}
+              max={snap.expensesBudgeted}
+              fill="bg-orange"
+              label="Expenses spent vs budget"
+              valueText={`${money(snap.expensesActual)} of ${money(snap.expensesBudgeted)} spent`}
+            />
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between border-t border-border pt-3 text-sm">
+          <span class="font-semibold text-ink-muted">Year to date</span>
+          <span class={`font-bold ${net >= 0 ? 'text-green-ink' : 'text-orange-ink'}`}>
+            {net >= 0 ? '+' : '-'}
+            {money(net)} {net >= 0 ? 'surplus' : 'deficit'}
+          </span>
+        </div>
+      </div>
+    )
+  }
+</HomeWidgetCard>

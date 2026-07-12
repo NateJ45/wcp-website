@@ -1,37 +1,35 @@
 ---
 /* ============================================================================
-   UpcomingEventsWidget — next 5 events, from the same `event` docs the public
-   Events page reads. Five, not three: this widget fills the bento's tall
-   side tile (row-span-2 on the home grid) and a tall tile with only three
-   rows reads sparse — match content to tile size. "See all" points at the
-   hub's Calendar page (which lists the same events above its embed).
+   UpcomingEventsWidget — the next 5 events, live from the school Google
+   Calendar (Apps Script feed; Board-editable URL on siteSettings, working
+   fallback in live-links.ts), with Sanity `event` docs as the fallback
+   source — see src/lib/hub-calendar.ts. Five, not three: this widget fills
+   the bento's tall side tile (row-span-2) and a tall tile with only three
+   rows reads sparse. "See all" points at the hub's Calendar page, which
+   lists the same feed above its embed.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
-import Icon from '@/components/Icon.astro';
 import { sanityFetch } from '@/lib/sanity';
-import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
-import { EVENT_TZ } from '@/lib/events';
+import {
+  getUpcomingEvents,
+  fmtEventMonth,
+  fmtEventDay,
+  fmtEventWeekday,
+  fmtEventTime,
+  type HubEvent,
+} from '@/lib/hub-calendar';
+import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 
-interface EventDoc {
-  _id: string;
-  title: string;
-  startDate: string;
-  allDay?: boolean;
-  location?: string;
-}
-let events: EventDoc[] = [];
+let feedUrl = calendarFeedUrlFallback;
 try {
-  events = (await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY)).slice(0, 5);
+  feedUrl =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].calendarFeedUrl`)) ||
+    calendarFeedUrlFallback;
 } catch {
-  events = [];
+  feedUrl = calendarFeedUrlFallback;
 }
 
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    timeZone: EVENT_TZ,
-  });
+const events: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 5);
 ---
 
 <HomeWidgetCard
@@ -44,19 +42,17 @@ const fmt = (iso: string) =>
   <ul class="space-y-3">
     {
       events.map((e) => (
-        <li class="flex items-start gap-3">
-          <span
-            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-            aria-hidden="true"
-          >
-            <Icon name="calendar-days" class="h-4 w-4" />
+        <li class="flex items-center gap-3">
+          <span class="flex w-11 shrink-0 flex-col items-center rounded-lg bg-grey py-1.5">
+            <span class="text-[0.62rem] font-bold text-sky-ink uppercase">{fmtEventMonth(e)}</span>
+            <span class="text-lg leading-tight font-extrabold text-heading">{fmtEventDay(e)}</span>
           </span>
           <div class="min-w-0">
             <p class="truncate font-semibold text-heading" title={e.title}>
               {e.title}
             </p>
             <p class="text-sm text-ink-muted">
-              {fmt(e.startDate)}
+              {fmtEventWeekday(e)} · {fmtEventTime(e)}
               {e.location ? ` · ${e.location}` : ''}
             </p>
           </div>

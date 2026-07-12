@@ -1,18 +1,110 @@
 ---
 /* ============================================================================
-   ClassPhotosWidget — permanent empty-state.
+   ClassPhotosWidget — this year's Google Photos album for each class
    ============================================================================
-   No `classPhoto`/gallery doc type exists in this repo yet. This card names
-   what will show here so the dashboard reads as "coming soon", not broken,
-   matching the Calendar page's pre-googleCalendarId empty state. Wire this up
-   for real once a photo-gallery schema exists — do not fake content here.
+   One tile per class plus the school-wide Summer Playdates album. Album links
+   are Board-editable on each `class` doc (`photoAlbumUrl`) and siteSettings
+   (`summerAlbumUrl`), with the current working links as fallbacks
+   (src/data/hub/live-links.ts) so the tiles render even before the Studio
+   fields are filled in. Class color rides on the icon chip only — labels stay
+   neutral text (the dark-mode tint AA rule).
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import Icon from '@/components/Icon.astro';
+import { classStyles } from '@/lib/class-colors';
+import { sanityFetch } from '@/lib/sanity';
+import { photoAlbumFallback, summerAlbumFallback } from '@/data/hub/live-links';
+
+const CLASSES = [
+  { slug: 'twos', label: 'Twos', icon: 'blocks' },
+  { slug: 'threes', label: 'Threes', icon: 'crayon' },
+  { slug: 'pre-k-am', label: 'Pre-K AM', icon: 'sun' },
+  { slug: 'pre-k-pm', label: 'Pre-K PM', icon: 'moon' },
+] as const;
+
+interface ClassAlbumRow {
+  slug?: string;
+  photoAlbumUrl?: string;
+}
+let sanityAlbums: Record<string, string> = {};
+let summerFromSanity: string | undefined;
+try {
+  const rows = await sanityFetch<ClassAlbumRow[]>(
+    `*[_type == "class"]{ "slug": slug.current, photoAlbumUrl }`,
+  );
+  for (const r of rows ?? []) if (r.slug && r.photoAlbumUrl) sanityAlbums[r.slug] = r.photoAlbumUrl;
+} catch {
+  sanityAlbums = {};
+}
+try {
+  summerFromSanity =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].summerAlbumUrl`)) ?? undefined;
+} catch {
+  summerFromSanity = undefined;
+}
+
+const albums = CLASSES.map((c) => ({
+  ...c,
+  href: sanityAlbums[c.slug] ?? photoAlbumFallback[c.slug],
+})).filter((a) => a.href);
+const summerHref = summerFromSanity ?? summerAlbumFallback;
+const empty = albums.length === 0 && !summerHref;
 ---
 
 <HomeWidgetCard
   icon="camera"
   title="Class Photos"
-  empty
+  empty={empty}
   emptyText="Class photos will appear here once the photo gallery is set up."
-/>
+>
+  <p class="text-sm text-ink-muted">This year's album for each class, on Google Photos.</p>
+  <div class="mt-3 grid grid-cols-2 gap-2">
+    {
+      albums.map((a) => (
+        <a
+          href={a.href}
+          target="_blank"
+          rel="noopener"
+          class="flex items-center gap-2.5 rounded-lg bg-grey p-2.5 no-underline transition-colors hover:bg-navy/10 dark:hover:bg-white/10"
+        >
+          <span
+            class={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${classStyles(a.slug).iconChip}`}
+            aria-hidden="true"
+          >
+            <Icon name={a.icon} class="h-4 w-4" />
+          </span>
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-bold text-heading">{a.label}</span>
+            <span class="block text-[0.68rem] font-semibold tracking-wide text-ink-muted uppercase">
+              View album
+            </span>
+          </span>
+        </a>
+      ))
+    }
+    {
+      summerHref && (
+        <a
+          href={summerHref}
+          target="_blank"
+          rel="noopener"
+          class="col-span-2 flex items-center gap-2.5 rounded-lg bg-grey p-2.5 no-underline transition-colors hover:bg-navy/10 dark:hover:bg-white/10"
+        >
+          <span
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy/10 text-heading"
+            aria-hidden="true"
+          >
+            <Icon name="tent" class="h-4 w-4" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-sm font-bold text-heading">Summer Playdates</span>
+            <span class="block text-[0.68rem] font-semibold tracking-wide text-ink-muted uppercase">
+              View album
+            </span>
+          </span>
+          <Icon name="external-link" class="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+        </a>
+      )
+    }
+  </div>
+</HomeWidgetCard>
