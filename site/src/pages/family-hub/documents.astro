@@ -35,27 +35,32 @@ interface HubDocDoc {
   category: string;
   description?: string;
   icon?: string;
-  link?: string;
+  href?: string;
   order: number;
 }
 let documentGroups = fallbackGroups;
 try {
+  // Both link-type docs and uploaded files (file.asset dereferenced to its URL).
   const docs = await sanityFetch<HubDocDoc[]>(
-    `*[_type == "hubDocument" && sourceType == "link" && defined(link)] | order(category asc, order asc){ title, category, description, icon, link, order }`,
+    `*[_type == "hubDocument" && (defined(link) || defined(file.asset))] | order(category asc, order asc){
+      title, category, description, icon, order,
+      "href": select(sourceType == "file" => file.asset->url, link)
+    }`,
   );
-  if (docs.length > 0) {
-    documentGroups = GROUP_ORDER.filter((k) => docs.some((d) => d.category === k)).map((k) => ({
+  const usable = docs.filter((d) => d.href);
+  if (usable.length > 0) {
+    documentGroups = GROUP_ORDER.filter((k) => usable.some((d) => d.category === k)).map((k) => ({
       key: k,
       label: GROUP_META[k]?.label ?? k,
       action: GROUP_META[k]?.action ?? 'Open',
       intro: GROUP_META[k]?.intro,
-      docs: docs
+      docs: usable
         .filter((d) => d.category === k)
         .map((d) => ({
           name: d.title,
           meta: d.description,
           icon: d.icon ?? 'file-text',
-          href: d.link ?? '#',
+          href: d.href ?? '#',
         })),
     }));
   }

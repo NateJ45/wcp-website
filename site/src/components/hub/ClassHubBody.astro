@@ -12,12 +12,33 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import { classBySlug, payUrl, type WcpClass } from '@/data/classes';
+import { sanityFetch } from '@/lib/sanity';
+import { renderPortableText } from '@/lib/portable-text';
+import type { PortableTextBlock } from '@portabletext/types';
 
 interface Props {
   slug: WcpClass['slug'];
 }
 const { slug } = Astro.props;
 const c = classBySlug[slug];
+
+interface ClassNote {
+  _id: string;
+  title: string;
+  publishedAt: string;
+  body?: PortableTextBlock[];
+}
+let notes: ClassNote[] = [];
+try {
+  notes = await sanityFetch<ClassNote[]>(
+    `*[_type == "classNote" && class == $slug] | order(publishedAt desc){ _id, title, publishedAt, body }`,
+    { slug },
+  );
+} catch {
+  notes = [];
+}
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
 // Both Pre-K classes share one public marketing page.
 const publicHref =
@@ -77,12 +98,30 @@ const facts = [
         }
         room.
       </p>
-      <HubEmptyState
-        icon="megaphone"
-        title="No class notes posted yet"
-        source="sanity"
-        class="mt-6"
-      />
+      {
+        notes.length === 0 ? (
+          <HubEmptyState
+            icon="megaphone"
+            title="No class notes posted yet"
+            source="sanity"
+            class="mt-6"
+          />
+        ) : (
+          <ul class="mt-6 space-y-4">
+            {notes.map((n) => (
+              <li class="rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm dark:bg-surface">
+                <p class="text-sm text-ink-muted">{fmtDate(n.publishedAt)}</p>
+                <h3 class="mt-1 text-lg font-extrabold text-heading">{n.title}</h3>
+                {n.body && (
+                  <div class="prose-sm mt-2 max-w-none leading-relaxed text-ink [&_a]:text-navy [&_a]:underline dark:[&_a]:text-sky">
+                    <Fragment set:html={renderPortableText(n.body)} />
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
+      }
     </div>
   </div>
 </Section>
