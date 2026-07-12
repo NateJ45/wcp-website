@@ -48,11 +48,12 @@ export const site = {
   // School year follows the Lakota Local School District calendar (Sept–May).
   calendar: 'Follows the Lakota Local School District calendar (September–May).',
 
-  // Social links. The header/footer icon row only renders an icon when its
-  // URL is set here, so we never ship a dead/fake social link.
-  // TODO(nathan): add the real Facebook and Instagram URLs when you have them.
+  // Social links (fallback). The real source is Sanity Site Settings → Social,
+  // which the header/footer read via getSiteSettings; these are the build-time
+  // fallback so the icons still render if that read ever fails. The header/footer
+  // icon row only renders an icon when its URL is set, so no dead/fake links.
   social: {
-    facebook: '',
-    instagram: '',
+    facebook: 'https://www.facebook.com/westchesterpreschool',
+    instagram: 'https://www.instagram.com/westchesterpreschool',
   },
 } as const;

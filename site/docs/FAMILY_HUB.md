@@ -73,8 +73,8 @@ Each page's live/private data reads from Sanity behind the gate:
 | Updates                       | `update` docs (the migrated meeting blog)                                |
 | Documents                     | `hubDocument` docs                                                       |
 | Co-op Jobs                    | `coopRole` docs (+ live assignment)                                      |
-| Classes                       | `classNote` docs (+ facts in `src/data/classes.ts`)                      |
-| Tuition                       | rates + PayPal button ids in `src/data/classes.ts` (code-locked)         |
+| Classes                       | `class` docs (facts + tuition button) + `classNote` docs                 |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton       |
 | Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only          |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
@@ -129,22 +129,24 @@ Updates, Fundraising, Health, Directory, and the four class pages (`twos`, `thre
 `pre-k-am`, `pre-k-pm`). Each reads its `hubPage` doc for an editable heading, intro, and a
 stack of hub-safe sections, wrapped around a **fixed widget** that stays locked in code:
 
-| Hub page    | Fixed widget (locked)                              | Already editable elsewhere          |
-| ----------- | -------------------------------------------------- | ----------------------------------- |
-| Landing     | Quick-link nav grids                               | —                                   |
-| Calendar    | Click-to-load Google Calendar embed + event legend | `googleCalendarId` in Site Settings |
-| Co-op Jobs  | Assignment widget + role descriptions + org chart  | `coopRole` docs                     |
-| Documents   | Document library + required-forms callout          | `hubDocument` docs                  |
-| Tuition     | Pay cards, fees, PayPal buttons, payment FAQ       | (rates/button ids in code)          |
-| Updates     | Meeting-blog post list                             | `update` docs                       |
-| Fundraising | Live campaign progress bars                        | `campaign` docs                     |
-| Health      | Per-child health info (PII)                        | (per-child, gated)                  |
-| Directory   | Opt-in family cards + map + privacy framing        | `directoryEntry` docs               |
-| Class pages | Class facts + pay button + class notes             | `classNote` docs                    |
+| Hub page    | Fixed widget (locked)                              | Already editable elsewhere                         |
+| ----------- | -------------------------------------------------- | -------------------------------------------------- |
+| Landing     | Quick-link nav grids                               | —                                                  |
+| Calendar    | Click-to-load Google Calendar embed + event legend | `googleCalendarId` in Site Settings                |
+| Co-op Jobs  | Assignment widget + role descriptions + org chart  | `coopRole` docs                                    |
+| Documents   | Document library + required-forms callout          | `hubDocument` docs                                 |
+| Tuition     | Pay-card + fee-card layout, payment FAQ            | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
+| Updates     | Meeting-blog post list                             | `update` docs                                      |
+| Fundraising | Live campaign progress bars                        | `campaign` docs                                    |
+| Health      | Per-child health info (PII)                        | (per-child, gated)                                 |
+| Directory   | Opt-in family cards + map + privacy framing        | `directoryEntry` docs                              |
+| Class pages | Fact-card + pay-button layout, class notes         | `class` docs (facts, button) + `classNote` docs    |
 
-The fixed widgets stay in code on purpose: they are either live/PII data (already editable
-through their own doc types) or payment-critical (real PayPal button ids and rates a volunteer
-must not be able to break). Everything else on every hub page is now Board-editable.
+Only the widget **layout** stays in code. All of its content is Board-editable through its own
+doc type: class facts, tuition rates, and PayPal button ids live in the `class` docs and the
+`feeSchedule` singleton; documents, class notes, campaigns, co-op roles, and family cards each
+have their own docs. A mistyped icon name from any of these is guarded by `safeIcon`, so it
+can never crash a page. Everything on every hub page is now Board-editable.
 
 ---
 

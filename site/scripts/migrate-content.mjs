@@ -67,6 +67,8 @@ docs.push({
   closureStatement: 'WCP follows Lakota Local Schools for weather closures.',
   license: 'Licensed under Ohio Day Care Licensing Code 5101:2-12',
   licenseAuthority: 'ODJFS',
+  facebook: 'https://www.facebook.com/westchesterpreschool',
+  instagram: 'https://www.instagram.com/westchesterpreschool',
 });
 
 // ---- Staff -----------------------------------------------------------------

@@ -155,6 +155,15 @@ export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(orderRank){ name, d
 
 export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
 
+/** Everything the gated hub tuition page needs: fee amounts, notes, PayPal button
+ *  ids, student-fee bands, and the payment FAQ. Falls back to hardcoded values. */
+export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
+  registrationFee, registrationNote, registrationPayId,
+  participationFee, participationNote, participationPayId,
+  studentFeeBands[]{ label, amount, payId },
+  paymentTerms[]{ icon, question, answer }
+}`;
+
 export const FAQ_ITEMS_QUERY = `*[_type == "faqItem"] | order(category asc, order asc){ question, answer, category, order }`;
 
 export const LEGAL_PAGE_LAST_UPDATED_QUERY = `*[_type == "legalPage" && slug == $slug][0].lastUpdated`;

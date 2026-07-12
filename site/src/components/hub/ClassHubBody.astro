@@ -12,7 +12,8 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { classBySlug, payUrl, type WcpClass } from '@/data/classes';
+import { payUrl, type WcpClass } from '@/data/classes';
+import { getHubClass } from '@/lib/hub-classes';
 import { sanityFetch } from '@/lib/sanity';
 import { renderPortableText } from '@/lib/portable-text';
 import { site } from '@/data/site';
@@ -26,7 +27,8 @@ interface Props {
   sections?: any[];
 }
 const { slug, sections } = Astro.props;
-const c = classBySlug[slug];
+// Class facts + PayPal tuition button id from Sanity (data-file fallback).
+const c = await getHubClass(slug);
 
 interface ClassNote {
   _id: string;

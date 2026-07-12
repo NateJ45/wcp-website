@@ -2,22 +2,25 @@
 /* ============================================================================
    Family Hub — Tuition & Payments (GATED)
    ============================================================================
-   Real 2026-27 rates, fees, PayPal buttons, and payment FAQ from the current
-   live hub. Class facts + pay-button ids come from src/data/classes.ts.
+   Class facts, fee amounts, PayPal button ids, and the payment FAQ all read
+   from Sanity (the `class` docs + the `feeSchedule` singleton), so the Board
+   edits them in the Studio. src/data/classes.ts + the *Fallback arrays below
+   are only used, per field, when Sanity is missing a value or the read fails.
    ============================================================================ */
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { classes, payUrl } from '@/data/classes';
+import { payUrl } from '@/data/classes';
+import { getHubClasses } from '@/lib/hub-classes';
+import { safeIcon } from '@/lib/icons';
 import { site } from '@/data/site';
 import { sanityFetch } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, FEE_SCHEDULE_HUB_QUERY } from '@/lib/queries';
 
 interface HubPageDoc {
   heading?: string;
@@ -26,12 +29,23 @@ interface HubPageDoc {
   sections?: any[];
 }
 
-const studentFees = [
+interface FeeSchedule {
+  registrationFee?: string;
+  registrationNote?: string;
+  registrationPayId?: string;
+  participationFee?: string;
+  participationNote?: string;
+  participationPayId?: string;
+  studentFeeBands?: { label?: string; amount?: string; payId?: string }[];
+  paymentTerms?: { icon?: string; question?: string; answer?: string }[];
+}
+
+// Fallbacks — used per field when Sanity is missing a value or the read fails.
+const studentFeesFallback = [
   { label: 'Twos & Threes', amount: '$45', payId: 'GQZ67ZRZ4W9UN' },
   { label: 'Pre-K AM & PM', amount: '$50', payId: 'A797LM4LL5PGJ' },
 ];
-
-const enrollmentFees = [
+const enrollmentFeesFallback = [
   {
     icon: 'file-check',
     title: 'Registration Fee',
@@ -51,8 +65,7 @@ const enrollmentFees = [
     action: 'Pay Deposit',
   },
 ];
-
-const faqs = [
+const faqsFallback = [
   {
     icon: 'calendar-days',
     q: 'When tuition is due',
@@ -79,6 +92,50 @@ const faqs = [
     a: 'There’s no annual discount, but you can skip monthly billing entirely — email the Treasurer to arrange a single yearly payment.',
   },
 ];
+
+// Class facts + tuition button ids, from Sanity (data-file fallback per field).
+const classRows = await getHubClasses();
+
+// Fee amounts, notes, PayPal button ids, and the payment FAQ, from the
+// feeSchedule singleton (falls back to the arrays above, per field).
+let fee: FeeSchedule | null = null;
+try {
+  fee = await sanityFetch<FeeSchedule | null>(FEE_SCHEDULE_HUB_QUERY);
+} catch {
+  fee = null;
+}
+const studentBands =
+  fee?.studentFeeBands && fee.studentFeeBands.length > 0
+    ? fee.studentFeeBands
+    : studentFeesFallback;
+// Normalize so label/amount/payId are always strings (fall back by index).
+const studentFees = studentBands.map((b, i) => ({
+  label: b.label ?? studentFeesFallback[i]?.label ?? '',
+  amount: b.amount ?? studentFeesFallback[i]?.amount ?? '',
+  payId: b.payId ?? studentFeesFallback[i]?.payId ?? '',
+}));
+const enrollmentFees = [
+  {
+    ...enrollmentFeesFallback[0],
+    amount: fee?.registrationFee ?? enrollmentFeesFallback[0].amount,
+    body: fee?.registrationNote ?? enrollmentFeesFallback[0].body,
+    payId: fee?.registrationPayId ?? enrollmentFeesFallback[0].payId,
+  },
+  {
+    ...enrollmentFeesFallback[1],
+    amount: fee?.participationFee ?? enrollmentFeesFallback[1].amount,
+    body: fee?.participationNote ?? enrollmentFeesFallback[1].body,
+    payId: fee?.participationPayId ?? enrollmentFeesFallback[1].payId,
+  },
+];
+const faqs =
+  fee?.paymentTerms && fee.paymentTerms.length > 0
+    ? fee.paymentTerms.map((t) => ({
+        icon: safeIcon(t.icon, 'circle-dollar-sign'),
+        q: t.question,
+        a: t.answer,
+      }))
+    : faqsFallback;
 
 let doc: HubPageDoc | null = null;
 try {
@@ -108,7 +165,7 @@ const intro =
     />
     <ul class="mt-12 grid gap-6 sm:grid-cols-2">
       {
-        classes.map((c) => (
+        classRows.map((c) => (
           <li
             class="flex flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
             data-reveal

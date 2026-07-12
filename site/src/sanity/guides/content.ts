@@ -554,6 +554,17 @@ export const guides: Guide[] = [
         text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**.',
       },
       { kind: 'path', items: ['Tuition & Fees'] },
+      { kind: 'h', text: 'The PayPal "Pay" buttons' },
+      {
+        kind: 'p',
+        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button ID"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. Paste only the button ID, the short code of letters and numbers, and not a full web link.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Double-check a new PayPal button.',
+        text: 'A wrong ID sends a family’s payment to the wrong place. After you change one, open the tuition page, click that Pay button, and confirm it shows the right amount in PayPal before you tell families.',
+      },
       {
         kind: 'callout',
         tone: 'caution',
@@ -804,15 +815,15 @@ export const guides: Guide[] = [
           'Adding or editing an FAQ, a testimonial, a teacher, or a photo.',
           'Editing a class’s schedule or description.',
           'Posting a Family Hub announcement.',
-          'Updating the phone, email, or address in Site Settings.',
+          'Updating the phone, email, address, or Facebook and Instagram links in Site Settings.',
+          'Updating a PayPal button ID the treasurer gave you (then click the Pay button to check it opens the right amount).',
         ],
       },
       { kind: 'h', text: 'Check with the board / ' + SITE.contactName + ' first' },
       {
         kind: 'bullets',
         items: [
-          'Changing tuition or fee amounts.',
-          'Changing a PayPal button ID.',
+          'Changing tuition or fee amounts (the board sets these).',
           'Adding a brand-new class that needs its own pay button.',
           'Anything you are unsure about. Asking is always free.',
         ],
