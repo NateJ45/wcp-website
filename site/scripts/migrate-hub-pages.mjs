@@ -82,6 +82,55 @@ const HUB_PAGES = {
       }),
     ],
   },
+
+  fundraising: {
+    title: 'Fundraising',
+    heading: 'Fundraising',
+    intro:
+      'What we’re raising money for this year, what’s active right now, and how you can help. Every dollar goes back into the classrooms.',
+    sections: [
+      cardGrid({
+        bg: 'grey',
+        header: sh(
+          'How We Raise',
+          'The ways WCP fundraises',
+          'A handful of friendly, low-pressure efforts across the year — join what fits your family.',
+        ),
+        columns: 2,
+        cards: [
+          card(
+            'hand-heart',
+            'amber',
+            'Dine to Donate',
+            'Local restaurants give back a share of sales on WCP nights. Show up hungry — a portion of your bill comes back to the school.',
+          ),
+          card(
+            'party-popper',
+            'amber',
+            'Spring Raffle',
+            'Our biggest event of the year: themed baskets, donated prizes, and tickets sold across the community.',
+          ),
+          card(
+            'shopping-bag',
+            'amber',
+            'Seasonal Sales',
+            'Smaller fundraisers through the year — spirit wear, holiday items, and one-off sales run by the Fundraising Committee.',
+          ),
+          card(
+            'gift',
+            'amber',
+            'Direct Giving',
+            'Prefer to give directly? Donations are welcome any time and go straight into the classrooms.',
+          ),
+        ],
+      }),
+      cta({
+        title: 'Where your money goes',
+        lead: 'Every dollar raised goes straight back into the classrooms — supplies, enrichment, playground upkeep, and the special days that make WCP feel like home. No overhead, no salaries skimmed off the top.',
+        tone: 'navy',
+      }),
+    ],
+  },
 };
 
 for (const [hubKey, def] of Object.entries(HUB_PAGES)) {

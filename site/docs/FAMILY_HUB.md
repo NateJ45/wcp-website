@@ -117,7 +117,7 @@ doc exists for a key, the page shows its built-in fallback content, so it can ne
 
 Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting content with
 `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids). **Converted so far:**
-Health. The rest (Calendar, Co-op Jobs, Documents, Tuition, Fundraising, Directory, Landing,
+Health, Fundraising. The rest (Calendar, Co-op Jobs, Documents, Tuition, Directory, Landing,
 class pages) follow the same pattern, one at a time.
 
 ---
