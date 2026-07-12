@@ -16,6 +16,7 @@ import Section from '@/components/Section.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubGreeting from '@/components/hub/HubGreeting.astro';
 import ClassHelperRow from '@/components/hub/ClassHelperRow.astro';
+import PresidentNoteModal from '@/components/hub/PresidentNoteModal.astro';
 import UpcomingEventsWidget from '@/components/hub/UpcomingEventsWidget.astro';
 import AnnouncementsWidget from '@/components/hub/AnnouncementsWidget.astro';
 import ClassPhotosWidget from '@/components/hub/ClassPhotosWidget.astro';
@@ -121,4 +122,7 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}
   <SectionRenderer sections={doc?.sections} site={site} />
+
+  {/* The President's welcome letter — pops once per version stamp. */}
+  <PresidentNoteModal />
 </HubShell>

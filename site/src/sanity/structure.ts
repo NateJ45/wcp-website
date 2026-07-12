@@ -89,6 +89,7 @@ const PLACED = new Set([
   'classNote',
   'directoryEntry',
   'hubPage',
+  'presidentNote',
 ]);
 
 export const structure: StructureResolver = (S, context) =>
@@ -236,6 +237,7 @@ export const structure: StructureResolver = (S, context) =>
             .title('Family Hub')
             .items([
               S.documentTypeListItem('hubPage').title('Hub pages (edit content)').icon(emoji('🧱')),
+              singleton(S, 'presidentNote', "President's note", emoji('💌')),
               S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
               S.documentTypeListItem('hubDocument').title('Documents & Forms').icon(emoji('📄')),
               S.documentTypeListItem('classNote').title('Class Notes').icon(emoji('📓')),

@@ -27,6 +27,7 @@ import { siteSettings } from './singletons/siteSettings';
 import { feeSchedule } from './singletons/feeSchedule';
 import { navigation } from './singletons/navigation';
 import { closureAlert } from './singletons/closureAlert';
+import { presidentNote } from './singletons/presidentNote';
 
 // Collections (public site)
 import { staff } from './documents/staff';
@@ -79,6 +80,7 @@ export const schemaTypes = [
   feeSchedule,
   navigation,
   closureAlert,
+  presidentNote,
   // Public collections
   staff,
   classType,
@@ -115,4 +117,5 @@ export const SINGLETON_TYPES = new Set([
   'feeSchedule',
   'navigation',
   'closureAlert',
+  'presidentNote',
 ]);
