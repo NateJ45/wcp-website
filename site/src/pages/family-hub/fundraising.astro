@@ -10,9 +10,12 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
-import Icon from '@/components/Icon.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import Icon from '@/components/Icon.astro';
+import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
@@ -89,132 +92,120 @@ const waysToRaise = [
 ];
 ---
 
-<HubShell
-  title={title}
-  intro={intro}
-  current="/family-hub/fundraising"
-  pageTitle="Fundraising — WCP Family Hub"
->
-  {/* FIXED: active campaigns + progress bars (Sanity campaign docs) */}
-  <Section bg="white" labelledby="active-now">
-    <div class="mx-auto max-w-3xl">
-      <SectionHeader
-        eyebrow="Happening Now"
-        title="Active fundraisers"
-        titleId="active-now"
-        align="left"
-      />
-      {
-        campaigns.length === 0 ? (
-          <HubEmptyState
-            icon="party-popper"
-            title="Current campaigns & totals will show here"
-            source="google-sheets"
-            class="mt-8"
-          />
-        ) : (
-          <ul class="mt-8 space-y-6">
-            {campaigns.map((c) => (
-              <li class="wcp-lift rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm hover:shadow-md dark:bg-surface">
-                <p class="font-display text-xl text-heading">{c.title}</p>
-                {c.summary && <p class="mt-1 text-ink-muted">{c.summary}</p>}
-                {c.goalAmount && c.goalAmount > 0 && (
-                  <div class="mt-4">
-                    <div class="flex items-end justify-between gap-4">
-                      <p class="font-display text-2xl text-heading">
-                        {money(c.raisedAmount)}
-                        <span class="text-sm font-normal text-ink-muted"> raised</span>
-                      </p>
-                      <p class="text-sm font-semibold text-ink-muted">{money(c.goalAmount)} goal</p>
-                    </div>
-                    <div
-                      class="mt-2 h-4 overflow-hidden rounded-full bg-navy/10 dark:bg-white/15"
-                      role="progressbar"
-                      aria-label={`${c.title ?? 'Campaign'} progress`}
-                      aria-valuenow={pctOf(c.raisedAmount, c.goalAmount)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuetext={`${money(c.raisedAmount)} of ${money(c.goalAmount)} raised`}
-                    >
-                      <div
-                        class="h-full rounded-full bg-amber"
-                        style={`width: ${pctOf(c.raisedAmount, c.goalAmount)}%`}
+<HubShell title={title} bare pageTitle="Fundraising — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="party-popper" />
+
+      {/* FIXED: active campaigns + progress bars (Sanity campaign docs) */}
+      <div aria-labelledby="active-now">
+        <h2 id="active-now" class="text-xl font-extrabold text-heading">Active fundraisers</h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          What’s live right now, and how close each one is to its goal.
+        </p>
+        {
+          campaigns.length === 0 ? (
+            <HubEmptyState
+              icon="party-popper"
+              title="Current campaigns & totals will show here"
+              source="google-sheets"
+              class="mt-6"
+            />
+          ) : (
+            <ul class="mt-6 space-y-4">
+              {campaigns.map((c) => (
+                <HubCard as="li">
+                  <p class="font-display text-xl text-heading">{c.title}</p>
+                  {c.summary && <p class="mt-1 text-ink-muted">{c.summary}</p>}
+                  {c.goalAmount && c.goalAmount > 0 && (
+                    <div class="mt-4">
+                      <div class="flex items-end justify-between gap-4">
+                        <p class="font-display text-2xl text-heading">
+                          {money(c.raisedAmount)}
+                          <span class="text-sm font-normal text-ink-muted"> raised</span>
+                        </p>
+                        <p class="text-sm font-semibold text-ink-muted">
+                          {money(c.goalAmount)} goal
+                        </p>
+                      </div>
+                      <HubProgress
+                        value={c.raisedAmount ?? 0}
+                        max={c.goalAmount}
+                        label={`${c.title ?? 'Campaign'} progress`}
+                        fill="bg-amber"
+                        height="h-4"
+                        valueText={`${money(c.raisedAmount)} of ${money(c.goalAmount)} raised`}
+                        class="mt-2"
                       />
+                      <p class="mt-1 text-sm text-ink-muted">
+                        {pctOf(c.raisedAmount, c.goalAmount)}% of goal
+                        {c.deadline ? ` · by ${fmtDeadline(c.deadline)}` : ''}
+                      </p>
                     </div>
-                    <p class="mt-1 text-sm text-ink-muted">
-                      {pctOf(c.raisedAmount, c.goalAmount)}% of goal
-                      {c.deadline ? ` · by ${fmtDeadline(c.deadline)}` : ''}
-                    </p>
-                  </div>
-                )}
-                {c.linkUrl && (
-                  <a
-                    href={c.linkUrl}
-                    class="mt-4 inline-flex items-center gap-1 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy/90"
-                  >
-                    {c.linkLabel ?? 'Donate'}
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
+                  )}
+                  {c.linkUrl && (
+                    <Button href={c.linkUrl} variant="primary" size="sm" class="mt-4">
+                      {c.linkLabel ?? 'Donate'}
+                    </Button>
+                  )}
+                </HubCard>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      {
+        !hasSections && (
+          <>
+            {/* Editable body fallback — the ways WCP raises money. */}
+            <div class="mt-12" aria-labelledby="ways">
+              <h2 id="ways" class="text-xl font-extrabold text-heading">
+                The ways WCP fundraises
+              </h2>
+              <p class="mt-1 max-w-2xl text-ink-muted">
+                A handful of friendly, low-pressure efforts across the year — join what fits your
+                family.
+              </p>
+              <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+                {waysToRaise.map((w) => (
+                  <HubCard as="li" class="flex gap-4">
+                    <span
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
+                      aria-hidden="true"
+                    >
+                      <Icon name={w.icon} class="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p class="font-bold text-heading">{w.title}</p>
+                      <p class="mt-1 text-sm leading-relaxed text-ink">{w.body}</p>
+                    </div>
+                  </HubCard>
+                ))}
+              </ul>
+            </div>
+
+            {/* The single navy emphasis moment — where the money goes. */}
+            <HubCard class="mt-8 bg-navy text-white">
+              <span
+                class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-amber"
+                aria-hidden="true"
+              >
+                <Icon name="graduation-cap" class="h-7 w-7" />
+              </span>
+              <p class="text-lg font-bold text-white">Where your money goes</p>
+              <p class="mt-2 max-w-xl leading-relaxed text-white/85">
+                Every dollar raised goes straight back into the classrooms — supplies, enrichment,
+                playground upkeep, and the special days that make WCP feel like home. No overhead,
+                no salaries skimmed off the top.
+              </p>
+            </HubCard>
+          </>
         )
       }
     </div>
   </Section>
 
-  {
-    hasSections ? (
-      <SectionRenderer sections={doc!.sections} site={site} />
-    ) : (
-      <Fragment>
-        <Section bg="grey" labelledby="ways">
-          <SectionHeader
-            eyebrow="How We Raise"
-            title="The ways WCP fundraises"
-            titleId="ways"
-            lead="A handful of friendly, low-pressure efforts across the year — join what fits your family."
-          />
-          <ul class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
-            {waysToRaise.map((w) => (
-              <li
-                class="flex gap-4 rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
-                data-reveal
-              >
-                <span
-                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name={w.icon} class="h-5 w-5" />
-                </span>
-                <div>
-                  <p class="font-bold text-heading">{w.title}</p>
-                  <p class="mt-1 text-sm leading-relaxed text-ink">{w.body}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section bg="navy" seam labelledby="where-it-goes">
-          <div class="mx-auto max-w-2xl text-center">
-            <span
-              class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-amber"
-              aria-hidden="true"
-            >
-              <Icon name="graduation-cap" class="h-7 w-7" />
-            </span>
-            <h2 id="where-it-goes" class="text-white">
-              Where your money goes
-            </h2>
-            <p class="mx-auto mt-3 max-w-xl text-white/85">
-              Every dollar raised goes straight back into the classrooms — supplies, enrichment,
-              playground upkeep, and the special days that make WCP feel like home. No overhead, no
-              salaries skimmed off the top.
-            </p>
-          </div>
-        </Section>
-      </Fragment>
-    )
-  }
+  {/* Editable extra section(s) the Board can add to the fundraising page. */}
+  {hasSections && <SectionRenderer sections={doc!.sections} site={site} />}
 </HubShell>
