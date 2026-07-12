@@ -72,6 +72,26 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 }`;
 
 // -----------------------------------------------------------------------------
+// Family Hub pages (gated, request-time) — the hub page-builder
+// -----------------------------------------------------------------------------
+// One hubPage per hub, fetched by hubKey behind the gate. Only the hub-safe
+// (content) sections are offered, so the projection just needs actions + the
+// faqSection dereference — no build-time "pull" sections here.
+export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
+  heading, intro,
+  sections[]{
+    ...,
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url },
+    _type == "faqSection" => {
+      "items": select(
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(order asc){ question, answer },
+        source == "inline" => inlineItems[]{ question, answer }
+      )
+    }
+  }
+}`;
+
+// -----------------------------------------------------------------------------
 // Blog / News
 // -----------------------------------------------------------------------------
 

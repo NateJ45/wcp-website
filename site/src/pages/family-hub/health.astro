@@ -1,10 +1,11 @@
 ---
 /* ============================================================================
-   Family Hub — Health & Safety (GATED)
+   Family Hub — Health & Safety (GATED, page-builder)
    ============================================================================
-   General illness/closure policy is static (non-PII). Each child's specific
-   emergency contacts, allergies, and medical notes are PII — they load from
-   Sanity behind the gate and are never hardcoded or public.
+   The per-child info is a FIXED widget (PII, from Sanity behind the gate). The
+   rest of the page (illness policy, closures) is a hubPage the Board edits in
+   the Studio — heading, intro, and a stack of sections. Falls back to the
+   built-in content if no hubPage doc exists yet, so it can never go blank.
    ============================================================================ */
 export const prerender = false;
 
@@ -15,7 +16,30 @@ import Icon from '@/components/Icon.astro';
 import Callout from '@/components/Callout.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
 
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'health' });
+} catch {
+  doc = null;
+}
+const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
+const title = doc?.heading || 'Health & Safety';
+const intro =
+  doc?.intro ||
+  'Emergency contacts, illness policies, immunization requirements, and what to do when your child isn’t feeling well.';
+
+// Fallback content (shown until a hubPage "health" doc exists in the Studio).
 const keepHome = [
   {
     icon: 'heart-pulse',
@@ -46,12 +70,12 @@ const keepHome = [
 ---
 
 <HubShell
-  title="Health & Safety"
-  intro="Emergency contacts, illness policies, immunization requirements, and what to do when your child isn’t feeling well."
+  title={title}
+  intro={intro}
   current="/family-hub/health"
   pageTitle="Health & Safety — WCP Family Hub"
 >
-  {/* Per-child info (Sanity, PII) */}
+  {/* FIXED: per-child info (Sanity, PII) — locked, never editable as content */}
   <Section bg="white" labelledby="your-child">
     <div class="mx-auto max-w-3xl">
       <SectionHeader
@@ -70,49 +94,61 @@ const keepHome = [
     </div>
   </Section>
 
-  {/* When to keep home (general policy) */}
-  <Section bg="grey" labelledby="keep-home">
-    <SectionHeader
-      eyebrow="Illness Policy"
-      title="When to keep your child home"
-      titleId="keep-home"
-      lead="When in doubt, keep them home. These guidelines protect every family at WCP."
-    />
-    <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {
-        keepHome.map((k) => (
-          <li class="rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface" data-reveal>
-            <span
-              class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
-              aria-hidden="true"
-            >
-              <Icon name={k.icon} class="h-5 w-5" />
-            </span>
-            <p class="font-bold text-heading">{k.title}</p>
-            <p class="mt-1 text-sm leading-relaxed text-ink">{k.body}</p>
-          </li>
-        ))
-      }
-    </ul>
-    <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
-      <strong class="font-bold text-heading">Allergy awareness:</strong> if your child has a food allergy
-      or any condition classroom helpers should know about, make sure it’s on file with your teacher and
-      on your Emergency Contact Form. Questions? Contact your teacher directly.
-    </Callout>
-  </Section>
+  {
+    hasSections ? (
+      <SectionRenderer sections={doc!.sections} site={site} />
+    ) : (
+      <Fragment>
+        <Section bg="grey" labelledby="keep-home">
+          <SectionHeader
+            eyebrow="Illness Policy"
+            title="When to keep your child home"
+            titleId="keep-home"
+            lead="When in doubt, keep them home. These guidelines protect every family at WCP."
+          />
+          <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {keepHome.map((k) => (
+              <li
+                class="rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
+                data-reveal
+              >
+                <span
+                  class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
+                  aria-hidden="true"
+                >
+                  <Icon name={k.icon} class="h-5 w-5" />
+                </span>
+                <p class="font-bold text-heading">{k.title}</p>
+                <p class="mt-1 text-sm leading-relaxed text-ink">{k.body}</p>
+              </li>
+            ))}
+          </ul>
+          <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
+            <strong class="font-bold text-heading">Allergy awareness:</strong> if your child has a
+            food allergy or any condition classroom helpers should know about, make sure it’s on
+            file with your teacher and on your Emergency Contact Form. Questions? Contact your
+            teacher directly.
+          </Callout>
+        </Section>
 
-  {/* Closures + handbook */}
-  <Section bg="navy" seam labelledby="health-more">
-    <div class="mx-auto max-w-2xl text-center">
-      <h2 id="health-more" class="text-white">Closures & the full policy</h2>
-      <p class="mx-auto mt-3 max-w-xl text-white/85">
-        WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather closures — if
-        Lakota closes, WCP closes. The complete health policy lives in the Family Handbook, and Ohio licensing
-        requirements always apply.
-      </p>
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <Button href="/family-hub/documents" variant="accent" size="md">Open the Handbook</Button>
-      </div>
-    </div>
-  </Section>
+        <Section bg="navy" seam labelledby="health-more">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 id="health-more" class="text-white">
+              Closures & the full policy
+            </h2>
+            <p class="mx-auto mt-3 max-w-xl text-white/85">
+              WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather
+              closures — if Lakota closes, WCP closes. The complete health policy lives in the
+              Family Handbook, and Ohio licensing requirements always apply.
+            </p>
+            <div class="mt-8 flex flex-wrap justify-center gap-3">
+              <Button href="/family-hub/documents" variant="accent" size="md">
+                Open the Handbook
+              </Button>
+            </div>
+          </div>
+        </Section>
+      </Fragment>
+    )
+  }
 </HubShell>

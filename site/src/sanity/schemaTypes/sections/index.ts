@@ -90,3 +90,30 @@ export const SECTION_OBJECT_TYPES = [heroObject, ...BODY_SECTIONS];
 
 /** Type names the page `sections` array accepts (excludes the hero). */
 export const BODY_SECTION_TYPE_NAMES = BODY_SECTIONS.map((s) => s.name);
+
+// Sections safe on the GATED hub pages: content / data-driven only. The
+// "pull" sections fetch at BUILD time (cmsFetch), which doesn't run at request
+// time behind the family gate, so they're excluded from the hub palette.
+const HUB_SAFE = new Set([
+  'proseSection',
+  'cardGridSection',
+  'statBandSection',
+  'ctaSection',
+  'faqSection',
+  'scheduleSection',
+  'stepListSection',
+  'compareSection',
+  'tabsSection',
+  'accordionSection',
+  'quickFactsSection',
+  'pullQuoteSection',
+  'videoSection',
+  'mapSection',
+  'countdownSection',
+  'gallerySection',
+  'splitMediaSection',
+  'formSection',
+]);
+export const HUB_SECTION_TYPE_NAMES = BODY_SECTIONS.filter((s) => HUB_SAFE.has(s.name)).map(
+  (s) => s.name,
+);

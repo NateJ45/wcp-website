@@ -104,6 +104,22 @@ pin yet (via free Nominatim, rate-limited to 1/sec) and writes back the `locatio
 idempotent, so it only touches new/changed addresses; it could also be a scheduled GitHub
 Action. The school's own pin is a fixed constant in `DirectoryMap.astro`.
 
+## Editing hub pages (the hub page-builder)
+
+Hub pages are being converted to the **page-builder**, so volunteers edit them in the
+Studio like the public pages. Each converted page reads a **`hubPage`** doc (by a fixed
+`hubKey`) at request time behind the gate: an editable **heading**, **intro**, and a stack
+of **sections** from the hub-safe palette (`HUB_SECTION_TYPE_NAMES` — content sections only;
+the build-time "pull" sections can't run behind the gate). The page's **fixed widget**
+(per-child health info, calendar embed, PayPal buttons, directory map, live campaign bars,
+class facts) stays locked in code and the editable sections wrap around it. If no `hubPage`
+doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
+
+Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting content with
+`node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids). **Converted so far:**
+Health. The rest (Calendar, Co-op Jobs, Documents, Tuition, Fundraising, Directory, Landing,
+class pages) follow the same pattern, one at a time.
+
 ---
 
 See also: [CLAUDE.md](../CLAUDE.md) (project overview and the two content paths) ·
