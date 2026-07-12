@@ -17,6 +17,7 @@ import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import { classStyles } from '@/lib/class-colors';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
@@ -178,80 +179,112 @@ const intro =
                 Map
               </button>
             </div>
-            <ul id="dir-list" class="grid gap-5 sm:grid-cols-2">
-              {entries.map((f) => (
-                <li class="wcp-lift flex gap-4 rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm hover:shadow-md dark:bg-surface">
-                  {f.photo?.asset ? (
-                    <SanityImage
-                      source={f.photo as never}
-                      alt={f.photo.alt ?? f.familyName}
-                      widths={[96, 192]}
-                      sizes="64px"
-                      class="h-16 w-16 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span
-                      class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-sky/15 font-display text-2xl text-sky-ink"
-                      aria-hidden="true"
-                    >
-                      {f.familyName.charAt(0)}
-                    </span>
-                  )}
-                  <div class="min-w-0">
-                    <p class="font-bold text-heading">The {f.familyName} Family</p>
-                    {f.parents && f.parents.length > 0 && (
-                      <p class="text-sm text-ink-muted">
-                        {f.parents
-                          .map((p) => p.name)
-                          .filter(Boolean)
-                          .join(' & ')}
-                      </p>
-                    )}
-                    {f.children && f.children.length > 0 && (
-                      <p class="mt-1 flex flex-wrap gap-1">
-                        {f.children.map((ch) => (
-                          <span class="rounded-full bg-grey px-2 py-0.5 text-xs font-semibold text-ink-muted">
-                            {ch.name}
-                            {ch.class ? ` · ${classLabel[ch.class] ?? ch.class}` : ''}
+            <ul id="dir-list" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {entries.map((f) => {
+                const kidClasses = [
+                  ...new Set((f.children ?? []).map((c) => c.class).filter(Boolean)),
+                ] as string[];
+                const contacts = (f.parents ?? []).filter((p) => p.email || p.phone);
+                return (
+                  <li class="wcp-lift group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-lg dark:bg-surface">
+                    {/* Large family photo with class overlay */}
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
+                      {f.photo?.asset ? (
+                        <SanityImage
+                          source={f.photo as never}
+                          alt={f.photo.alt ?? `The ${f.familyName} family`}
+                          widths={[400, 800]}
+                          sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 100vw"
+                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div
+                          class={`flex h-full w-full items-center justify-center ${classStyles(kidClasses[0]).softBg}`}
+                          aria-hidden="true"
+                        >
+                          <span class={`font-display text-6xl ${classStyles(kidClasses[0]).text}`}>
+                            {f.familyName.charAt(0)}
                           </span>
-                        ))}
-                      </p>
-                    )}
-                    {f.parents && f.parents.some((p) => p.email || p.phone) && (
-                      <div class="mt-2 space-y-0.5 text-sm">
-                        {f.parents
-                          .filter((p) => p.email || p.phone)
-                          .map((p) => (
-                            <p class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                              {p.name && (
-                                <span class="font-semibold text-heading">
-                                  {p.name.split(' ')[0]}
+                        </div>
+                      )}
+                      {kidClasses.length > 0 && (
+                        <div class="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
+                          {kidClasses.map((cls) => (
+                            <span
+                              class={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${classStyles(cls).badge}`}
+                            >
+                              {classLabel[cls] ?? cls}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Family info */}
+                    <div class="flex flex-1 flex-col p-5">
+                      <p class="font-display text-xl text-heading">The {f.familyName} Family</p>
+
+                      {((f.parents?.length ?? 0) > 0 || (f.children?.length ?? 0) > 0) && (
+                        <ul class="mt-2 space-y-0.5 text-sm">
+                          {(f.parents ?? []).map((p) => (
+                            <li>
+                              <span class="font-semibold text-heading">{p.name}</span>
+                              <span class="text-ink-muted"> · Parent</span>
+                            </li>
+                          ))}
+                          {(f.children ?? []).map((ch) => (
+                            <li>
+                              <span class="font-semibold text-heading">{ch.name}</span>
+                              {ch.class && (
+                                <span class={`font-semibold ${classStyles(ch.class).text}`}>
+                                  {' · '}
+                                  {classLabel[ch.class] ?? ch.class}
                                 </span>
                               )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {f.notes && (
+                        <p class="mt-3 rounded-[var(--radius)] bg-grey/70 p-3 text-sm text-ink-muted italic dark:bg-white/5">
+                          {f.notes}
+                        </p>
+                      )}
+
+                      {contacts.length > 0 && (
+                        <div class="mt-4 space-y-2">
+                          {contacts.map((p) => (
+                            <div class="flex flex-wrap items-center gap-2">
+                              <span class="w-14 shrink-0 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                                {p.name?.split(' ')[0]}
+                              </span>
                               {p.email && (
                                 <a
                                   href={`mailto:${p.email}`}
-                                  class="text-navy underline underline-offset-2 dark:text-sky"
+                                  aria-label={`Email ${p.name}`}
+                                  class="inline-flex items-center gap-1.5 rounded-full bg-amber px-3 py-1.5 text-sm font-bold text-black transition hover:brightness-95"
                                 >
-                                  {p.email}
+                                  <Icon name="mail" class="h-4 w-4" /> Email
                                 </a>
                               )}
                               {p.phone && (
                                 <a
                                   href={`tel:${p.phone}`}
-                                  class="text-navy underline underline-offset-2 dark:text-sky"
+                                  aria-label={`Call ${p.name}`}
+                                  class="inline-flex items-center gap-1.5 rounded-full bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:bg-navy/90"
                                 >
-                                  {p.phone}
+                                  <Icon name="phone" class="h-4 w-4" /> Call
                                 </a>
                               )}
-                            </p>
+                            </div>
                           ))}
-                      </div>
-                    )}
-                    {f.notes && <p class="mt-2 text-sm text-ink">{f.notes}</p>}
-                  </div>
-                </li>
-              ))}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <div id="dir-map-view" hidden>
               <DirectoryMap families={mapFamilies} preschool={PRESCHOOL} />

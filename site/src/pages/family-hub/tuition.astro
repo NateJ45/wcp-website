@@ -17,6 +17,7 @@ import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { payUrl } from '@/data/classes';
 import { getHubClasses } from '@/lib/hub-classes';
+import { classStyles } from '@/lib/class-colors';
 import { safeIcon } from '@/lib/icons';
 import { site } from '@/data/site';
 import { sanityFetch } from '@/lib/sanity';
@@ -172,7 +173,7 @@ const intro =
           >
             <div class="flex items-center gap-3">
               <span
-                class="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white"
+                class={`flex h-11 w-11 items-center justify-center rounded-full ${classStyles(c.slug).badge}`}
                 aria-hidden="true"
               >
                 <Icon name={c.icon} class="h-5 w-5" />
@@ -182,7 +183,9 @@ const intro =
                 <p class="text-sm text-ink-muted">{c.days}</p>
               </div>
               <p class="ml-auto text-right">
-                <span class="block text-2xl font-extrabold text-green-ink">{c.monthly}</span>
+                <span class={`block text-2xl font-extrabold ${classStyles(c.slug).text}`}>
+                  {c.monthly}
+                </span>
                 <span class="block text-xs text-ink-muted">/ month</span>
               </p>
             </div>
