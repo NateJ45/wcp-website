@@ -14,7 +14,17 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Icon from '@/components/Icon.astro';
 import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
 
 let calId = '';
 try {
@@ -23,6 +33,17 @@ try {
 } catch {
   calId = '';
 }
+
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'calendar' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'School Calendar';
+const intro =
+  doc?.intro ||
+  'Class days, closures, board meetings, fundraisers, and family events. All the dates that matter this school year, in one place.';
 const calEmbedUrl = calId
   ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calId)}&ctz=America/New_York&mode=MONTH&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0`
   : '';
@@ -37,8 +58,8 @@ const eventTypes = [
 ---
 
 <HubShell
-  title="School Calendar"
-  intro="Class days, closures, board meetings, fundraisers, and family events. All the dates that matter this school year, in one place."
+  title={title}
+  intro={intro}
   current="/family-hub/calendar"
   pageTitle="Calendar — WCP Family Hub"
 >
@@ -111,6 +132,9 @@ const eventTypes = [
       </Callout>
     </div>
   </Section>
+
+  {/* Editable extra section(s) the Board can add below the calendar. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
 
   <script>
     import '@/scripts/embeds';

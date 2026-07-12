@@ -13,8 +13,18 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { classes, payUrl } from '@/data/classes';
 import { site } from '@/data/site';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
 
 const studentFees = [
   { label: 'Twos & Threes', amount: '$45', payId: 'GQZ67ZRZ4W9UN' },
@@ -69,11 +79,22 @@ const faqs = [
     a: 'There’s no annual discount, but you can skip monthly billing entirely — email the Treasurer to arrange a single yearly payment.',
   },
 ];
+
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'tuition' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Tuition & Payments';
+const intro =
+  doc?.intro ||
+  'Monthly amounts by class, due dates, late fees, and the buttons to pay your tuition. Questions about your account go to the Treasurer.';
 ---
 
 <HubShell
-  title="Tuition & Payments"
-  intro="Monthly amounts by class, due dates, late fees, and the buttons to pay your tuition. Questions about your account go to the Treasurer."
+  title={title}
+  intro={intro}
   current="/family-hub/tuition"
   pageTitle="Tuition & Payments — WCP Family Hub"
 >
@@ -247,4 +268,7 @@ const faqs = [
       </a>
     </p>
   </Section>
+
+  {/* Editable extra section(s) the Board can add to the tuition page. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
 </HubShell>

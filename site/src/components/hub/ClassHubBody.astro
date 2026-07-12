@@ -11,15 +11,21 @@ import Section from '@/components/Section.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { classBySlug, payUrl, type WcpClass } from '@/data/classes';
 import { sanityFetch } from '@/lib/sanity';
 import { renderPortableText } from '@/lib/portable-text';
+import { site } from '@/data/site';
 import type { PortableTextBlock } from '@portabletext/types';
 
 interface Props {
   slug: WcpClass['slug'];
+  // Optional editable sections from the class's hubPage doc (rendered below the
+  // fixed facts + notes). Undefined/empty renders nothing.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
 }
-const { slug } = Astro.props;
+const { slug, sections } = Astro.props;
 const c = classBySlug[slug];
 
 interface ClassNote {
@@ -125,3 +131,6 @@ const facts = [
     </div>
   </div>
 </Section>
+
+{/* Editable section(s) from the class's hubPage doc (Board-managed). */}
+<SectionRenderer sections={sections} site={site} />

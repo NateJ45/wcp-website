@@ -13,7 +13,28 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { hubNav } from '@/data/hub-nav';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Welcome back, WCP family.';
+const intro =
+  doc?.intro ||
+  'Everything you need for the school year, all in one place. Pick a section above, or jump in below.';
 
 // Quick-link cards for the two most-used groups (Information + Community).
 const quickLinks = hubNav
@@ -27,8 +48,8 @@ const classLinks = (hubNav.find((g) => g.label === 'Classes')?.links ?? []).filt
 ---
 
 <HubShell
-  title="Welcome back, WCP family."
-  intro="Everything you need for the school year, all in one place. Pick a section above, or jump in below."
+  title={title}
+  intro={intro}
   current="/family-hub"
   pageTitle="Family Hub — West Chester Preschool"
 >
@@ -77,4 +98,7 @@ const classLinks = (hubNav.find((g) => g.label === 'Classes')?.links ?? []).filt
       </Section>
     )
   }
+
+  {/* Editable welcome section(s) the Board can add to the hub landing. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
 </HubShell>

@@ -131,6 +131,100 @@ const HUB_PAGES = {
       }),
     ],
   },
+
+  // The document LIBRARY itself is already editable (hubDocument docs). This
+  // hubPage carries the editable heading/intro + the closing note. (The shared
+  // Drive link is unset in code, so this replaces the placeholder Drive card.)
+  documents: {
+    title: 'Documents',
+    heading: 'Handbook & Documents',
+    intro:
+      'Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to.',
+    sections: [
+      cta({
+        title: 'Need a file that isn’t listed?',
+        lead: 'Every WCP document lives in our shared Google Drive folder. Ask any board member for the link, or check the pinned post in our Facebook group.',
+        tone: 'navy',
+      }),
+    ],
+  },
+
+  // Calendar: the click-to-load Google Calendar embed + event legend + weather
+  // note stay fixed (safety info). This carries the editable heading/intro and
+  // an empty section stack the Board can add to.
+  calendar: {
+    title: 'Calendar',
+    heading: 'School Calendar',
+    intro:
+      'Class days, closures, board meetings, fundraisers, and family events. All the dates that matter this school year, in one place.',
+    sections: [],
+  },
+
+  // Hub landing: the quick-link nav grids stay fixed; heading/intro editable.
+  home: {
+    title: 'Hub home',
+    heading: 'Welcome back, WCP family.',
+    intro:
+      'Everything you need for the school year, all in one place. Pick a section above, or jump in below.',
+    sections: [],
+  },
+
+  // Class pages: facts + pay button + class notes stay fixed (class notes are
+  // their own editable docs). Each carries the editable heading/intro.
+  twos: {
+    title: 'Twos classroom',
+    heading: 'Twos Classroom',
+    intro: 'A gentle first taste of school, in a small group.',
+    sections: [],
+  },
+  threes: {
+    title: 'Threes classroom',
+    heading: 'Threes Classroom',
+    intro: 'A joyful first real school experience.',
+    sections: [],
+  },
+  'pre-k-am': {
+    title: 'Pre-K AM classroom',
+    heading: 'Pre-K AM Classroom',
+    intro: 'Kindergarten readiness, four mornings a week.',
+    sections: [],
+  },
+  'pre-k-pm': {
+    title: 'Pre-K PM classroom',
+    heading: 'Pre-K PM Classroom',
+    intro: 'Kindergarten readiness on an afternoon schedule.',
+    sections: [],
+  },
+
+  // Co-op Jobs: the assignment widget, role descriptions (their own docs), and
+  // org chart stay fixed; heading/intro editable.
+  'coop-jobs': {
+    title: 'Co-op Jobs',
+    heading: 'Co-op Jobs',
+    intro:
+      'How WCP is run, the roles families fill each year, and the org chart that ties it together. Your job assignment lives here once it’s set.',
+    sections: [],
+  },
+
+  // Directory: the opt-in family cards + map + privacy framing stay fixed (PII);
+  // heading/intro editable.
+  directory: {
+    title: 'Directory',
+    heading: 'Family Directory',
+    intro:
+      'Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom.',
+    sections: [],
+  },
+
+  // Tuition: the pay cards, fees, PayPal buttons, and payment FAQ stay fixed
+  // (real rates + button ids); heading/intro editable.
+  tuition: {
+    title: 'Tuition',
+    heading: 'Tuition & Payments',
+    intro:
+      'Monthly amounts by class, due dates, late fees, and the buttons to pay your tuition. Questions about your account go to the Treasurer.',
+    sections: [],
+  },
 };
 
 for (const [hubKey, def] of Object.entries(HUB_PAGES)) {

@@ -16,7 +16,17 @@ import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
 
 // The preschool, geocoded once (9463 Cincinnati Columbus Rd, West Chester OH).
 const PRESCHOOL = { lat: 39.3143544, lng: -84.3750201, label: 'West Chester Preschool' };
@@ -85,11 +95,22 @@ const points = [
     body: 'Built to help families set up playdates, carpools, and friendships outside the classroom.',
   },
 ];
+
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'directory' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Family Directory';
+const intro =
+  doc?.intro ||
+  'Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom.';
 ---
 
 <HubShell
-  title="Family Directory"
-  intro="Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom."
+  title={title}
+  intro={intro}
   current="/family-hub/directory"
   pageTitle="Family Directory — WCP Family Hub"
 >
@@ -228,6 +249,9 @@ const points = [
       </Callout>
     </div>
   </Section>
+
+  {/* Editable extra section(s) the Board can add to the directory page. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
 
   <script>
     const listTab = document.getElementById('dir-tab-list');

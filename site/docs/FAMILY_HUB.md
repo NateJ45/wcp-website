@@ -60,21 +60,27 @@ details out of the public GitHub repo entirely.
 
 ## Section pages — current status
 
-All twelve section pages are **built with their real layouts and static content** from the
-current live hub (tuition rates + pay buttons, the document library, class facts, co-op
-role descriptions, health/illness policy, event-type legend, and so on). Where a section's
-real data is live or private, it shows a designed empty-state that names its source:
+All twelve section pages are **built with their real layouts** from the current live hub
+(tuition rates + pay buttons, the document library, class facts, co-op role descriptions,
+health/illness policy, event-type legend, and so on), and every page's heading, intro, and
+body sections are Board-editable through the page-builder (see "Editing hub pages" below).
+Each page's live/private data reads from Sanity behind the gate:
 
-| Section                                                | Live data source (to wire)                                                         |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Calendar                                               | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load embed)     |
-| Fundraising                                            | Sanity `campaign` docs (Treasurer updates raised amount in the Studio) — **wired** |
-| Updates, Documents, Tuition, Classes, Co-op assignment | Sanity                                                                             |
-| Directory, Health (per-child)                          | Sanity — opt-in PII, gated only                                                    |
+| Section                       | Live data source                                                         |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load) |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)      |
+| Updates                       | `update` docs (the migrated meeting blog)                                |
+| Documents                     | `hubDocument` docs                                                       |
+| Co-op Jobs                    | `coopRole` docs (+ live assignment)                                      |
+| Classes                       | `classNote` docs (+ facts in `src/data/classes.ts`)                      |
+| Tuition                       | rates + PayPal button ids in `src/data/classes.ts` (code-locked)         |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only          |
 
-Interim content lives in typed data files under `src/data/hub/` and `src/data/classes.ts`,
-so moving a section to Sanity is a change of data source, not a page rewrite. Nothing in
-those files is PII (no family or board-member names, addresses, phones, or finances).
+Where a data source is empty, the page shows a designed empty-state that names its source.
+Fallback layout content lives in typed data files under `src/data/hub/` and
+`src/data/classes.ts`, so a fixed widget always renders. Nothing in those files is PII (no
+family or board-member names, addresses, phones, or finances).
 
 ## Updates / meeting blog
 
@@ -106,8 +112,8 @@ Action. The school's own pin is a fixed constant in `DirectoryMap.astro`.
 
 ## Editing hub pages (the hub page-builder)
 
-Hub pages are being converted to the **page-builder**, so volunteers edit them in the
-Studio like the public pages. Each converted page reads a **`hubPage`** doc (by a fixed
+Every hub page is built on the **page-builder**, so volunteers edit them in the
+Studio like the public pages. Each page reads a **`hubPage`** doc (by a fixed
 `hubKey`) at request time behind the gate: an editable **heading**, **intro**, and a stack
 of **sections** from the hub-safe palette (`HUB_SECTION_TYPE_NAMES` — content sections only;
 the build-time "pull" sections can't run behind the gate). The page's **fixed widget**
@@ -116,9 +122,29 @@ class facts) stays locked in code and the editable sections wrap around it. If n
 doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
 
 Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting content with
-`node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids). **Converted so far:**
-Health, Fundraising. The rest (Calendar, Co-op Jobs, Documents, Tuition, Directory, Landing,
-class pages) follow the same pattern, one at a time.
+`node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
+
+**All hub pages are converted:** Landing (`home`), Calendar, Co-op Jobs, Documents, Tuition,
+Updates, Fundraising, Health, Directory, and the four class pages (`twos`, `threes`,
+`pre-k-am`, `pre-k-pm`). Each reads its `hubPage` doc for an editable heading, intro, and a
+stack of hub-safe sections, wrapped around a **fixed widget** that stays locked in code:
+
+| Hub page    | Fixed widget (locked)                              | Already editable elsewhere          |
+| ----------- | -------------------------------------------------- | ----------------------------------- |
+| Landing     | Quick-link nav grids                               | —                                   |
+| Calendar    | Click-to-load Google Calendar embed + event legend | `googleCalendarId` in Site Settings |
+| Co-op Jobs  | Assignment widget + role descriptions + org chart  | `coopRole` docs                     |
+| Documents   | Document library + required-forms callout          | `hubDocument` docs                  |
+| Tuition     | Pay cards, fees, PayPal buttons, payment FAQ       | (rates/button ids in code)          |
+| Updates     | Meeting-blog post list                             | `update` docs                       |
+| Fundraising | Live campaign progress bars                        | `campaign` docs                     |
+| Health      | Per-child health info (PII)                        | (per-child, gated)                  |
+| Directory   | Opt-in family cards + map + privacy framing        | `directoryEntry` docs               |
+| Class pages | Class facts + pay button + class notes             | `classNote` docs                    |
+
+The fixed widgets stay in code on purpose: they are either live/PII data (already editable
+through their own doc types) or payment-critical (real PayPal button ids and rates a volunteer
+must not be able to break). Everything else on every hub page is now Board-editable.
 
 ---
 

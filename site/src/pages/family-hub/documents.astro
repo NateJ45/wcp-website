@@ -14,8 +14,18 @@ import Section from '@/components/Section.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { documentGroups as fallbackGroups, driveFolderUrl } from '@/data/hub/documents';
 import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
 
 const GROUP_META: Record<string, { label: string; action: string; intro?: string }> = {
   required: {
@@ -67,11 +77,25 @@ try {
 } catch {
   documentGroups = fallbackGroups;
 }
+
+// Editable heading/intro + closing section(s), from the hubPage doc (falls back
+// to the built-in strings + Drive card if no doc exists yet).
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'documents' });
+} catch {
+  doc = null;
+}
+const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
+const title = doc?.heading || 'Handbook & Documents';
+const intro =
+  doc?.intro ||
+  'Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to.';
 ---
 
 <HubShell
-  title="Handbook & Documents"
-  intro="Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to."
+  title={title}
+  intro={intro}
   current="/family-hub/documents"
   pageTitle="Documents — WCP Family Hub"
 >
@@ -122,27 +146,32 @@ try {
         }
       </div>
 
-      <div class="mt-14 rounded-[var(--radius)] bg-grey p-8 text-center" data-reveal>
-        <span
-          class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white"
-          aria-hidden="true"
-        >
-          <Icon name="folder-open" class="h-6 w-6" />
-        </span>
-        <p class="text-lg font-bold text-heading">Need a file that isn’t listed?</p>
-        <p class="mx-auto mt-1 max-w-md text-ink">
-          Every WCP document lives in our shared Google Drive folder.
-        </p>
-        {
-          driveFolderUrl !== '#' ? (
-            <Button href={driveFolderUrl} variant="primary" size="md" class="mt-5">
-              Open Google Drive
-            </Button>
-          ) : (
-            <p class="mt-4 text-sm text-ink-muted">(Drive folder link is added during setup.)</p>
-          )
-        }
-      </div>
+      {
+        !hasSections && (
+          <div class="mt-14 rounded-[var(--radius)] bg-grey p-8 text-center" data-reveal>
+            <span
+              class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white"
+              aria-hidden="true"
+            >
+              <Icon name="folder-open" class="h-6 w-6" />
+            </span>
+            <p class="text-lg font-bold text-heading">Need a file that isn’t listed?</p>
+            <p class="mx-auto mt-1 max-w-md text-ink">
+              Every WCP document lives in our shared Google Drive folder.
+            </p>
+            {driveFolderUrl !== '#' ? (
+              <Button href={driveFolderUrl} variant="primary" size="md" class="mt-5">
+                Open Google Drive
+              </Button>
+            ) : (
+              <p class="mt-4 text-sm text-ink-muted">(Drive folder link is added during setup.)</p>
+            )}
+          </div>
+        )
+      }
     </div>
   </Section>
+
+  {/* Editable closing section(s) from the hubPage doc (Board-managed). */}
+  {hasSections && <SectionRenderer sections={doc!.sections} site={site} />}
 </HubShell>

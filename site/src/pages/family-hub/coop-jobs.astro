@@ -15,9 +15,18 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import OrgChart from '@/components/hub/OrgChart.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { site } from '@/data/site';
 import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
 import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
 
 const TIER_META: Record<string, { label: string; blurb: string }> = {
   board: {
@@ -75,11 +84,22 @@ try {
 } catch {
   coopTiers = coopTiersFallback;
 }
+
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'coop-jobs' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Co-op Jobs';
+const intro =
+  doc?.intro ||
+  'How WCP is run, the roles families fill each year, and the org chart that ties it together. Your job assignment lives here once it’s set.';
 ---
 
 <HubShell
-  title="Co-op Jobs"
-  intro="How WCP is run, the roles families fill each year, and the org chart that ties it together. Your job assignment lives here once it’s set."
+  title={title}
+  intro={intro}
   current="/family-hub/coop-jobs"
   pageTitle="Co-op Jobs — WCP Family Hub"
 >
@@ -214,4 +234,7 @@ try {
       </div>
     </div>
   </Section>
+
+  {/* Editable extra section(s) the Board can add to the co-op page. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
 </HubShell>

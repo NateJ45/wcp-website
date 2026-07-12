@@ -177,6 +177,51 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'edit-hub-page',
+    title: 'Edit a Family Hub page',
+    icon: '🔒',
+    lead: 'The private, families-only pages (Calendar, Documents, Tuition, the classrooms, and the rest) are editable too, the same way public pages are.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'Where they live' },
+      { kind: 'path', items: ['Family Hub', 'Hub pages (edit content)'] },
+      {
+        kind: 'p',
+        text: 'Each Family Hub page has its own entry here. Open one and you can change its **heading**, its **intro** line, and add a stack of **sections** below, exactly like a public page. Only signed-in families ever see these pages.',
+      },
+      { kind: 'h', text: 'What you can change, and what stays put' },
+      {
+        kind: 'p',
+        text: 'Every hub page has one **fixed part** that stays locked in place: the live calendar, the pay buttons on Tuition, the family directory and map, the campaign totals on Fundraising, and so on. Your editable heading, intro, and sections wrap around that fixed part, so the important buttons and private data keep working no matter what you change.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          'Change the heading and intro at the top of any hub page.',
+          'Add sections (cards, a note, an FAQ, a "get in touch" banner) below the fixed part.',
+          'Leave the heading or intro blank to fall back to the built-in wording.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You cannot break the pay buttons or the calendar.',
+        text: 'Those live in the fixed part of the page, which is not editable here on purpose. Edit the words around them freely.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Some hub content is edited in its own spot.',
+        text: 'The document list, class notes, co-op roles, and family cards each have their own place in the Family Hub menu. This page is for the wording around them.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Do it yourself vs. ask for help'],
+      },
+    ],
+  },
+
+  {
     slug: 'edit-menus',
     title: 'Edit the menus',
     icon: '🔗',

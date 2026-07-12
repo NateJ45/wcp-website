@@ -1,21 +1,40 @@
 ---
 /* ============================================================================
-   Family Hub — Twos Classroom (GATED)
+   Family Hub — Twos Classroom (GATED, page-builder)
    ============================================================================
-   Class facts + pay button + class-notes empty-state. Content is driven by
-   src/data/classes.ts via <ClassHubBody>. Class-specific notes fill from Sanity.
+   Fixed widget: class facts + pay button + class-notes (class notes are their
+   own editable docs), via <ClassHubBody>. Editable heading/intro + any extra
+   sections come from the class's hubPage doc (hubKey "twos"); falls back to the
+   built-in strings if no doc exists yet.
    ============================================================================ */
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import ClassHubBody from '@/components/hub/ClassHubBody.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'twos' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Twos Classroom';
+const intro = doc?.intro || 'A gentle first taste of school, in a small group.';
 ---
 
 <HubShell
-  title="Twos Classroom"
-  intro="A gentle first taste of school, in a small group."
+  title={title}
+  intro={intro}
   current="/family-hub/twos"
   pageTitle="Twos Classroom — WCP Family Hub"
 >
-  <ClassHubBody slug="twos" />
+  <ClassHubBody slug="twos" sections={doc?.sections} />
 </HubShell>
