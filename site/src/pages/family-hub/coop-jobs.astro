@@ -14,6 +14,7 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import OrgChart from '@/components/hub/OrgChart.astro';
 import { site } from '@/data/site';
 import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
 import { sanityFetch } from '@/lib/sanity';
@@ -182,20 +183,33 @@ try {
     </div>
   </Section>
 
-  {/* Org chart + questions */}
+  {/* Org chart */}
+  <Section bg="grey" seam labelledby="org-chart">
+    <SectionHeader
+      eyebrow="The Org Chart"
+      title="Who reports to whom"
+      titleId="org-chart"
+      lead="The Board sits at the top; chairs lead the programs and their committees. Every box except the teachers is a parent volunteer."
+    />
+    <div class="mt-12">
+      <OrgChart />
+    </div>
+  </Section>
+
+  {/* Questions */}
   <Section bg="navy" seam labelledby="coop-help">
     <div class="mx-auto max-w-2xl text-center">
       <h2 id="coop-help" class="text-white">Questions about co-op jobs?</h2>
       <p class="mx-auto mt-3 max-w-xl text-white/85">
         The Secretary is the first stop for job questions, swaps, and clarifications — she’ll route
-        it to the right chair or raise it to the Board. The full org chart is in Documents.
+        it to the right chair or raise it to the Board.
       </p>
       <div class="mt-8 flex flex-wrap justify-center gap-3">
         <Button href={`mailto:${site.email.general}`} variant="accent" size="md"
           >Email the Secretary</Button
         >
         <Button href="/family-hub/documents" variant="outline-white" size="md"
-          >View the Org Chart</Button
+          >School documents</Button
         >
       </div>
     </div>

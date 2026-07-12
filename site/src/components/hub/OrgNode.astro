@@ -1,0 +1,36 @@
+---
+/* One node in the co-op org chart. Renders itself, then recurses into its
+   reports as a nested list (semantic <ul>/<li> — a plain nested list is the
+   most screen-reader-friendly way to express a hierarchy). */
+import Icon from '@/components/Icon.astro';
+import OrgNode from './OrgNode.astro';
+
+export interface OrgNodeData {
+  name: string;
+  icon: string;
+  children?: OrgNodeData[];
+}
+const { node, level = 0 } = Astro.props as { node: OrgNodeData; level?: number };
+const tone =
+  level === 0
+    ? 'bg-navy text-white'
+    : level === 1
+      ? 'bg-sky/20 text-sky-ink dark:bg-sky/25 dark:text-white'
+      : 'border border-border bg-white text-heading dark:bg-surface';
+---
+
+<li class="org-node">
+  <div class={`org-card ${tone}`}>
+    <Icon name={node.icon} class="h-4 w-4 shrink-0" />
+    <span>{node.name}</span>
+  </div>
+  {
+    node.children && node.children.length > 0 && (
+      <ul class="org-children">
+        {node.children.map((child) => (
+          <OrgNode node={child} level={level + 1} />
+        ))}
+      </ul>
+    )
+  }
+</li>
