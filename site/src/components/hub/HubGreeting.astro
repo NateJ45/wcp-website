@@ -24,6 +24,7 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import wcpEmblem from '@/assets/brand/wcp-emblem.png';
+import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
 
 interface Props {
   tagline: string;
@@ -34,37 +35,19 @@ interface Props {
 }
 const { tagline, yearStart, yearEnd, firstDay, familyCount } = Astro.props;
 
-// Greeting: Eastern wall-clock hour, not server UTC. hourCycle 'h23' avoids the
-// "24" some ICU implementations return for midnight under hour12:false.
-const nyHour = Number(
-  new Date().toLocaleString('en-US', {
-    timeZone: 'America/New_York',
-    hour: 'numeric',
-    hourCycle: 'h23',
-  }),
-);
-const greeting = nyHour < 12 ? 'Good morning' : nyHour < 17 ? 'Good afternoon' : 'Good evening';
+const now = new Date();
+// Greeting: Eastern wall-clock hour, not server UTC.
+const greeting = greetingForHour(nyHour(now));
 
-const todayLabel = new Date().toLocaleDateString('en-US', {
+const todayLabel = now.toLocaleDateString('en-US', {
   timeZone: 'America/New_York',
   weekday: 'long',
   month: 'long',
   day: 'numeric',
 });
 
-// Whole-calendar-day math on UTC-normalized date-only strings (Sanity `date`
-// fields are "YYYY-MM-DD", no time component) — a day off at most near a
-// midnight boundary, which is fine for an at-a-glance chip, not a precise
-// instant.
-const todayUTC = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
-const daysUntil = (iso?: string): number | null => {
-  if (!iso) return null;
-  const target = new Date(`${iso}T00:00:00Z`);
-  return Math.ceil((target.getTime() - todayUTC.getTime()) / 86_400_000);
-};
-
-const daysToFirstDay = daysUntil(firstDay);
-const daysToYearEnd = daysUntil(yearEnd);
+const daysToFirstDay = daysUntil(firstDay, now);
+const daysToYearEnd = daysUntil(yearEnd, now);
 
 // Third chip: "N days 'til school" before the first day, a gentle end-of-year
 // note once the year has ended, otherwise nothing (mid-year has no single
@@ -81,26 +64,10 @@ if (daysToFirstDay !== null && daysToFirstDay > 0) {
 
 // Progress bar: only when both bounds are set AND form a real span (yearEnd
 // strictly after yearStart) — an equal or inverted pair would divide by zero
-// (or a negative span), so guard the denominator before dividing, matching
-// fundraising.astro's `pctOf` guard pattern. Clamps outside the range so a
-// stale date never produces a negative width either.
-const yearSpanMs =
-  yearStart && yearEnd
-    ? new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()
-    : 0;
-const yearPct =
-  yearStart && yearEnd && yearSpanMs > 0
-    ? Math.min(
-        100,
-        Math.max(
-          0,
-          Math.round(
-            ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) / yearSpanMs) *
-              100,
-          ),
-        ),
-      )
-    : null;
+// (or a negative span), so yearProgressPercent guards the denominator before
+// dividing, matching fundraising.astro's `pctOf` guard pattern. Clamps
+// outside the range so a stale date never produces a negative width either.
+const yearPct = yearProgressPercent(yearStart, yearEnd, now);
 
 const familiesLabel =
   familyCount && familyCount > 0 ? `${familyCount} famil${familyCount === 1 ? 'y' : 'ies'}` : null;

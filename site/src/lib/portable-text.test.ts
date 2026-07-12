@@ -1,12 +1,12 @@
-import { test, expect } from '@playwright/test';
-import { renderPortableText, renderPostBody } from '@/lib/portable-text';
+import { describe, expect, test } from 'vitest';
+import { renderPortableText, renderPostBody } from './portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 
 // =============================================================================
 // Unit tests for the Portable Text renderer's heading-level normalization.
 // =============================================================================
-// Pure, hermetic (no browser, no build, no Sanity) — runs under
-// playwright.unit.config.ts. Guards the a11y invariant that a board-authored
+// Pure, hermetic (no browser, no build, no Sanity) — runs under Vitest
+// (`npm run test:unit`). Guards the a11y invariant that a board-authored
 // body rendered directly under the page <h1> can never skip a heading level
 // (h1 -> h3 is a WCAG "heading-order" violation). See src/lib/portable-text.ts.
 // =============================================================================
@@ -37,7 +37,7 @@ const migratedBody: PortableTextBlock[] = [
   block('h3', 'New business'),
 ];
 
-test.describe('renderPortableText — heading normalization is opt-in', () => {
+describe('renderPortableText — heading normalization is opt-in', () => {
   test('leaves heading levels untouched by default (embedded section fragments)', () => {
     // Most callers embed a fragment under an existing section <h2>; promoting its
     // headings to h2 would corrupt the page outline. Default must be a no-op.
@@ -51,7 +51,7 @@ test.describe('renderPortableText — heading normalization is opt-in', () => {
   });
 });
 
-test.describe('renderPostBody — always normalizes (full article directly under h1)', () => {
+describe('renderPostBody — always normalizes (full article directly under h1)', () => {
   test('shifts a migrated h3/h4 body up to h2/h3', () => {
     expect(headingSeq(renderPostBody(migratedBody))).toEqual(['h2', 'h3', 'h2']);
   });

@@ -19,7 +19,7 @@
     "format:check": "prettier --check .",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:unit": "playwright test -c playwright.unit.config.ts",
+    "test:unit": "vitest run",
     "test:hub": "playwright test -c playwright.hub.config.ts",
     "serve:dist": "http-server dist/client -p 4321 -s -c-1 --silent",
     "check:links": "linkinator ./dist/client --recurse --skip \"^(?!http://localhost)\" --skip \"wcp-hero[.](mp4|webm)\" --skip \"/family-hub\"",
@@ -75,6 +75,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.10",
     "wrangler": "^4.110.0"
   }
 }
