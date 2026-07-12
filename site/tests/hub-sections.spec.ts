@@ -33,7 +33,9 @@ for (const route of ROUTES) {
       // the retired HubShell band specifically, which was the navy <section>
       // labelled by the page h1.)
       await expect(page.locator('h1#hub-page-title')).toBeVisible();
-      await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(0);
+      await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(
+        0,
+      );
 
       for (const theme of ['light', 'dark'] as const) {
         await page.evaluate((t) => {

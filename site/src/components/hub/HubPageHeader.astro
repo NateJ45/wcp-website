@@ -70,8 +70,10 @@ const {
         {subtitle && <p class="mt-1 max-w-2xl leading-relaxed text-ink-muted">{subtitle}</p>}
       </div>
     </div>
-    {/* Not shrink-0: a multi-button action must be able to shrink so its inner
-        flex-wrap can stack the buttons at 320px instead of overflowing. */}
+    {
+      /* Not shrink-0: a multi-button action must be able to shrink so its inner
+        flex-wrap can stack the buttons at 320px instead of overflowing. */
+    }
     <div class="empty:hidden"><slot name="action" /></div>
   </div>
 </div>
