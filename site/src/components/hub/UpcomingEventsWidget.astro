@@ -1,0 +1,60 @@
+---
+/* ============================================================================
+   UpcomingEventsWidget — next 3 events, from the same `event` docs the public
+   Events page reads. The gated hub's Calendar page is a Google Calendar
+   embed (no discrete Sanity event list there), so "See all" points at the
+   hub's Calendar destination even though this widget's data comes from
+   Sanity — that's a navigation choice, not a data-consistency issue.
+   ============================================================================ */
+import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import Icon from '@/components/Icon.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
+
+interface EventDoc {
+  _id: string;
+  title: string;
+  startDate: string;
+  allDay?: boolean;
+  location?: string;
+}
+let events: EventDoc[] = [];
+try {
+  events = (await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY)).slice(0, 3);
+} catch {
+  events = [];
+}
+
+const fmt = (iso: string) =>
+  new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+---
+
+<HomeWidgetCard
+  icon="calendar-days"
+  title="Upcoming Events"
+  seeAllHref="/family-hub/calendar"
+  empty={events.length === 0}
+  emptyText="Upcoming events will list here once they're added."
+>
+  <ul class="space-y-3">
+    {
+      events.map((e) => (
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink" aria-hidden="true">
+            <Icon name="calendar-days" class="h-4 w-4" />
+          </span>
+          <div class="min-w-0">
+            <p class="truncate font-semibold text-heading">{e.title}</p>
+            <p class="text-sm text-ink-muted">
+              {fmt(e.startDate)}
+              {e.location ? ` · ${e.location}` : ''}
+            </p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</HomeWidgetCard>

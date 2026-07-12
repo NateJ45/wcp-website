@@ -1,0 +1,56 @@
+---
+/* ============================================================================
+   AnnouncementsWidget — pinned + most-recent `update` docs (the same source
+   as the full Updates page). Pinned first, then newest, capped at 3.
+   ============================================================================ */
+import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+interface UpdateDoc {
+  _id: string;
+  title: string;
+  publishedAt: string;
+  pinned?: boolean;
+  slug?: string;
+}
+let updates: UpdateDoc[] = [];
+try {
+  updates = await sanityFetch<UpdateDoc[]>(
+    `*[_type == "update"] | order(pinned desc, publishedAt desc)[0...3]{ _id, title, publishedAt, pinned, "slug": slug.current }`,
+  );
+} catch {
+  updates = [];
+}
+
+const fmt = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+---
+
+<HomeWidgetCard
+  icon="newspaper"
+  title="Announcements"
+  seeAllHref="/family-hub/updates"
+  empty={updates.length === 0}
+  emptyText="Board and administrator announcements will list here once posted."
+>
+  <ul class="space-y-3">
+    {
+      updates.map((u) => (
+        <li>
+          {u.slug ? (
+            <a href={`/family-hub/updates/${u.slug}`} class="font-semibold text-heading hover:underline">
+              {u.pinned && <span class="mr-1 text-orange-ink">•</span>}
+              {u.title}
+            </a>
+          ) : (
+            <p class="font-semibold text-heading">
+              {u.pinned && <span class="mr-1 text-orange-ink">•</span>}
+              {u.title}
+            </p>
+          )}
+          <p class="text-sm text-ink-muted">{fmt(u.publishedAt)}</p>
+        </li>
+      ))
+    }
+  </ul>
+</HomeWidgetCard>
