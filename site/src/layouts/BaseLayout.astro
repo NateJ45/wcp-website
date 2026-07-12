@@ -7,6 +7,7 @@
    scripts. Page content goes in the <slot /> inside <main>.
    ============================================================================ */
 import '../styles/globals.css';
+import { ClientRouter } from 'astro:transitions';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
@@ -70,6 +71,30 @@ const closureAlert = await getClosureAlert();
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#01457E" />
+
+    <!-- View Transitions: smooth cross-page navigation (a soft cross-fade by
+         default). Scripts re-init on `astro:page-load` (see src/scripts/*). The
+         built-in fallback animates even in browsers without native VT support,
+         and a visitor with prefers-reduced-motion gets an instant swap, no
+         animation — so the a11y contract is preserved. -->
+    <ClientRouter />
+    <meta name="view-transition" content="same-origin" />
+
+    <!-- View-transition load tracker. Runs before the deferred module scripts,
+         so it reliably records the router's page-load lifecycle for the CURRENT
+         view: `.loaded` is true once astro:page-load has fired and is cleared at
+         the start of each navigation. src/scripts/_page-load.ts reads it so a
+         late-registering script still initializes on first paint without
+         double-running during a navigation. -->
+    <script is:inline>
+      window.__wcpVT = { loaded: false };
+      document.addEventListener('astro:before-swap', function () {
+        window.__wcpVT.loaded = false;
+      });
+      document.addEventListener('astro:page-load', function () {
+        window.__wcpVT.loaded = true;
+      });
+    </script>
 
     <!-- Open Graph + Twitter card for rich link previews. -->
     <meta property="og:type" content={ogType} />
@@ -146,28 +171,11 @@ const closureAlert = await getClosureAlert();
 
     {chrome === 'hub' ? <HubFooter /> : <Footer />}
 
-    <!-- Scroll-reveal observer. Adds .is-visible to [data-reveal] elements as
-         they enter the viewport. Under reduced-motion (or no IntersectionObserver)
-         it shows everything immediately, so nothing depends on motion to appear. -->
+    <!-- Scroll-reveal observer (own module — Astro dev doesn't reliably
+         re-execute an inline layout <script>, so this is imported like the
+         other client scripts). Re-runs on every ClientRouter navigation. -->
     <script>
-      const els = Array.from(document.querySelectorAll('[data-reveal]:not(.is-visible)'));
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce || !('IntersectionObserver' in window)) {
-        els.forEach((el) => el.classList.add('is-visible'));
-      } else {
-        const io = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                io.unobserve(entry.target);
-              }
-            });
-          },
-          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
-        );
-        els.forEach((el) => io.observe(el));
-      }
+      import '@/scripts/reveal';
     </script>
   </body>
 </html>

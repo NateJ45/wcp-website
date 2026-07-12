@@ -8,7 +8,23 @@
 //     off it); Escape and outside-click close them.
 // With no JS, the dropdown menus are visible (CSS default) and every link is
 // reachable — nothing depends on JS to navigate.
+//
+// View Transitions: the header is swapped in fresh on each navigation, so the
+// element-level listeners (toggle, close button, dropdown triggers) are
+// re-bound on `astro:page-load`. The document-level listeners (outside-click,
+// Escape) are bound ONCE and re-query live elements at event time, so they
+// never stack up.
 // ============================================================================
+import { onPageLoad } from './_page-load';
+
+function closeMobile() {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = document.getElementById('mobile-nav');
+  if (!toggle || !panel) return;
+  toggle.setAttribute('aria-expanded', 'false');
+  panel.hidden = true;
+  document.documentElement.classList.remove('overflow-hidden');
+}
 
 function initMobile() {
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
@@ -35,51 +51,57 @@ function initMobile() {
     close();
     toggle.focus();
   });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
-      close();
-      toggle.focus();
-    }
+}
+
+function closeAllDropdowns(except?: HTMLButtonElement) {
+  document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach((t) => {
+    if (t === except) return;
+    t.setAttribute('aria-expanded', 'false');
+    document.getElementById(t.getAttribute('aria-controls') ?? '')?.removeAttribute('data-open');
   });
 }
 
 function initDropdowns() {
-  const triggers = Array.from(
-    document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]'),
-  );
-  if (!triggers.length) return;
-
-  const menuOf = (t: HTMLButtonElement) =>
-    document.getElementById(t.getAttribute('aria-controls') ?? '');
-
-  const closeAll = (except?: HTMLButtonElement) => {
-    triggers.forEach((t) => {
-      if (t !== except) {
-        t.setAttribute('aria-expanded', 'false');
-        menuOf(t)?.removeAttribute('data-open');
-      }
-    });
-  };
-
-  triggers.forEach((trigger) => {
+  document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach((trigger) => {
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = trigger.getAttribute('aria-expanded') === 'true';
-      closeAll(trigger);
+      closeAllDropdowns(trigger);
       trigger.setAttribute('aria-expanded', String(!isOpen));
       // Drive styling off the menu's OWN attribute (a same-element selector is
       // more robust than the scoped sibling selector across Astro/Tailwind).
-      menuOf(trigger)?.toggleAttribute('data-open', !isOpen);
+      document
+        .getElementById(trigger.getAttribute('aria-controls') ?? '')
+        ?.toggleAttribute('data-open', !isOpen);
     });
-  });
-
-  document.addEventListener('click', () => closeAll());
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAll();
   });
 }
 
-initMobile();
-initDropdowns();
+// Document-level listeners — bound ONCE for the app lifetime; they re-query
+// live elements so they survive header swaps.
+let globalsBound = false;
+function bindGlobals() {
+  if (globalsBound) return;
+  globalsBound = true;
+
+  document.addEventListener('click', () => closeAllDropdowns());
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    if (toggle?.getAttribute('aria-expanded') === 'true') {
+      closeMobile();
+      toggle.focus();
+    }
+    closeAllDropdowns();
+  });
+}
+
+function init() {
+  initMobile();
+  initDropdowns();
+  bindGlobals();
+}
+
+onPageLoad(init);
 
 export {};

@@ -6,7 +6,9 @@
 // grid-rows open/close animation keys off it) and toggle `inert` on the panel
 // so a COLLAPSED answer's links aren't reachable by keyboard/AT. With no JS,
 // every answer is simply visible and reachable — progressive enhancement.
+// Re-binds on each View Transition navigation via onPageLoad.
 // ============================================================================
+import { onPageLoad } from './_page-load';
 
 function init() {
   const triggers = document.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]');
@@ -20,6 +22,6 @@ function init() {
   });
 }
 
-init();
+onPageLoad(init);
 
 export {};

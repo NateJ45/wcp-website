@@ -5,6 +5,13 @@ the marketing pages (which are static HTML built ahead of time), every hub page 
 **server-rendered on each request** so it can (a) check you're signed in and (b) read
 private content that must never sit in the public site or in git.
 
+> ⚠️ **TEMPORARY — the gate is currently OPEN for private preview.** `src/middleware.ts`
+> has `const HUB_OPEN = true`, which bypasses the sign-in check so the hub can be previewed
+> without a password while the site isn't public and there is no real family data in Sanity.
+> **Set `HUB_OPEN = false` and redeploy before launch, or before ANY real family PII
+> (directory, health) is entered in the Studio.** Everything below describes the gate as it
+> works when `HUB_OPEN` is `false`.
+
 ## How the gate works
 
 1. **Middleware** (`src/middleware.ts`) runs on every request to a `/family-hub/*` page.

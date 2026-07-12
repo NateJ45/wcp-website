@@ -7,7 +7,9 @@
 //   - fully skipped under prefers-reduced-motion
 //   - a cooldown so rapid hovers don't spam bursts
 //   - the canvas is aria-hidden + pointer-events:none and removes itself
+//   - re-binds on each View Transition navigation via onPageLoad
 // ============================================================================
+import { onPageLoad } from './_page-load';
 
 const COLORS = ['#ffa334', '#ffd700', '#ff8c00', '#40aaed', '#22c55e', '#ffffff'];
 const COOLDOWN_MS = 2500;
@@ -130,6 +132,6 @@ function init() {
   });
 }
 
-init();
+onPageLoad(init);
 
 export {};

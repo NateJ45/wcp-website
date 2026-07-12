@@ -29,9 +29,8 @@ const mapData = JSON.stringify({ families, preschool });
 <script>
   import 'leaflet/dist/leaflet.css';
   import L from 'leaflet';
+  import { onBeforeSwap } from '@/scripts/_page-load';
 
-  const mapEl = document.getElementById('wcp-dirmap');
-  const dataEl = document.getElementById('wcp-dirmap-data');
   let map: L.Map | undefined;
 
   function popupEl(title: string, sub?: string): HTMLElement {
@@ -47,6 +46,8 @@ const mapData = JSON.stringify({ families, preschool });
   }
 
   function initMap() {
+    const mapEl = document.getElementById('wcp-dirmap');
+    const dataEl = document.getElementById('wcp-dirmap-data');
     if (!mapEl || !dataEl) return;
     if (map) {
       map.invalidateSize();
@@ -101,7 +102,13 @@ const mapData = JSON.stringify({ families, preschool });
   }
 
   // Init when the map view is first revealed (Leaflet needs a sized container).
+  // The document listener persists across View Transitions; onBeforeSwap tears
+  // the map down so the next visit rebuilds it on the freshly swapped container.
   document.addEventListener('wcp:showmap', initMap);
+  onBeforeSwap(() => {
+    map?.remove();
+    map = undefined;
+  });
 </script>
 
 <style is:global>

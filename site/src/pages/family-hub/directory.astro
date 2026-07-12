@@ -254,18 +254,21 @@ const intro =
   <SectionRenderer sections={doc?.sections} site={site} />
 
   <script>
-    const listTab = document.getElementById('dir-tab-list');
-    const mapTab = document.getElementById('dir-tab-map');
-    const listView = document.getElementById('dir-list');
-    const mapView = document.getElementById('dir-map-view');
-    function show(isMap: boolean) {
-      if (listView) listView.hidden = isMap;
-      if (mapView) mapView.hidden = !isMap;
-      listTab?.setAttribute('aria-selected', String(!isMap));
-      mapTab?.setAttribute('aria-selected', String(isMap));
-      if (isMap) document.dispatchEvent(new CustomEvent('wcp:showmap'));
-    }
-    listTab?.addEventListener('click', () => show(false));
-    mapTab?.addEventListener('click', () => show(true));
+    import { onPageLoad } from '@/scripts/_page-load';
+    onPageLoad(() => {
+      const listTab = document.getElementById('dir-tab-list');
+      const mapTab = document.getElementById('dir-tab-map');
+      const listView = document.getElementById('dir-list');
+      const mapView = document.getElementById('dir-map-view');
+      function show(isMap: boolean) {
+        if (listView) listView.hidden = isMap;
+        if (mapView) mapView.hidden = !isMap;
+        listTab?.setAttribute('aria-selected', String(!isMap));
+        mapTab?.setAttribute('aria-selected', String(isMap));
+        if (isMap) document.dispatchEvent(new CustomEvent('wcp:showmap'));
+      }
+      listTab?.addEventListener('click', () => show(false));
+      mapTab?.addEventListener('click', () => show(true));
+    });
   </script>
 </HubShell>

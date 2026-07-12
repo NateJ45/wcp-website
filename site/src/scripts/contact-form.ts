@@ -1,6 +1,9 @@
 // Progressive enhancement for ContactForm. Without this the form does a normal
 // POST and the server redirects to /thank-you; with it, the form submits in the
 // background and swaps in the inline thank-you message instead of navigating.
+// Re-binds on each View Transition navigation via onPageLoad.
+import { onPageLoad } from './_page-load';
+
 function enhance(root: Element) {
   const form = root.querySelector<HTMLFormElement>('[data-contact-form]');
   const success = root.querySelector<HTMLElement>('[data-contact-success]');
@@ -30,4 +33,4 @@ function enhance(root: Element) {
   });
 }
 
-document.querySelectorAll('[data-contact-root]').forEach(enhance);
+onPageLoad(() => document.querySelectorAll('[data-contact-root]').forEach(enhance));

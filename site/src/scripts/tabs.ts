@@ -1,6 +1,9 @@
 // Accessible tabs behaviour (ARIA tab pattern). Each [data-tabs] block: click or
-// arrow-key to switch; only the active panel is shown. Runs on load; without it
-// the <noscript> style keeps every panel visible, so nothing is ever hidden.
+// arrow-key to switch; only the active panel is shown. Runs on each page-load
+// (View Transitions); without it the <noscript> style keeps every panel visible,
+// so nothing is ever hidden.
+import { onPageLoad } from './_page-load';
+
 function initTabs(root: Element) {
   const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
   const panels = Array.from(root.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
@@ -36,4 +39,4 @@ function initTabs(root: Element) {
   select(0);
 }
 
-document.querySelectorAll('[data-tabs]').forEach(initTabs);
+onPageLoad(() => document.querySelectorAll('[data-tabs]').forEach(initTabs));
