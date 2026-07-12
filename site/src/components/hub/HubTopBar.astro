@@ -1,0 +1,37 @@
+---
+/* ============================================================================
+   HubTopBar — mobile-only top bar for the Family Hub (< lg).
+   ============================================================================
+   Menu button opens the off-canvas drawer (hub-drawer.ts wires the toggle via
+   [data-hub-drawer-toggle]); the current page title sits between it and a
+   ThemeToggle + logo. Desktop uses HubRail directly and never sees this bar.
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/Icon.astro';
+import ThemeToggle from '@/components/ThemeToggle.astro';
+import { site } from '@/data/site';
+import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<div class="flex items-center gap-3 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden">
+  <button
+    type="button"
+    class="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+    aria-label="Open menu"
+    aria-controls="hub-drawer"
+    aria-expanded="false"
+    data-hub-drawer-toggle
+  >
+    <Icon name="menu" class="h-6 w-6" />
+  </button>
+  <span class="truncate font-bold">{title}</span>
+  <ThemeToggle tone="onNavy" class="ml-auto" />
+  <a href="/family-hub" class="inline-flex items-center" aria-label="Family Hub home">
+    <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-8 w-auto" />
+  </a>
+</div>
