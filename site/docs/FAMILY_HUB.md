@@ -51,11 +51,29 @@ undo the AA contrast fix on a fixed fill; see the comment in `HubRail.astro`).
 **bento grid** (12 columns; tile size encodes importance, with a staggered reveal on load):
 `HubGreeting` (the navy-gradient hero tile — sun-and-cloud emblem, time-of-day greeting,
 community chips, and the school-year progress bar; a theme-stable navy island like the rail),
-`ClassHelperRow` (the four class cards), and six `HomeWidgetCard`-based widgets —
-Upcoming Events, Announcements, Fundraising, Meeting Minutes, Class Photos, and Budget
-Snapshot. Class Photos and Budget Snapshot are intentionally **empty-state-only**: there's no
-photo-gallery or budget schema yet, so both widgets just show their designed empty state until
-that content model exists.
+`ClassHelperRow` (the four class helper-schedule tiles), and six `HomeWidgetCard`-based
+widgets — Upcoming Events, Announcements, Fundraising, Meeting Minutes, Class Photos, and
+Budget Snapshot — all wired to live school data (see the table below).
+
+### Live data sources (the wired widgets)
+
+The dashboard reads real school data server-side behind the gate, carried over from the old
+Squarespace hub. Each source's link/id is **Board-editable in Sanity**, with the current
+working values as per-field fallbacks in `src/data/hub/live-links.ts`:
+
+| Widget / feature                     | Live source                                                      | Edited at                                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Class helper-schedule tiles          | Per-class Google Sheets                                          | each `class` doc → **Helper schedule link**                                                     |
+| Class Photos (+ Summer Playdates)    | Google Photos albums                                             | each `class` doc → **Class photo album link**; Site Settings → **Summer Playdates photo album** |
+| Budget Snapshot                      | Budget Sheet "Budget" tab (gviz, `src/lib/gsheets.ts`)           | Site Settings → **Budget Google Sheet ID**                                                      |
+| Fundraising (widget + page totals)   | Budget Sheet "Fundraising" tab                                   | same sheet id; treasurer edits the sheet                                                        |
+| Upcoming Events (widget + Calendar)  | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs                       |
+| Calendar subscribe buttons           | built from `googleCalendarId`                                    | Site Settings → **Google Calendar ID**                                                          |
+| President's note (first-visit modal) | `presidentNote` singleton (live read)                            | Family Hub → **President's note** (bump the version stamp to re-show)                           |
+
+Every fetch is try/catch'd with a short timeout — a failed source degrades to the designed
+empty state, never a broken card. Seed/refresh the letter with
+`node scripts/seed-president-note.mjs`.
 
 ### Home dashboard settings
 

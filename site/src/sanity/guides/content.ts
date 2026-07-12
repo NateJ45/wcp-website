@@ -215,6 +215,10 @@ export const guides: Guide[] = [
         text: 'The document list, class notes, co-op roles, and family cards each have their own place in the Family Hub menu. This page is for the wording around them.',
       },
       {
+        kind: 'p',
+        text: 'The **President’s note** (the welcome letter that pops up the first time a family visits the hub) also lives in the Family Hub menu. Edit the letter freely; when it’s rewritten for a new year, change its **version stamp** so families who closed the old one see the new one. Turn **Show the note?** off to retire it.',
+      },
+      {
         kind: 'seealso',
         items: ['Build or edit a page', 'Do it yourself vs. ask for help'],
       },
@@ -508,6 +512,12 @@ export const guides: Guide[] = [
           'Change the boxes, then **Publish**.',
         ],
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Each year, refresh the two links on the Basics tab',
+        text: 'Every class has a **Helper schedule link** (the Google Sheet where families sign up to help) and a **Class photo album link** (this year’s Google Photos album). Both show on the Family Hub home, so paste in the new links at the start of each school year. The school-wide Summer Playdates album lives in **Site Settings → School year**.',
+      },
       { kind: 'h', text: 'To add a brand-new class' },
       {
         kind: 'p',
@@ -686,6 +696,10 @@ export const guides: Guide[] = [
         tone: 'primary',
         title: 'Each year, update the school-year dates',
         text: 'On the **School year** tab, fill in the school year’s **start date**, **end date**, and **first day of school**. These power the countdown and progress bar on the Family Hub home page, so they need a fresh update every year. Leave **Family count** blank unless the Directory undercounts (for example, mid-migration) — otherwise it uses a live count of families in the Directory automatically.',
+      },
+      {
+        kind: 'p',
+        text: 'The **School year** tab also holds the Family Hub’s live-data links: the **Summer Playdates photo album**, the **Budget Google Sheet ID** (the treasurer’s tracking sheet that powers the Budget Snapshot and Fundraising numbers), and the **Calendar feed link** (powers the Upcoming Events list). These rarely change — update them only when the sheet, album, or feed is replaced.',
       },
     ],
   },

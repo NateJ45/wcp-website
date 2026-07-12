@@ -48,7 +48,10 @@ export const fmtEventWeekday = (e: HubEvent) =>
 export const fmtEventTime = (e: HubEvent) =>
   e.allDay || e.start.length === 10
     ? 'All day'
-    : eventDate(e.start).toLocaleTimeString('en-US', fmtOpts({ hour: 'numeric', minute: '2-digit' }));
+    : eventDate(e.start).toLocaleTimeString(
+        'en-US',
+        fmtOpts({ hour: 'numeric', minute: '2-digit' }),
+      );
 
 // The old hub's title heuristic, kept so the two calendars agree on labels.
 export type HubEventType = 'meeting' | 'volunteer' | 'milestone' | 'event';
@@ -62,7 +65,10 @@ export function eventType(title: string): HubEventType {
 }
 
 /** Label + AA-safe decorative icon color per type (labels stay neutral text). */
-export const EVENT_TYPE_META: Record<HubEventType, { label: string; icon: string; iconColor: string }> = {
+export const EVENT_TYPE_META: Record<
+  HubEventType,
+  { label: string; icon: string; iconColor: string }
+> = {
   meeting: { label: 'Meeting', icon: 'users', iconColor: 'text-heading' },
   volunteer: { label: 'Volunteer', icon: 'heart-handshake', iconColor: 'text-sky-ink' },
   milestone: { label: 'Milestone', icon: 'graduation-cap', iconColor: 'text-orange-ink' },
