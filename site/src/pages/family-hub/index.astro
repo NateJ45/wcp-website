@@ -20,6 +20,10 @@ const quickLinks = hubNav
   .filter((g) => g.label === 'Information' || g.label === 'Community')
   .flatMap((g) => g.links)
   .filter((l) => !l.external);
+// The class rooms, so a family can jump straight to their child's page.
+const classLinks = (hubNav.find((g) => g.label === 'Classes')?.links ?? []).filter(
+  (l) => !l.external,
+);
 ---
 
 <HubShell
@@ -49,4 +53,28 @@ const quickLinks = hubNav
       }
     </ul>
   </Section>
+
+  {
+    classLinks.length > 0 && (
+      <Section bg="grey" seam labelledby="hub-classes">
+        <SectionHeader
+          eyebrow="Your Classroom"
+          title="Jump to your class"
+          titleId="hub-classes"
+          lead="Class notes, the daily schedule, and tuition for each room."
+        />
+        <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {classLinks.map((link) => (
+            <li>
+              <a href={link.href} class="block h-full no-underline">
+                <FeatureCard icon={link.icon} chip="amber" title={link.label}>
+                  Open the {link.label} room.
+                </FeatureCard>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
 </HubShell>
