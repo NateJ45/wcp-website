@@ -124,6 +124,29 @@ Or from the terminal after `npx sanity login`:
 npx sanity cors add https://www.westchesterpreschool.org --credentials
 ```
 
+### (Optional) Opening the Studio from the Sanity Dashboard
+
+Day to day you reach the Studio at its direct URL —
+`https://wcp-website.nathanjnixon86.workers.dev/studio/` (bookmark it). Sanity's **Dashboard**
+(sanity.io) is just a launcher that can open the Studio for you, but it needs a little setup,
+because our Studio lives at the `/studio` **sub-path** while the root of that domain is the
+public marketing site.
+
+- **Register the full `/studio` URL.** In **manage.sanity.io → project `niemhgev`**, set the
+  Studio/app URL to the **full path** `https://wcp-website.nathanjnixon86.workers.dev/studio/`,
+  not the bare origin. Registering only the origin makes the Dashboard open the homepage
+  instead of the Studio — that's the classic symptom ("the Dashboard just shows the website").
+- **Let the Dashboard read the schema** (only needed for Dashboard-side extras like Canvas):
+  run `npx sanity schema deploy`. The Studio is already served publicly with no auth wall,
+  which is the other requirement.
+- **Ignore Sanity's "set up auto-updates" prompt.** It wants a `deployment: { appId,
+  autoUpdates }` block in [sanity.cli.ts](../sanity.cli.ts), but auto-updates only works for
+  studios built with `sanity build`; ours is built by `@sanity/astro`, so the block does
+  nothing. The Studio stays current the simple way — it rebuilds on every deploy, so its
+  Sanity version is whatever's pinned in `package.json` (bump the dependency to update). We
+  also keep `deployment`/`studioHost` out of `sanity.cli.ts` on purpose, so a stray
+  `sanity deploy` can't recreate a separate, drifting Studio.
+
 ## Secrets & config
 
 **`SANITY_TOKEN`** (Editor token) is a **server-only secret**, never committed. It is read

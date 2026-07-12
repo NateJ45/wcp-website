@@ -18,4 +18,10 @@ import { projectId, dataset } from './src/sanity/env';
 // =============================================================================
 export default defineCliConfig({
   api: { projectId, dataset },
+  // The embedded Studio is served at /studio (set by @sanity/astro's studioBasePath in
+  // astro.config.mjs). Mirror it here so standalone Sanity CLI tooling (`sanity dev`,
+  // `sanity schema deploy`) agrees the Studio lives at the sub-path. This does NOT change
+  // the astro build — the embedded Studio's mount comes from studioBasePath, not from here,
+  // so there is no doubled `/studio/studio`.
+  project: { basePath: '/studio' },
 });
