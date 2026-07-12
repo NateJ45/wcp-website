@@ -32,14 +32,6 @@ interface HubPageDoc {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' });
-} catch {
-  doc = null;
-}
-const title = doc?.heading || 'Family Hub';
-
 interface SettingsDoc {
   tagline?: string;
   yearStart?: string;
@@ -47,19 +39,22 @@ interface SettingsDoc {
   firstDay?: string;
   familyCount?: number;
 }
-let settings: SettingsDoc | null = null;
-try {
-  settings = await sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY);
-} catch {
-  settings = null;
-}
 
-let liveFamilyCount = 0;
-try {
-  liveFamilyCount = await sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY);
-} catch {
-  liveFamilyCount = 0;
-}
+// The three page-level fetches are fully independent — run them concurrently
+// (this is the highest-traffic gated page, so three sequential round-trips
+// on top of each widget's own fetch is worth avoiding). Promise.allSettled
+// preserves each fetch's existing fallback (null / null / 0) even if one
+// (or more) of the three fails, matching the previous try/catch behavior.
+const [docResult, settingsResult, familyCountResult] = await Promise.allSettled([
+  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }),
+  sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY),
+  sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY),
+]);
+const doc = docResult.status === 'fulfilled' ? docResult.value : null;
+const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;
+const liveFamilyCount = familyCountResult.status === 'fulfilled' ? familyCountResult.value : 0;
+
+const title = doc?.heading || 'Family Hub';
 const familyCount = settings?.familyCount ?? liveFamilyCount;
 ---
 
@@ -68,8 +63,10 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
   current="/family-hub"
   pageTitle="Family Hub — West Chester Preschool"
 >
-  <Section bg="grey" label="Family Hub home">
+  <Section bg="grey" labelledby="hub-dashboard-heading">
     <div class="space-y-8">
+      <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
+
       <HubGreeting
         tagline={settings?.tagline || site.tagline}
         yearStart={settings?.yearStart}
