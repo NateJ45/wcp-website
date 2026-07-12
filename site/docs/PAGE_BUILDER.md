@@ -32,56 +32,67 @@ page {
 
 ## The section palette
 
-35 body section types + the hero. Registered in
+36 body section types + the hero. Registered in
 [`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts);
 each maps 1:1 to an existing presentational component. Some are **pull-based**:
 they hold only config (heading + band) and fetch their content from a collection
 at build time, hiding the whole band when there's nothing to show.
 
-| Section type              | Renders through                   | Used for                                                               |
-| ------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
-| `heroObject` (page field) | `Hero.astro`                      | every page's top banner (incl. home video + `<Underline>` accent word) |
-| `proseSection`            | `Prose.astro`                     | body copy; legal pages use the rich-prose variant (h2/h3/lists)        |
-| `cardGridSection`         | `FeatureCard.astro` grid          | every feature-card grid                                                |
-| `statBandSection`         | `StatBlock.astro`                 | navy stat bands (home, why-wcp)                                        |
-| `ctaSection`              | `CtaBanner.astro`                 | every call-to-action banner                                            |
-| `testimonialSection`      | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                    |
-| `teacherSection`          | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                   |
-| `classCardsSection`       | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                             |
-| `faqSection`              | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                    |
-| `schoolYearSection`       | `SchoolYear.astro`                | school-year timeline                                                   |
-| `tuitionTableSection`     | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                  |
-| `scheduleSection`         | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                      |
-| `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                      |
-| `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                             |
-| `tabsSection`             | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)    |
-| `accordionSection`        | `AccordionSection.astro`          | collapsible rows (native `<details>`, no-JS)                           |
-| `quickFactsSection`       | `QuickFactsSection.astro`         | icon + value + label facts (hours, ages, ratios)                       |
-| `pullQuoteSection`        | `PullQuoteSection.astro`          | one large statement / philosophy quote                                 |
-| `videoSection`            | `VideoSection.astro`              | YouTube/Vimeo, **click-to-load** (no iframe until clicked)             |
-| `mapSection`              | `MapSection.astro`                | Google Map + directions, **click-to-load**                             |
-| `countdownSection`        | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                    |
-| `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                        |
-| `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                          |
-| `noticeBarSection`        | cream announcement strip          | home announcement                                                      |
-| `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                     |
-| `latestPostsSection`      | `PostCard.astro` grid             | **pull** — newest News posts                                           |
-| `upcomingEventsSection`   | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                           |
-| `formSection`             | `ContactForm.astro`               | tour / contact / inquiry forms                                         |
-| `newsletterSignupSection` | `NewsletterForm.astro`            | email signup                                                           |
-| `programCardsSection`     | card grid                         | **pull** — Program docs (enrichment / summer offerings)                |
-| `boardMembersSection`     | people grid                       | **pull** — Board / leadership docs                                     |
-| `logoStripSection`        | logo row                          | **pull** — Partners **or** Accreditations (config picks which)         |
-| `campaignSection`         | progress bar                      | **pull** — the one active Fundraising campaign                         |
-| `jobsSection`             | posting list                      | **pull** — open Job postings (shows an empty-message when none)        |
-| `downloadsSection`        | resource list                     | **pull** — Resource docs (optionally one category)                     |
-| `albumSection`            | `PhotoGallery.astro`              | a referenced Photo album                                               |
+| Section type              | Renders through                   | Used for                                                                                               |
+| ------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `heroObject` (page field) | `Hero.astro`                      | every page's top banner (incl. home video + `<Underline>` accent word)                                 |
+| `proseSection`            | `Prose.astro`                     | body copy; legal pages use the rich-prose variant (h2/h3/lists)                                        |
+| `cardGridSection`         | `FeatureCard.astro` grid          | every feature-card grid                                                                                |
+| `statBandSection`         | `StatBlock.astro`                 | navy stat bands (home, why-wcp)                                                                        |
+| `ctaSection`              | `CtaBanner.astro`                 | every call-to-action banner                                                                            |
+| `testimonialSection`      | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                                                    |
+| `teacherSection`          | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                                                   |
+| `classCardsSection`       | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                                                             |
+| `faqSection`              | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                                                    |
+| `schoolYearSection`       | `SchoolYear.astro`                | school-year timeline                                                                                   |
+| `tuitionTableSection`     | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                                                  |
+| `scheduleSection`         | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                                                      |
+| `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                                                      |
+| `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                                                             |
+| `tabsSection`             | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)                                    |
+| `accordionSection`        | `AccordionSection.astro`          | collapsible rows (native `<details>`, no-JS)                                                           |
+| `quickFactsSection`       | `QuickFactsSection.astro`         | icon + value + label facts (hours, ages, ratios)                                                       |
+| `pullQuoteSection`        | `PullQuoteSection.astro`          | one large statement / philosophy quote                                                                 |
+| `videoSection`            | `VideoSection.astro`              | YouTube/Vimeo, **click-to-load** (no iframe until clicked)                                             |
+| `mapSection`              | `MapSection.astro`                | Google Map + directions, **click-to-load**                                                             |
+| `countdownSection`        | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                                                    |
+| `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                                                        |
+| `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                                                          |
+| `noticeBarSection`        | cream announcement strip          | home announcement                                                                                      |
+| `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                                                     |
+| `latestPostsSection`      | `PostCard.astro` grid             | **pull** — newest News posts                                                                           |
+| `upcomingEventsSection`   | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                                                           |
+| `formSection`             | `ContactForm.astro`               | tour / contact / inquiry forms                                                                         |
+| `newsletterSignupSection` | `NewsletterForm.astro`            | email signup                                                                                           |
+| `programCardsSection`     | card grid                         | **pull** — Program docs (enrichment / summer offerings)                                                |
+| `boardMembersSection`     | people grid                       | **pull** — Board / leadership docs                                                                     |
+| `logoStripSection`        | logo row                          | **pull** — Partners **or** Accreditations (config picks which)                                         |
+| `campaignSection`         | progress bar                      | **pull** — the one active Fundraising campaign                                                         |
+| `jobsSection`             | posting list                      | **pull** — open Job postings (shows an empty-message when none)                                        |
+| `downloadsSection`        | resource list                     | **pull** — Resource docs (optionally one category)                                                     |
+| `albumSection`            | `PhotoGallery.astro`              | a referenced Photo album                                                                               |
+| `instagramSection`        | `InstagramSection.astro`          | "Life inside WCP" bulletin-board gallery — **live IG feed** (build-time) with a curated fallback album |
 
 **Reference vs. inline.** Sections that can pull from existing docs
 (`testimonial`, `staff`, `class`, `faqItem`, `schoolYearEvent`) offer a `source`
 toggle: reference the shared doc (single source of truth) or hold one-off inline
 content. Callouts are an optional trailing field on content sections, not a
 standalone section (a standalone one would double the band padding).
+
+**Instagram "Life inside WCP".** `instagramSection` shows the school's Instagram as a
+pinned-photo bulletin board. It pulls the **live feed at build time** via
+`src/lib/instagram.ts` when the `INSTAGRAM_TOKEN` env var (a long-lived Instagram Graph
+API token) is set — add it as a GitHub Actions **and** Cloudflare secret. Until then (or
+if a fetch fails) it shows the section's **fallback album** (`album-life-inside-wcp`), so
+the home is never empty. Because the site is static, the live feed refreshes on each
+rebuild; for a fresh feed, trigger a periodic rebuild (e.g. a scheduled GitHub Action) —
+otherwise it updates whenever the site next builds. No token, no third-party script hits a
+visitor's browser.
 
 ## Brand-lock
 

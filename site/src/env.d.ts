@@ -15,6 +15,10 @@ interface ImportMetaEnv {
   readonly PUBLIC_GADS_ID?: string;
   /** Search-console / Bing site-verification token for the <meta> tag. */
   readonly PUBLIC_GSC_VERIFICATION?: string;
+  /** Long-lived Instagram Graph API token — build-time fetch of the "Life inside
+   *  WCP" feed. Non-public (server/build only). Unset → the section shows its
+   *  fallback album instead. See docs/PAGE_BUILDER.md. */
+  readonly INSTAGRAM_TOKEN?: string;
 }
 
 interface ImportMeta {

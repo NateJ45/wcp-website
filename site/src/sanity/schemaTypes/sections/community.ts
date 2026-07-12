@@ -166,3 +166,29 @@ export const albumSection = defineType({
     },
   },
 });
+
+export const instagramSection = defineType({
+  name: 'instagramSection',
+  title: 'Instagram — "Life inside WCP"',
+  type: 'object',
+  description:
+    'The bulletin-board social gallery. Shows the live Instagram feed when the site has an Instagram token; otherwise shows the fallback album below.',
+  fields: [
+    defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
+    defineField({
+      name: 'fallbackAlbum',
+      title: 'Fallback album',
+      type: 'reference',
+      to: [{ type: 'photoAlbum' }],
+      description:
+        'Photos shown until the live Instagram feed is connected (or if it is ever unavailable).',
+    }),
+    ...bandFields('navy'),
+  ],
+  preview: {
+    select: { title: 'header.title' },
+    prepare({ title }) {
+      return { title: title || 'Life inside WCP', subtitle: 'Instagram gallery' };
+    },
+  },
+});

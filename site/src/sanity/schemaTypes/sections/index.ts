@@ -42,6 +42,7 @@ import {
   jobsSection,
   downloadsSection,
   albumSection,
+  instagramSection,
 } from './community';
 
 // Body sections, in the order they appear in the "add section" menu.
@@ -81,6 +82,7 @@ const BODY_SECTIONS = [
   jobsSection,
   downloadsSection,
   albumSection,
+  instagramSection,
 ];
 
 /** All section object types to register in the schema. */
