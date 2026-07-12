@@ -14,6 +14,7 @@ const ROUTES = [
   '/family-hub/coop-jobs',
   '/family-hub/health',
   '/family-hub/calendar',
+  '/family-hub/updates',
 ];
 
 for (const route of ROUTES) {
@@ -52,3 +53,39 @@ for (const route of ROUTES) {
     });
   });
 }
+
+// The update detail page — slug discovered from the index so the test survives
+// content changes. Skips cleanly if no announcements exist in the dataset.
+test.describe('Family Hub section: update detail', () => {
+  test('renders an app header and passes axe (light + dark)', async ({ page }) => {
+    await page.goto('/family-hub/updates', { waitUntil: 'load' });
+    const href = await page
+      .locator('a[href^="/family-hub/updates/"]')
+      .first()
+      .getAttribute('href')
+      .catch(() => null);
+    test.skip(!href, 'No update posts in the dataset to open.');
+
+    await page.goto(href!, { waitUntil: 'load' });
+    await settle(page);
+    await expect(page.locator('h1#hub-page-title')).toBeVisible();
+    await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(0);
+
+    for (const theme of ['light', 'dark'] as const) {
+      await page.evaluate((t) => {
+        document.documentElement.classList.toggle('dark', t === 'dark');
+      }, theme);
+      // `heading-order` is disabled here: the post body is board-authored
+      // Portable Text (heading levels came from the Squarespace migration and
+      // can start at h3), which the reskin doesn't control — the page's own
+      // chrome is a single clean h1. Normalizing body heading levels in the
+      // renderer is tracked as a separate follow-up. Contrast + everything
+      // else stays enforced.
+      const results = await new AxeBuilder({ page }).disableRules(['heading-order']).analyze();
+      expect(
+        results.violations,
+        `[${theme}] ` + results.violations.map((v) => v.id).join(', '),
+      ).toEqual([]);
+    }
+  });
+});
