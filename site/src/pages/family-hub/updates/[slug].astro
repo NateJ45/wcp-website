@@ -1,0 +1,95 @@
+---
+/* ============================================================================
+   Family Hub — a single School Update / meeting post (GATED)
+   ============================================================================
+   Full post view for the meeting blog. Reads one `update` by slug server-side
+   behind the gate and renders its Portable Text body in full. Falls back to the
+   Updates index if the slug isn't found.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import Prose from '@/components/Prose.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { renderPortableText } from '@/lib/portable-text';
+import type { PortableTextBlock } from '@portabletext/types';
+import type { SanityImageValue } from '@/lib/image';
+
+interface UpdatePost {
+  _id: string;
+  title: string;
+  publishedAt: string;
+  audience?: string;
+  image?: SanityImageValue | null;
+  body?: PortableTextBlock[];
+}
+
+const { slug } = Astro.params;
+let post: UpdatePost | null = null;
+try {
+  post = await sanityFetch<UpdatePost | null>(
+    `*[_type == "update" && slug.current == $slug][0]{ _id, title, publishedAt, audience, image, body }`,
+    { slug },
+  );
+} catch {
+  post = null;
+}
+if (!post) return Astro.redirect('/family-hub/updates');
+
+const audienceLabel: Record<string, string> = {
+  twos: 'Twos',
+  threes: 'Threes',
+  'pre-k-am': 'Pre-K AM',
+  'pre-k-pm': 'Pre-K PM',
+};
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const bodyHtml = renderPortableText(post.body);
+---
+
+<HubShell
+  title={post.title}
+  pageTitle={`${post.title} — WCP Family Hub`}
+  description="A School Update from the WCP Board."
+>
+  <Section bg="white" labelledby="update-post">
+    <article class="mx-auto max-w-3xl" id="update-post">
+      <a
+        href="/family-hub/updates"
+        class="inline-flex items-center gap-1 text-sm font-semibold text-navy hover:underline dark:text-sky"
+      >
+        <span aria-hidden="true">←</span> All updates
+      </a>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-ink-muted">{fmtDate(post.publishedAt)}</span>
+        {
+          post.audience && post.audience !== 'all' && (
+            <span class="rounded-full bg-sky/15 px-2.5 py-0.5 text-xs font-semibold text-sky-ink">
+              {audienceLabel[post.audience] ?? post.audience}
+            </span>
+          )
+        }
+      </div>
+      {
+        post.image?.asset && (
+          <SanityImage
+            source={post.image as never}
+            alt={(post.image.alt as string) ?? post.title}
+            class="mt-6 w-full rounded-[var(--radius)] border border-border"
+            widths={[400, 800, 1200]}
+            sizes="(max-width: 768px) 100vw, 768px"
+          />
+        )
+      }
+      {
+        bodyHtml && (
+          <Prose class="mt-8">
+            <Fragment set:html={bodyHtml} />
+          </Prose>
+        )
+      }
+    </article>
+  </Section>
+</HubShell>

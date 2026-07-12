@@ -76,6 +76,21 @@ Interim content lives in typed data files under `src/data/hub/` and `src/data/cl
 so moving a section to Sanity is a change of data source, not a page rewrite. Nothing in
 those files is PII (no family or board-member names, addresses, phones, or finances).
 
+## Updates / meeting blog
+
+The **Updates** section is the meeting blog, migrated in full from the old Squarespace
+`/blog` ("School Updates"). Each post is a Sanity `update` doc with `title`, `slug`,
+`excerpt`, optional `image` (a flyer/graphic), `publishedAt`, `audience`, and a full
+`blockContent` `body` (rich text preserved as Portable Text). The index
+(`/family-hub/updates`) lists posts as cards; each links to its own gated page
+(`/family-hub/updates/[slug].astro`, SSR) that renders the body in full via
+`renderPortableText`.
+
+Re-run the one-time import any time with `node scripts/migrate-hub-updates.mjs` — it reads
+the Squarespace JSON view (`/blog?format=json`), converts each post's HTML body to Portable
+Text, uploads inline flyer images, and `createOrReplace`s `hubUpdate-<slug>` docs
+(idempotent). Going forward the Board just adds `update` docs in the Studio.
+
 ---
 
 See also: [CLAUDE.md](../CLAUDE.md) (project overview and the two content paths) ·

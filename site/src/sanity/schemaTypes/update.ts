@@ -9,6 +9,26 @@ export const update = defineType({
   fields: [
     defineField({ name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() }),
     defineField({
+      name: 'slug',
+      title: 'Link (slug)',
+      type: 'slug',
+      options: { source: 'title', maxLength: 96 },
+      description: 'Gives this post its own page. Click Generate.',
+    }),
+    defineField({
+      name: 'excerpt',
+      title: 'Excerpt',
+      type: 'text',
+      rows: 2,
+      description: 'Short summary shown in the Updates list (optional).',
+    }),
+    defineField({
+      name: 'image',
+      title: 'Image (optional)',
+      type: 'figureImage',
+      description: 'A flyer or photo shown with the post (e.g. a newsletter graphic).',
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Published',
       type: 'datetime',
