@@ -106,16 +106,29 @@ Text, uploads inline flyer images, and `createOrReplace`s `hubUpdate-<slug>` doc
 
 ## Directory & map
 
-The **Directory** reads opted-in `directoryEntry` docs (PII, gated). It has a **List /
-Map toggle**: the map is Leaflet + OpenStreetMap (no API key, no third-party tracker),
-plotting each family's home pin relative to the school (the ★). The whole map is behind
-the gate, so plotting home locations is fine here — it never touches the public site.
+The **Directory** reads opted-in `directoryEntry` docs (PII, gated), sorted
+alphabetically by `familyName` (the surname). Every family is **fully editable in Studio →
+Family Hub → Directory**: family name, each parent (name + their own email + phone), each
+child (name + class), a family photo, the home address, the map pin, notes, and a "Show in
+directory" toggle. Adding a new family = create a `directoryEntry` and turn on "Show in
+directory". It has a **List / Map toggle**: the map is Leaflet + OpenStreetMap (no API key,
+no third-party tracker), plotting each family's home pin relative to the school (the ★). The
+whole map is behind the gate, so plotting home locations is fine here — it never touches the
+public site.
 
-A family's pin comes from its `location` (a geopoint). Volunteers just type the home
-`address`; running `node scripts/geocode-directory.mjs` geocodes any address that has no
-pin yet (via free Nominatim, rate-limited to 1/sec) and writes back the `location`. It's
-idempotent, so it only touches new/changed addresses; it could also be a scheduled GitHub
-Action. The school's own pin is a fixed constant in `DirectoryMap.astro`.
+The current 2026-27 families were loaded from the old Squarespace directory code block with
+`node scripts/migrate-directory.mjs` — it parses `wcp-directory-block.html` (a gitignored PII
+file), uploads each family photo to Sanity, and `createOrReplace`s `directoryEntry-<surname>`
+docs (idempotent; a `.dir-photos.json` cache avoids re-uploading). **This is real family PII
+and never enters git** — it lives only in the gated Sanity dataset. Going forward the Board
+adds/edits families directly in the Studio.
+
+A family's pin comes from its `location` (a geopoint; the migration set it from the block's
+saved coordinates). For a family added later, a volunteer just types the home `address` and
+runs `node scripts/geocode-directory.mjs`, which geocodes any address with no pin yet (via
+free Nominatim, rate-limited to 1/sec) and writes back the `location`. It's idempotent, so it
+only touches new/changed addresses. The school's own pin is a fixed constant in
+`DirectoryMap.astro`.
 
 ## Editing hub pages (the hub page-builder)
 

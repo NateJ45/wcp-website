@@ -22,6 +22,12 @@ dist/
 # No leading slash -> matches this basename at any depth (i.e. under site/).
 .asset-map.json
 
+# Directory migration (scripts/migrate-directory.mjs): photo-URL -> Sanity asset
+# id cache, and the temp ES module it writes while parsing the family code block
+# (which holds real PII). Local-only, never commit.
+.dir-photos.json
+.families.tmp.mjs
+
 # ---- Secrets — keep API keys and tokens out of the repo ---------------------
 # .env.example / .dev.vars.example ARE committed as templates for new setups.
 .env

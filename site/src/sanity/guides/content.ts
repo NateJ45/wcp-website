@@ -801,6 +801,47 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'edit-directory',
+    title: 'Add or edit a family in the directory',
+    icon: '👪',
+    lead: 'The family directory is private to signed-in families. Add a new family, or update anyone’s details, in a few clicks.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'This is private family information.',
+        text: 'The directory holds real names, photos, addresses, and phone numbers. It only ever shows to signed-in families, never on the public website, so please treat it with care.',
+      },
+      { kind: 'path', items: ['Family Hub', 'Directory', 'pick a family (or ＋ new)'] },
+      { kind: 'h', text: 'What you can fill in' },
+      {
+        kind: 'bullets',
+        items: [
+          '**Family name**: the surname only, like "Nixon". The page shows it as "The Nixon Family" and sorts the whole list by it.',
+          '**Parents**: one entry per parent, each with their own email and phone.',
+          '**Children**: each child’s name and which class they are in.',
+          '**Family photo**, **home address**, and **notes**: all optional.',
+          '**Show in directory**: the toggle that makes a family appear. Leave it off to keep a family hidden.',
+        ],
+      },
+      { kind: 'h', text: 'Add a new family' },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Directory** and click the **＋** (new) button.',
+          'Type the surname in **Family name**, then add the parents, the children, and any photo or notes.',
+          'If you add a **home address**, save it, then ask ' +
+            SITE.contactName +
+            ' to run the map step so the pin appears. Families without an address simply do not show on the map, which is fine.',
+          'Turn on **Show in directory**, then **Publish**.',
+        ],
+      },
+      { kind: 'seealso', items: ['Do it yourself vs. ask for help'] },
+    ],
+  },
+
+  {
     slug: 'diy-vs-ask',
     title: 'Do it yourself vs. ask for help',
     icon: '🧭',
@@ -814,6 +855,7 @@ export const guides: Guide[] = [
           'Fixing a typo or rewriting a sentence.',
           'Adding or editing an FAQ, a testimonial, a teacher, or a photo.',
           'Editing a class’s schedule or description.',
+          'Adding or editing a family in the directory.',
           'Posting a Family Hub announcement.',
           'Updating the phone, email, address, or Facebook and Instagram links in Site Settings.',
           'Updating a PayPal button ID the treasurer gave you (then click the Pay button to check it opens the right amount).',

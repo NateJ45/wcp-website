@@ -9,5 +9,6 @@ test-results
 src/lib/lucide-icons.ts
 src/lib/brand-icons.ts
 
-# Generated idempotency cache from the migration scripts (also gitignored).
+# Generated idempotency caches from the migration scripts (also gitignored).
 scripts/.asset-map.json
+scripts/.dir-photos.json

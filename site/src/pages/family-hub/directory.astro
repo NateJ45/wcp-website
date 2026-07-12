@@ -42,13 +42,16 @@ interface DirChild {
   name?: string;
   class?: string;
 }
+interface DirParent {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
 interface DirEntry {
   _id: string;
   familyName: string;
-  parents?: string[];
+  parents?: DirParent[];
   children?: DirChild[];
-  email?: string;
-  phone?: string;
   photo?: { asset?: unknown; alt?: string } | null;
   location?: { lat?: number; lng?: number } | null;
   notes?: string;
@@ -56,7 +59,7 @@ interface DirEntry {
 let entries: DirEntry[] = [];
 try {
   entries = await sanityFetch<DirEntry[]>(
-    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents, children, email, phone, photo, location, notes }`,
+    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, email, phone }, children, photo, location, notes }`,
   );
 } catch {
   entries = [];
@@ -197,7 +200,12 @@ const intro =
                   <div class="min-w-0">
                     <p class="font-bold text-heading">The {f.familyName} Family</p>
                     {f.parents && f.parents.length > 0 && (
-                      <p class="text-sm text-ink-muted">{f.parents.join(' & ')}</p>
+                      <p class="text-sm text-ink-muted">
+                        {f.parents
+                          .map((p) => p.name)
+                          .filter(Boolean)
+                          .join(' & ')}
+                      </p>
                     )}
                     {f.children && f.children.length > 0 && (
                       <p class="mt-1 flex flex-wrap gap-1">
@@ -209,24 +217,37 @@ const intro =
                         ))}
                       </p>
                     )}
-                    <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                      {f.email && (
-                        <a
-                          href={`mailto:${f.email}`}
-                          class="font-semibold text-navy underline underline-offset-2 dark:text-sky"
-                        >
-                          Email
-                        </a>
-                      )}
-                      {f.phone && (
-                        <a
-                          href={`tel:${f.phone}`}
-                          class="font-semibold text-navy underline underline-offset-2 dark:text-sky"
-                        >
-                          {f.phone}
-                        </a>
-                      )}
-                    </p>
+                    {f.parents && f.parents.some((p) => p.email || p.phone) && (
+                      <div class="mt-2 space-y-0.5 text-sm">
+                        {f.parents
+                          .filter((p) => p.email || p.phone)
+                          .map((p) => (
+                            <p class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                              {p.name && (
+                                <span class="font-semibold text-heading">
+                                  {p.name.split(' ')[0]}
+                                </span>
+                              )}
+                              {p.email && (
+                                <a
+                                  href={`mailto:${p.email}`}
+                                  class="text-navy underline underline-offset-2 dark:text-sky"
+                                >
+                                  {p.email}
+                                </a>
+                              )}
+                              {p.phone && (
+                                <a
+                                  href={`tel:${p.phone}`}
+                                  class="text-navy underline underline-offset-2 dark:text-sky"
+                                >
+                                  {p.phone}
+                                </a>
+                              )}
+                            </p>
+                          ))}
+                      </div>
+                    )}
                     {f.notes && <p class="mt-2 text-sm text-ink">{f.notes}</p>}
                   </div>
                 </li>

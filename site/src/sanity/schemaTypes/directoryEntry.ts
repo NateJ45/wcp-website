@@ -31,8 +31,18 @@ export const directoryEntry = defineType({
       name: 'parents',
       title: 'Parents / guardians',
       type: 'array',
-      of: [{ type: 'string' }],
-      options: { layout: 'tags' },
+      description: 'One entry per parent, each with their own email and phone.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'name', title: 'Name', type: 'string', validation: (R) => R.required() },
+            { name: 'email', title: 'Email', type: 'string' },
+            { name: 'phone', title: 'Phone', type: 'string' },
+          ],
+          preview: { select: { title: 'name', subtitle: 'email' } },
+        },
+      ],
     }),
     defineField({
       name: 'children',
@@ -61,8 +71,6 @@ export const directoryEntry = defineType({
         },
       ],
     }),
-    defineField({ name: 'email', title: 'Email', type: 'string' }),
-    defineField({ name: 'phone', title: 'Phone', type: 'string' }),
     defineField({
       name: 'photo',
       title: 'Family photo',
