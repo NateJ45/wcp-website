@@ -65,6 +65,38 @@ to use a live count of opted-in Directory families instead). All four are meant 
 in by hand in the Studio at the start of each school year** — there's no migration script for
 them, unlike the Directory import.
 
+### The app-surface layout (every section page)
+
+Every inner section page (Updates, Calendar, Documents, Directory, Health, Tuition,
+Fundraising, Co-op Jobs, the four class pages) is laid out as **one app surface**, matching
+the Home dashboard rather than a marketing page stacked in the shell. The pattern:
+
+- `HubShell` with the **`bare`** prop — no navy title band. The page opens on the grey app
+  canvas (`<Section bg="grey">`) with a compact, left-aligned **`HubPageHeader`** (icon chip +
+  title + one-line subtitle + optional right-aligned action). `HubPageHeader` owns the page
+  `<h1 id="hub-page-title">`. Home is `bare` too — its `HubGreeting` card owns the `h1`.
+- Content lives in one card vocabulary: **`HubCard`** (`src/components/hub/HubCard.astro`) —
+  a plain panel, a titled panel (`icon`/`title` + `slot="action"`), an interactive link
+  (`as="a"`), or a list item (`as="li"`). Progress bars go through **`HubProgress`**.
+- **Empty states** everywhere via `HubEmptyState`. **Icon-chip convention:** neutral is
+  `bg-sky/15 text-sky-ink`; class-specific is `classStyles(slug).iconChip`; semantic
+  (money/health/celebration) only where it carries meaning.
+
+**Accessibility landmines this layout hit (all now guarded by `npm run test:hub`):**
+
+- **Colored `-ink` text on a soft color tint fails AA in dark mode.** `text-sky-ink` on
+  `bg-sky/15`, `text-orange-ink` on `bg-amber/25`, etc. — in dark mode the `-ink` token
+  aliases to the bright tier and the tint darkens, dropping contrast to ~4:1 or worse. Soft
+  tints are safe **only** behind an `aria-hidden` icon, with the **label text in a neutral
+  color** (`text-heading`/`text-ink`/`text-ink-muted`). This is why the calendar legend and
+  the update audience/pinned chips use neutral labels.
+- **Soft-tint chips darken further on the grey canvas** (tint over grey, not white). Keep
+  tinted chips inside white `HubCard`s, not directly on the `bg-grey` page.
+- **The class-color `badge`** (`classStyles(slug).badge`, white on the class fill, used on the
+  Directory photo overlays) pins the light-mode `-ink` hex directly — the `-ink` token flips
+  bright in dark mode and white-on-bright fails. A photo overlay is theme-independent, so the
+  fill stays the dark AA-safe shade in both modes (same reasoning as the hub rail).
+
 ## One-time setup (before the first deploy)
 
 Run these from the `site/` folder. You only do this once.
