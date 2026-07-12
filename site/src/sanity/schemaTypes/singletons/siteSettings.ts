@@ -131,6 +131,38 @@ export const siteSettings = defineType({
       description:
         'The public Google Calendar ID (e.g. abc123@group.calendar.google.com). Make the school calendar public in Google Calendar settings, paste its ID here, and it appears on the Family Hub Calendar page. Leave blank to hide the calendar.',
     }),
+    defineField({
+      name: 'yearStart',
+      title: 'School year start date',
+      type: 'date',
+      group: 'year',
+      description:
+        'First day of the school year (drives the progress bar on the Family Hub home). Leave blank to hide the progress bar.',
+    }),
+    defineField({
+      name: 'yearEnd',
+      title: 'School year end date',
+      type: 'date',
+      group: 'year',
+      description:
+        'Last day of the school year (drives the progress bar on the Family Hub home). Leave blank to hide the progress bar.',
+    }),
+    defineField({
+      name: 'firstDay',
+      title: 'First day of school',
+      type: 'date',
+      group: 'year',
+      description:
+        'Powers the "N days until school" countdown on the Family Hub home before the year starts. Leave blank to hide it.',
+    }),
+    defineField({
+      name: 'familyCount',
+      title: 'Family count (optional override)',
+      type: 'number',
+      group: 'year',
+      description:
+        'Shown on the Family Hub home. Leave blank to use a live count of opted-in Directory families instead.',
+    }),
 
     // Social & store
     defineField({ name: 'facebook', title: 'Facebook URL', type: 'url', group: 'social' }),
