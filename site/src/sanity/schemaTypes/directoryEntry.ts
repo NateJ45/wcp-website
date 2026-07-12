@@ -29,18 +29,26 @@ export const directoryEntry = defineType({
     }),
     defineField({
       name: 'parents',
-      title: 'Parents / guardians',
+      title: 'Parents & other adults',
       type: 'array',
-      description: 'One entry per parent, each with their own email and phone.',
+      description:
+        'One entry per adult, each with their own email and phone. Set the role — usually "Parent", but also "Grandparent", "Guardian", or a teacher/admin title.',
       of: [
         {
           type: 'object',
           fields: [
             { name: 'name', title: 'Name', type: 'string', validation: (R) => R.required() },
+            {
+              name: 'role',
+              title: 'Role',
+              type: 'string',
+              initialValue: 'Parent',
+              description: 'e.g. Parent, Grandparent, Guardian, or a staff title.',
+            },
             { name: 'email', title: 'Email', type: 'string' },
             { name: 'phone', title: 'Phone', type: 'string' },
           ],
-          preview: { select: { title: 'name', subtitle: 'email' } },
+          preview: { select: { title: 'name', subtitle: 'role' } },
         },
       ],
     }),

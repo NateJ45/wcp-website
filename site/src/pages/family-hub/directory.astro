@@ -45,6 +45,7 @@ interface DirChild {
 }
 interface DirParent {
   name?: string;
+  role?: string;
   email?: string;
   phone?: string;
 }
@@ -60,7 +61,7 @@ interface DirEntry {
 let entries: DirEntry[] = [];
 try {
   entries = await sanityFetch<DirEntry[]>(
-    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, email, phone }, children, photo, location, notes }`,
+    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, role, email, phone }, children, photo, location, notes }`,
   );
 } catch {
   entries = [];
@@ -119,7 +120,7 @@ const intro =
   pageTitle="Family Directory — WCP Family Hub"
 >
   <Section bg="white" labelledby="directory">
-    <div class="mx-auto max-w-3xl">
+    <div>
       <SectionHeader
         eyebrow="This Year’s Families"
         title="The WCP family directory"
@@ -187,8 +188,8 @@ const intro =
                 const contacts = (f.parents ?? []).filter((p) => p.email || p.phone);
                 return (
                   <li class="wcp-lift group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-lg dark:bg-surface">
-                    {/* Large family photo with class overlay */}
-                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
+                    {/* Large portrait family photo with class overlay */}
+                    <div class="relative aspect-[3/4] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
                       {f.photo?.asset ? (
                         <SanityImage
                           source={f.photo as never}
@@ -229,7 +230,7 @@ const intro =
                           {(f.parents ?? []).map((p) => (
                             <li>
                               <span class="font-semibold text-heading">{p.name}</span>
-                              <span class="text-ink-muted"> · Parent</span>
+                              <span class="text-ink-muted"> · {p.role || 'Parent'}</span>
                             </li>
                           ))}
                           {(f.children ?? []).map((ch) => (
@@ -296,7 +297,7 @@ const intro =
         )
       }
 
-      <Callout tone="sky" class="mt-10">
+      <Callout tone="sky" class="mx-auto mt-10 max-w-3xl">
         <strong class="font-bold text-heading">Your privacy:</strong> WCP never publishes family information.
         Directory details stay behind this family sign-in, are shared only with your permission, and are
         kept out of the public website entirely.

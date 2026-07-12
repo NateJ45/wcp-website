@@ -103,7 +103,8 @@ for (const fam of FAMILIES) {
   const emailByLabel = Object.fromEntries((fam.emails || []).map((e) => [e.label, e.value]));
   const phoneByLabel = Object.fromEntries((fam.phones || []).map((p) => [p.label, p.value]));
 
-  // Adults (parents + any staff/teacher entries) vs children (a class role).
+  // Adults (parents, grandparents, staff) vs children (a class role). Keep each
+  // adult's real role from the source instead of assuming "Parent".
   const parents = (fam.members || [])
     .filter((mm) => !CLASS_SLUG[mm.role])
     .map((mm) => {
@@ -111,6 +112,7 @@ for (const fam of FAMILIES) {
       return {
         _key: key(),
         name: mm.name,
+        role: mm.role || 'Parent',
         ...(emailByLabel[fn] ? { email: emailByLabel[fn] } : {}),
         ...(phoneByLabel[fn] ? { phone: phoneByLabel[fn] } : {}),
       };

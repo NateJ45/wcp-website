@@ -819,7 +819,7 @@ export const guides: Guide[] = [
         kind: 'bullets',
         items: [
           '**Family name**: the surname only, like "Nixon". The page shows it as "The Nixon Family" and sorts the whole list by it.',
-          '**Parents**: one entry per parent, each with their own email and phone.',
+          '**Parents & other adults**: one entry per adult, each with a role (Parent, Grandparent, and so on) and their own email and phone.',
           '**Children**: each child’s name and which class they are in.',
           '**Family photo**, **home address**, and **notes**: all optional.',
           '**Show in directory**: the toggle that makes a family appear. Leave it off to keep a family hidden.',
