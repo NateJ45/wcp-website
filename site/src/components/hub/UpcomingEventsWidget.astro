@@ -1,10 +1,10 @@
 ---
 /* ============================================================================
-   UpcomingEventsWidget — next 3 events, from the same `event` docs the public
-   Events page reads. The gated hub's Calendar page is a Google Calendar
-   embed (no discrete Sanity event list there), so "See all" points at the
-   hub's Calendar destination even though this widget's data comes from
-   Sanity — that's a navigation choice, not a data-consistency issue.
+   UpcomingEventsWidget — next 5 events, from the same `event` docs the public
+   Events page reads. Five, not three: this widget fills the bento's tall
+   side tile (row-span-2 on the home grid) and a tall tile with only three
+   rows reads sparse — match content to tile size. "See all" points at the
+   hub's Calendar page (which lists the same events above its embed).
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import Icon from '@/components/Icon.astro';
@@ -21,7 +21,7 @@ interface EventDoc {
 }
 let events: EventDoc[] = [];
 try {
-  events = (await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY)).slice(0, 3);
+  events = (await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY)).slice(0, 5);
 } catch {
   events = [];
 }

@@ -2,14 +2,28 @@
 /* ============================================================================
    HubGreeting — Family Hub home hero: greeting, chips, school-year bar
    ============================================================================
-   Server-rendered only (no client JS, no ticking countdown — see the plan's
-   non-goals). Greeting uses America/New_York wall-clock time via
-   Intl (NOT Date#getHours, which is UTC in the Workers runtime with no local
-   TZ data). Chips and the progress bar each read one or more optional
-   siteSettings date fields and simply omit themselves when unset, matching
-   the rest of the hub's "designed absence, not a broken zero" convention.
+   The dashboard's HERO TILE: a navy→sky gradient card with the sun-and-cloud
+   emblem, the time-of-day greeting in the display font, community chips, and
+   the school-year progress bar. The bento layout's dominant-color anchor —
+   every other tile stays a white card, so this is the one saturated moment
+   (restrained-color principle: one dominant color, sharp accents).
+
+   Server-rendered only (no client JS, no ticking countdown). Greeting uses
+   America/New_York wall-clock time via Intl (NOT Date#getHours, which is UTC
+   in the Workers runtime with no local TZ data). Chips and the progress bar
+   each read optional siteSettings fields and simply omit themselves when
+   unset ("designed absence, not a broken zero").
+
+   THEME-STABLE ISLAND: like the hub rail, this navy tile looks identical in
+   light and dark mode, so the gradient's sky end hardcodes the light-mode
+   sky-ink hex (#166fa8, white text 5.4:1 AA) — the token flips to bright sky
+   in dark mode, where white text would fail. Chips are white-on-white/15
+   (never colored ink on a tint — see the CLAUDE.md dark-tint gotcha).
    ============================================================================ */
+import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
+import wcpEmblem from '@/assets/brand/wcp-emblem.png';
 
 interface Props {
   tagline: string;
@@ -93,57 +107,61 @@ const familiesLabel =
 ---
 
 <div
-  class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface"
+  class="flex h-full flex-col rounded-[var(--radius)] bg-gradient-to-br from-navy to-[#166fa8] p-6 text-white shadow-sm sm:p-8"
   data-reveal
 >
-  {/* The greeting is the page h1 (Home uses HubShell `bare`, no navy band). */}
-  <h1 id="hub-page-title" class="font-display text-2xl text-balance text-heading sm:text-3xl">
-    {greeting}, WCP family!
-  </h1>
-  <p class="mt-2 text-ink-muted">{tagline}</p>
+  <div class="flex items-start justify-between gap-6">
+    <div class="min-w-0">
+      {/* The greeting is the page h1 (Home uses HubShell `bare`, no navy band). */}
+      <h1 id="hub-page-title" class="font-display text-3xl text-balance text-white sm:text-4xl">
+        {greeting}, WCP family!
+      </h1>
+      <p class="mt-2 max-w-xl text-white/90">{tagline}</p>
 
-  <ul class="mt-5 flex flex-wrap gap-2">
-    <li
-      class="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1.5 text-sm font-semibold text-sky-ink"
-    >
-      <Icon name="calendar-days" class="h-4 w-4" />
-      {todayLabel}
-    </li>
-    {
-      familiesLabel && (
-        <li class="inline-flex items-center gap-1.5 rounded-full bg-green/15 px-3 py-1.5 text-sm font-semibold text-green-ink">
-          <Icon name="users" class="h-4 w-4" />
-          {familiesLabel}
+      <ul class="mt-5 flex flex-wrap gap-2">
+        <li
+          class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold"
+        >
+          <Icon name="calendar-days" class="h-4 w-4" />
+          {todayLabel}
         </li>
-      )
-    }
-    {
-      statusChip && (
-        <li class="inline-flex items-center gap-1.5 rounded-full bg-amber/25 px-3 py-1.5 text-sm font-semibold text-orange-ink">
-          <Icon name={statusChip.icon} class="h-4 w-4" />
-          {statusChip.text}
-        </li>
-      )
-    }
-  </ul>
+        {
+          familiesLabel && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name="users" class="h-4 w-4" />
+              {familiesLabel}
+            </li>
+          )
+        }
+        {
+          statusChip && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name={statusChip.icon} class="h-4 w-4 text-amber" />
+              {statusChip.text}
+            </li>
+          )
+        }
+      </ul>
+    </div>
+
+    {/* Sun-and-cloud brand emblem — the hero's one decorative accent. */}
+    <Image src={wcpEmblem} alt="" class="hidden h-24 w-auto shrink-0 sm:block lg:h-28" />
+  </div>
 
   {
     yearPct !== null && (
-      <div class="mt-6">
-        <div class="flex items-center justify-between text-xs font-semibold text-ink-muted">
+      <div class="mt-auto max-w-xl pt-6">
+        <div class="flex items-center justify-between text-xs font-semibold text-white/90">
           <span>School year progress</span>
           <span>{yearPct}%</span>
         </div>
-        <div
-          class="mt-1.5 h-2.5 overflow-hidden rounded-full bg-navy/10 dark:bg-white/15"
-          role="progressbar"
-          aria-label="School year progress"
-          aria-valuenow={yearPct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div class="h-full rounded-full bg-sky-ink" style={`width: ${yearPct}%`} />
-        </div>
+        <HubProgress
+          class="mt-1.5"
+          value={yearPct}
+          label="School year progress"
+          fill="bg-amber"
+          track="bg-white/20"
+        />
       </div>
     )
   }

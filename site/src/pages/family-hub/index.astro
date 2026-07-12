@@ -60,36 +60,56 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 
 <HubShell title={title} bare pageTitle="Family Hub — West Chester Preschool">
   <Section bg="grey" labelledby="hub-page-title">
-    <div class="space-y-6">
+    {
+      /* Bento dashboard: a 12-column grid where tile SIZE encodes importance
+        (hero greeting largest → events/announcements features → smaller
+        accent tiles), so the layout itself carries the hierarchy. Wrapper
+        divs hold the grid spans + a staggered `--reveal-delay` (inherited by
+        each card's data-reveal transition) so the dashboard cascades in on
+        load — one orchestrated entrance, reduced-motion-safe (reveal.ts shows
+        everything instantly under prefers-reduced-motion). */
+    }
+    <div class="grid gap-4 lg:grid-cols-12">
       {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
-      <HubGreeting
-        tagline={settings?.tagline || site.tagline}
-        yearStart={settings?.yearStart}
-        yearEnd={settings?.yearEnd}
-        firstDay={settings?.firstDay}
-        familyCount={familyCount}
-      />
+      <div class="lg:col-span-8">
+        <HubGreeting
+          tagline={settings?.tagline || site.tagline}
+          yearStart={settings?.yearStart}
+          yearEnd={settings?.yearEnd}
+          firstDay={settings?.firstDay}
+          familyCount={familyCount}
+        />
+      </div>
 
-      <ClassHelperRow />
-
-      {/* sr-only h2 bridges the h1 greeting → the h3 widget cards (no skip). */}
-      <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
       {
-        /* Two-column dashboard on wide screens (like a real app): the live
-          content widgets fill the main column, the not-yet-wired ones sit in a
-          narrower side column. Collapses to one column below lg. */
+        /* sr-only h2 bridges the h1 greeting → the h3 widget cards (no skip).
+          Positioned absolutely (sr-only), so it doesn't occupy a grid cell. */
       }
-      <div class="grid gap-4 lg:grid-cols-3">
-        <div class="grid content-start gap-4 sm:grid-cols-2 lg:col-span-2">
-          <UpcomingEventsWidget />
-          <AnnouncementsWidget />
-          <MeetingMinutesWidget />
-          <FundraisingWidget />
-        </div>
-        <div class="grid content-start gap-4">
-          <ClassPhotosWidget />
-          <BudgetSnapshotWidget />
-        </div>
+      <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
+
+      <div class="lg:col-span-4 lg:row-span-2" style="--reveal-delay: 60ms">
+        <UpcomingEventsWidget />
+      </div>
+
+      <div class="lg:col-span-8" style="--reveal-delay: 120ms">
+        <ClassHelperRow />
+      </div>
+
+      <div class="lg:col-span-8" style="--reveal-delay: 180ms">
+        <AnnouncementsWidget />
+      </div>
+      <div class="lg:col-span-4" style="--reveal-delay: 240ms">
+        <FundraisingWidget />
+      </div>
+
+      <div class="lg:col-span-4" style="--reveal-delay: 300ms">
+        <MeetingMinutesWidget />
+      </div>
+      <div class="lg:col-span-4" style="--reveal-delay: 360ms">
+        <ClassPhotosWidget />
+      </div>
+      <div class="lg:col-span-4" style="--reveal-delay: 420ms">
+        <BudgetSnapshotWidget />
       </div>
     </div>
   </Section>

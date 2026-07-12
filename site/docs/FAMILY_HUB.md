@@ -47,9 +47,11 @@ surfaces — so its colors are hardcoded rather than pulled from the `--color-*-
 (those flip to the bright brand tier in dark mode for text-on-dark-page use, which would
 undo the AA contrast fix on a fixed fill; see the comment in `HubRail.astro`).
 
-`/family-hub` (Home) is the at-a-glance dashboard rendered inside that shell:
-`HubGreeting` (a time-of-day greeting, community chips, and the school-year progress bar),
-`ClassHelperRow` (the four class cards), and a grid of six `HomeWidgetCard`-based widgets —
+`/family-hub` (Home) is the at-a-glance dashboard rendered inside that shell, laid out as a
+**bento grid** (12 columns; tile size encodes importance, with a staggered reveal on load):
+`HubGreeting` (the navy-gradient hero tile — sun-and-cloud emblem, time-of-day greeting,
+community chips, and the school-year progress bar; a theme-stable navy island like the rail),
+`ClassHelperRow` (the four class cards), and six `HomeWidgetCard`-based widgets —
 Upcoming Events, Announcements, Fundraising, Meeting Minutes, Class Photos, and Budget
 Snapshot. Class Photos and Budget Snapshot are intentionally **empty-state-only**: there's no
 photo-gallery or budget schema yet, so both widgets just show their designed empty state until
