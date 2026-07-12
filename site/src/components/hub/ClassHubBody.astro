@@ -2,19 +2,23 @@
 /* ============================================================================
    ClassHubBody — shared content for a Family Hub class page
    ============================================================================
-   Given a class slug, renders the class facts (schedule/age/tuition), the pay
-   button, a class-updates empty-state (fills from Sanity later), and a link to
-   the public class page for the full program description. Keeps the four class
-   pages down to a few lines each.
+   Given a class slug, renders the app-style page: a class-colored HubPageHeader
+   (icon chip + class name + pay / see-program actions), an "at a glance" facts
+   card, the class notes (their own editable Sanity docs), and any Board-added
+   sections. All four class pages (twos / threes / pre-k-am / pre-k-pm) share
+   this body, so each page file stays a few lines. The class page uses `bare`
+   HubShell (no navy band) and lets this component own the header.
    ============================================================================ */
 import Section from '@/components/Section.astro';
-import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { payUrl, type WcpClass } from '@/data/classes';
 import { getHubClass } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
+import { cn } from '@/lib/utils';
 import { sanityFetch } from '@/lib/sanity';
 import { renderPortableText } from '@/lib/portable-text';
 import { site } from '@/data/site';
@@ -22,16 +26,24 @@ import type { PortableTextBlock } from '@portabletext/types';
 
 interface Props {
   slug: WcpClass['slug'];
+  // Editable heading/intro from the class's hubPage doc. Passed through so the
+  // Board's edits still drive the header (behavior unchanged from before the
+  // reskin); falls back to the class name / tagline.
+  title?: string;
+  intro?: string;
   // Optional editable sections from the class's hubPage doc (rendered below the
   // fixed facts + notes). Undefined/empty renders nothing.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
-const { slug, sections } = Astro.props;
+const { slug, title, intro, sections } = Astro.props;
 // Class facts + PayPal tuition button id from Sanity (data-file fallback).
 const c = await getHubClass(slug);
 // This class's brand color, used for the accents on its own page.
 const cc = classStyles(slug);
+
+const heading = title || c.name;
+const subtitle = intro || c.tagline;
 
 interface ClassNote {
   _id: string;
@@ -55,55 +67,55 @@ const fmtDate = (iso: string) =>
 const publicHref =
   slug === 'pre-k-am' || slug === 'pre-k-pm' ? '/classes/pre-k' : `/classes/${slug}`;
 
+// "At a glance" stat grid. Monthly gets a pop of class color — classStyles().text
+// is the AA-safe `-ink` tone, verified on the white card in both themes; every
+// other value stays neutral heading text.
 const facts = [
-  { icon: 'calendar-days', label: 'Days', value: c.days },
-  { icon: 'clock', label: 'Time', value: c.time },
-  { icon: c.icon, label: 'Ages', value: c.age },
-  { icon: 'circle-dollar-sign', label: 'Monthly tuition', value: `${c.monthly} / month` },
-  { icon: 'coins', label: 'Annual tuition', value: c.annual },
-  { icon: 'palette', label: 'Student fee', value: `${c.studentFee} / year` },
+  { label: 'Days', value: c.days },
+  { label: 'Time', value: c.time },
+  { label: 'Ages', value: c.age },
+  { label: 'Monthly', value: c.monthly, suffix: '/ month', accent: true },
+  { label: 'Annual', value: c.annual },
+  { label: 'Student fee', value: c.studentFee, suffix: '/ year' },
 ];
 ---
 
-<Section bg="white" label={`${c.name} class details`}>
-  <div class="mx-auto max-w-3xl">
-    {/* Facts */}
-    <div data-reveal>
-      <h2 class="text-xl font-extrabold text-heading">At a glance</h2>
-      <dl class="mt-6 grid gap-3 sm:grid-cols-2">
+<Section bg="grey" labelledby="hub-page-title">
+  <div class="mx-auto max-w-6xl">
+    <HubPageHeader title={heading} subtitle={subtitle} icon={c.icon} iconChip={cc.iconChip}>
+      <div slot="action" class="flex flex-wrap gap-2">
+        <Button href={payUrl(c.payId)} target="_blank" rel="noopener" variant="primary" size="sm">
+          Pay tuition
+        </Button>
+        <Button href={publicHref} variant="outline" size="sm">See the full program</Button>
+      </div>
+    </HubPageHeader>
+
+    {/* At a glance — one card, clean stat grid (not six bordered mini-cards). */}
+    <HubCard>
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
         {
           facts.map((f) => (
-            <div class="flex items-center gap-3 rounded-[var(--radius)] border border-border bg-white p-4 dark:bg-surface">
-              <span
-                class={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}
-                aria-hidden="true"
-              >
-                <Icon name={f.icon} class="h-5 w-5" />
-              </span>
-              <div>
-                <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                  {f.label}
-                </dt>
-                <dd class="font-bold text-heading">{f.value}</dd>
-              </div>
+            <div>
+              <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                {f.label}
+              </dt>
+              <dd class={cn('mt-0.5 font-bold', f.accent ? cc.text : 'text-heading')}>
+                {f.value}
+                {f.suffix && (
+                  <span class="ml-1 text-sm font-semibold text-ink-muted">{f.suffix}</span>
+                )}
+              </dd>
             </div>
           ))
         }
       </dl>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <Button href={payUrl(c.payId)} target="_blank" rel="noopener" variant="primary" size="md">
-          Pay {c.name} Tuition
-        </Button>
-        <Button href={publicHref} variant="outline" size="md">
-          See the full {c.name} program
-        </Button>
-      </div>
-    </div>
+    </HubCard>
 
-    {/* Class-specific updates (Sanity later) */}
-    <div class="mt-14" data-reveal>
+    {/* Class-specific notes (their own editable Sanity docs). */}
+    <div class="mt-12" data-reveal>
       <h2 class="text-xl font-extrabold text-heading">Class notes & updates</h2>
-      <p class="mt-2 text-ink">
+      <p class="mt-1 max-w-2xl text-ink-muted">
         Notes from your teacher — supply reminders, special days, and what’s happening in the {
           c.name
         }
@@ -118,9 +130,9 @@ const facts = [
             class="mt-6"
           />
         ) : (
-          <ul class="mt-6 space-y-4">
+          <ul class="mt-6 grid gap-4">
             {notes.map((n) => (
-              <li class="wcp-lift rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm hover:shadow-md dark:bg-surface">
+              <HubCard as="li">
                 <p class="text-sm text-ink-muted">{fmtDate(n.publishedAt)}</p>
                 <h3 class="mt-1 text-lg font-extrabold text-heading">{n.title}</h3>
                 {n.body && (
@@ -128,7 +140,7 @@ const facts = [
                     <Fragment set:html={renderPortableText(n.body)} />
                   </div>
                 )}
-              </li>
+              </HubCard>
             ))}
           </ul>
         )

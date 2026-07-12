@@ -30,11 +30,6 @@ const title = doc?.heading || 'Twos Classroom';
 const intro = doc?.intro || 'A gentle first taste of school, in a small group.';
 ---
 
-<HubShell
-  title={title}
-  intro={intro}
-  current="/family-hub/twos"
-  pageTitle="Twos Classroom — WCP Family Hub"
->
-  <ClassHubBody slug="twos" sections={doc?.sections} />
+<HubShell title={title} bare current="/family-hub/twos" pageTitle="Twos Classroom — WCP Family Hub">
+  <ClassHubBody slug="twos" title={title} intro={intro} sections={doc?.sections} />
 </HubShell>

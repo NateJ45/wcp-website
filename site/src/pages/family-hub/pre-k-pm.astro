@@ -32,9 +32,9 @@ const intro = doc?.intro || 'Kindergarten readiness on an afternoon schedule.';
 
 <HubShell
   title={title}
-  intro={intro}
+  bare
   current="/family-hub/pre-k-pm"
   pageTitle="Pre-K PM Classroom — WCP Family Hub"
 >
-  <ClassHubBody slug="pre-k-pm" sections={doc?.sections} />
+  <ClassHubBody slug="pre-k-pm" title={title} intro={intro} sections={doc?.sections} />
 </HubShell>
