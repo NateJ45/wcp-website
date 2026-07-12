@@ -14,6 +14,38 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Icon from '@/components/Icon.astro';
 import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+const classLabel: Record<string, string> = {
+  twos: 'Twos',
+  threes: 'Threes',
+  'pre-k-am': 'Pre-K AM',
+  'pre-k-pm': 'Pre-K PM',
+};
+
+interface DirChild {
+  name?: string;
+  class?: string;
+}
+interface DirEntry {
+  _id: string;
+  familyName: string;
+  parents?: string[];
+  children?: DirChild[];
+  email?: string;
+  phone?: string;
+  photo?: { asset?: unknown; alt?: string } | null;
+  notes?: string;
+}
+let entries: DirEntry[] = [];
+try {
+  entries = await sanityFetch<DirEntry[]>(
+    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents, children, email, phone, photo, notes }`,
+  );
+} catch {
+  entries = [];
+}
 
 const points = [
   {
@@ -69,12 +101,74 @@ const points = [
         }
       </ul>
 
-      <HubEmptyState
-        icon="contact"
-        title="Family cards will appear here"
-        source="directory"
-        class="mt-10"
-      />
+      {
+        entries.length === 0 ? (
+          <HubEmptyState
+            icon="contact"
+            title="Family cards will appear here"
+            source="directory"
+            class="mt-10"
+          />
+        ) : (
+          <ul class="mt-10 grid gap-5 sm:grid-cols-2">
+            {entries.map((f) => (
+              <li class="flex gap-4 rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm dark:bg-surface">
+                {f.photo?.asset ? (
+                  <SanityImage
+                    source={f.photo as never}
+                    alt={(f.photo.alt as string) ?? f.familyName}
+                    widths={[96, 192]}
+                    sizes="64px"
+                    class="h-16 w-16 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-sky/15 font-display text-2xl text-sky-ink"
+                    aria-hidden="true"
+                  >
+                    {f.familyName.charAt(0)}
+                  </span>
+                )}
+                <div class="min-w-0">
+                  <p class="font-bold text-heading">The {f.familyName} Family</p>
+                  {f.parents && f.parents.length > 0 && (
+                    <p class="text-sm text-ink-muted">{f.parents.join(' & ')}</p>
+                  )}
+                  {f.children && f.children.length > 0 && (
+                    <p class="mt-1 flex flex-wrap gap-1">
+                      {f.children.map((ch) => (
+                        <span class="rounded-full bg-grey px-2 py-0.5 text-xs font-semibold text-ink-muted">
+                          {ch.name}
+                          {ch.class ? ` · ${classLabel[ch.class] ?? ch.class}` : ''}
+                        </span>
+                      ))}
+                    </p>
+                  )}
+                  <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                    {f.email && (
+                      <a
+                        href={`mailto:${f.email}`}
+                        class="font-semibold text-navy underline underline-offset-2 dark:text-sky"
+                      >
+                        Email
+                      </a>
+                    )}
+                    {f.phone && (
+                      <a
+                        href={`tel:${f.phone}`}
+                        class="font-semibold text-navy underline underline-offset-2 dark:text-sky"
+                      >
+                        {f.phone}
+                      </a>
+                    )}
+                  </p>
+                  {f.notes && <p class="mt-2 text-sm text-ink">{f.notes}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
 
       <Callout tone="sky" class="mt-10">
         <strong class="font-bold text-heading">Your privacy:</strong> WCP never publishes family information.
