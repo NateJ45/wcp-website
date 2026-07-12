@@ -14,10 +14,10 @@ const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  // hub-shell.spec.ts and hub-home.spec.ts need the SSR /family-hub route,
-  // which doesn't exist in this static dist/client serve — they have their
-  // own config (playwright.hub.config.ts).
-  testIgnore: ['hub-shell.spec.ts', 'hub-home.spec.ts'],
+  // The hub specs need the SSR /family-hub routes, which don't exist in this
+  // static dist/client serve — they have their own config
+  // (playwright.hub.config.ts).
+  testIgnore: ['hub-shell.spec.ts', 'hub-home.spec.ts', 'hub-sections.spec.ts'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

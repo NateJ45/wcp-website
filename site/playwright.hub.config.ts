@@ -13,7 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
 // fresh `npm run build` first (bundled into the command below).
 export default defineConfig({
   testDir: './tests',
-  testMatch: /hub-(shell|home)\.spec\.ts$/,
+  testMatch: /hub-(shell|home|sections)\.spec\.ts$/,
   timeout: 30_000,
   webServer: {
     command: 'npm run build && npm run preview',
