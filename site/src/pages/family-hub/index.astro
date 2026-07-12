@@ -60,7 +60,7 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 
 <HubShell title={title} bare pageTitle="Family Hub — West Chester Preschool">
   <Section bg="grey" labelledby="hub-page-title">
-    <div class="space-y-8">
+    <div class="space-y-6">
       {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
       <HubGreeting
         tagline={settings?.tagline || site.tagline}
@@ -74,13 +74,22 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 
       {/* sr-only h2 bridges the h1 greeting → the h3 widget cards (no skip). */}
       <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <UpcomingEventsWidget />
-        <AnnouncementsWidget />
-        <FundraisingWidget />
-        <MeetingMinutesWidget />
-        <ClassPhotosWidget />
-        <BudgetSnapshotWidget />
+      {
+        /* Two-column dashboard on wide screens (like a real app): the live
+          content widgets fill the main column, the not-yet-wired ones sit in a
+          narrower side column. Collapses to one column below lg. */
+      }
+      <div class="grid gap-4 lg:grid-cols-3">
+        <div class="grid content-start gap-4 sm:grid-cols-2 lg:col-span-2">
+          <UpcomingEventsWidget />
+          <AnnouncementsWidget />
+          <MeetingMinutesWidget />
+          <FundraisingWidget />
+        </div>
+        <div class="grid content-start gap-4">
+          <ClassPhotosWidget />
+          <BudgetSnapshotWidget />
+        </div>
       </div>
     </div>
   </Section>
