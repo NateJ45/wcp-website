@@ -11,7 +11,8 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
@@ -19,6 +20,7 @@ import { payUrl } from '@/data/classes';
 import { getHubClasses } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
 import { safeIcon } from '@/lib/icons';
+import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, FEE_SCHEDULE_HUB_QUERY } from '@/lib/queries';
@@ -152,181 +154,175 @@ const intro =
 
 <HubShell
   title={title}
-  intro={intro}
+  bare
   current="/family-hub/tuition"
   pageTitle="Tuition & Payments — WCP Family Hub"
 >
-  {/* Class tuition — a pay card per class */}
-  <Section bg="white" labelledby="class-tuition">
-    <SectionHeader
-      eyebrow="2026-27 Class Tuition"
-      title="Pay your monthly tuition"
-      titleId="class-tuition"
-      lead="Tuition is billed monthly. Pick your class and pay by card through PayPal, or use check or cash (see below)."
-    />
-    <ul class="mt-12 grid gap-6 sm:grid-cols-2">
-      {
-        classRows.map((c) => (
-          <li
-            class="wcp-lift flex flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm hover:shadow-md dark:bg-surface"
-            data-reveal
-          >
-            <div class="flex items-center gap-3">
-              <span
-                class={`flex h-11 w-11 items-center justify-center rounded-full ${classStyles(c.slug).badge}`}
-                aria-hidden="true"
-              >
-                <Icon name={c.icon} class="h-5 w-5" />
-              </span>
-              <div>
-                <p class="text-lg font-extrabold text-heading">{c.name}</p>
-                <p class="text-sm text-ink-muted">{c.days}</p>
-              </div>
-              <p class="ml-auto text-right">
-                <span class={`block text-2xl font-extrabold ${classStyles(c.slug).text}`}>
-                  {c.monthly}
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="circle-dollar-sign">
+        <Button slot="action" href={`mailto:${site.email.general}`} variant="outline" size="sm">
+          Email the Treasurer
+        </Button>
+      </HubPageHeader>
+
+      {/* Monthly tuition — a pay card per class */}
+      <div aria-labelledby="class-tuition">
+        <h2 id="class-tuition" class="text-xl font-extrabold text-heading">
+          Monthly tuition by class
+        </h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          Billed monthly. Pay by card through PayPal, or by check or cash (see “How payments work”
+          below).
+        </p>
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+          {
+            classRows.map((c) => (
+              <HubCard as="li" class="flex flex-col">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class={cn(
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                        classStyles(c.slug).iconChip,
+                      )}
+                      aria-hidden="true"
+                    >
+                      <Icon name={c.icon} class="h-5 w-5" />
+                    </span>
+                    <div class="min-w-0">
+                      <p class="font-extrabold text-heading">{c.name}</p>
+                      <p class="text-sm text-ink-muted">{c.days}</p>
+                    </div>
+                    <p class="ml-auto text-right">
+                      <span class={cn('block text-2xl font-extrabold', classStyles(c.slug).text)}>
+                        {c.monthly}
+                      </span>
+                      <span class="block text-xs text-ink-muted">/ month</span>
+                    </p>
+                  </div>
+                  <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-4 text-sm">
+                    <dt class="text-ink-muted">Time</dt>
+                    <dd class="text-right font-semibold text-heading">{c.time}</dd>
+                    <dt class="text-ink-muted">Age</dt>
+                    <dd class="text-right font-semibold text-heading">{c.age}</dd>
+                    <dt class="text-ink-muted">Annual</dt>
+                    <dd class="text-right font-semibold text-heading">{c.annual}</dd>
+                  </dl>
+                </div>
+                <Button
+                  href={payUrl(c.payId)}
+                  target="_blank"
+                  rel="noopener"
+                  variant="primary"
+                  size="md"
+                  class="mt-5 w-full"
+                >
+                  Pay {c.name} Tuition
+                </Button>
+              </HubCard>
+            ))
+          }
+        </ul>
+      </div>
+
+      {/* Student + enrollment fees */}
+      <div class="mt-12" aria-labelledby="other-fees">
+        <h2 id="other-fees" class="text-xl font-extrabold text-heading">
+          Student & enrollment fees
+        </h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          Paid once a year. Student fees cover supplies and enrichment; enrollment fees secure your
+          spot and back your co-op commitment.
+        </p>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          {
+            studentFees.map((f) => (
+              <HubCard class="flex items-center gap-4">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
+                  aria-hidden="true"
+                >
+                  <Icon name="palette" class="h-5 w-5" />
                 </span>
-                <span class="block text-xs text-ink-muted">/ month</span>
-              </p>
-            </div>
-            <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-4 text-sm">
-              <dt class="text-ink-muted">Time</dt>
-              <dd class="text-right font-semibold text-heading">{c.time}</dd>
-              <dt class="text-ink-muted">Age</dt>
-              <dd class="text-right font-semibold text-heading">{c.age}</dd>
-              <dt class="text-ink-muted">Annual</dt>
-              <dd class="text-right font-semibold text-heading">{c.annual}</dd>
-            </dl>
-            <Button
-              href={payUrl(c.payId)}
-              target="_blank"
-              rel="noopener"
-              variant="primary"
-              size="md"
-              class="mt-5 w-full"
-            >
-              Pay {c.name} Tuition
-            </Button>
-          </li>
-        ))
-      }
-    </ul>
-  </Section>
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-heading">Student Fee · {f.label}</p>
+                  <p class="text-sm text-ink-muted">{f.amount} per year — supplies & enrichment</p>
+                </div>
+                <Button
+                  href={payUrl(f.payId)}
+                  target="_blank"
+                  rel="noopener"
+                  variant="outline"
+                  size="sm"
+                >
+                  Pay {f.amount}
+                </Button>
+              </HubCard>
+            ))
+          }
+          {
+            enrollmentFees.map((f) => (
+              <HubCard class="flex flex-col">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                      aria-hidden="true"
+                    >
+                      <Icon name={f.icon} class="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p class="font-bold text-heading">{f.title}</p>
+                      <p class="text-sm text-ink-muted">
+                        {f.amount} · {f.when}
+                      </p>
+                    </div>
+                  </div>
+                  <p class="mt-4 text-sm leading-relaxed text-ink">{f.body}</p>
+                </div>
+                <Button
+                  href={payUrl(f.payId)}
+                  target="_blank"
+                  rel="noopener"
+                  variant="primary"
+                  size="sm"
+                  class="mt-5 w-full"
+                >
+                  {f.action}
+                </Button>
+              </HubCard>
+            ))
+          }
+        </div>
+      </div>
 
-  {/* Student + enrollment fees */}
-  <Section bg="grey" labelledby="other-fees">
-    <SectionHeader
-      eyebrow="Fees"
-      title="Student & enrollment fees"
-      titleId="other-fees"
-      lead="Paid once a year. Student fees cover supplies and enrichment; enrollment fees secure your spot and back your co-op commitment."
-    />
-
-    <div class="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-2">
-      {
-        studentFees.map((f) => (
-          <div
-            class="flex items-center gap-4 rounded-[var(--radius)] bg-white p-5 shadow-sm dark:bg-surface"
-            data-reveal
-          >
-            <span
-              class="flex h-11 w-11 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
-              aria-hidden="true"
-            >
-              <Icon name="palette" class="h-5 w-5" />
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="font-bold text-heading">Student Fee · {f.label}</p>
-              <p class="text-sm text-ink-muted">{f.amount} per year — supplies & enrichment</p>
-            </div>
-            <Button
-              href={payUrl(f.payId)}
-              target="_blank"
-              rel="noopener"
-              variant="outline"
-              size="sm"
-            >
-              Pay {f.amount}
-            </Button>
-          </div>
-        ))
-      }
+      {/* How payments work */}
+      <div class="mt-12" aria-labelledby="how-pay">
+        <h2 id="how-pay" class="text-xl font-extrabold text-heading">How payments work</h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          The common questions, answered. For anything else, the Treasurer is one email away.
+        </p>
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+          {
+            faqs.map((f) => (
+              <HubCard as="li" class="flex gap-4">
+                <span
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                  aria-hidden="true"
+                >
+                  <Icon name={f.icon} class="h-5 w-5" />
+                </span>
+                <div>
+                  <p class="font-bold text-heading">{f.q}</p>
+                  <p class="mt-1 text-sm leading-relaxed text-ink-muted">{f.a}</p>
+                </div>
+              </HubCard>
+            ))
+          }
+        </ul>
+      </div>
     </div>
-
-    <div class="mx-auto mt-6 grid max-w-4xl gap-6 sm:grid-cols-2">
-      {
-        enrollmentFees.map((f) => (
-          <div
-            class="flex flex-col rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
-            data-reveal
-          >
-            <div class="flex items-center gap-3">
-              <span
-                class="flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-                aria-hidden="true"
-              >
-                <Icon name={f.icon} class="h-5 w-5" />
-              </span>
-              <div>
-                <p class="font-bold text-heading">{f.title}</p>
-                <p class="text-sm text-ink-muted">
-                  {f.amount} · {f.when}
-                </p>
-              </div>
-            </div>
-            <p class="mt-4 flex-1 text-sm leading-relaxed text-ink">{f.body}</p>
-            <Button
-              href={payUrl(f.payId)}
-              target="_blank"
-              rel="noopener"
-              variant="primary"
-              size="sm"
-              class="mt-5 w-full"
-            >
-              {f.action}
-            </Button>
-          </div>
-        ))
-      }
-    </div>
-  </Section>
-
-  {/* How payments work */}
-  <Section bg="navy" seam labelledby="how-pay">
-    <SectionHeader
-      eyebrow="How Payments Work"
-      eyebrowTone="amber"
-      title="Quick answers to the common questions"
-      titleId="how-pay"
-      lead="For anything not covered here, the Treasurer is one email away."
-    />
-    <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
-      {
-        faqs.map((f) => (
-          <li class="flex gap-4 rounded-[var(--radius)] bg-white/10 p-5" data-reveal>
-            <span
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-amber"
-              aria-hidden="true"
-            >
-              <Icon name={f.icon} class="h-5 w-5" />
-            </span>
-            <div>
-              <p class="font-bold text-white">{f.q}</p>
-              <p class="mt-1 text-sm leading-relaxed text-white/85">{f.a}</p>
-            </div>
-          </li>
-        ))
-      }
-    </ul>
-    <p class="mt-10 text-center text-white/85">
-      Questions about your account?{' '}
-      <a
-        href={`mailto:${site.email.general}`}
-        class="font-semibold text-amber underline underline-offset-2"
-      >
-        Email the Treasurer
-      </a>
-    </p>
   </Section>
 
   {/* Editable extra section(s) the Board can add to the tuition page. */}

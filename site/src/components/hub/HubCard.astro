@@ -96,7 +96,19 @@ const interactiveClasses = isInteractive
       </div>
     )
   }
-  <div class={hasHeader ? 'mt-4' : ''}>
-    {empty ? <p class="text-sm leading-relaxed text-ink-muted">{emptyText}</p> : <slot />}
-  </div>
+  {
+    /* Headerless cards render the slot as a DIRECT child so flex layouts on the
+       root (flex-col with mt-auto buttons, or items-center rows) compose. */
+  }
+  {
+    empty ? (
+      <p class={cn('text-sm leading-relaxed text-ink-muted', hasHeader && 'mt-4')}>{emptyText}</p>
+    ) : hasHeader ? (
+      <div class="mt-4">
+        <slot />
+      </div>
+    ) : (
+      <slot />
+    )
+  }
 </Tag>
