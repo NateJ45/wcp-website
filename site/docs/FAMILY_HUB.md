@@ -26,6 +26,27 @@ The password is a **single shared password for the whole school**, rotated each 
 not a per-family login. That matches the old Squarespace hub and keeps it simple for a
 volunteer board.
 
+## The hub shell
+
+Every `/family-hub/*` page renders inside `HubShell` → `BaseLayout chrome="hub"`, which
+draws the hub's persistent chrome:
+
+- **Desktop (≥ `lg`):** a sticky left navigation **rail** (`HubRail.astro`), built from the
+  single grouped nav config in `src/data/hub-nav.ts` — Home, News & Events, Resources,
+  Money, Community, Classes — with the active page highlighted, a light/dark `ThemeToggle`,
+  and Sign out.
+- **Mobile (< `lg`):** a top bar (`HubTopBar.astro`, the page title + menu button) that opens
+  the same nav as a slide-in **drawer** (`HubRail` rendered a second time as the drawer's
+  contents). `src/scripts/hub-drawer.ts` handles open/close, a focus trap, Esc-to-close, a
+  backdrop tap, and body-scroll lock — progressive enhancement over inert markup already in
+  the DOM.
+
+Sign out still posts to `/api/hub-logout` (unchanged). The rail is a fixed navy "island" —
+it looks the same in light and dark mode, unlike the marketing pages' theme-reactive
+surfaces — so its colors are hardcoded rather than pulled from the `--color-*-ink` tokens
+(those flip to the bright brand tier in dark mode for text-on-dark-page use, which would
+undo the AA contrast fix on a fixed fill; see the comment in `HubRail.astro`).
+
 ## One-time setup (before the first deploy)
 
 Run these from the `site/` folder. You only do this once.

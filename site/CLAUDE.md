@@ -42,6 +42,7 @@ npm run build        # astro build → dist/client (static) + dist/server (Worke
 npm run check        # astro check (types) + oxlint
 npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + 320px reflow (builds fresh, serves dist)
+npm run test:hub     # Playwright: SSR Family Hub shell (rail, drawer, 320px, a11y) — separate config, see gotcha
 npm run check:links  # linkinator over dist/client
 npm run deploy       # build + wrangler deploy -c dist/server/wrangler.json  (see gotcha)
 ```
@@ -103,6 +104,9 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - **Hero videos are gitignored** (`public/hero/*.mp4|webm`, belong in R2/Sanity), so they 404 on a clean build and the site degrades to the poster image. The link-check and tests skip them.
 - **Windows-only:** local `lhci autorun` can exit 1 on an `EPERM` temp-cleanup crash even when the audit passed. Linux CI is the real Lighthouse gate.
 - **Site search needs a build.** Pagefind indexes `dist/client` in the `postbuild` npm hook, so `/search` returns nothing under `astro dev` — test it against a real build. `data-pagefind-body` on `<main>` limits the index to page content (and skips the Studio).
+- **The static a11y/reflow/smoke suites can't reach the gated hub** — they serve the static `dist/client`, and `/family-hub/*` is SSR-only (excluded on purpose, see `tests/routes.ts`). Hub shell coverage lives in `npm run test:hub` (`playwright.hub.config.ts`), a separate config. It boots with `npm run build && npm run preview` (wrangler), **not** `astro dev`: on this Astro 7 + Cloudflare stack, `astro dev` always daemonizes to a detached background process and the launching command exits immediately, which Playwright's `webServer` reads as a startup failure even though the server is actually up.
+- **Client scripts loaded once for both hub chrome pieces.** The hub drawer (`src/scripts/hub-drawer.ts`) and theme toggle (`src/scripts/theme.ts`) are imported once from `BaseLayout`'s hub branch, not per-component — `HubRail` is rendered twice (desktop rail + the drawer's contents), and `theme.ts` already re-queries all `[data-theme-toggle]` instances on click, so this stays in sync without extra wiring. Both use `onPageLoad`/`onBeforeSwap` (View-Transitions safe).
+- **`--color-*-ink` tokens are for text on a dark PAGE, not for a fill inside a fixed-chrome island.** In dark mode `globals.css` redefines `--color-orange-ink` (and the other ink tokens) to alias the bright tier, because bright colors read fine as text on a dark page. The hub rail's navy chrome doesn't change with the site theme, so its active-link fill hardcodes the ink hex (`#a85300`) instead of the token — using the var there would silently break contrast in dark mode. See the comment in `HubRail.astro`.
 
 ## Deploy & CI
 
