@@ -47,7 +47,7 @@ const groups = hubNav.slice(1);
     {
       groups.map((group) => (
         <div class="mt-3">
-          <p class="px-3 pb-1 text-[0.62rem] font-extrabold tracking-wider text-white/45 uppercase">
+          <p class="px-3 pb-1 text-[0.62rem] font-extrabold tracking-wider text-amber uppercase">
             {group.label}
           </p>
           {group.links.map((l) => (
@@ -82,7 +82,8 @@ const groups = hubNav.slice(1);
 </div>
 
 <style>
-  /* Rail link. Active = navy-on-orange (passes WCAG AA; white-on-orange fails). */
+  /* Rail link. Active = white-on-orange-ink (5.4:1 AA); bright orange only
+     measures ~4.19:1 with navy text at this size, so it can't be the fill. */
   .hub-rail-link {
     display: flex;
     align-items: center;
@@ -102,8 +103,14 @@ const groups = hubNav.slice(1);
     color: #ffffff;
   }
   .hub-rail-link[aria-current='page'] {
-    background-color: var(--color-orange);
-    color: var(--color-navy);
+    /* Hardcoded, not var(--color-orange-ink): that token is redefined to
+       bright orange in dark mode (it's meant for TEXT on a dark page, see
+       globals.css's dark-mode note), but this rail is a fixed navy island
+       that must look identical in both themes. White-on-orange-ink is
+       5.4:1 AA; navy-on-bright-orange only measures ~4.19:1 at this
+       size/weight and fails. */
+    background-color: #a85300;
+    color: #ffffff;
     font-weight: 800;
   }
   @media (prefers-reduced-motion: reduce) {
