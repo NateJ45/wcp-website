@@ -1,23 +1,29 @@
 ---
 /* ============================================================================
-   Family Hub — landing (GATED)
+   Family Hub — landing / dashboard (GATED)
    ============================================================================
    prerender=false so the middleware runs the sign-in check at request time.
-   Only signed-in families reach this. Content is deliberately non-sensitive
-   (welcome + quick links); the real family data lives in the section pages,
-   sourced from Sanity behind this same gate.
+   The at-a-glance dashboard: greeting + community chips + school-year
+   progress bar (HubGreeting), the four class cards (ClassHelperRow), and six
+   compact content widgets. Board-editable content from the "home" hubPage
+   doc still renders below via SectionRenderer, unchanged from every other
+   hub page.
    ============================================================================ */
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
-import FeatureCard from '@/components/FeatureCard.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { classColor } from '@/lib/class-colors';
-import { hubNav } from '@/data/hub-nav';
+import HubGreeting from '@/components/hub/HubGreeting.astro';
+import ClassHelperRow from '@/components/hub/ClassHelperRow.astro';
+import UpcomingEventsWidget from '@/components/hub/UpcomingEventsWidget.astro';
+import AnnouncementsWidget from '@/components/hub/AnnouncementsWidget.astro';
+import ClassPhotosWidget from '@/components/hub/ClassPhotosWidget.astro';
+import MeetingMinutesWidget from '@/components/hub/MeetingMinutesWidget.astro';
+import BudgetSnapshotWidget from '@/components/hub/BudgetSnapshotWidget.astro';
+import FundraisingWidget from '@/components/hub/FundraisingWidget.astro';
 import { sanityFetch } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
@@ -32,77 +38,58 @@ try {
 } catch {
   doc = null;
 }
-const title = doc?.heading || 'Welcome back, WCP family.';
-const intro =
-  doc?.intro ||
-  'Everything you need for the school year, all in one place. Pick a section above, or jump in below.';
+const title = doc?.heading || 'Family Hub';
 
-// Quick-link cards for the two most-used groups (Information + Community).
-const quickLinks = hubNav
-  .filter((g) => g.label === 'Information' || g.label === 'Community')
-  .flatMap((g) => g.links)
-  .filter((l) => !l.external);
-// The class rooms, so a family can jump straight to their child's page.
-const classLinks = (hubNav.find((g) => g.label === 'Classes')?.links ?? []).filter(
-  (l) => !l.external,
-);
+interface SettingsDoc {
+  tagline?: string;
+  yearStart?: string;
+  yearEnd?: string;
+  firstDay?: string;
+  familyCount?: number;
+}
+let settings: SettingsDoc | null = null;
+try {
+  settings = await sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY);
+} catch {
+  settings = null;
+}
+
+let liveFamilyCount = 0;
+try {
+  liveFamilyCount = await sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY);
+} catch {
+  liveFamilyCount = 0;
+}
+const familyCount = settings?.familyCount ?? liveFamilyCount;
 ---
 
 <HubShell
   title={title}
-  intro={intro}
   current="/family-hub"
   pageTitle="Family Hub — West Chester Preschool"
 >
-  <Section bg="white" labelledby="hub-quicklinks">
-    <SectionHeader
-      eyebrow="Your Shortcuts"
-      title="Jump right in"
-      titleId="hub-quicklinks"
-      lead="The things families reach for most, one tap away."
-    />
-    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {
-        quickLinks.map((link) => (
-          <li>
-            <a href={link.href} class="block h-full no-underline">
-              <FeatureCard icon={link.icon} chip="sky" title={link.label}>
-                Open {link.label.toLowerCase()}.
-              </FeatureCard>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </Section>
+  <Section bg="grey" label="Family Hub home">
+    <div class="space-y-8">
+      <HubGreeting
+        tagline={settings?.tagline || site.tagline}
+        yearStart={settings?.yearStart}
+        yearEnd={settings?.yearEnd}
+        firstDay={settings?.firstDay}
+        familyCount={familyCount}
+      />
 
-  {
-    classLinks.length > 0 && (
-      <Section bg="grey" seam labelledby="hub-classes">
-        <SectionHeader
-          eyebrow="Your Classroom"
-          title="Jump to your class"
-          titleId="hub-classes"
-          lead="Class notes, the daily schedule, and tuition for each room."
-        />
-        <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {classLinks.map((link) => (
-            <li>
-              <a href={link.href} class="block h-full no-underline">
-                <FeatureCard
-                  icon={link.icon}
-                  chip={classColor(link.href.split('/').pop())}
-                  title={link.label}
-                >
-                  Open the {link.label} room.
-                </FeatureCard>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </Section>
-    )
-  }
+      <ClassHelperRow />
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <UpcomingEventsWidget />
+        <AnnouncementsWidget />
+        <FundraisingWidget />
+        <MeetingMinutesWidget />
+        <ClassPhotosWidget />
+        <BudgetSnapshotWidget />
+      </div>
+    </div>
+  </Section>
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}
   <SectionRenderer sections={doc?.sections} site={site} />
