@@ -6,15 +6,21 @@
 # =============================================================================
 
 # ---- Site-wide security headers (Lighthouse "Trust & Safety" wins) ----------
-# X-Frame-Options is SAMEORIGIN, not DENY: the Sanity Studio's Presentation
-# Tool embeds pages in a same-origin iframe (/studio's Presentation pane) to
-# drive click-to-edit — DENY blocked that with a silent "refused to connect"
-# whenever an editor navigated off /preview/* to a real page mid-session.
-# SAMEORIGIN still blocks third-party/cross-origin framing (the actual
-# clickjacking risk DENY was added for).
+# Framing is controlled with CSP `frame-ancestors` instead of X-Frame-Options.
+# X-Frame-Options only understands SAMEORIGIN/DENY and can't allow a specific
+# external origin; frame-ancestors can, and modern browsers prefer it. We allow:
+#   'self'                     — the Studio's Presentation Tool iframes /preview/*
+#                                (same-origin) to drive click-to-edit.
+#   https://*.sanity.io + more — the Sanity Dashboard iframes this project's
+#                                /studio cross-origin; with X-Frame-Options set it
+#                                failed with "Failed to load iframe due to
+#                                X-Frame-Options: SAMEORIGIN".
+# Every other origin is still blocked from framing the site (the clickjacking
+# risk). This CSP sets ONLY frame-ancestors, so it does not restrict scripts,
+# styles, etc.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self' https://*.sanity.io https://sanity.io https://*.sanity.studio
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Cross-Origin-Opener-Policy: same-origin
