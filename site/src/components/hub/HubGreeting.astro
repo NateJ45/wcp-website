@@ -57,7 +57,10 @@ const daysToYearEnd = daysUntil(yearEnd);
 // glanceable number worth showing here — the progress bar covers that).
 let statusChip: { icon: string; text: string } | null = null;
 if (daysToFirstDay !== null && daysToFirstDay > 0) {
-  statusChip = { icon: 'party-popper', text: `${daysToFirstDay} day${daysToFirstDay === 1 ? '' : 's'} 'til school` };
+  statusChip = {
+    icon: 'party-popper',
+    text: `${daysToFirstDay} day${daysToFirstDay === 1 ? '' : 's'} 'til school`,
+  };
 } else if (daysToYearEnd !== null && daysToYearEnd <= 0) {
   statusChip = { icon: 'sun', text: 'Enjoy your summer!' };
 }
@@ -67,7 +70,10 @@ if (daysToFirstDay !== null && daysToFirstDay > 0) {
 // (or a negative span), so guard the denominator before dividing, matching
 // fundraising.astro's `pctOf` guard pattern. Clamps outside the range so a
 // stale date never produces a negative width either.
-const yearSpanMs = yearStart && yearEnd ? new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime() : 0;
+const yearSpanMs =
+  yearStart && yearEnd
+    ? new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()
+    : 0;
 const yearPct =
   yearStart && yearEnd && yearSpanMs > 0
     ? Math.min(
@@ -75,7 +81,8 @@ const yearPct =
         Math.max(
           0,
           Math.round(
-            ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) / yearSpanMs) * 100,
+            ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) / yearSpanMs) *
+              100,
           ),
         ),
       )
@@ -85,12 +92,17 @@ const familiesLabel =
   familyCount && familyCount > 0 ? `${familyCount} famil${familyCount === 1 ? 'y' : 'ies'}` : null;
 ---
 
-<div class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface" data-reveal>
+<div
+  class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface"
+  data-reveal
+>
   <p class="font-display text-2xl text-heading sm:text-3xl">{greeting}, WCP family!</p>
   <p class="mt-2 text-ink-muted">{tagline}</p>
 
   <ul class="mt-5 flex flex-wrap gap-2">
-    <li class="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1.5 text-sm font-semibold text-sky-ink">
+    <li
+      class="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1.5 text-sm font-semibold text-sky-ink"
+    >
       <Icon name="calendar-days" class="h-4 w-4" />
       {todayLabel}
     </li>
