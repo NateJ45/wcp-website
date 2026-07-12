@@ -11,7 +11,8 @@ import { ClientRouter } from 'astro:transitions';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import HubHeader from '@/components/hub/HubHeader.astro';
+import HubRail from '@/components/hub/HubRail.astro';
+import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubFooter from '@/components/hub/HubFooter.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import { site } from '@/data/site';
@@ -31,6 +32,8 @@ interface Props {
    * one link back to the public site). Used by HubShell for gated pages.
    */
   chrome?: 'site' | 'hub';
+  /** Current page title, shown in the mobile HubTopBar when chrome='hub'. */
+  hubTitle?: string;
 }
 
 const {
@@ -39,6 +42,7 @@ const {
   ogImage,
   ogType = 'website',
   chrome = 'site',
+  hubTitle = 'Family Hub',
 } = Astro.props;
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
@@ -159,23 +163,57 @@ const closureAlert = await getClosureAlert();
     <!-- body is `relative` so the big header's absolute overlay (Header.astro,
          `data-big-header`) positions against the full document, not just the
          viewport — it scrolls away naturally with the page instead of
-         behaving like `fixed`. The hub uses its own solid, in-flow chrome. -->
-    {chrome === 'hub' ? <HubHeader /> : <Header />}
-
+         behaving like `fixed`. The hub renders its own chrome: a sticky left
+         rail on desktop, a top bar + off-canvas drawer on mobile. -->
     {
-      /* data-pagefind-body: site search (Pagefind) indexes only the main content
-        of real pages, not the header/footer chrome — and because the marker
-        exists, pages without it (the Studio SPA shell) are skipped entirely. */
-    }
-    <main id="main" tabindex="-1" data-pagefind-body><slot /></main>
+      chrome === 'hub' ? (
+        <div class="flex min-h-screen">
+          <aside class="sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto lg:block">
+            <HubRail />
+          </aside>
 
-    {chrome === 'hub' ? <HubFooter /> : <Footer />}
+          {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
+          <div id="hub-drawer-backdrop" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden" />
+          <aside
+            id="hub-drawer"
+            aria-hidden="true"
+            class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
+          >
+            <HubRail />
+          </aside>
+
+          <div class="flex min-w-0 flex-1 flex-col">
+            <HubTopBar title={hubTitle} />
+            {
+              /* data-pagefind-body: site search (Pagefind) indexes only the main
+                content of real pages, not the header/footer chrome — and because
+                the marker exists, pages without it (the Studio SPA shell) are
+                skipped entirely. */
+            }
+            <main id="main" tabindex="-1" data-pagefind-body class="flex-1">
+              <slot />
+            </main>
+            <HubFooter />
+          </div>
+        </div>
+      ) : (
+        <>
+          <Header />
+          <main id="main" tabindex="-1" data-pagefind-body>
+            <slot />
+          </main>
+          <Footer />
+        </>
+      )
+    }
 
     <!-- Scroll-reveal observer (own module — Astro dev doesn't reliably
          re-execute an inline layout <script>, so this is imported like the
          other client scripts). Re-runs on every ClientRouter navigation. -->
     <script>
       import '@/scripts/reveal';
+      import '@/scripts/hub-drawer';
+      import '@/scripts/theme';
     </script>
   </body>
 </html>

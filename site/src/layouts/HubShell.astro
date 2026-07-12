@@ -3,10 +3,11 @@
    HubShell — shared frame for every gated Family Hub page
    ============================================================================
    Renders inside BaseLayout with the dedicated hub chrome (chrome="hub"): the
-   HubHeader carries all the section navigation + "Main site" + Sign out, so
-   this shell only adds a compact navy title band (eyebrow + page title + intro)
-   above the page content. Every hub page must set `export const prerender =
-   false` so the middleware gate runs.
+   HubRail carries all the section navigation + Sign out, so this shell only
+   adds a compact navy title band (eyebrow + page title + intro) above the
+   page content. `title` also becomes the mobile HubTopBar's heading. Every
+   hub page must set `export const prerender = false` so the middleware gate
+   runs.
    ============================================================================ */
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -24,6 +25,7 @@ const { title, intro, pageTitle, description } = Astro.props;
 
 <BaseLayout
   chrome="hub"
+  hubTitle={title}
   title={pageTitle ?? `${title} — WCP Family Hub`}
   description={description ?? 'The West Chester Preschool Family Hub for enrolled families.'}
 >
