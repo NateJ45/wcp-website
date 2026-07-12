@@ -22,21 +22,25 @@ export const hubNav: HubGroup[] = [
     links: [{ label: 'Home', href: '/family-hub', icon: 'house' }],
   },
   {
-    label: 'Information',
+    label: 'News & Events',
     links: [
-      { label: 'Calendar', href: '/family-hub/calendar', icon: 'calendar-days' },
-      { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
-      { label: 'Documents', href: '/family-hub/documents', icon: 'folder-open' },
-      { label: 'Tuition', href: '/family-hub/tuition', icon: 'circle-dollar-sign' },
       { label: 'Updates', href: '/family-hub/updates', icon: 'newspaper' },
+      { label: 'Calendar', href: '/family-hub/calendar', icon: 'calendar-days' },
     ],
   },
   {
-    label: 'Community',
+    label: 'Resources',
     links: [
-      { label: 'Fundraising', href: '/family-hub/fundraising', icon: 'party-popper' },
-      { label: 'Health', href: '/family-hub/health', icon: 'heart-pulse' },
+      { label: 'Documents', href: '/family-hub/documents', icon: 'folder-open' },
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
+      { label: 'Health', href: '/family-hub/health', icon: 'heart-pulse' },
+    ],
+  },
+  {
+    label: 'Money',
+    links: [
+      { label: 'Tuition', href: '/family-hub/tuition', icon: 'circle-dollar-sign' },
+      { label: 'Fundraising', href: '/family-hub/fundraising', icon: 'party-popper' },
       {
         label: 'Store',
         href: 'https://store.westchesterpreschool.org/',
@@ -46,10 +50,14 @@ export const hubNav: HubGroup[] = [
     ],
   },
   {
+    label: 'Community',
+    links: [{ label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' }],
+  },
+  {
     label: 'Classes',
     links: [
-      { label: 'Twos', href: '/family-hub/twos', icon: 'star' },
-      { label: 'Threes', href: '/family-hub/threes', icon: 'sprout' },
+      { label: 'Twos', href: '/family-hub/twos', icon: 'blocks' },
+      { label: 'Threes', href: '/family-hub/threes', icon: 'crayon' },
       { label: 'Pre-K AM', href: '/family-hub/pre-k-am', icon: 'sun' },
       { label: 'Pre-K PM', href: '/family-hub/pre-k-pm', icon: 'moon' },
     ],
