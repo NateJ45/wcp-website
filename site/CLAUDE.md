@@ -43,11 +43,12 @@ npm run check        # astro check (types) + oxlint
 npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + 320px reflow (builds fresh, serves dist)
 npm run test:hub     # Playwright: SSR Family Hub shell (rail, drawer, 320px, a11y) — separate config, see gotcha
+npm run test:unit    # Vitest: pure-function unit tests (e.g. hub dashboard date math)
 npm run check:links  # linkinator over dist/client
 npm run deploy       # build + wrangler deploy -c dist/server/wrangler.json  (see gotcha)
 ```
 
-**Before committing, the full local gate is:** `npx astro check` · `npm run lint` · `npm run format:check` · `npm run build` · `npm run check:links` · `npm test`. CI runs the same, plus a Lighthouse accessibility gate (must hold 100).
+**Before committing, the full local gate is:** `npx astro check` · `npm run lint` · `npm run format:check` · `npm run build` · `npm run check:links` · `npm test` · `npm run test:unit`. CI runs the same, plus a Lighthouse accessibility gate (must hold 100).
 
 ## Where things live
 
@@ -107,7 +108,7 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - **The static a11y/reflow/smoke suites can't reach the gated hub** — they serve the static `dist/client`, and `/family-hub/*` is SSR-only (excluded on purpose, see `tests/routes.ts`). Hub shell coverage lives in `npm run test:hub` (`playwright.hub.config.ts`), a separate config. It boots with `npm run build && npm run preview` (wrangler), **not** `astro dev`: on this Astro 7 + Cloudflare stack, `astro dev` always daemonizes to a detached background process and the launching command exits immediately, which Playwright's `webServer` reads as a startup failure even though the server is actually up.
 - **Client scripts loaded once for both hub chrome pieces.** The hub drawer (`src/scripts/hub-drawer.ts`) and theme toggle (`src/scripts/theme.ts`) are imported once from `BaseLayout`'s hub branch, not per-component — `HubRail` is rendered twice (desktop rail + the drawer's contents), and `theme.ts` already re-queries all `[data-theme-toggle]` instances on click, so this stays in sync without extra wiring. Both use `onPageLoad`/`onBeforeSwap` (View-Transitions safe).
 - **`--color-*-ink` tokens are for text on a dark PAGE, not for a fill inside a fixed-chrome island.** In dark mode `globals.css` redefines `--color-orange-ink` (and the other ink tokens) to alias the bright tier, because bright colors read fine as text on a dark page. The hub rail's navy chrome doesn't change with the site theme, so its active-link fill hardcodes the ink hex (`#a85300`) instead of the token — using the var there would silently break contrast in dark mode. See the comment in `HubRail.astro`.
-- **Greeting/date logic on the hub home must use Eastern wall-clock time, never raw `Date` methods.** The Cloudflare Workers runtime's `Date` is UTC with no local timezone data, so `getHours()`/`getDate()` produce the wrong "Good morning/afternoon/evening" (or the wrong day) for a chunk of the day. Always go through `toLocaleString(..., { timeZone: 'America/New_York' })` instead. See the working pattern in `HubGreeting.astro`.
+- **Greeting/date logic on the hub home must use Eastern wall-clock time, never raw `Date` methods.** The Cloudflare Workers runtime's `Date` is UTC with no local timezone data, so `getHours()`/`getDate()` produce the wrong "Good morning/afternoon/evening" (or the wrong day) for a chunk of the day. Always go through `toLocaleString(..., { timeZone: 'America/New_York' })` instead. The pure date math (greeting hour, days-until, school-year percent, short-date formatting) lives in `src/lib/hub-dashboard-dates.ts` with Vitest coverage for the NaN/divide-by-zero/UTC-boundary edge cases — extend that module and its tests rather than inlining new date math back into the `.astro` components.
 
 ## Deploy & CI
 

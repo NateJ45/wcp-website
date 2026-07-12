@@ -6,6 +6,7 @@
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { EVENT_TZ } from '@/lib/events';
+import { formatShortDate } from '@/lib/hub-dashboard-dates';
 
 interface UpdateDoc {
   _id: string;
@@ -23,8 +24,7 @@ try {
   updates = [];
 }
 
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: EVENT_TZ });
+const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
 ---
 
 <HomeWidgetCard
@@ -39,7 +39,10 @@ const fmt = (iso: string) =>
       updates.map((u) => (
         <li>
           {u.slug ? (
-            <a href={`/family-hub/updates/${u.slug}`} class="font-semibold text-heading hover:underline">
+            <a
+              href={`/family-hub/updates/${u.slug}`}
+              class="font-semibold text-heading hover:underline"
+            >
               {u.pinned && (
                 <span class="mr-1 text-orange-ink" aria-hidden="true">
                   •
