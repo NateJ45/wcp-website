@@ -5,6 +5,7 @@
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { EVENT_TZ } from '@/lib/events';
 
 interface UpdateDoc {
   _id: string;
@@ -23,7 +24,7 @@ try {
 }
 
 const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: EVENT_TZ });
 ---
 
 <HomeWidgetCard
