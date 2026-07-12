@@ -184,12 +184,10 @@ const closureAlert = await getClosureAlert();
 
           <div class="flex min-w-0 flex-1 flex-col">
             <HubTopBar title={hubTitle} />
-            {
-              /* data-pagefind-body: site search (Pagefind) indexes only the main
+            {/* data-pagefind-body: site search (Pagefind) indexes only the main
                 content of real pages, not the header/footer chrome — and because
                 the marker exists, pages without it (the Studio SPA shell) are
-                skipped entirely. */
-            }
+                skipped entirely. */}
             <main id="main" tabindex="-1" data-pagefind-body class="flex-1">
               <slot />
             </main>

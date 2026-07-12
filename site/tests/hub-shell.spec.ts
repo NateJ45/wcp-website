@@ -16,9 +16,10 @@ test.describe('Family Hub shell', () => {
         document.documentElement.classList.toggle('dark', t === 'dark');
       }, theme);
       const results = await new AxeBuilder({ page }).analyze();
-      expect(results.violations, `[${theme}] ` + results.violations.map((v) => v.id).join(', ')).toEqual(
-        [],
-      );
+      expect(
+        results.violations,
+        `[${theme}] ` + results.violations.map((v) => v.id).join(', '),
+      ).toEqual([]);
     }
   });
 
