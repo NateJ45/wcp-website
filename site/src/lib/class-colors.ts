@@ -41,9 +41,15 @@ export interface ClassStyles {
   softBg: string;
 }
 
+// NOTE: `badge` (white text on the class fill, for PHOTO overlays) pins the
+// light-mode `-ink` hex directly instead of the `bg-{color}-ink` token. The
+// token flips to the BRIGHT tier in dark mode (globals.css), and white text on
+// a bright fill fails AA (2.3:1). A photo overlay is theme-independent (the
+// photo doesn't change with the page theme), so the fill must stay the dark
+// AA-safe shade in both modes — same reasoning as the hardcoded hub-rail fill.
 const STYLES: Record<ClassColor, ClassStyles> = {
   amber: {
-    badge: 'bg-amber-ink text-white',
+    badge: 'bg-[#9e5c0a] text-white',
     chip: 'bg-amber/15 text-amber-ink',
     border: 'border-amber',
     dot: 'bg-amber',
@@ -52,7 +58,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
     softBg: 'bg-amber/10',
   },
   green: {
-    badge: 'bg-green-ink text-white',
+    badge: 'bg-[#0e7b2e] text-white',
     chip: 'bg-green/15 text-green-ink',
     border: 'border-green',
     dot: 'bg-green',
@@ -61,7 +67,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
     softBg: 'bg-green/10',
   },
   orange: {
-    badge: 'bg-orange-ink text-white',
+    badge: 'bg-[#a85300] text-white',
     chip: 'bg-cream text-orange-ink',
     border: 'border-orange',
     dot: 'bg-orange',
@@ -70,7 +76,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
     softBg: 'bg-orange/10',
   },
   sky: {
-    badge: 'bg-sky-ink text-white',
+    badge: 'bg-[#166fa8] text-white',
     chip: 'bg-sky/15 text-sky-ink',
     border: 'border-sky',
     dot: 'bg-sky',

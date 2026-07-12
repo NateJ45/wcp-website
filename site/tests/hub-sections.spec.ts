@@ -19,6 +19,7 @@ const ROUTES = [
   '/family-hub/threes',
   '/family-hub/pre-k-am',
   '/family-hub/pre-k-pm',
+  '/family-hub/directory',
 ];
 
 for (const route of ROUTES) {

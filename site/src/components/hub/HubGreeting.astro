@@ -96,7 +96,10 @@ const familiesLabel =
   class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface"
   data-reveal
 >
-  <p class="font-display text-2xl text-heading sm:text-3xl">{greeting}, WCP family!</p>
+  {/* The greeting is the page h1 (Home uses HubShell `bare`, no navy band). */}
+  <h1 id="hub-page-title" class="font-display text-2xl text-balance text-heading sm:text-3xl">
+    {greeting}, WCP family!
+  </h1>
   <p class="mt-2 text-ink-muted">{tagline}</p>
 
   <ul class="mt-5 flex flex-wrap gap-2">

@@ -59,10 +59,9 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 ---
 
 <HubShell title={title} bare pageTitle="Family Hub — West Chester Preschool">
-  <Section bg="grey" labelledby="hub-dashboard-heading">
+  <Section bg="grey" labelledby="hub-page-title">
     <div class="space-y-8">
-      <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
-
+      {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
       <HubGreeting
         tagline={settings?.tagline || site.tagline}
         yearStart={settings?.yearStart}
@@ -73,6 +72,8 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
 
       <ClassHelperRow />
 
+      {/* sr-only h2 bridges the h1 greeting → the h3 widget cards (no skip). */}
+      <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <UpcomingEventsWidget />
         <AnnouncementsWidget />
