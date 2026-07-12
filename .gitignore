@@ -14,6 +14,14 @@ dist/
 .output/
 .sanity/
 
+# Generated idempotency cache written by the migration scripts (local-only:
+# maps a local image path -> its uploaded Sanity asset id so re-runs skip
+# re-uploading). CI never runs the migrations, and Sanity dedupes assets by
+# hash anyway, so this must NOT be tracked. Tracking it broke `prettier --check`
+# every time a migration reformatted it. See site/scripts/pagebuilder-lib.mjs.
+# No leading slash -> matches this basename at any depth (i.e. under site/).
+.asset-map.json
+
 # ---- Secrets — keep API keys and tokens out of the repo ---------------------
 # .env.example / .dev.vars.example ARE committed as templates for new setups.
 .env
