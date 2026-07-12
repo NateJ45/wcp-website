@@ -145,6 +145,32 @@ The design covers the **whole hub**, but implementation ships in two low-risk ph
 - Manual: full keyboard pass through rail and drawer; reduced-motion pass; confirm each
   widget's empty-state renders when its Sanity source is empty.
 
+## Implementation notes (from reading the current code, 2026-07-12)
+
+Reading the live hub surfaced realities the mockups did not show. They do not change the
+approved design, but the plan and the implementer must honor them:
+
+- **The hub is already a top-bar nav, not loose pages.** Today `HubShell.astro` wraps
+  `BaseLayout chrome="hub"`, and that chrome is `HubHeader.astro`: a sticky navy top bar with
+  the section nav as dropdown groups plus a mobile hamburger panel. The redesign **converts
+  this top-bar chrome into the left rail** (and the mobile drawer); `HubShell` owns the
+  rail + content layout.
+- **The hub supports light AND dark mode** (a `ThemeToggle` is in the header). The dashboard
+  must be **theme-aware in both** — the mockups were light-only. Use the existing Tailwind v4
+  brand tokens (`bg-navy`, `text-heading`, `text-orange-ink`, `text-sky-ink`, `border-border`,
+  …) from `globals.css`; **no hardcoded hex**. Contrast passes AA in both themes.
+- **Reuse existing systems, do not reinvent:**
+  - **Icons** — the `@/components/Icon.astro` named-SVG registry (already no emoji). New glyphs
+    (toy blocks, crayon, sun, moon, section icons) get added there.
+  - **Nav data** — `@/data/hub-nav.ts` already exists (`hubNav[0]` = Home, the rest are groups
+    of `.links` `{ href, label, icon, external? }`). Restructure it into the rail's grouped
+    list; keep it the single source of truth.
+  - **Client behavior** — the drawer script uses the `onPageLoad`/`onBeforeSwap` helpers in
+    `@/scripts/_page-load.ts` (View-Transitions safe) and the interaction conventions in
+    `@/scripts/nav.ts`.
+- **Sign out already exists** as decided: `HubHeader` posts to `/api/hub-logout`; the rail
+  reuses that form.
+
 ## Decisions (resolved 2026-07-12)
 
 1. **Sign out, not "Back to Main Site."** The rail's bottom link is a real **Sign out** that
