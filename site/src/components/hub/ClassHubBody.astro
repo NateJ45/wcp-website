@@ -117,7 +117,7 @@ const facts = [
         ) : (
           <ul class="mt-6 space-y-4">
             {notes.map((n) => (
-              <li class="rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm dark:bg-surface">
+              <li class="wcp-lift rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm hover:shadow-md dark:bg-surface">
                 <p class="text-sm text-ink-muted">{fmtDate(n.publishedAt)}</p>
                 <h3 class="mt-1 text-lg font-extrabold text-heading">{n.title}</h3>
                 {n.body && (

@@ -17,15 +17,19 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // =============================================================================
 export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 rounded-pill font-bold whitespace-nowrap no-underline ' +
-    'transition-[transform,background-color,color,box-shadow] duration-150 ease-out ' +
-    'disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    'transition-[transform,background-color,color,box-shadow] duration-200 ease-out ' +
+    'active:translate-y-0 active:scale-[0.97] active:duration-75 ' +
+    'disabled:pointer-events-none disabled:opacity-50 ' +
+    'motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100',
   {
     variants: {
       variant: {
         // Navy fill, white text (9.75:1) — the safe default action.
         primary: 'bg-navy text-white hover:-translate-y-0.5 hover:shadow-lg',
-        // True brand-navy fill, white text (9.75:1) — the "Enroll" CTA.
-        accent: 'bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
+        // True brand-navy fill, white text (9.75:1) — the "Enroll" CTA. Gets a
+        // light sheen sweep on hover (wcp-sheen, reduced-motion-safe) since it's
+        // the key conversion button; other variants stay calm.
+        accent: 'wcp-sheen bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
         // Sky-ink fill, white text (5.4:1) — secondary emphasis.
         secondary: 'bg-secondary text-secondary-foreground hover:-translate-y-0.5',
         // Navy outline on light backgrounds. In dark mode the surrounding

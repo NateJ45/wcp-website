@@ -203,10 +203,18 @@ const posterSrc = sanityImage
       </h1>
       {
         lead && (
-          <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90" data-reveal>
+          <p
+            class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
+            data-reveal
+            style="--reveal-delay: 150ms"
+          >
             {lead}
           </p>
         )
+      }
+      {
+        /* Actions cascade in last. Delay sits AFTER the LCP headline (which
+          reveals at 0ms), so the staggered entrance never delays first paint. */
       }
       <div
         class={cn(
@@ -214,6 +222,7 @@ const posterSrc = sanityImage
           align === 'center' ? 'justify-center' : 'justify-start',
         )}
         data-reveal
+        style="--reveal-delay: 300ms"
       >
         <slot name="actions" />
       </div>

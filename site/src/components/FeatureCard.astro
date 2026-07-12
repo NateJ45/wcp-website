@@ -34,8 +34,9 @@ const chipClass: Record<string, string> = {
 
 <Tag
   class={cn(
-    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-200 dark:bg-surface',
-    'hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-300 dark:bg-surface',
+    'hover:-translate-y-1.5 hover:shadow-xl hover:ring-1 hover:ring-black/5 dark:hover:ring-white/10',
+    'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
     className,
   )}
   data-reveal
@@ -44,7 +45,7 @@ const chipClass: Record<string, string> = {
     icon && (
       <span
         class={cn(
-          'mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
+          'wcp-pop mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
           chipClass[chip],
         )}
       >

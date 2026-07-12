@@ -51,12 +51,17 @@ const isNavy = tone === 'navy';
         <p
           class={cn('mx-auto mt-4 max-w-xl text-lg leading-relaxed', isNavy && 'text-white/90')}
           data-reveal
+          style="--reveal-delay: 120ms"
         >
           {lead}
         </p>
       )
     }
-    <div class="mt-7 flex flex-wrap items-center justify-center gap-4" data-reveal>
+    <div
+      class="mt-7 flex flex-wrap items-center justify-center gap-4"
+      data-reveal
+      style="--reveal-delay: 240ms"
+    >
       <slot name="actions" />
     </div>
     {

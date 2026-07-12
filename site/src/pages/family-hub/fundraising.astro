@@ -115,7 +115,7 @@ const waysToRaise = [
         ) : (
           <ul class="mt-8 space-y-6">
             {campaigns.map((c) => (
-              <li class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface">
+              <li class="wcp-lift rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm hover:shadow-md dark:bg-surface">
                 <p class="font-display text-xl text-heading">{c.title}</p>
                 {c.summary && <p class="mt-1 text-ink-muted">{c.summary}</p>}
                 {c.goalAmount && c.goalAmount > 0 && (
