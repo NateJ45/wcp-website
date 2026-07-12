@@ -1,0 +1,136 @@
+---
+/* ============================================================================
+   DirectoryMap — where WCP families live, relative to the preschool (GATED)
+   ============================================================================
+   A Leaflet + OpenStreetMap map (no API key, no third-party tracking) plotting
+   each opted-in family's pin and the school. Data is injected as JSON (this
+   page is already behind the family gate, so plotting home locations here is
+   the point). Custom CSS markers avoid Leaflet's broken bundled icon assets.
+   ============================================================================ */
+export interface MapFamily {
+  name: string;
+  lat: number;
+  lng: number;
+  kids?: string;
+}
+interface Props {
+  families: MapFamily[];
+  preschool: { lat: number; lng: number; label: string };
+}
+const { families, preschool } = Astro.props;
+const mapData = JSON.stringify({ families, preschool });
+---
+
+<div class="relative">
+  <div id="wcp-dirmap" class="h-[480px] w-full rounded-[var(--radius)] border border-border"></div>
+  <script type="application/json" id="wcp-dirmap-data" set:html={mapData} is:inline />
+</div>
+
+<script>
+  import 'leaflet/dist/leaflet.css';
+  import L from 'leaflet';
+
+  const mapEl = document.getElementById('wcp-dirmap');
+  const dataEl = document.getElementById('wcp-dirmap-data');
+  let map: L.Map | undefined;
+
+  function popupEl(title: string, sub?: string): HTMLElement {
+    const d = document.createElement('div');
+    const s = document.createElement('strong');
+    s.textContent = title;
+    d.appendChild(s);
+    if (sub) {
+      d.appendChild(document.createElement('br'));
+      d.appendChild(document.createTextNode(sub));
+    }
+    return d;
+  }
+
+  function initMap() {
+    if (!mapEl || !dataEl) return;
+    if (map) {
+      map.invalidateSize();
+      return;
+    }
+    let data: {
+      families: { name: string; lat: number; lng: number; kids?: string }[];
+      preschool: { lat: number; lng: number; label: string };
+    };
+    try {
+      data = JSON.parse(dataEl.textContent || '{}');
+    } catch {
+      return;
+    }
+    const { families, preschool } = data;
+
+    map = L.map(mapEl, { scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    const schoolIcon = L.divIcon({
+      className: '',
+      html: '<div class="wcp-pin wcp-pin-school" aria-hidden="true">★</div>',
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+    });
+    const famIcon = L.divIcon({
+      className: '',
+      html: '<div class="wcp-pin wcp-pin-fam" aria-hidden="true"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+    const pts: [number, number][] = [];
+    L.marker([preschool.lat, preschool.lng], { icon: schoolIcon, title: preschool.label })
+      .addTo(map)
+      .bindPopup(popupEl(preschool.label, 'West Chester Preschool'));
+    pts.push([preschool.lat, preschool.lng]);
+
+    for (const f of families) {
+      if (typeof f.lat !== 'number' || typeof f.lng !== 'number') continue;
+      L.marker([f.lat, f.lng], { icon: famIcon, title: f.name })
+        .addTo(map)
+        .bindPopup(popupEl(f.name, f.kids));
+      pts.push([f.lat, f.lng]);
+    }
+
+    if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 14 });
+    else map.setView(pts[0], 13);
+  }
+
+  // Init when the map view is first revealed (Leaflet needs a sized container).
+  document.addEventListener('wcp:showmap', initMap);
+</script>
+
+<style is:global>
+  .wcp-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.35),
+      inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  }
+  .wcp-pin-school {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-navy, #0d3b66);
+    color: #ffb703;
+    font-size: 17px;
+    line-height: 1;
+    border: 2px solid #fff;
+  }
+  .wcp-pin-fam {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-sky, #40aaed);
+    border: 2px solid #fff;
+  }
+  .leaflet-popup-content strong {
+    font-weight: 700;
+  }
+</style>

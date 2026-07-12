@@ -91,6 +91,19 @@ the Squarespace JSON view (`/blog?format=json`), converts each post's HTML body 
 Text, uploads inline flyer images, and `createOrReplace`s `hubUpdate-<slug>` docs
 (idempotent). Going forward the Board just adds `update` docs in the Studio.
 
+## Directory & map
+
+The **Directory** reads opted-in `directoryEntry` docs (PII, gated). It has a **List /
+Map toggle**: the map is Leaflet + OpenStreetMap (no API key, no third-party tracker),
+plotting each family's home pin relative to the school (the ★). The whole map is behind
+the gate, so plotting home locations is fine here — it never touches the public site.
+
+A family's pin comes from its `location` (a geopoint). Volunteers just type the home
+`address`; running `node scripts/geocode-directory.mjs` geocodes any address that has no
+pin yet (via free Nominatim, rate-limited to 1/sec) and writes back the `location`. It's
+idempotent, so it only touches new/changed addresses; it could also be a scheduled GitHub
+Action. The school's own pin is a fixed constant in `DirectoryMap.astro`.
+
 ---
 
 See also: [CLAUDE.md](../CLAUDE.md) (project overview and the two content paths) ·
