@@ -14,9 +14,10 @@ import { projectId, dataset } from './src/sanity/env';
 // =============================================================================
 // Sanity Studio configuration
 // =============================================================================
-// Powers both the embedded studio (mounted at /studio by @sanity/astro) and the
-// hosted studio (`npx sanity deploy` → <host>.sanity.studio). Board members log
-// in with their own Sanity accounts; the family gate is separate.
+// Powers the Studio embedded at /studio by @sanity/astro — the ONE canonical Studio.
+// We intentionally do NOT run a separate hosted <host>.sanity.studio (it drifts out of
+// date; see sanity.cli.ts and docs/SANITY.md). Board members log in with their own
+// Sanity accounts; the family gate is separate.
 //
 // - theme: brand-matched navy/orange chrome (see src/sanity/theme.ts).
 // - structure: the volunteer-friendly left nav (see src/sanity/structure.ts).

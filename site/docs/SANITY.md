@@ -86,19 +86,36 @@ wired up, and scheduling + the Editor role start working.
 
 ## The Studio
 
-The Studio is embedded at **`/studio`** on the site (ships with the normal deploy) and
-can also be deployed to a hosted URL. It's already built and working — it just needs two
-one-time **admin** actions that your Editor token can't do (they require your own login):
+There is **one** Studio, and it's embedded at **`/studio`** on the live site
+(`https://wcp-website.nathanjnixon86.workers.dev/studio/`). It ships with the normal deploy, so
+it's rebuilt on **every** deploy — its schema stays in lockstep with the site and can't fall
+out of date. This is the single place the board edits content; bookmark this URL.
 
-### 1. Add CORS origins (required — the Studio can't talk to Sanity without this)
+> **Don't deploy a separate hosted Studio.** Sanity _can_ also host a standalone Studio at
+> `westchesterpreschool.sanity.studio` (via `npx sanity deploy`), but that copy only updates
+> when someone re-runs `sanity deploy` by hand — nothing automates it. It quietly drifts
+> behind the embedded `/studio` (missing newer document types and fields, like the Family
+> Directory) even though **both read the same `niemhgev/production` data**, so it _looks_ like
+> content is missing when it isn't. We use only the embedded `/studio` so there's a single,
+> always-current source of truth. If a hosted Studio was deployed in the past, retire it:
+>
+> ```sh
+> npx sanity login       # log in as the project owner
+> npx sanity undeploy    # takes down westchesterpreschool.sanity.studio
+> ```
+
+The embedded Studio is already built and working — it just needs one one-time **admin**
+action that your Editor token can't do (it requires your own login):
+
+### Add CORS origins (required — the Studio can't talk to Sanity without this)
 
 Easiest: open the deployed `/studio`, and on the _"Connect this Studio to your project"_
 screen click **Add CORS origin** — it pre-fills the current URL. Do this for each origin
 you'll use. Or add them in one place at
 **manage.sanity.io → project `niemhgev` → API → CORS Origins** (check _Allow credentials_):
 
-- your live site origin, e.g. `https://www.westchesterpreschool.org`
-- `https://westchesterpreschool.sanity.studio` (if you deploy the hosted Studio, below)
+- the Studio's origin: `https://wcp-website.nathanjnixon86.workers.dev`
+- your live site origin once the domain is cut over, e.g. `https://www.westchesterpreschool.org`
 - `http://localhost:3333` (only if you run the Studio locally via `npx sanity dev`)
 
 Or from the terminal after `npx sanity login`:
@@ -106,18 +123,6 @@ Or from the terminal after `npx sanity login`:
 ```sh
 npx sanity cors add https://www.westchesterpreschool.org --credentials
 ```
-
-### 2. (Optional) Deploy the hosted Studio
-
-Gives you a stable `westchesterpreschool.sanity.studio` URL, independent of the website.
-Requires your login (the Editor token lacks the deploy grant):
-
-```sh
-npx sanity login      # opens the browser; log in as the project owner
-npx sanity deploy      # publishes to westchesterpreschool.sanity.studio
-```
-
-If `westchesterpreschool` is taken, change `studioHost` in [sanity.cli.ts](../sanity.cli.ts).
 
 ## Secrets & config
 
