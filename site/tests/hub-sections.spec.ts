@@ -28,7 +28,9 @@ for (const route of ROUTES) {
       // the retired HubShell band specifically, which was the navy <section>
       // labelled by the page h1.)
       await expect(page.locator('h1#hub-page-title')).toBeVisible();
-      await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(0);
+      await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(
+        0,
+      );
 
       for (const theme of ['light', 'dark'] as const) {
         await page.evaluate((t) => {
@@ -75,13 +77,13 @@ test.describe('Family Hub section: update detail', () => {
       await page.evaluate((t) => {
         document.documentElement.classList.toggle('dark', t === 'dark');
       }, theme);
-      // `heading-order` is disabled here: the post body is board-authored
-      // Portable Text (heading levels came from the Squarespace migration and
-      // can start at h3), which the reskin doesn't control — the page's own
-      // chrome is a single clean h1. Normalizing body heading levels in the
-      // renderer is tracked as a separate follow-up. Contrast + everything
-      // else stays enforced.
-      const results = await new AxeBuilder({ page }).disableRules(['heading-order']).analyze();
+      // Full axe default ruleset, including `heading-order`. The post body is
+      // board-authored Portable Text whose heading levels come from the schema
+      // (blockContent's top heading is h3) and the Squarespace migration, but
+      // the renderer normalizes them under the page h1 so the outline never
+      // skips (h1 -> h2 -> h3). See renderPortableText({ normalizeHeadings })
+      // in src/lib/portable-text.ts.
+      const results = await new AxeBuilder({ page }).analyze();
       expect(
         results.violations,
         `[${theme}] ` + results.violations.map((v) => v.id).join(', '),
