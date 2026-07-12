@@ -10,9 +10,9 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
-import Callout from '@/components/Callout.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
@@ -113,28 +113,15 @@ const intro =
   'Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom.';
 ---
 
-<HubShell
-  title={title}
-  intro={intro}
-  current="/family-hub/directory"
-  pageTitle="Family Directory — WCP Family Hub"
->
-  <Section bg="white" labelledby="directory">
-    <div>
-      <SectionHeader
-        eyebrow="This Year’s Families"
-        title="The WCP family directory"
-        titleId="directory"
-        align="left"
-      />
+<HubShell title={title} bare pageTitle="Family Directory — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="contact" />
 
       <ul class="mt-8 grid gap-4 sm:grid-cols-3">
         {
           points.map((p) => (
-            <li
-              class="rounded-[var(--radius)] border border-border bg-white p-5 text-center dark:bg-surface"
-              data-reveal
-            >
+            <HubCard as="li" class="text-center">
               <span
                 class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
                 aria-hidden="true"
@@ -143,7 +130,7 @@ const intro =
               </span>
               <p class="font-bold text-heading">{p.title}</p>
               <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
-            </li>
+            </HubCard>
           ))
         }
       </ul>
@@ -301,11 +288,19 @@ const intro =
         )
       }
 
-      <Callout tone="sky" class="mx-auto mt-10 max-w-3xl">
-        <strong class="font-bold text-heading">Your privacy:</strong> WCP never publishes family information.
-        Directory details stay behind this family sign-in, are shared only with your permission, and are
-        kept out of the public website entirely.
-      </Callout>
+      <HubCard class="mt-10 flex items-start gap-4 p-4">
+        <span
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+          aria-hidden="true"
+        >
+          <Icon name="shield-check" class="h-5 w-5" />
+        </span>
+        <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
+          <strong class="font-bold text-heading">Your privacy:</strong> WCP never publishes family information.
+          Directory details stay behind this family sign-in, are shared only with your permission, and
+          are kept out of the public website entirely.
+        </p>
+      </HubCard>
     </div>
   </Section>
 
