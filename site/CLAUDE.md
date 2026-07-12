@@ -42,6 +42,7 @@ npm run build        # astro build → dist/client (static) + dist/server (Worke
 npm run check        # astro check (types) + oxlint
 npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + 320px reflow (builds fresh, serves dist)
+npm run test:unit    # fast hermetic unit tests for pure lib code (no build/browser)
 npm run test:hub     # Playwright: SSR Family Hub — shell + Home + every reskinned section (rail, drawer, 320px, axe light+dark) — separate config, see gotcha
 npm run check:links  # linkinator over dist/client
 npm run deploy       # build + wrangler deploy -c dist/server/wrangler.json  (see gotcha)

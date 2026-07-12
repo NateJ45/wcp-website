@@ -34,7 +34,13 @@ const key = () => `k${(_k++).toString(36)}${Math.random().toString(36).slice(2, 
 
 // --- HTML (Squarespace post body) -> Portable Text (blockContent shape) -------
 // blockContent allows: styles normal/h3/h4/blockquote, lists bullet/number,
-// marks strong/em + link annotation. We map onto exactly that.
+// marks strong/em + link annotation. We map onto exactly that: h1/h2/h3 fold to
+// the schema's top "Heading" (h3), h4/h5/h6 to "Subheading" (h4). These are the
+// ONLY heading styles blockContent offers, so keep them — do NOT "fix" the h3
+// start to h2 here (h2 is not a valid style, the Studio would drop it). The
+// detail page renders the body under its own <h1>, and renderPortableText
+// normalizes the levels at render time so the outline never skips a level
+// (h1 -> h2 -> h3). See src/lib/portable-text.ts.
 const HEAD3 = new Set(['h1', 'h2', 'h3']);
 const HEAD4 = new Set(['h4', 'h5', 'h6']);
 const BLOCK_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote']);

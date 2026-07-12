@@ -48,7 +48,10 @@ const audienceLabel: Record<string, string> = {
 };
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-const bodyHtml = renderPortableText(post.body);
+// The body is the whole article, rendered directly under the page <h1>, so
+// normalize its heading levels (blockContent's "Heading" is h3) up to h2 — else
+// h1 -> h3 trips WCAG heading-order. See src/lib/portable-text.ts.
+const bodyHtml = renderPortableText(post.body, '', { normalizeHeadings: true });
 ---
 
 <HubShell
