@@ -35,7 +35,7 @@ interface DirEntry {
   children?: DirChild[];
   email?: string;
   phone?: string;
-  photo?: { asset?: unknown; alt?: string } | null;
+  photo?: { image?: { asset?: unknown }; alt?: string } | null;
   notes?: string;
 }
 let entries: DirEntry[] = [];
@@ -113,10 +113,10 @@ const points = [
           <ul class="mt-10 grid gap-5 sm:grid-cols-2">
             {entries.map((f) => (
               <li class="flex gap-4 rounded-[var(--radius)] border border-border bg-white p-5 shadow-sm dark:bg-surface">
-                {f.photo?.asset ? (
+                {f.photo?.image?.asset ? (
                   <SanityImage
-                    source={f.photo as never}
-                    alt={(f.photo.alt as string) ?? f.familyName}
+                    source={f.photo.image as never}
+                    alt={f.photo.alt ?? f.familyName}
                     widths={[96, 192]}
                     sizes="64px"
                     class="h-16 w-16 shrink-0 rounded-full object-cover"

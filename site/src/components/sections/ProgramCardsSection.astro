@@ -14,7 +14,7 @@ interface Program {
   ageRange?: string;
   schedule?: string;
   summary?: string;
-  image?: SanityImageValue | null;
+  image?: { image?: SanityImageValue; alt?: string } | null;
 }
 const { section } = Astro.props as { section: SectionData };
 const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
@@ -41,10 +41,10 @@ const programs = await cmsFetch<Program[]>(PROGRAMS_QUERY, {}, []);
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {programs.map((p) => (
           <article class="flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm dark:bg-surface">
-            {p.image?.asset && (
+            {p.image?.image?.asset && (
               <SanityImage
-                source={p.image as SanityImageSource}
-                alt={(p.image.alt as string) ?? p.name ?? ''}
+                source={p.image.image as SanityImageSource}
+                alt={p.image.alt ?? p.name ?? ''}
                 widths={[400, 640]}
                 sizes="(max-width: 768px) 100vw, 400px"
                 class="aspect-[16/9] w-full object-cover"

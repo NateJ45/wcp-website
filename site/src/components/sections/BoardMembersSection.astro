@@ -18,7 +18,7 @@ interface Member {
   name?: string;
   role?: string;
   bio?: string;
-  photo?: SanityImageValue | null;
+  photo?: { image?: SanityImageValue; alt?: string } | null;
   email?: string;
 }
 const { section } = Astro.props as { section: SectionData };
@@ -46,10 +46,10 @@ const members = await cmsFetch<Member[]>(BOARD_MEMBERS_QUERY, {}, []);
       <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
           <li class="flex flex-col items-center rounded-2xl border border-border bg-white p-6 text-center shadow-sm dark:bg-surface">
-            {m.photo?.asset ? (
+            {m.photo?.image?.asset ? (
               <SanityImage
-                source={m.photo as SanityImageSource}
-                alt={(m.photo.alt as string) ?? m.name ?? ''}
+                source={m.photo.image as SanityImageSource}
+                alt={m.photo.alt ?? m.name ?? ''}
                 widths={[112, 224]}
                 sizes="112px"
                 class="h-28 w-28 rounded-full object-cover"

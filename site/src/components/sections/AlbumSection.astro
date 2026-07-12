@@ -27,9 +27,13 @@ const albumRef = (section.album as { _ref?: string } | undefined)?._ref;
 const album = albumRef
   ? await cmsFetch<Album | null>(PHOTO_ALBUM_QUERY, { id: albumRef }, null)
   : null;
+// figureImage nests the real image under `.image` (asset at .image.asset).
 const photos = (album?.photos ?? [])
-  .filter((p) => p?.asset)
-  .map((p) => ({ sanityImage: p, alt: (p.alt as string) ?? '', caption: p.caption }));
+  .filter((p) => (p as { image?: { asset?: unknown } })?.image?.asset)
+  .map((p) => {
+    const fig = p as unknown as { image: unknown; alt?: string; caption?: string };
+    return { sanityImage: fig.image, alt: fig.alt ?? '', caption: fig.caption };
+  });
 ---
 
 {

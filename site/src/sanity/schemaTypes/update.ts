@@ -25,7 +25,9 @@ export const update = defineType({
     defineField({
       name: 'image',
       title: 'Image (optional)',
-      type: 'figureImage',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
       description: 'A flyer or photo shown with the post (e.g. a newsletter graphic).',
     }),
     defineField({

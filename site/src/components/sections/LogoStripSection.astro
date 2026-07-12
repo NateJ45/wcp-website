@@ -16,7 +16,7 @@ import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-h
 
 interface Logo {
   name?: string;
-  logo?: SanityImageValue | null;
+  logo?: { image?: SanityImageValue; alt?: string } | null;
   url?: string;
 }
 const { section } = Astro.props as { section: SectionData };
@@ -46,10 +46,10 @@ const logos = await cmsFetch<Logo[]>(isCredentials ? CREDENTIALS_QUERY : PARTNER
       )}
       <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-8">
         {logos.map((l) => {
-          const img = l.logo?.asset ? (
+          const img = l.logo?.image?.asset ? (
             <SanityImage
-              source={l.logo as SanityImageSource}
-              alt={(l.logo.alt as string) ?? l.name ?? ''}
+              source={l.logo.image as SanityImageSource}
+              alt={l.logo.alt ?? l.name ?? ''}
               widths={[160, 320]}
               sizes="160px"
               class="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16"
