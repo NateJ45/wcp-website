@@ -681,6 +681,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Site Settings is also where you set the **current school year** label (for example "2026-27") and turn the "Now Enrolling" note on or off.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Each year, update the school-year dates',
+        text: 'On the **School year** tab, fill in the school year’s **start date**, **end date**, and **first day of school**. These power the countdown and progress bar on the Family Hub home page, so they need a fresh update every year. Leave **Family count** blank unless the Directory undercounts (for example, mid-migration) — otherwise it uses a live count of families in the Directory automatically.',
+      },
     ],
   },
 

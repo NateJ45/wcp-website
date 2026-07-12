@@ -47,6 +47,24 @@ surfaces — so its colors are hardcoded rather than pulled from the `--color-*-
 (those flip to the bright brand tier in dark mode for text-on-dark-page use, which would
 undo the AA contrast fix on a fixed fill; see the comment in `HubRail.astro`).
 
+`/family-hub` (Home) is the at-a-glance dashboard rendered inside that shell:
+`HubGreeting` (a time-of-day greeting, community chips, and the school-year progress bar),
+`ClassHelperRow` (the four class cards), and a grid of six `HomeWidgetCard`-based widgets —
+Upcoming Events, Announcements, Fundraising, Meeting Minutes, Class Photos, and Budget
+Snapshot. Class Photos and Budget Snapshot are intentionally **empty-state-only**: there's no
+photo-gallery or budget schema yet, so both widgets just show their designed empty state until
+that content model exists.
+
+### Home dashboard settings
+
+The greeting hero and progress bar read four optional `siteSettings` fields (Studio → **Site
+Settings → School year tab**): `yearStart` and `yearEnd` (drive the school-year progress bar),
+`firstDay` (drives the "N days until school" countdown before the year starts), and
+`familyCount` (an optional override for the family count shown on the dashboard; leave it blank
+to use a live count of opted-in Directory families instead). All four are meant to be **filled
+in by hand in the Studio at the start of each school year** — there's no migration script for
+them, unlike the Directory import.
+
 ## One-time setup (before the first deploy)
 
 Run these from the `site/` folder. You only do this once.
