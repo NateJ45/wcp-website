@@ -163,6 +163,30 @@ export const siteSettings = defineType({
       description:
         'Shown on the Family Hub home. Leave blank to use a live count of opted-in Directory families instead.',
     }),
+    defineField({
+      name: 'summerAlbumUrl',
+      title: 'Summer Playdates photo album',
+      type: 'url',
+      group: 'year',
+      description:
+        'The school-wide Google Photos album for summer playdates, shown with the class albums on the Family Hub home.',
+    }),
+    defineField({
+      name: 'budgetSheetId',
+      title: 'Budget Google Sheet ID',
+      type: 'string',
+      group: 'year',
+      description:
+        'The ID from the treasurer’s Budget Google Sheet link (the long code between /d/ and /edit). Powers the Budget Snapshot and Fundraising numbers on the Family Hub. The sheet needs "Anyone with the link can view".',
+    }),
+    defineField({
+      name: 'calendarFeedUrl',
+      title: 'Calendar feed link (Apps Script)',
+      type: 'url',
+      group: 'year',
+      description:
+        'The Google Apps Script web-app link that serves the school calendar as a feed. Powers the Upcoming Events list on the Family Hub. Ask before changing this one.',
+    }),
 
     // Social & store
     defineField({ name: 'facebook', title: 'Facebook URL', type: 'url', group: 'social' }),

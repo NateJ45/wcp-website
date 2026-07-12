@@ -78,6 +78,22 @@ export const classType = defineType({
       group: 'basics',
       description: 'The teacher for this class. Pick from Staff — their name/bio come from there.',
     }),
+    defineField({
+      name: 'helperScheduleUrl',
+      title: 'Helper schedule link',
+      type: 'url',
+      group: 'basics',
+      description:
+        'The Google Sheet where families sign up to help in this class. Shown on the Family Hub home. Update when the sheet changes each year.',
+    }),
+    defineField({
+      name: 'photoAlbumUrl',
+      title: 'Class photo album link',
+      type: 'url',
+      group: 'basics',
+      description:
+        'This year’s Google Photos album for the class. Shown on the Family Hub home. Update when the new album is created each year.',
+    }),
 
     // Schedule & ages
     defineField({
