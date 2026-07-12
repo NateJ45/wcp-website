@@ -45,11 +45,16 @@ const fmt = (iso: string) =>
     {
       events.map((e) => (
         <li class="flex items-start gap-3">
-          <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink" aria-hidden="true">
+          <span
+            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+            aria-hidden="true"
+          >
             <Icon name="calendar-days" class="h-4 w-4" />
           </span>
           <div class="min-w-0">
-            <p class="truncate font-semibold text-heading" title={e.title}>{e.title}</p>
+            <p class="truncate font-semibold text-heading" title={e.title}>
+              {e.title}
+            </p>
             <p class="text-sm text-ink-muted">
               {fmt(e.startDate)}
               {e.location ? ` · ${e.location}` : ''}

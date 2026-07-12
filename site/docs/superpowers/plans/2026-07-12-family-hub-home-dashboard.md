@@ -25,6 +25,7 @@ The hub gate is open for preview (`HUB_OPEN = true` in `src/middleware.ts`), so 
 ## File structure
 
 **Create:**
+
 - `src/components/hub/HomeWidgetCard.astro` — shared widget shell (icon, title, optional "See all" link, content slot, empty-state fallback).
 - `src/components/hub/HubGreeting.astro` — greeting + tagline + community chips (date, families, school-year status) + progress bar.
 - `src/components/hub/ClassHelperRow.astro` — the four class cards (Twos/Threes/Pre-K AM/Pre-K PM), each in its class color.
@@ -37,6 +38,7 @@ The hub gate is open for preview (`HUB_OPEN = true` in `src/middleware.ts`), so 
 - `tests/hub-home.spec.ts` — Task 10 SSR Playwright spec for the Home dashboard.
 
 **Modify:**
+
 - `src/sanity/schemaTypes/singletons/siteSettings.ts` — add `yearStart`, `yearEnd`, `firstDay`, `familyCount` to the `year` group.
 - `src/lib/queries.ts` — extend `SITE_SETTINGS_QUERY` with the four new fields; add `DIRECTORY_FAMILY_COUNT_QUERY`.
 - `src/pages/family-hub/index.astro` — full rebuild: greeting + chips + progress bar + class row + widget grid + `SectionRenderer` for board-added content.
@@ -48,6 +50,7 @@ The hub gate is open for preview (`HUB_OPEN = true` in `src/middleware.ts`), so 
 ## Task 1: `siteSettings` schema — school-year dates + family count
 
 **Files:**
+
 - Modify: `src/sanity/schemaTypes/singletons/siteSettings.ts`
 - Modify: `src/lib/queries.ts`
 
@@ -119,13 +122,14 @@ git add site/src/sanity/schemaTypes/singletons/siteSettings.ts site/src/lib/quer
 git commit -m "Sanity: add siteSettings school-year dates + family-count override, for the Home dashboard"
 ```
 
-*(The dates/count are one-time-per-year values a board member sets — leave them for manual Studio entry at `/studio` → Site Settings → School year; no seed script needed. Every consumer below treats them as optional and degrades gracefully when unset, matching the Calendar page's `googleCalendarId` precedent.)*
+_(The dates/count are one-time-per-year values a board member sets — leave them for manual Studio entry at `/studio` → Site Settings → School year; no seed script needed. Every consumer below treats them as optional and degrades gracefully when unset, matching the Calendar page's `googleCalendarId` precedent.)_
 
 ---
 
 ## Task 2: `HomeWidgetCard.astro` — shared widget shell
 
 **Files:**
+
 - Create: `src/components/hub/HomeWidgetCard.astro`
 
 One visual shell every widget renders through: icon + title in the header, an optional "See all" link, and either the slotted content or a compact empty message. Keeps each widget's own file small (just data-fetching + a content slot).
@@ -188,10 +192,7 @@ const {
     </div>
     {
       !empty && seeAllHref && (
-        <a
-          href={seeAllHref}
-          class="shrink-0 text-sm font-semibold text-sky-ink hover:underline"
-        >
+        <a href={seeAllHref} class="shrink-0 text-sm font-semibold text-sky-ink hover:underline">
           {seeAllLabel}
         </a>
       )
@@ -221,6 +222,7 @@ git commit -m "Hub: add HomeWidgetCard, the shared shell for Home dashboard widg
 ## Task 3: `HubGreeting.astro` — greeting, chips, progress bar
 
 **Files:**
+
 - Create: `src/components/hub/HubGreeting.astro`
 
 The hero of the dashboard: a time-of-day greeting, the site tagline, three community chips (today's date, families count, school-year status), and a slim progress bar. Every siteSettings-backed piece degrades gracefully when its field is unset — nothing renders "0" or a broken calculation.
@@ -283,7 +285,10 @@ const daysToYearEnd = daysUntil(yearEnd);
 // glanceable number worth showing here — the progress bar covers that).
 let statusChip: { icon: string; text: string } | null = null;
 if (daysToFirstDay !== null && daysToFirstDay > 0) {
-  statusChip = { icon: 'party-popper', text: `${daysToFirstDay} day${daysToFirstDay === 1 ? '' : 's'} 'til school` };
+  statusChip = {
+    icon: 'party-popper',
+    text: `${daysToFirstDay} day${daysToFirstDay === 1 ? '' : 's'} 'til school`,
+  };
 } else if (daysToYearEnd !== null && daysToYearEnd <= 0) {
   statusChip = { icon: 'sun', text: 'Enjoy your summer!' };
 }
@@ -298,7 +303,8 @@ const yearPct =
           0,
           Math.round(
             ((todayUTC.getTime() - new Date(`${yearStart}T00:00:00Z`).getTime()) /
-              (new Date(`${yearEnd}T00:00:00Z`).getTime() - new Date(`${yearStart}T00:00:00Z`).getTime())) *
+              (new Date(`${yearEnd}T00:00:00Z`).getTime() -
+                new Date(`${yearStart}T00:00:00Z`).getTime())) *
               100,
           ),
         ),
@@ -309,12 +315,17 @@ const familiesLabel =
   familyCount && familyCount > 0 ? `${familyCount} famil${familyCount === 1 ? 'y' : 'ies'}` : null;
 ---
 
-<div class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface" data-reveal>
+<div
+  class="rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm sm:p-8 dark:bg-surface"
+  data-reveal
+>
   <p class="font-display text-2xl text-heading sm:text-3xl">{greeting}, WCP family!</p>
   <p class="mt-2 text-ink-muted">{tagline}</p>
 
   <ul class="mt-5 flex flex-wrap gap-2">
-    <li class="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1.5 text-sm font-semibold text-sky-ink">
+    <li
+      class="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1.5 text-sm font-semibold text-sky-ink"
+    >
       <Icon name="calendar-days" class="h-4 w-4" />
       {todayLabel}
     </li>
@@ -376,6 +387,7 @@ git commit -m "Hub: add HubGreeting (greeting, community chips, school-year prog
 ## Task 4: `ClassHelperRow.astro`
 
 **Files:**
+
 - Create: `src/components/hub/ClassHelperRow.astro`
 
 Four compact class cards — Twos (blocks), Threes (crayon), Pre-K AM (sun), Pre-K PM (moon) — each in its brand color via `classStyles`, linking straight to that class's hub page.
@@ -446,6 +458,7 @@ git commit -m "Hub: add ClassHelperRow (the four class cards on the Home dashboa
 ## Task 5: News widgets — Upcoming Events + Announcements
 
 **Files:**
+
 - Create: `src/components/hub/UpcomingEventsWidget.astro`
 - Create: `src/components/hub/AnnouncementsWidget.astro`
 
@@ -499,7 +512,10 @@ const fmt = (iso: string) =>
     {
       events.map((e) => (
         <li class="flex items-start gap-3">
-          <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink" aria-hidden="true">
+          <span
+            class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+            aria-hidden="true"
+          >
             <Icon name="calendar-days" class="h-4 w-4" />
           </span>
           <div class="min-w-0">
@@ -559,7 +575,10 @@ const fmt = (iso: string) =>
       updates.map((u) => (
         <li>
           {u.slug ? (
-            <a href={`/family-hub/updates/${u.slug}`} class="font-semibold text-heading hover:underline">
+            <a
+              href={`/family-hub/updates/${u.slug}`}
+              class="font-semibold text-heading hover:underline"
+            >
               {u.pinned && <span class="mr-1 text-orange-ink">•</span>}
               {u.title}
             </a>
@@ -594,6 +613,7 @@ git commit -m "Hub: add UpcomingEventsWidget + AnnouncementsWidget"
 ## Task 6: Resource/money widgets — Meeting Minutes + Fundraising
 
 **Files:**
+
 - Create: `src/components/hub/MeetingMinutesWidget.astro`
 - Create: `src/components/hub/FundraisingWidget.astro`
 
@@ -744,6 +764,7 @@ git commit -m "Hub: add MeetingMinutesWidget + FundraisingWidget"
 ## Task 7: Schema-less widgets — Class Photos + Budget Snapshot
 
 **Files:**
+
 - Create: `src/components/hub/ClassPhotosWidget.astro`
 - Create: `src/components/hub/BudgetSnapshotWidget.astro`
 
@@ -810,6 +831,7 @@ git commit -m "Hub: add ClassPhotosWidget + BudgetSnapshotWidget (empty-state on
 ## Task 8: Rebuild `/family-hub/index.astro`
 
 **Files:**
+
 - Modify: `src/pages/family-hub/index.astro`
 
 Replace the old quick-link grid entirely (the `Information`/`Community` group filter is already stale dead code — `hub-nav.ts` no longer has an `Information` group since the shell phase, so today it silently renders nothing). Compose `HubGreeting`, `ClassHelperRow`, the six widgets in a responsive grid, and keep `SectionRenderer` for board-added content at the bottom (unchanged pattern from every other hub page).
@@ -882,11 +904,7 @@ try {
 const familyCount = settings?.familyCount ?? liveFamilyCount;
 ---
 
-<HubShell
-  title={title}
-  current="/family-hub"
-  pageTitle="Family Hub — West Chester Preschool"
->
+<HubShell title={title} current="/family-hub" pageTitle="Family Hub — West Chester Preschool">
   <Section bg="grey" label="Family Hub home">
     <div class="space-y-8">
       <HubGreeting
@@ -944,6 +962,7 @@ git commit -m "Hub: rebuild /family-hub as the dashboard (greeting, chips, class
 ## Task 9: Extend `playwright.hub.config.ts` to cover the new spec
 
 **Files:**
+
 - Modify: `playwright.hub.config.ts`
 
 The shell phase scoped `testMatch` to exactly `hub-shell.spec.ts`. Widen it so the new `hub-home.spec.ts` (Task 10) also runs under this SSR config.
@@ -975,6 +994,7 @@ git commit -m "Test: widen playwright.hub.config.ts to also run hub-home.spec.ts
 ## Task 10: `tests/hub-home.spec.ts` — SSR coverage for the dashboard
 
 **Files:**
+
 - Create: `tests/hub-home.spec.ts`
 
 Same pattern as `tests/hub-shell.spec.ts`: real SSR page, `settle()` before measuring, axe in both themes, 320px reflow. Asserts the dashboard's structural pieces render, without depending on any Sanity content actually being present (matching what dev/CI will actually have).
@@ -1059,6 +1079,7 @@ git commit -m "Test: SSR Playwright spec for the Home dashboard (greeting, class
 ## Task 11: Update the docs
 
 **Files:**
+
 - Modify: `docs/FAMILY_HUB.md`, `CLAUDE.md`, `src/sanity/guides/content.ts`
 
 Per the repo's keep-docs-in-sync rule: this changes both what a volunteer edits (new `siteSettings` fields) and the codebase's shape (new widget components), so both the markdown and the in-Studio guide need updating.
@@ -1090,5 +1111,6 @@ git commit -m "Docs: describe the Home dashboard, its widgets, and the new siteS
 ## Execution note
 
 Two things confirmed while planning, not left as open questions:
+
 1. **No new client JS.** The greeting/countdown is plain SSR text, not the existing `countdown.ts` ticker (that script is wired to the public `CountdownSection` page-builder section and stays there untouched).
 2. **Timezone correctness** for the greeting and date math is handled via `Intl`/`toLocaleString` with an explicit `America/New_York` zone, not `Date` instance methods — verify this renders the expected greeting at different times of day during Task 8's browser verification (the Workers runtime is UTC by default).
