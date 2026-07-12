@@ -7,7 +7,12 @@ import { settle } from './helpers';
 // (default ruleset) in light AND dark, and reflow with no horizontal scroll at
 // 320px. The static suites can't reach these (SSR, gated) — this runs under
 // playwright.hub.config.ts against the real wrangler preview build.
-const ROUTES = ['/family-hub/tuition', '/family-hub/documents', '/family-hub/fundraising'];
+const ROUTES = [
+  '/family-hub/tuition',
+  '/family-hub/documents',
+  '/family-hub/fundraising',
+  '/family-hub/coop-jobs',
+];
 
 for (const route of ROUTES) {
   test.describe(`Family Hub section: ${route}`, () => {
