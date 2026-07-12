@@ -20,11 +20,30 @@ The old public URLs were read straight from `westchesterpreschool.org/sitemap.xm
 | `/tour`             | `/virtual-tour`   |
 | `/families`         | `/family-hub`     |
 
+**Family hub dashboards** — on Squarespace these were top-level pages behind the shared
+password; they map 1:1 onto the new gated hub:
+
+| Old Squarespace URL   | New URL                   |
+| --------------------- | ------------------------- |
+| `/blog`               | `/family-hub/updates`     |
+| `/calendar`           | `/family-hub/calendar`    |
+| `/coop-jobs`          | `/family-hub/coop-jobs`   |
+| `/documents`          | `/family-hub/documents`   |
+| `/directory`          | `/family-hub/directory`   |
+| `/fundraising`        | `/family-hub/fundraising` |
+| `/health`             | `/family-hub/health`      |
+| `/tuition-payments`   | `/family-hub/tuition`     |
+| `/twos-classroom`     | `/family-hub/twos`        |
+| `/threes-classroom`   | `/family-hub/threes`      |
+| `/pre-k-am-classroom` | `/family-hub/pre-k-am`    |
+| `/pre-k-pm-classroom` | `/family-hub/pre-k-pm`    |
+
 Pages whose path did **not** change (`/about`, `/tuition`, `/faq`, `/contact`, `/enroll`,
 `/donate`, `/newsletter`, `/work-with-us`, `/why-wcp`, `/a-day-at-wcp`) resolve directly
 and need no redirect. `/families` was the old password-protected families area (returns
-401, so it wasn't in the sitemap — found via the site nav); it maps to the new
-`/family-hub`. Plus friendly aliases `/blog` → `/news` and `/calendar` → `/events`.
+401, so it wasn't in the sitemap — found via the site nav); it and its dashboards map to
+the new `/family-hub/*` (see the table above). Note `/blog` and `/calendar` were the hub's
+gated meeting blog and calendar, so they point into the hub — not the public `/news` / `/events`.
 
 There should be nothing left to do here for the current set of pages. The rest of this doc
 is for adding more later.

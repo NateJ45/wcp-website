@@ -47,9 +47,6 @@ export default defineConfig({
   // off Squarespace. These emit real 301s via the Cloudflare adapter. See
   // docs/REDIRECTS.md.
   redirects: {
-    // Friendly aliases:
-    '/blog': '/news',
-    '/calendar': '/events',
     // Old Squarespace paths that CHANGED (pulled from the old sitemap.xml,
     // 2026-07). Same-named pages (/about, /tuition, /faq, /contact, /enroll,
     // /donate, /newsletter, /work-with-us, /why-wcp, /a-day-at-wcp) resolve
@@ -60,12 +57,25 @@ export default defineConfig({
     '/pre-k-class': '/classes/pre-k',
     '/coop-life': '/co-op-life',
     '/tour': '/virtual-tour',
-    // The old families area was Squarespace's password-protected "/families"
-    // (the nav link families used; returns 401, so it's not in the sitemap).
-    // Send it to the new gated hub so those bookmarks land. Deep sub-pages
-    // under it can't be a static wildcard→one-page redirect, and were behind
-    // the login anyway, so families just re-enter the hub from here.
+    // The old family hub. On Squarespace these were top-level pages behind a
+    // shared password ("/families" was the landing; the dashboards sat at the
+    // root, e.g. "/blog", "/coop-jobs"). They map 1:1 onto the new gated hub,
+    // which re-prompts for the password. `/blog` and `/calendar` were the hub's
+    // meeting blog and calendar (NOT a public blog/events page), so they point
+    // into the hub, not at /news or /events.
     '/families': '/family-hub',
+    '/blog': '/family-hub/updates',
+    '/calendar': '/family-hub/calendar',
+    '/coop-jobs': '/family-hub/coop-jobs',
+    '/documents': '/family-hub/documents',
+    '/directory': '/family-hub/directory',
+    '/fundraising': '/family-hub/fundraising',
+    '/health': '/family-hub/health',
+    '/tuition-payments': '/family-hub/tuition',
+    '/twos-classroom': '/family-hub/twos',
+    '/threes-classroom': '/family-hub/threes',
+    '/pre-k-am-classroom': '/family-hub/pre-k-am',
+    '/pre-k-pm-classroom': '/family-hub/pre-k-pm',
   },
 
   prefetch: {
