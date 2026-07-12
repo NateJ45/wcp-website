@@ -11,9 +11,9 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
-import Callout from '@/components/Callout.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
@@ -69,86 +69,88 @@ const keepHome = [
 ];
 ---
 
-<HubShell
-  title={title}
-  intro={intro}
-  current="/family-hub/health"
-  pageTitle="Health & Safety — WCP Family Hub"
->
-  {/* FIXED: per-child info (Sanity, PII) — locked, never editable as content */}
-  <Section bg="white" labelledby="your-child">
-    <div class="mx-auto max-w-3xl">
-      <SectionHeader
-        eyebrow="On File"
-        title="Your child’s health info"
-        titleId="your-child"
-        align="left"
-        lead="Your emergency contacts, immunization status, and any allergies or medical notes you’ve shared with the school."
-      />
-      <HubEmptyState
-        icon="heart-pulse"
-        title="Your child’s details appear here"
-        source="health"
-        class="mt-8"
-      />
+<HubShell title={title} bare pageTitle="Health & Safety — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="heart-pulse" />
+
+      {/* FIXED: per-child info (Sanity, PII) — locked, never editable as content */}
+      <div aria-labelledby="your-child">
+        <h2 id="your-child" class="text-xl font-extrabold text-heading">
+          Your child’s health info
+        </h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          Your emergency contacts, immunization status, and any allergies or medical notes you’ve
+          shared with the school.
+        </p>
+        <HubEmptyState
+          icon="heart-pulse"
+          title="Your child’s details appear here"
+          source="health"
+          class="mt-6"
+        />
+      </div>
+
+      {
+        !hasSections && (
+          <Fragment>
+            {/* When to keep your child home — orange chips (health caution is meaningful) */}
+            <div class="mt-12" aria-labelledby="keep-home">
+              <h2 id="keep-home" class="text-xl font-extrabold text-heading">
+                When to keep your child home
+              </h2>
+              <p class="mt-1 max-w-2xl text-ink-muted">
+                When in doubt, keep them home. These guidelines protect every family at WCP.
+              </p>
+              <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {keepHome.map((k) => (
+                  <HubCard icon={k.icon} title={k.title} iconChip="bg-orange/15 text-orange-ink">
+                    <p class="text-sm leading-relaxed text-ink-muted">{k.body}</p>
+                  </HubCard>
+                ))}
+              </div>
+              {/* Allergy awareness — amber emphasis note (was a warm Callout) */}
+              <HubCard class="mt-6 flex items-start gap-4 p-4">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
+                  aria-hidden="true"
+                >
+                  <Icon name="file-check" class="h-5 w-5" />
+                </span>
+                <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
+                  <strong class="font-bold text-heading">Allergy awareness:</strong> if your child
+                  has a food allergy or any condition classroom helpers should know about, make sure
+                  it’s on file with your teacher and on your Emergency Contact Form. Questions?
+                  Contact your teacher directly.
+                </p>
+              </HubCard>
+            </div>
+
+            {/* Closures & the full policy — the single navy emphasis moment */}
+            <HubCard class="mt-12 bg-navy text-white">
+              <span
+                class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-amber"
+                aria-hidden="true"
+              >
+                <Icon name="snowflake" class="h-7 w-7" />
+              </span>
+              <h2 class="text-lg font-bold text-white">Closures & the full policy</h2>
+              <p class="mt-2 max-w-xl leading-relaxed text-white/85">
+                WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather
+                closures — if Lakota closes, WCP closes. The complete health policy lives in the
+                Family Handbook, and Ohio licensing requirements always apply.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <Button href="/family-hub/documents" variant="outline-white" size="md">
+                  Open the Handbook
+                </Button>
+              </div>
+            </HubCard>
+          </Fragment>
+        )
+      }
     </div>
   </Section>
 
-  {
-    hasSections ? (
-      <SectionRenderer sections={doc!.sections} site={site} />
-    ) : (
-      <Fragment>
-        <Section bg="grey" labelledby="keep-home">
-          <SectionHeader
-            eyebrow="Illness Policy"
-            title="When to keep your child home"
-            titleId="keep-home"
-            lead="When in doubt, keep them home. These guidelines protect every family at WCP."
-          />
-          <ul class="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {keepHome.map((k) => (
-              <li
-                class="rounded-[var(--radius)] bg-white p-6 shadow-sm dark:bg-surface"
-                data-reveal
-              >
-                <span
-                  class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name={k.icon} class="h-5 w-5" />
-                </span>
-                <p class="font-bold text-heading">{k.title}</p>
-                <p class="mt-1 text-sm leading-relaxed text-ink">{k.body}</p>
-              </li>
-            ))}
-          </ul>
-          <Callout tone="warm" class="mx-auto mt-8 max-w-3xl">
-            <strong class="font-bold text-heading">Allergy awareness:</strong> if your child has a
-            food allergy or any condition classroom helpers should know about, make sure it’s on
-            file with your teacher and on your Emergency Contact Form. Questions? Contact your
-            teacher directly.
-          </Callout>
-        </Section>
-
-        <Section bg="navy" seam labelledby="health-more">
-          <div class="mx-auto max-w-2xl text-center">
-            <h2 id="health-more" class="text-white">
-              Closures & the full policy
-            </h2>
-            <p class="mx-auto mt-3 max-w-xl text-white/85">
-              WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather
-              closures — if Lakota closes, WCP closes. The complete health policy lives in the
-              Family Handbook, and Ohio licensing requirements always apply.
-            </p>
-            <div class="mt-8 flex flex-wrap justify-center gap-3">
-              <Button href="/family-hub/documents" variant="accent" size="md">
-                Open the Handbook
-              </Button>
-            </div>
-          </div>
-        </Section>
-      </Fragment>
-    )
-  }
+  {hasSections && <SectionRenderer sections={doc!.sections} site={site} />}
 </HubShell>
