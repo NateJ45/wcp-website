@@ -174,6 +174,10 @@ const PLACED = new Set([
   'presidentNote',
   'signupSheet',
   'signupEntry',
+  // sanity-plugin-media stores its image tags as documents of this type;
+  // they're managed inside the Media tool, so keep the raw list out of the
+  // nav (a bare "Media Tag" item is just confusing).
+  'media.tag',
 ]);
 
 export const structure: StructureResolver = (S, context) =>
@@ -317,12 +321,14 @@ export const structure: StructureResolver = (S, context) =>
     ]);
 
 // =============================================================================
-// The "Everyday edits" workspace structure — every VOLUNTEER task (each Help &
-// Guide walkthrough works here), minus the rarely-touched / riskier surfaces:
-// Menus (header & footer) and Community & content. The workspace switcher
-// (top-left) opens "Everything" for those. NOTE: this trims the MENU only —
-// it is comfort, not security (free-plan editors are Administrators either
-// way, see docs/ROLES.md).
+// The "Everyday edits" workspace structure — ONLY the publish-something-now
+// tasks: the alert banner, money, news, events, pages, the Family Hub, and
+// the inboxes. Deliberately SHORT so it reads clearly differently from
+// "Everything" (which adds School info, Community & content, Site Settings,
+// and Menus). Class documents stay reachable here through Money & payments →
+// "Class tuition (open a class)" — that list opens the full class editor.
+// NOTE: this trims the MENU only — it is comfort, not security (free-plan
+// editors are Administrators either way, see docs/ROLES.md).
 // =============================================================================
 export const everydayStructure: StructureResolver = (S, context) =>
   S.list()
@@ -348,45 +354,9 @@ export const everydayStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
       pagesGroup(S),
 
-      S.divider().title('School info'),
-
-      orderableDocumentListDeskItem({
-        type: 'class',
-        S,
-        context,
-        title: 'Classes',
-        icon: emoji('🎒'),
-      }),
-      S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
-      orderableDocumentListDeskItem({
-        type: 'faqItem',
-        S,
-        context,
-        title: 'FAQs',
-        icon: emoji('❓'),
-      }),
-      orderableDocumentListDeskItem({
-        type: 'testimonial',
-        S,
-        context,
-        title: 'Testimonials',
-        icon: emoji('💬'),
-      }),
-      orderableDocumentListDeskItem({
-        type: 'schoolYearEvent',
-        S,
-        context,
-        title: 'School-Year Events',
-        icon: emoji('📅'),
-      }),
-
       S.divider().title('Family Hub'),
 
       familyHubGroup(S, context),
-
-      S.divider().title('Site setup'),
-
-      singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
 
       S.divider().title('Inboxes'),
 

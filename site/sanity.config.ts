@@ -27,8 +27,9 @@ import { projectId, dataset } from './src/sanity/env';
 // Workspaces (the integration derives the URLs from the names; do not set
 // basePath here — @sanity/astro overrides it). Because the site is a static
 // build, the embedded Studio uses HASH routing, so the deployed URLs are:
-//  - "Everyday edits"  → /studio/#/everyday    the trimmed volunteer menu
-//  - "Everything"      → /studio/#/everything  adds Menus / Community / links
+//  - "Everyday edits"  → /studio/#/everyday    publish-something-now tasks only
+//  - "Everything"      → /studio/#/everything  adds School info / Community /
+//                                              Site Settings / Menus / links
 // (Under `npx sanity dev` it's browser routing at /studio/studio/<name> —
 // dev-only quirk from sanity.cli's own /studio base.) /studio itself lands on
 // the FIRST workspace (Everyday edits); the switcher in the top-left swaps

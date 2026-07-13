@@ -79,7 +79,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The left menu, band by band' },
       {
         kind: 'p',
-        text: 'The left menu is grouped by how often you need things, with a small heading over each band.',
+        text: 'The left menu is grouped by how often you need things, with a small heading over each band. The full set below is what the **Everything** workspace shows; **Everyday edits** keeps just the first band plus the Family Hub and the Inboxes.',
       },
       {
         kind: 'bullets',
@@ -95,7 +95,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Two views of the same Studio' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Everyday edits** — a shorter menu with everything a volunteer normally touches. Click the workspace name in the top-left corner to switch to **Everything**, which adds the rarely-needed extras (Menus, Community & content, the Link Checker). Both edit the same website; nothing is different except how much menu you see.',
+        text: 'The Studio opens in **Everyday edits** — a short menu with just the publish-something-now jobs: the alert banner, money, news, events, pages, the Family Hub, and your inboxes. Click the workspace name in the top-left corner to switch to **Everything**, which adds the occasional stuff: School info (classes, staff, FAQs, testimonials, the school-year timeline), Community & content, Site Settings, and Menus. Both edit the same website; nothing is different except how much menu you see.',
       },
       {
         kind: 'seealso',
@@ -533,7 +533,14 @@ export const guides: Guide[] = [
         text: 'A class’s schedule, ages, and tuition appear on its own page, the tuition table, and the Family Hub. They all read from this one place, so you only change it here.',
       },
       { kind: 'h', text: 'To change a class' },
-      { kind: 'path', items: ['Classes', 'pick the class', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'Classes', 'pick the class', 'edit', 'Publish'],
+      },
+      {
+        kind: 'p',
+        text: 'Classes live under **School info** in the **Everything** workspace (switch with the name in the top-left corner). Shortcut from Everyday edits: **Money & payments** → **Class tuition (open a class)** opens the very same class editor.',
+      },
       {
         kind: 'steps',
         items: [
@@ -588,7 +595,10 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Each class’s **monthly** and **annual** tuition live on the class itself.',
       },
-      { kind: 'path', items: ['Classes', 'pick the class', 'Tuition & payment tab'] },
+      {
+        kind: 'path',
+        items: ['Money & payments', 'Class tuition (open a class)', 'Tuition & payment tab'],
+      },
       { kind: 'h', text: 'Registration, participation, and student fees' },
       {
         kind: 'p',
@@ -632,11 +642,14 @@ export const guides: Guide[] = [
         title: 'One bio, everywhere.',
         text: 'A teacher used to be re-typed on several pages, and the versions drifted apart. Now you write it once in **Staff** and it appears the same everywhere, including on the class they teach.',
       },
-      { kind: 'path', items: ['Staff', 'pick the person (or ＋ new)', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'Staff', 'pick the person (or ＋ new)', 'edit', 'Publish'],
+      },
       {
         kind: 'steps',
         items: [
-          'Click **Staff** in the left menu.',
+          'Switch to the **Everything** workspace (the name in the top-left corner), then click **Staff**.',
           'Click a person to edit, or **＋** to add someone new.',
           'Fill in their name, title (Mrs.), role, and bio. Add a photo if you have one.',
           '**Publish**.',
@@ -657,11 +670,14 @@ export const guides: Guide[] = [
     lead: 'Collect a nice thing a family said and show it on the site.',
     diy: 'self',
     body: [
-      { kind: 'path', items: ['Testimonials', '＋ new', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'Testimonials', '＋ new', 'edit', 'Publish'],
+      },
       {
         kind: 'steps',
         items: [
-          'Click **Testimonials**, then **＋**.',
+          'Switch to the **Everything** workspace (the name in the top-left corner), click **Testimonials**, then **＋**.',
           'Paste the quote, and add who said it (first name and last initial is fine).',
           'Add their **connection** (for example "Twos parent") and pick a **tag** so it shows on the right pages.',
           'Turn on **Feature this one?** if you want it on the homepage.',
@@ -690,11 +706,14 @@ export const guides: Guide[] = [
     lead: 'Answer a common question once and it appears on the FAQ page.',
     diy: 'self',
     body: [
-      { kind: 'path', items: ['FAQs', 'pick one (or ＋ new)', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'FAQs', 'pick one (or ＋ new)', 'edit', 'Publish'],
+      },
       {
         kind: 'steps',
         items: [
-          'Click **FAQs**.',
+          'Switch to the **Everything** workspace (the name in the top-left corner), then click **FAQs**.',
           'Open one to edit, or **＋** to add a new question.',
           'Write the question and answer, and choose a **Category** so it lands in the right group.',
           'To move important ones higher, grab the handle on the left of the list and **drag** — the FAQ page groups by category, so dragging changes the order within each category.',
@@ -717,7 +736,20 @@ export const guides: Guide[] = [
         title: 'Change it once.',
         text: 'The phone number, email, and address show up in the header, the footer, the contact page, and various buttons. They all read from **Site Settings**, so you update them in one spot.',
       },
-      { kind: 'path', items: ['Site Settings', 'Contact / Location tab', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: [
+          'Everything workspace',
+          'Site Settings',
+          'Contact / Location tab',
+          'edit',
+          'Publish',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'Site Settings lives in the **Everything** workspace — switch with the workspace name in the top-left corner.',
+      },
       {
         kind: 'p',
         text: 'Site Settings is also where you set the **current school year** label (for example "2026-27") and turn the "Now Enrolling" note on or off.',
