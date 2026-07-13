@@ -4,15 +4,22 @@
 // Adds .is-visible to [data-reveal] elements. Anything already on-screen is
 // revealed immediately (a geometry check, so it works even in a backgrounded
 // tab where IntersectionObserver never fires); everything below the fold is
-// observed and revealed as the visitor scrolls to it. Runs on every ClientRouter
-// navigation (onPageLoad) so swapped-in content reveals too, and the observer is
-// disconnected before each swap so none pile up. Under reduced-motion (or no
-// IntersectionObserver) everything is shown immediately, so nothing ever depends
-// on motion to appear.
+// observed and revealed as the visitor scrolls to it. Under reduced-motion
+// (or no IntersectionObserver) everything is shown immediately, so nothing
+// ever depends on motion to appear.
+//
+// LATE CONTENT: server islands (the hub home's Google-backed widgets) stream
+// their HTML in AFTER this module's initial scan — without the MutationObserver
+// below, their [data-reveal] cards would never be geometry-checked or observed
+// and would sit at opacity 0 forever (found live 2026-07: the hub dashboard
+// "lost" its events/fundraising/budget widgets except on a hard refresh,
+// where the race happened to flip). Any future streamed/injected content is
+// covered by the same path.
 // ============================================================================
 import { onPageLoad, onBeforeSwap } from './_page-load';
 
 let io: IntersectionObserver | null = null;
+let mo: MutationObserver | null = null;
 
 function inViewport(el: HTMLElement): boolean {
   const r = el.getBoundingClientRect();
@@ -20,8 +27,8 @@ function inViewport(el: HTMLElement): boolean {
   return r.bottom > 0 && r.top < vh;
 }
 
-function setup() {
-  const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-visible)'));
+/** Reveal-or-observe a batch (initial scan and every late insertion alike). */
+function process(els: HTMLElement[]) {
   if (!els.length) return;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -30,8 +37,7 @@ function setup() {
     return;
   }
 
-  io?.disconnect();
-  io = new IntersectionObserver(
+  io ??= new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -49,11 +55,35 @@ function setup() {
   });
 }
 
+const pending = (root: ParentNode | HTMLElement): HTMLElement[] =>
+  Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-visible)'));
+
+function setup() {
+  process(pending(document));
+
+  // Catch [data-reveal] elements inserted after the initial scan.
+  mo?.disconnect();
+  mo = new MutationObserver((mutations) => {
+    const fresh: HTMLElement[] = [];
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (!(node instanceof HTMLElement)) continue;
+        if (node.matches('[data-reveal]:not(.is-visible)')) fresh.push(node);
+        fresh.push(...pending(node));
+      }
+    }
+    process(fresh);
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+}
+
 onPageLoad(setup);
 
 onBeforeSwap(() => {
   io?.disconnect();
   io = null;
+  mo?.disconnect();
+  mo = null;
 });
 
 export {};

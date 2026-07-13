@@ -41,6 +41,28 @@ test.describe('Family Hub home dashboard', () => {
     }
   });
 
+  // Regression (2026-07): the server-island widgets stream in AFTER reveal.ts's
+  // initial scan; without the MutationObserver in reveal.ts their data-reveal
+  // cards never got .is-visible and sat at opacity 0 forever (except on hard
+  // refresh, where the race flipped). Playwright's toBeVisible() treats
+  // opacity:0 as visible, so this asserts the class AND the computed opacity.
+  test('server-island widgets join the reveal system', async ({ page }) => {
+    await page.goto('/family-hub', { waitUntil: 'load' });
+    await settle(page);
+
+    for (const title of ['Upcoming Events', 'Fundraising', 'Budget Snapshot']) {
+      const heading = page.getByRole('heading', { name: title, level: 3 });
+      await expect(heading).toBeVisible(); // waits for the island to stream in
+      const card = page.locator('[data-reveal]', { has: heading }).last();
+      // Below-fold cards reveal on scroll — exercise the observer path too.
+      await card.scrollIntoViewIfNeeded();
+      await expect(card).toHaveClass(/is-visible/);
+      await expect
+        .poll(() => card.evaluate((e) => getComputedStyle(e).opacity), { timeout: 5000 })
+        .toBe('1');
+    }
+  });
+
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 900 });
     await page.goto('/family-hub', { waitUntil: 'load' });
