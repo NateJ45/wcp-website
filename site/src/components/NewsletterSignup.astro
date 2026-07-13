@@ -32,19 +32,36 @@ const field =
       <label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
     </div>
     {
+      /* First + last name as separate fields — matching the old Squarespace
+         newsletter block (fname/lname), the one real form the old site had. */
       askName && (
-        <div>
-          <label class="sr-only" for={`${formId}-name`}>
-            Your name
-          </label>
-          <input
-            class={field}
-            id={`${formId}-name`}
-            name="name"
-            type="text"
-            placeholder="Your name"
-            autocomplete="name"
-          />
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <div class="flex-1">
+            <label class="sr-only" for={`${formId}-fname`}>
+              First name
+            </label>
+            <input
+              class={field}
+              id={`${formId}-fname`}
+              name="fname"
+              type="text"
+              placeholder="First name"
+              autocomplete="given-name"
+            />
+          </div>
+          <div class="flex-1">
+            <label class="sr-only" for={`${formId}-lname`}>
+              Last name
+            </label>
+            <input
+              class={field}
+              id={`${formId}-lname`}
+              name="lname"
+              type="text"
+              placeholder="Last name"
+              autocomplete="family-name"
+            />
+          </div>
         </div>
       )
     }

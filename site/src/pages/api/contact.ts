@@ -28,8 +28,23 @@ export const POST: APIRoute = async (context) => {
   const name = clip(String(form.get('name') ?? '').trim(), 200);
   const email = clip(String(form.get('email') ?? '').trim(), 200);
   const phone = clip(String(form.get('phone') ?? '').trim(), 60);
-  const message = clip(String(form.get('message') ?? '').trim(), 5000);
+  let message = clip(String(form.get('message') ?? '').trim(), 5000);
   const topic = clip(String(form.get('topic') ?? 'Contact').trim(), 120);
+
+  // Enrollment inquiries carry structured child details (see ContactForm's
+  // showEnrollFields). Fold them into the stored/emailed message so the board
+  // sees everything in one place without a schema change.
+  const childName = clip(String(form.get('childName') ?? '').trim(), 200);
+  const childBirthdate = clip(String(form.get('childBirthdate') ?? '').trim(), 40);
+  const classInterest = clip(String(form.get('classInterest') ?? '').trim(), 40);
+  const childDetails = [
+    childName && `Child: ${childName}`,
+    childBirthdate && `Birthdate: ${childBirthdate}`,
+    classInterest && `Class: ${classInterest}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  if (childDetails) message = `${childDetails}\n\n${message}`;
 
   const ok = () =>
     wantsJson

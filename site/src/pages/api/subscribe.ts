@@ -58,9 +58,14 @@ export const POST: APIRoute = async (context) => {
   const email = String(form.get('email') ?? '')
     .trim()
     .slice(0, 200);
-  const name = String(form.get('name') ?? '')
-    .trim()
-    .slice(0, 200);
+  // First/last come from the newsletter form's split fields (matching the old
+  // Squarespace block); a single `name` field is still accepted from any
+  // older/simpler embed.
+  const fname = String(form.get('fname') ?? '').trim();
+  const lname = String(form.get('lname') ?? '').trim();
+  const name = (
+    [fname, lname].filter(Boolean).join(' ') || String(form.get('name') ?? '').trim()
+  ).slice(0, 200);
   const source = String(form.get('source') ?? 'newsletter')
     .trim()
     .slice(0, 120);

@@ -34,6 +34,7 @@ const formId = `form-${section._key}`;
     <ContactForm
       topic={(section.topic as string) ?? 'Contact us'}
       showPhone={section.showPhone !== false}
+      showEnrollFields={/enrol/i.test((section.topic as string) ?? '')}
       buttonLabel={(section.buttonLabel as string) ?? 'Send message'}
       successMessage={(section.successMessage as string) ?? undefined}
       formId={formId}
