@@ -82,20 +82,10 @@ const NOTES = [
     email: 'erin@westchesterpreschool.org',
     photo: photoFor('staff-erin'),
   },
+  // One note for the merged Pre-K page (AM + PM share the page and teacher).
   {
-    _id: 'teacherNote-pre-k-am',
-    class: 'pre-k-am',
-    heading: 'Welcome to Pre-K!',
-    salutation: "Welcome! I'm so happy to have your child in class this year!",
-    body: LISA_LETTER.map(para),
-    signName: 'Lisa Cortez',
-    signRole: 'Pre-K Teacher, 2026-27',
-    email: 'lisa@westchesterpreschool.org',
-    photo: photoFor('staff-lisa'),
-  },
-  {
-    _id: 'teacherNote-pre-k-pm',
-    class: 'pre-k-pm',
+    _id: 'teacherNote-pre-k',
+    class: 'pre-k',
     heading: 'Welcome to Pre-K!',
     salutation: "Welcome! I'm so happy to have your child in class this year!",
     body: LISA_LETTER.map(para),

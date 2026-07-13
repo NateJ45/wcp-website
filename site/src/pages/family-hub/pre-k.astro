@@ -1,0 +1,202 @@
+---
+/* ============================================================================
+   Family Hub — Pre-K Classroom (GATED, page-builder) — AM + PM, one page
+   ============================================================================
+   The two Pre-K classes share one teacher, one handbook, and one set of
+   routines, so they share one hub page (the public site already does this at
+   /classes/pre-k). FIXED widget: a fact card per class — AM and PM side by
+   side in their own class colors, each with its pay button, helper-schedule
+   sheet, and photo album. EVERYTHING below that (the whole parent handbook:
+   schedules, drop-off/pick-up, helper playbook, snack duty, and so on) lives
+   in the `hubPage-pre-k` doc as page-builder sections, so the teacher/Board
+   edit it in the Studio as needs change (seeded from Mrs. Lisa's 2026-27
+   handbook by scripts/seed-pre-k-page.mjs). Mrs. Lisa's welcome letter is
+   the first-visit TeacherNoteModal (`teacherNote` doc, class "pre-k").
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/Icon.astro';
+import { payUrl } from '@/data/classes';
+import { getHubClass } from '@/lib/hub-classes';
+import { classStyles } from '@/lib/class-colors';
+import { cn } from '@/lib/utils';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'pre-k' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Pre-K Classroom';
+const intro =
+  doc?.intro ||
+  'Kindergarten readiness with Mrs. Lisa — everything about the Pre-K year in one place, for both the morning and afternoon classes.';
+
+// Both classes' facts (Sanity `class` docs, data-file fallback per field) and
+// their Board-editable helper-schedule + photo-album links.
+const SLUGS = ['pre-k-am', 'pre-k-pm'] as const;
+const [am, pm] = await Promise.all(SLUGS.map((s) => getHubClass(s)));
+interface ClassLinksRow {
+  slug?: string;
+  helperScheduleUrl?: string;
+  photoAlbumUrl?: string;
+}
+let links: Record<string, ClassLinksRow> = {};
+try {
+  const rows = await sanityFetch<ClassLinksRow[]>(
+    `*[_type == "class" && slug.current in ["pre-k-am", "pre-k-pm"]]{ "slug": slug.current, helperScheduleUrl, photoAlbumUrl }`,
+  );
+  for (const r of rows ?? []) if (r.slug) links[r.slug] = r;
+} catch {
+  links = {};
+}
+const classCards = [
+  { slug: 'pre-k-am', badge: 'Morning class', c: am },
+  { slug: 'pre-k-pm', badge: 'Afternoon class', c: pm },
+].map(({ slug, badge, c }) => ({
+  slug,
+  badge,
+  c,
+  helperHref: links[slug]?.helperScheduleUrl ?? helperScheduleFallback[slug],
+  albumHref: links[slug]?.photoAlbumUrl ?? photoAlbumFallback[slug],
+}));
+---
+
+<HubShell title={title} bare current="/family-hub/pre-k" pageTitle="Pre-K — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader
+        title={title}
+        subtitle={intro}
+        icon="sun"
+        iconChip={classStyles('pre-k').iconChip}
+      >
+        <Button slot="action" href="/classes/pre-k" variant="outline" size="sm">
+          See the full program
+        </Button>
+      </HubPageHeader>
+
+      {/* FIXED: the two classes side by side, each in its own color. */}
+      <div class="grid gap-4 lg:grid-cols-2">
+        {
+          classCards.map(({ slug, badge, c, helperHref, albumHref }) => {
+            const cc = classStyles(slug);
+            return (
+              <HubCard class="flex flex-col">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class={cn(
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                        cc.iconChip,
+                      )}
+                      aria-hidden="true"
+                    >
+                      <Icon name={c.icon} class="h-5 w-5" />
+                    </span>
+                    <div class="min-w-0">
+                      <span
+                        class={cn(
+                          'inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold tracking-wide uppercase',
+                          cc.badge,
+                        )}
+                      >
+                        {c.name}
+                      </span>
+                      <p class="mt-1 text-sm text-ink-muted">{badge}</p>
+                    </div>
+                  </div>
+                  <dl class="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 text-sm">
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Days
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.days}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Time
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.time}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Ages
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.age}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Monthly
+                      </dt>
+                      <dd class={cn('mt-0.5 font-bold', cc.text)}>{c.monthly}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div class="mt-5 flex flex-wrap gap-2">
+                  <Button
+                    href={payUrl(c.payId)}
+                    target="_blank"
+                    rel="noopener"
+                    variant="primary"
+                    size="sm"
+                    class={cn('flex-1', cc.button)}
+                  >
+                    Pay tuition
+                  </Button>
+                  {helperHref && (
+                    <Button
+                      href={helperHref}
+                      target="_blank"
+                      rel="noopener"
+                      variant="outline"
+                      size="sm"
+                      class="flex-1"
+                    >
+                      Helper schedule
+                    </Button>
+                  )}
+                  {albumHref && (
+                    <Button
+                      href={albumHref}
+                      target="_blank"
+                      rel="noopener"
+                      variant="outline"
+                      size="sm"
+                      class="flex-1"
+                    >
+                      Photo album
+                    </Button>
+                  )}
+                </div>
+              </HubCard>
+            );
+          })
+        }
+      </div>
+    </div>
+  </Section>
+
+  {/* The handbook — Board/teacher-editable page-builder sections. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
+
+  {/* Mrs. Lisa's welcome letter — first-visit modal. */}
+  <TeacherNoteModal slug="pre-k" />
+</HubShell>

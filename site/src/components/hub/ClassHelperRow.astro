@@ -18,8 +18,10 @@ import { helperScheduleFallback } from '@/data/hub/live-links';
 const CLASSES = [
   { slug: 'twos', label: 'Twos', icon: 'blocks', pageHref: '/family-hub/twos' },
   { slug: 'threes', label: 'Threes', icon: 'crayon', pageHref: '/family-hub/threes' },
-  { slug: 'pre-k-am', label: 'Pre-K AM', icon: 'sun', pageHref: '/family-hub/pre-k-am' },
-  { slug: 'pre-k-pm', label: 'Pre-K PM', icon: 'moon', pageHref: '/family-hub/pre-k-pm' },
+  // AM/PM keep separate helper-schedule tiles (separate sheets) even though
+  // they share one class hub page.
+  { slug: 'pre-k-am', label: 'Pre-K AM', icon: 'sun', pageHref: '/family-hub/pre-k' },
+  { slug: 'pre-k-pm', label: 'Pre-K PM', icon: 'moon', pageHref: '/family-hub/pre-k' },
 ] as const;
 
 interface HelperRow {

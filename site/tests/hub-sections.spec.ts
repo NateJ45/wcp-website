@@ -17,8 +17,7 @@ const ROUTES = [
   '/family-hub/updates',
   '/family-hub/twos',
   '/family-hub/threes',
-  '/family-hub/pre-k-am',
-  '/family-hub/pre-k-pm',
+  '/family-hub/pre-k',
   '/family-hub/directory',
 ];
 

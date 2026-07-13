@@ -6,6 +6,7 @@ import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import { renderPortableText } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { safeIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 interface Card {
@@ -21,7 +22,12 @@ interface Props {
 }
 const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
-const cards = (section.cards as Card[] | undefined) ?? [];
+// Card icons are board-typed in the Studio — guard them so a typo (or an icon
+// missing from our hand-extracted set) falls back instead of 500-ing the page.
+const cards = ((section.cards as Card[] | undefined) ?? []).map((c) => ({
+  ...c,
+  icon: c.icon ? safeIcon(c.icon, 'sparkles') : undefined,
+}));
 const columns = (section.columns as number | undefined) ?? 3;
 const layout = (section.layout as string | undefined) ?? 'card';
 const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;

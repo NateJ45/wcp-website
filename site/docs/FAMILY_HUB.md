@@ -237,9 +237,17 @@ Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting con
 `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
 
 **All hub pages are converted:** Landing (`home`), Calendar, Co-op Jobs, Documents, Tuition,
-Updates, Fundraising, Health, Directory, and the four class pages (`twos`, `threes`,
-`pre-k-am`, `pre-k-pm`). Each reads its `hubPage` doc for an editable heading, intro, and a
+Updates, Fundraising, Health, Directory, and the class pages (`twos`, `threes`, and the
+merged `pre-k` — both Pre-K classes share one page, with `/family-hub/pre-k-am|pm`
+301-redirecting there). Each reads its `hubPage` doc for an editable heading, intro, and a
 stack of hub-safe sections, wrapped around a **fixed widget** that stays locked in code:
+
+**The Pre-K page carries the entire parent handbook** as editable sections (daily schedules,
+drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom, communication, dress
+code, FAQs, and the class-pet band) — seeded from Mrs. Lisa's 2026-27 PDF by
+`node scripts/seed-pre-k-page.mjs` (re-running RESETS the page to that baseline; day-to-day
+edits happen in the Studio). Its fixed widget is the pair of AM/PM fact cards (facts, pay
+button, helper sheet, photo album per class).
 
 | Hub page    | Fixed widget (locked)                              | Already editable elsewhere                         |
 | ----------- | -------------------------------------------------- | -------------------------------------------------- |

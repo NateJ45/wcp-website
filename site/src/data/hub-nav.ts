@@ -94,17 +94,13 @@ export const hubNav: HubGroup[] = [
         icon: 'crayon',
         iconColor: CLASS_ACCENT.threes,
       },
+      // One page for both Pre-K classes — same teacher, same handbook; the AM/PM
+      // facts live side by side on the page itself.
       {
-        label: 'Pre-K AM',
-        href: '/family-hub/pre-k-am',
+        label: 'Pre-K',
+        href: '/family-hub/pre-k',
         icon: 'sun',
         iconColor: CLASS_ACCENT['pre-k-am'],
-      },
-      {
-        label: 'Pre-K PM',
-        href: '/family-hub/pre-k-pm',
-        icon: 'moon',
-        iconColor: CLASS_ACCENT['pre-k-pm'],
       },
     ],
   },

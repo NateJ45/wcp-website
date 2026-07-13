@@ -1,40 +1,6 @@
 ---
-/* ============================================================================
-   Family Hub — Pre-K PM Classroom (GATED, page-builder)
-   ============================================================================
-   Fixed widget: class facts + pay button + class-notes (class notes are their
-   own editable docs), via <ClassHubBody>. Editable heading/intro + any extra
-   sections come from the class's hubPage doc (hubKey "pre-k-pm"); falls back to
-   the built-in strings if no doc exists yet.
-   ============================================================================ */
+// The two Pre-K classes merged onto one hub page (same teacher, same
+// handbook) — old bookmarks land there.
 export const prerender = false;
-
-import HubShell from '@/layouts/HubShell.astro';
-import ClassHubBody from '@/components/hub/ClassHubBody.astro';
-import { sanityFetch } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
-
-interface HubPageDoc {
-  heading?: string;
-  intro?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sections?: any[];
-}
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'pre-k-pm' });
-} catch {
-  doc = null;
-}
-const title = doc?.heading || 'Pre-K PM Classroom';
-const intro = doc?.intro || 'Kindergarten readiness on an afternoon schedule.';
+return Astro.redirect('/family-hub/pre-k', 301);
 ---
-
-<HubShell
-  title={title}
-  bare
-  current="/family-hub/pre-k-pm"
-  pageTitle="Pre-K PM Classroom — WCP Family Hub"
->
-  <ClassHubBody slug="pre-k-pm" title={title} intro={intro} sections={doc?.sections} />
-</HubShell>

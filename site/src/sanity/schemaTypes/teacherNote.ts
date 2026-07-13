@@ -21,8 +21,7 @@ export const teacherNote = defineType({
         list: [
           { title: 'Twos', value: 'twos' },
           { title: 'Threes', value: 'threes' },
-          { title: 'Pre-K AM', value: 'pre-k-am' },
-          { title: 'Pre-K PM', value: 'pre-k-pm' },
+          { title: 'Pre-K (AM + PM)', value: 'pre-k' },
         ],
         layout: 'dropdown',
       },

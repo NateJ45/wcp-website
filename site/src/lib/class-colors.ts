@@ -19,6 +19,8 @@ const COLOR_BY_SLUG: Record<string, ClassColor> = {
   threes: 'green',
   'pre-k-am': 'orange',
   'pre-k-pm': 'sky',
+  // The merged Pre-K hub page (both AM + PM); orange = the shared Pre-K accent.
+  'pre-k': 'orange',
 };
 
 /** The brand color for a class slug (defaults to sky if unknown). */
