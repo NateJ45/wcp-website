@@ -1,0 +1,150 @@
+---
+/* ============================================================================
+   StoryTimelineSection — a scroll-driven "day in the life" story
+   ============================================================================
+   Moments unfold down a dashed spine as the visitor scrolls: text on one side,
+   a cluster of tilted snapshot photos on the other, alternating sides on
+   desktop. Everything rides the existing data-reveal system, so reduced-motion
+   visitors (and no-JS visitors) simply see the whole story laid out still —
+   nothing here depends on motion to be readable.
+
+   Accessibility notes:
+   - The story is a real <ol> (the moments are ordered — that IS the content).
+   - The spine and time markers are decorative (aria-hidden); the time is
+     repeated as visible text inside the moment so it's part of the item.
+   - Photo tilt is a static transform, not motion; only the hover-straighten
+     transition is motion and it's motion-reduce guarded.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import type { SanityImageSource } from '@/lib/image';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface MomentPhoto {
+  image?: SanityImageSource;
+  alt: string;
+  caption?: string;
+}
+interface Moment {
+  time?: string;
+  title: string;
+  body?: string;
+  photos?: MomentPhoto[];
+}
+interface Props {
+  section: SectionData;
+}
+const { section } = Astro.props;
+const titleId = titleIdFor(section);
+const moments = (section.moments as Moment[] | undefined) ?? [];
+
+// Static tilt per photo position — the "snapshots on a fridge" look. These are
+// transforms, not animation, so they're fine under reduced motion.
+const TILTS = ['-rotate-2', 'rotate-1', '-rotate-1'];
+---
+
+<Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
+  {
+    section.header?.title && (
+      <SectionHeader
+        eyebrow={section.header.eyebrow}
+        title={section.header.title}
+        lead={section.header.lead}
+        align={section.header.align}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+      />
+    )
+  }
+
+  <ol class="relative mx-auto mt-12 max-w-5xl space-y-16 lg:space-y-20">
+    {/* The spine: left edge on mobile, center on desktop. Decorative only. */}
+    <div
+      class="absolute top-2 bottom-2 left-4 border-l-2 border-dashed border-sky/50 lg:left-1/2 lg:-translate-x-1/2"
+      aria-hidden="true"
+    >
+    </div>
+
+    {
+      moments.map((m, i) => {
+        const flip = i % 2 === 1;
+        const photos = (m.photos ?? []).slice(0, 3);
+        return (
+          <li class="relative grid grid-cols-1 gap-6 pl-12 lg:grid-cols-2 lg:items-center lg:gap-12 lg:pl-0">
+            {/* Spine marker: the time in a chip, or a sun dot when no time. */}
+            <div
+              class="absolute top-0 left-4 -translate-x-1/2 lg:top-1/2 lg:left-1/2 lg:-translate-y-1/2"
+              aria-hidden="true"
+            >
+              {m.time ? (
+                <span class="inline-flex items-center rounded-full border-2 border-sky/60 bg-surface px-3 py-1 font-display text-sm whitespace-nowrap text-heading shadow-sm">
+                  {m.time}
+                </span>
+              ) : (
+                <span class="block h-4 w-4 rounded-full border-2 border-white bg-amber shadow-sm" />
+              )}
+            </div>
+
+            {/* Default (upward) reveal on purpose: the left/right variants keep
+                their pre-reveal translateX while hidden, which widens the page
+                and trips the 320px reflow gate. Up-reveal has no such risk. */}
+            <div
+              class:list={[
+                'max-w-md',
+                flip
+                  ? 'lg:order-2 lg:justify-self-start lg:pl-14'
+                  : 'lg:justify-self-end lg:pr-14 lg:text-right',
+              ]}
+              data-reveal
+            >
+              {m.time && <p class="font-display text-sm text-sky-ink">{m.time}</p>}
+              <h3 class="mt-1 font-display text-2xl text-heading">{m.title}</h3>
+              {m.body && <p class="mt-2 text-ink-muted">{m.body}</p>}
+            </div>
+
+            {photos.length > 0 && (
+              <div
+                class:list={[
+                  'flex flex-wrap items-center gap-4',
+                  flip ? 'lg:order-1 lg:justify-end lg:pr-14' : 'lg:pl-14',
+                ]}
+                data-reveal
+                style="--reveal-delay: 120ms"
+              >
+                {photos.map((p, j) => (
+                  <figure
+                    class:list={[
+                      'w-40 shrink-0 rounded-lg bg-surface p-2 pb-3 shadow-md transition-transform duration-300 hover:rotate-0 motion-reduce:transition-none sm:w-48',
+                      photos.length === 1 ? 'w-full max-w-sm sm:w-full' : '',
+                      TILTS[j % TILTS.length],
+                    ]}
+                  >
+                    <div class="aspect-[4/3] overflow-hidden rounded">
+                      {p.image && (
+                        <SanityImage
+                          source={p.image}
+                          alt={p.alt}
+                          class="h-full w-full object-cover"
+                          sizes="(min-width: 640px) 24rem, 90vw"
+                          widths={[320, 480, 768]}
+                        />
+                      )}
+                    </div>
+                    {p.caption && (
+                      <figcaption class="pt-2 text-center font-display text-sm text-ink-muted">
+                        {p.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+
+  {section.footnote && <p class="mt-12 text-center text-sm text-ink-muted">{section.footnote}</p>}
+</Section>

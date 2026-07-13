@@ -1,0 +1,132 @@
+---
+/* ============================================================================
+   SeasonalAccent — small hand-drawn seasonal decorations for the footer
+   ============================================================================
+   A little cluster of season shapes (leaves / snowflakes / flowers / sun)
+   tucked into the footer's top-right corner. Purely decorative: aria-hidden,
+   pointer-events-none, no motion, and drawn with the bright brand tier (these
+   are fills on navy, never text). Which season renders is decided at build
+   time from Site Settings — see src/lib/season.ts and Footer.astro.
+   ============================================================================ */
+import type { Season } from '@/lib/season';
+
+interface Props {
+  season: Season;
+  class?: string;
+}
+const { season, class: className } = Astro.props;
+
+// Bright-tier brand hexes (decorative fills on the navy footer).
+const ORANGE = '#ff8c00';
+const AMBER = '#ffa334';
+const SKY = '#40aaed';
+const GREEN = '#22c55e';
+---
+
+<div class:list={['pointer-events-none select-none', className]} aria-hidden="true">
+  {
+    season === 'fall' && (
+      <svg viewBox="0 0 140 56" class="h-14 w-35" fill="none">
+        {/* Three tumbling leaves: a simple pointed-oval leaf with a stem. */}
+        <g transform="translate(18 28) rotate(-24)">
+          <path d="M0 -14 C 9 -7, 9 7, 0 14 C -9 7, -9 -7, 0 -14 Z" fill={ORANGE} />
+          <path d="M0 -10 L0 16" stroke="#c05e00" stroke-width="2" stroke-linecap="round" />
+        </g>
+        <g transform="translate(66 24) rotate(14)">
+          <path d="M0 -14 C 9 -7, 9 7, 0 14 C -9 7, -9 -7, 0 -14 Z" fill={AMBER} />
+          <path d="M0 -10 L0 16" stroke="#c05e00" stroke-width="2" stroke-linecap="round" />
+        </g>
+        <g transform="translate(112 32) rotate(38)">
+          <path d="M0 -12 C 8 -6, 8 6, 0 12 C -8 6, -8 -6, 0 -12 Z" fill={GREEN} />
+          <path d="M0 -8 L0 14" stroke="#15803d" stroke-width="2" stroke-linecap="round" />
+        </g>
+      </svg>
+    )
+  }
+  {
+    season === 'winter' && (
+      <svg viewBox="0 0 140 56" class="h-14 w-35" fill="none">
+        {/* Three six-armed snowflakes at different sizes. */}
+        {[
+          { x: 22, y: 28, r: 13, c: 'white' },
+          { x: 70, y: 22, r: 10, c: SKY },
+          { x: 114, y: 32, r: 8, c: 'white' },
+        ].map(({ x, y, r, c }) => (
+          <g
+            transform={`translate(${x} ${y})`}
+            stroke={c}
+            stroke-width="2.4"
+            stroke-linecap="round"
+            opacity="0.9"
+          >
+            {[0, 60, 120].map((a) => (
+              <line
+                x1={-r * Math.cos((a * Math.PI) / 180)}
+                y1={-r * Math.sin((a * Math.PI) / 180)}
+                x2={r * Math.cos((a * Math.PI) / 180)}
+                y2={r * Math.sin((a * Math.PI) / 180)}
+              />
+            ))}
+            <circle r="2.4" fill={c} stroke="none" />
+          </g>
+        ))}
+      </svg>
+    )
+  }
+  {
+    season === 'spring' && (
+      <svg viewBox="0 0 140 56" class="h-14 w-35" fill="none">
+        {/* Three simple daisies on stems. */}
+        {[
+          { x: 22, y: 20, petal: AMBER, r: 7 },
+          { x: 68, y: 14, petal: SKY, r: 8 },
+          { x: 112, y: 22, petal: ORANGE, r: 6 },
+        ].map(({ x, y, petal, r }) => (
+          <g>
+            <path
+              d={`M${x} ${y + r} C ${x - 3} ${y + r + 14}, ${x + 3} ${y + r + 18}, ${x} ${y + r + 26}`}
+              stroke={GREEN}
+              stroke-width="2.4"
+              stroke-linecap="round"
+            />
+            {[0, 72, 144, 216, 288].map((a) => (
+              <circle
+                cx={x + r * Math.cos((a * Math.PI) / 180)}
+                cy={y + r * Math.sin((a * Math.PI) / 180)}
+                r={r * 0.62}
+                fill={petal}
+              />
+            ))}
+            <circle cx={x} cy={y} r={r * 0.5} fill="white" />
+          </g>
+        ))}
+      </svg>
+    )
+  }
+  {
+    season === 'summer' && (
+      <svg viewBox="0 0 140 56" class="h-14 w-35" fill="none">
+        {/* A beaming sun with a drifting cloud — the brand emblem's cousins. */}
+        <g transform="translate(96 26)">
+          {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((a) => (
+            <line
+              x1={17 * Math.cos((a * Math.PI) / 180)}
+              y1={17 * Math.sin((a * Math.PI) / 180)}
+              x2={23 * Math.cos((a * Math.PI) / 180)}
+              y2={23 * Math.sin((a * Math.PI) / 180)}
+              stroke={AMBER}
+              stroke-width="2.6"
+              stroke-linecap="round"
+            />
+          ))}
+          <circle r="13" fill={AMBER} />
+        </g>
+        <path
+          d="M18 38 a7 7 0 0 1 7-7 a8 8 0 0 1 15-2 a6.5 6.5 0 0 1 6 9 Z"
+          fill="white"
+          opacity="0.92"
+        />
+      </svg>
+    )
+  }
+</div>

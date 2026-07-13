@@ -46,10 +46,10 @@ const {
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
 // Every page gets a share card: the page's own og image (a post's cover, a
-// page's SEO image) when set, otherwise the branded hero poster as a sitewide
-// default — so a link to any page shows a real image on social/chat, never a
-// blank card.
-const DEFAULT_OG_IMAGE = '/hero/wcp-hero-poster.webp';
+// page's SEO image) when set, otherwise a branded card generated at build
+// time (/og/*.png, see src/pages/og/[...slug].png.ts) — so a link to any
+// page shows a real branded image on social/chat, never a blank card.
+const DEFAULT_OG_IMAGE = '/og/default.png';
 const canonical = new URL(Astro.url.pathname, site.url).toString();
 const ogImageUrl = new URL(ogImage ?? DEFAULT_OG_IMAGE, site.url).toString();
 

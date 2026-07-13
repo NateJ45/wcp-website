@@ -146,7 +146,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open a page and find the **Sections** list on the left.',
-          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery", "Tabs"). Fill in its boxes.',
+          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery", "Story timeline", "Tabs"). Fill in its boxes.',
           'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
           'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
           '**Publish** when you are happy.',
@@ -702,6 +702,10 @@ export const guides: Guide[] = [
       {
         kind: 'p',
         text: 'Site Settings is also where you set the **current school year** label (for example "2026-27") and turn the "Now Enrolling" note on or off.',
+      },
+      {
+        kind: 'p',
+        text: 'The **Seasonal touches** option (Identity tab) adds small hand-drawn decorations to the public site footer — leaves in fall, snowflakes in winter, flowers in spring, sunshine in summer. "Automatic" follows the calendar on its own; pick a season to hold it, or Off to hide them.',
       },
       {
         kind: 'callout',

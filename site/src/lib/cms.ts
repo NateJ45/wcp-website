@@ -4,6 +4,7 @@ import {
   STAFF_QUERY,
   CLASS_FACTS_QUERY,
   SITE_SETTINGS_QUERY,
+  SITE_SETTINGS_SEASON_QUERY,
   SCHOOL_YEAR_EVENTS_QUERY,
   NAVIGATION_QUERY,
   CLOSURE_ALERT_QUERY,
@@ -217,6 +218,16 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       instagram: doc.instagram ?? f.social.instagram,
     },
   } as unknown as T;
+}
+
+/**
+ * The seasonal footer accents, resolved at build time: the Site Settings
+ * dropdown ('auto' by default) through resolveSeason(). Null = off.
+ */
+export async function getSeason(): Promise<import('@/lib/season').Season | null> {
+  const { resolveSeason } = await import('@/lib/season');
+  const setting = await cmsFetch<string | null>(SITE_SETTINGS_SEASON_QUERY, {}, null);
+  return resolveSeason(setting, new Date());
 }
 
 export interface SchoolYearEventDoc {

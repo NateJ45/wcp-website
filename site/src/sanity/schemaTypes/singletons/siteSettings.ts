@@ -56,6 +56,26 @@ export const siteSettings = defineType({
       group: 'identity',
       description: 'The public site URL, e.g. https://www.westchesterpreschool.org',
     }),
+    defineField({
+      name: 'season',
+      title: 'Seasonal touches',
+      type: 'string',
+      group: 'identity',
+      options: {
+        list: [
+          { title: 'Automatic (follows the calendar)', value: 'auto' },
+          { title: 'Fall leaves', value: 'fall' },
+          { title: 'Winter snowflakes', value: 'winter' },
+          { title: 'Spring flowers', value: 'spring' },
+          { title: 'Summer sunshine', value: 'summer' },
+          { title: 'Off', value: 'off' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'auto',
+      description:
+        'Small hand-drawn decorations in the corner of the public site footer. "Automatic" picks the season from the date; the change shows after the next site rebuild.',
+    }),
 
     // Contact
     defineField({

@@ -62,6 +62,7 @@ at build time, hiding the whole band when there's nothing to show.
 | `mapSection`              | `MapSection.astro`                | Google Map + directions, **click-to-load**                                                             |
 | `countdownSection`        | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                                                    |
 | `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                                                        |
+| `storyTimelineSection`    | `StoryTimelineSection.astro`      | scroll-revealed "day in the life" moments along a dashed spine (A Day at WCP)                          |
 | `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                                                          |
 | `noticeBarSection`        | cream announcement strip          | home announcement                                                                                      |
 | `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                                                     |

@@ -207,6 +207,76 @@ export const gallerySection = defineType({
   },
 });
 
+// A scroll-driven "story" of moments along a timeline (e.g. A Day at WCP):
+// each moment is a time, a title, a line or two, and up to three photos that
+// render as a tilted snapshot cluster. Order in the array = order in the day.
+export const storyTimelineSection = defineType({
+  name: 'storyTimelineSection',
+  title: 'Story timeline',
+  type: 'object',
+  description: 'A day-in-the-life story: moments in order, each with photos.',
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'appearance', title: 'Appearance' },
+  ],
+  fields: [
+    defineField({
+      name: 'header',
+      title: 'Heading (optional)',
+      type: 'sectionHeader',
+      group: 'content',
+    }),
+    defineField({
+      name: 'moments',
+      title: 'Moments',
+      type: 'array',
+      group: 'content',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'moment',
+          fields: [
+            {
+              name: 'time',
+              title: 'Time (optional)',
+              type: 'string',
+              description: 'e.g. "9:00" — leave blank to show a sun marker instead.',
+            },
+            { name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() },
+            { name: 'body', title: 'Text', type: 'text', rows: 3 },
+            {
+              name: 'photos',
+              title: 'Photos (1-3)',
+              type: 'array',
+              of: [defineArrayMember({ type: 'figureImage' })],
+              validation: (R) => R.max(3),
+            },
+          ],
+          preview: {
+            select: { title: 'title', subtitle: 'time', media: 'photos.0.image' },
+          },
+        }),
+      ],
+      validation: (R) => R.min(2),
+    }),
+    defineField({
+      name: 'footnote',
+      title: 'Footnote (optional)',
+      type: 'string',
+      group: 'content',
+      description: 'Small line under the story, e.g. "Times vary a little by class."',
+    }),
+    ...bandFields('white'),
+  ],
+  preview: {
+    select: { title: 'header.title', moments: 'moments' },
+    prepare({ title, moments }) {
+      const n = Array.isArray(moments) ? moments.length : 0;
+      return { title: title || 'Story timeline', subtitle: `${n} moment${n === 1 ? '' : 's'}` };
+    },
+  },
+});
+
 export const splitMediaSection = defineType({
   name: 'splitMediaSection',
   title: 'Image + text rows',

@@ -146,6 +146,9 @@ export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortNa
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
+/** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
+export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`;
+
 /** Live count of families visible in the gated Directory (opted-in only). */
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true])`;
 

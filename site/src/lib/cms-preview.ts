@@ -46,6 +46,7 @@ const NON_STEGA_FIELDS = new Set([
   'style',
   'appearance',
   'icon',
+  'season',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {

@@ -21,6 +21,7 @@ import {
   stepListSection,
   compareSection,
   gallerySection,
+  storyTimelineSection,
   splitMediaSection,
 } from './structured';
 import { latestPostsSection, upcomingEventsSection } from './blog';
@@ -68,6 +69,7 @@ const BODY_SECTIONS = [
   mapSection,
   countdownSection,
   gallerySection,
+  storyTimelineSection,
   splitMediaSection,
   latestPostsSection,
   upcomingEventsSection,
@@ -111,6 +113,7 @@ const HUB_SAFE = new Set([
   'mapSection',
   'countdownSection',
   'gallerySection',
+  'storyTimelineSection',
   'splitMediaSection',
   'formSection',
 ]);

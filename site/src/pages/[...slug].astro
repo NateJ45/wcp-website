@@ -43,10 +43,11 @@ const siteData = await getSiteSettings(siteFallback);
 
 const title =
   page?.seoTitle ?? (page?.title ? `${page.title} — ${siteFallback.name}` : siteFallback.name);
-// Page's own share image when set (else BaseLayout falls back to the sitewide card).
+// Page's own share image when set; otherwise the branded card generated for
+// this page at build time (see /og/[...slug].png.ts).
 const ogImage = page?.ogImage?.asset
   ? imageUrl(page.ogImage as SanityImageSource, 1200)
-  : undefined;
+  : `/og/${slug}.png`;
 ---
 
 <BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>

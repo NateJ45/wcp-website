@@ -9,8 +9,9 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import Seam from '@/components/Seam.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+import SeasonalAccent from '@/components/SeasonalAccent.astro';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings, getNavigation } from '@/lib/cms';
+import { getSiteSettings, getNavigation, getSeason } from '@/lib/cms';
 import { withBase } from '@/lib/utils';
 
 interface Props {
@@ -25,6 +26,8 @@ const href = (h: string) => withBase(h, linkBase);
 // with the static nav.ts as fallback.
 const site = await getSiteSettings(siteFallback);
 const { footerNav, legalNav } = await getNavigation();
+// Seasonal footer decorations (Site Settings → "Seasonal touches"; build-time).
+const season = await getSeason();
 
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
@@ -37,6 +40,14 @@ const year = new Date().getFullYear();
 }
 <footer class="relative -mt-px bg-navy text-white">
   <Seam color="navy" />
+  {
+    season && (
+      <SeasonalAccent
+        season={season}
+        class="absolute top-10 right-6 hidden opacity-90 md:block lg:right-12"
+      />
+    )
+  }
   <div
     class="wcp-container grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
   >
