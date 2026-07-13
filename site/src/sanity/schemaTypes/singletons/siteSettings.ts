@@ -192,6 +192,14 @@ export const siteSettings = defineType({
         'The ID from the treasurer’s Budget Google Sheet link (the long code between /d/ and /edit). Powers the Budget Snapshot and Fundraising numbers on the Family Hub. The sheet needs "Anyone with the link can view".',
     }),
     defineField({
+      name: 'availabilitySheetId',
+      title: 'Class availability Google Sheet ID',
+      type: 'string',
+      group: 'year',
+      description:
+        'Powers the "Spots open / Waitlist" badges on the public class cards. Make a Sheet with a tab named "Availability", two columns: class (twos, threes, pre-k-am, pre-k-pm) and status (open, few, waitlist, full). Share it "Anyone with the link can view" and paste the ID from its link (the long code between /d/ and /edit). Leave blank to hide the badges.',
+    }),
+    defineField({
       name: 'calendarFeedUrl',
       title: 'Calendar feed link (Apps Script)',
       type: 'url',

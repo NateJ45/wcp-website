@@ -14,6 +14,7 @@ import Footer from '@/components/Footer.astro';
 import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
+import StructuredData from '@/components/StructuredData.astro';
 import { site } from '@/data/site';
 import { getClosureAlert } from '@/lib/cms';
 
@@ -115,6 +116,10 @@ const closureAlert = await getClosureAlert();
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={metaDescription} />
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
+    <!-- Preschool (LocalBusiness) JSON-LD — public pages only; the gated hub
+         is noindex territory and needs no search-engine hints. -->
+    {chrome === 'site' && <StructuredData />}
 
     <!-- Google Ads tag + search-console verification (env-driven, see component). -->
     <Analytics />

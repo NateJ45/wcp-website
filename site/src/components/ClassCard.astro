@@ -23,6 +23,9 @@ interface Props {
   ctaLabel?: string;
   as?: 'li' | 'div';
   headingAs?: 'h3' | 'h4';
+  /** Class slug (twos / threes / pre-k-am / pre-k-pm): renders the live
+   *  "Spots open / Waitlist" badge, hydrated from /api/availability. */
+  availabilitySlug?: string;
   class?: string;
 }
 const {
@@ -37,6 +40,7 @@ const {
   ctaLabel = 'Learn more',
   as = 'div',
   headingAs = 'h3',
+  availabilitySlug,
   class: className,
 } = Astro.props;
 const Tag = as;
@@ -75,6 +79,21 @@ const accent: Record<string, string> = {
   </div>
   {schedule && <p class="mt-1 font-bold text-sky-ink">{schedule}</p>}
   {age && <p class="mt-0.5 text-sm text-ink-muted">{age}</p>}
+  {
+    /* Live availability, filled by src/scripts/availability.ts. Hidden until
+       the fetch answers, and stays hidden when no sheet is configured or the
+       fetch fails — the card is complete without it. Colored DOT + neutral
+       text (never colored-text-on-tint — the dark-mode AA trap). */
+    availabilitySlug && (
+      <p
+        class="mt-2 hidden items-center gap-2 text-sm font-semibold text-ink"
+        data-availability={availabilitySlug}
+      >
+        <span class="h-2.5 w-2.5 rounded-full" data-availability-dot aria-hidden="true" />
+        <span data-availability-label />
+      </p>
+    )
+  }
 
   {
     features.length > 0 && (
@@ -97,3 +116,7 @@ const accent: Record<string, string> = {
     )
   }
 </Tag>
+
+<script>
+  import '@/scripts/availability';
+</script>

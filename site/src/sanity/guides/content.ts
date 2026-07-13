@@ -721,6 +721,26 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Same tab: **Past fundraising totals** — the list behind the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the school year that just ended with the treasurer’s final grand total (newest first).',
       },
+      { kind: 'h', text: 'Live "Spots open / Waitlist" badges' },
+      {
+        kind: 'p',
+        text: 'The class cards on the public site can show a live availability badge under each class. It reads from a small Google Sheet so the enrollment chair updates ONE cell and the site follows within minutes — no publishing needed.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Make a Google Sheet with a tab named **Availability**.',
+          'Two columns: the class (**twos**, **threes**, **pre-k-am**, **pre-k-pm**) and its status (**open**, **few**, **waitlist**, or **full**). One row per class.',
+          'Share it: **Anyone with the link can view**.',
+          'Copy the ID from the sheet link (the long code between /d/ and /edit) into **Site Settings → School year → Class availability Google Sheet ID**, then Publish.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'A row you leave out just shows no badge.',
+        text: 'Misspelled statuses are ignored on purpose — the badge hides rather than showing something wrong. To turn the badges off entirely, clear the Sheet ID from Site Settings.',
+      },
     ],
   },
 

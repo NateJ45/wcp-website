@@ -149,6 +149,9 @@ export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].p
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
 export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`;
 
+/** The enrollment chair's availability Sheet ID (public class-card badges). */
+export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"][0].availabilitySheetId`;
+
 /** Live count of families visible in the gated Directory (opted-in only). */
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true])`;
 

@@ -107,6 +107,42 @@ export interface Fundraiser {
   timeframe?: string;
 }
 
+// -----------------------------------------------------------------------------
+// Availability tab — one row per class: class slug, status, optional note.
+// Lives in the enrollment chair's own Sheet (Site Settings → "Class
+// availability Google Sheet ID"), NOT the treasurer's budget sheet. Statuses
+// are the four the badges understand; anything else is skipped so a typo'd
+// row simply doesn't show rather than showing wrong.
+// -----------------------------------------------------------------------------
+
+export type AvailabilityStatus = 'open' | 'few' | 'waitlist' | 'full';
+
+export interface ClassAvailability {
+  /** Class slug as used site-wide: twos, threes, pre-k-am, pre-k-pm. */
+  slug: string;
+  status: AvailabilityStatus;
+}
+
+const AVAILABILITY_STATUSES = new Set(['open', 'few', 'waitlist', 'full']);
+
+/** Read the Availability tab. Returns [] on any failure (badges just hide). */
+export async function getAvailability(sheetId: string): Promise<ClassAvailability[]> {
+  try {
+    const rows = await fetchSheetRows(sheetId, 'Availability');
+    const items: ClassAvailability[] = [];
+    for (const r of rows) {
+      const slug = cellStr(r[0]).toLowerCase();
+      const status = cellStr(r[1]).toLowerCase();
+      if (slug && AVAILABILITY_STATUSES.has(status)) {
+        items.push({ slug, status: status as AvailabilityStatus });
+      }
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
 /** Read the Fundraising tab. Returns [] on any failure. */
 export async function getFundraisers(sheetId: string): Promise<Fundraiser[]> {
   try {

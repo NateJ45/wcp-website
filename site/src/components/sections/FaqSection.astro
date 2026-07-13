@@ -3,7 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Faq from '@/components/faq/Faq.astro';
 import FaqItem from '@/components/faq/FaqItem.astro';
-import { renderPortableText } from '@/lib/portable-text';
+import { renderPortableText, portableTextToPlain } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface QA {
@@ -17,6 +17,24 @@ interface Props {
 const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
 const items = (section.items as QA[] | undefined) ?? [];
+
+// FAQPage JSON-LD so these Q&As are eligible for rich results in search.
+// Plain-text answers (no markup), only pairs with both halves present.
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items
+    .map((qa) => ({
+      question: qa.question,
+      answer: portableTextToPlain(qa.answer as never),
+    }))
+    .filter((qa) => qa.question && qa.answer)
+    .map((qa) => ({
+      '@type': 'Question',
+      name: qa.question,
+      acceptedAnswer: { '@type': 'Answer', text: qa.answer },
+    })),
+};
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -41,4 +59,9 @@ const items = (section.items as QA[] | undefined) ?? [];
       ))
     }
   </Faq>
+  {
+    faqJsonLd.mainEntity.length > 0 && (
+      <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
+    )
+  }
 </Section>

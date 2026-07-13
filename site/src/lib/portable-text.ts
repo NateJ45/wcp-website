@@ -77,6 +77,22 @@ export function renderPortableText(
   return toHTML(prepared, { components: { marks: linkMark(linkBase) } });
 }
 
+// Plain-text flattening for machine consumers (FAQPage JSON-LD wants the
+// answer as text, not markup). Blocks join with a blank line; non-text blocks
+// (images) are skipped.
+export function portableTextToPlain(blocks: PortableTextBlock[] | undefined): string {
+  if (!blocks || blocks.length === 0) return '';
+  return blocks
+    .map((b) =>
+      Array.isArray(b.children)
+        ? b.children.map((c) => (typeof c.text === 'string' ? c.text : '')).join('')
+        : '',
+    )
+    .filter(Boolean)
+    .join('\n\n')
+    .trim();
+}
+
 // Like renderPortableText, but also renders the inline images a `postBody`
 // allows (a blog post is the one place a volunteer drops photos mid-article).
 // Images come off Sanity's CDN via imageUrl/imageSrcSet with a required alt and

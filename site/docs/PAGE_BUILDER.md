@@ -240,6 +240,22 @@ so ordering was preserved with no downtime — **run that script once after addi
 orderable type.** `faqItem` is deliberately **not** orderable: it groups by category, so a
 flat drag list would be misleading; it keeps its `order` field.
 
+## Live availability badges & structured data
+
+Two enrollment-funnel features ride on top of the builder:
+
+- **"Spots open / Waitlist" badges** on class cards (`ClassCard.astro`). The enrollment
+  chair keeps a tiny Google Sheet (tab `Availability`, columns `class` + `status` with
+  values `open|few|waitlist|full`; ID pasted into Site Settings). Because builder pages
+  are static, the badges hydrate client-side from `/api/availability` — an SSR route
+  that reads the sheet server-side via `src/lib/gsheets.ts` and caches 5 minutes — so a
+  sheet edit shows within minutes with **no rebuild**. Badges are colored-dot + neutral
+  text (never colored-text-on-tint) and stay hidden on any failure. Contract covered by
+  `tests/availability.spec.ts` (mocked API).
+- **JSON-LD**: every public page emits a `Preschool` (LocalBusiness) block from Site
+  Settings (`StructuredData.astro`), and every `faqSection` emits a `FAQPage` block from
+  its own Q&As — both for rich search results.
+
 ## How a change goes live
 
 A volunteer publishes in the Studio → the Sanity webhook fires
