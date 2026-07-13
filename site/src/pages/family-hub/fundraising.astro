@@ -17,7 +17,6 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
-import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
@@ -102,30 +101,6 @@ const fmtDeadline = (iso: string) =>
     day: 'numeric',
     year: 'numeric',
   });
-
-// Fallback for the editable body (shown until a hubPage "fundraising" doc exists).
-const waysToRaise = [
-  {
-    icon: 'hand-heart',
-    title: 'Dine to Donate',
-    body: 'Local restaurants give back a share of sales on WCP nights. Show up hungry — a portion of your bill comes back to the school.',
-  },
-  {
-    icon: 'party-popper',
-    title: 'Spring Raffle',
-    body: 'Our biggest event of the year: themed baskets, donated prizes, and tickets sold across the community.',
-  },
-  {
-    icon: 'shopping-bag',
-    title: 'Seasonal Sales',
-    body: 'Smaller fundraisers through the year — spirit wear, holiday items, and one-off sales run by the Fundraising Committee.',
-  },
-  {
-    icon: 'gift',
-    title: 'Direct Giving',
-    body: 'Prefer to give directly? Donations are welcome any time and go straight into the classrooms.',
-  },
-];
 ---
 
 <HubShell title={title} bare pageTitle="Fundraising — WCP Family Hub">
@@ -286,10 +261,9 @@ const waysToRaise = [
             <h2 id="raised-together" class="font-display text-2xl text-white">
               What we’ve raised together
             </h2>
-            {/* One short line — the Board's editable "Where your money goes"
-                section below tells the longer version of this story. */}
             <p class="mx-auto mt-2 max-w-xl leading-relaxed text-white/85">
-              Every dollar goes straight back into our school.
+              Every dollar goes straight back into our school — supplies, enrichment, playground
+              upkeep, and the special days that make WCP feel like home.
             </p>
             <ul class="mt-6 flex flex-wrap justify-center gap-4">
               {pastTotals.map((t) => (
@@ -300,39 +274,6 @@ const waysToRaise = [
               ))}
             </ul>
           </HubCard>
-        )
-      }
-
-      {
-        !hasSections && (
-          <>
-            {/* Editable body fallback — the ways WCP raises money. */}
-            <div class="mt-12" aria-labelledby="ways">
-              <h2 id="ways" class="text-xl font-extrabold text-heading">
-                The ways WCP fundraises
-              </h2>
-              <p class="mt-1 max-w-2xl text-ink-muted">
-                A handful of friendly, low-pressure efforts across the year — join what fits your
-                family.
-              </p>
-              <ul class="mt-6 grid gap-4 sm:grid-cols-2">
-                {waysToRaise.map((w) => (
-                  <HubCard as="li" class="flex gap-4">
-                    <span
-                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
-                      aria-hidden="true"
-                    >
-                      <Icon name={w.icon} class="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p class="font-bold text-heading">{w.title}</p>
-                      <p class="mt-1 text-sm leading-relaxed text-ink">{w.body}</p>
-                    </div>
-                  </HubCard>
-                ))}
-              </ul>
-            </div>
-          </>
         )
       }
     </div>

@@ -27,6 +27,8 @@ export const classColor = (slug?: string): ClassColor => COLOR_BY_SLUG[slug ?? '
 export interface ClassStyles {
   /** Solid pill on any background (photo overlays, emphasis badges). AA: white on -ink. */
   badge: string;
+  /** Solid button fill (white text on the class ink + a darker hover). Theme-stable. */
+  button: string;
   /** Soft chip on a white/surface card. */
   chip: string;
   /** Accent border (e.g. a card's top rule). */
@@ -50,6 +52,7 @@ export interface ClassStyles {
 const STYLES: Record<ClassColor, ClassStyles> = {
   amber: {
     badge: 'bg-[#9e5c0a] text-white',
+    button: 'bg-[#9e5c0a] text-white hover:bg-[#8a5009]',
     chip: 'bg-amber/15 text-amber-ink',
     border: 'border-amber',
     dot: 'bg-amber',
@@ -59,6 +62,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
   },
   green: {
     badge: 'bg-[#0e7b2e] text-white',
+    button: 'bg-[#0e7b2e] text-white hover:bg-[#0c6b28]',
     chip: 'bg-green/15 text-green-ink',
     border: 'border-green',
     dot: 'bg-green',
@@ -68,6 +72,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
   },
   orange: {
     badge: 'bg-[#a85300] text-white',
+    button: 'bg-[#a85300] text-white hover:bg-[#934900]',
     chip: 'bg-cream text-orange-ink',
     border: 'border-orange',
     dot: 'bg-orange',
@@ -77,6 +82,7 @@ const STYLES: Record<ClassColor, ClassStyles> = {
   },
   sky: {
     badge: 'bg-[#166fa8] text-white',
+    button: 'bg-[#166fa8] text-white hover:bg-[#135f90]',
     chip: 'bg-sky/15 text-sky-ink',
     border: 'border-sky',
     dot: 'bg-sky',

@@ -56,7 +56,7 @@ import {
 // Collections (Family Hub — gated)
 import { update } from './update';
 import { hubDocument } from './hubDocument';
-import { classNote } from './classNote';
+import { teacherNote } from './teacherNote';
 import { directoryEntry } from './directoryEntry';
 import { hubPage } from './documents/hubPage';
 
@@ -106,7 +106,7 @@ export const schemaTypes = [
   // Family Hub collections
   update,
   hubDocument,
-  classNote,
+  teacherNote,
   directoryEntry,
   hubPage,
 ];

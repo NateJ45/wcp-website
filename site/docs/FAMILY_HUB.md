@@ -61,16 +61,16 @@ The dashboard reads real school data server-side behind the gate, carried over f
 Squarespace hub. Each source's link/id is **Board-editable in Sanity**, with the current
 working values as per-field fallbacks in `src/data/hub/live-links.ts`:
 
-| Widget / feature                     | Live source                                                      | Edited at                                                                                       |
-| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Class helper-schedule tiles          | Per-class Google Sheets                                          | each `class` doc → **Helper schedule link**                                                     |
-| Class Photos (+ Summer Playdates)    | Google Photos albums                                             | each `class` doc → **Class photo album link**; Site Settings → **Summer Playdates photo album** |
-| Budget Snapshot                      | Budget Sheet "Budget" tab (gviz, `src/lib/gsheets.ts`)           | Site Settings → **Budget Google Sheet ID**                                                      |
-| Fundraising (widget + page totals)   | Budget Sheet "Fundraising" tab                                   | same sheet id; treasurer edits the sheet                                                        |
-| Upcoming Events (widget + Calendar)  | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs                       |
-| Calendar subscribe buttons           | built from `googleCalendarId`                                    | Site Settings → **Google Calendar ID**                                                          |
-| President's note (first-visit modal) | `presidentNote` singleton (live read)                            | Family Hub → **President's note** (bump the version stamp to re-show)                           |
-| "What we've raised together" band    | past-year grand totals (Fundraising page navy band)              | Site Settings → **Past fundraising totals** (add the just-ended year each fall)                 |
+| Widget / feature                     | Live source                                                      | Edited at                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Class helper-schedule tiles          | Per-class Google Sheets                                          | each `class` doc → **Helper schedule link**                                     |
+| Class Photos                         | Google Photos albums                                             | each `class` doc → **Class photo album link**                                   |
+| Budget Snapshot                      | Budget Sheet "Budget" tab (gviz, `src/lib/gsheets.ts`)           | Site Settings → **Budget Google Sheet ID**                                      |
+| Fundraising (widget + page totals)   | Budget Sheet "Fundraising" tab                                   | same sheet id; treasurer edits the sheet                                        |
+| Upcoming Events (widget + Calendar)  | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs       |
+| Calendar subscribe buttons           | built from `googleCalendarId`                                    | Site Settings → **Google Calendar ID**                                          |
+| President's note (first-visit modal) | `presidentNote` singleton (live read)                            | Family Hub → **President's note** (bump the version stamp to re-show)           |
+| "What we've raised together" band    | past-year grand totals (Fundraising page navy band)              | Site Settings → **Past fundraising totals** (add the just-ended year each fall) |
 
 Every fetch is try/catch'd with a short timeout — a failed source degrades to the designed
 empty state, never a broken card. Seed/refresh the letter with
@@ -165,16 +165,16 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                         |
-| ----------------------------- | ------------------------------------------------------------------------ |
-| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load) |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)      |
-| Updates                       | `update` docs (the migrated meeting blog)                                |
-| Documents                     | `hubDocument` docs                                                       |
-| Co-op Jobs                    | `coopRole` docs (+ live assignment)                                      |
-| Classes                       | `class` docs (facts + tuition button) + `classNote` docs                 |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton       |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only          |
+| Section                       | Live data source                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load)     |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)          |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes) |
+| Documents                     | `hubDocument` docs                                                           |
+| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)          |
+| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)   |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton           |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only              |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -245,20 +245,28 @@ stack of hub-safe sections, wrapped around a **fixed widget** that stays locked 
 | ----------- | -------------------------------------------------- | -------------------------------------------------- |
 | Landing     | Quick-link nav grids                               | —                                                  |
 | Calendar    | Click-to-load Google Calendar embed + event legend | `googleCalendarId` in Site Settings                |
-| Co-op Jobs  | Assignment widget + role descriptions + org chart  | `coopRole` docs                                    |
+| Co-op Jobs  | Role descriptions + tiered org chart               | `coopRole` docs (holders: `org-holders.ts`)        |
 | Documents   | Document library + required-forms callout          | `hubDocument` docs                                 |
 | Tuition     | Pay-card + fee-card layout, payment FAQ            | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
 | Updates     | Meeting-blog post list                             | `update` docs                                      |
 | Fundraising | Live campaign progress bars                        | `campaign` docs                                    |
-| Health      | Per-child health info (PII)                        | (per-child, gated)                                 |
+| Health      | Illness policy cards + closures band               | —                                                  |
 | Directory   | Opt-in family cards + map + privacy framing        | `directoryEntry` docs                              |
-| Class pages | Fact-card + pay-button layout, class notes         | `class` docs (facts, button) + `classNote` docs    |
+| Class pages | Fact-card + pay-button layout, teacher modal       | `class` docs (facts, button) + `teacherNote` docs  |
 
 Only the widget **layout** stays in code. All of its content is Board-editable through its own
 doc type: class facts, tuition rates, and PayPal button ids live in the `class` docs and the
-`feeSchedule` singleton; documents, class notes, campaigns, co-op roles, and family cards each
+`feeSchedule` singleton; documents, teacher notes, campaigns, co-op roles, and family cards each
 have their own docs. A mistyped icon name from any of these is guarded by `safeIcon`, so it
 can never crash a page. Everything on every hub page is now Board-editable.
+
+**Welcome-letter modals:** the hub home shows the `presidentNote` singleton once per version
+stamp; each class page shows its class's `teacherNote` doc the same way (Studio → Family Hub →
+Teacher welcome notes; seed/refresh with `node scripts/seed-teacher-notes.mjs`). Both share
+`src/scripts/note-modal.ts` (per-note localStorage keys).
+
+**Org chart holders:** who fills each role each year is `src/data/hub/org-holders.ts` — a
+plain data file (names/emails only render behind the gate). Update it after spring elections.
 
 ---
 

@@ -2,9 +2,8 @@
 /* ============================================================================
    ClassPhotosWidget — this year's Google Photos album for each class
    ============================================================================
-   One tile per class plus the school-wide Summer Playdates album. Album links
-   are Board-editable on each `class` doc (`photoAlbumUrl`) and siteSettings
-   (`summerAlbumUrl`), with the current working links as fallbacks
+   One tile per class. Album links are Board-editable on each `class` doc
+   (`photoAlbumUrl`), with the current working links as fallbacks
    (src/data/hub/live-links.ts) so the tiles render even before the Studio
    fields are filled in. Class color rides on the icon chip only — labels stay
    neutral text (the dark-mode tint AA rule).
@@ -13,7 +12,7 @@ import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import Icon from '@/components/Icon.astro';
 import { classStyles } from '@/lib/class-colors';
 import { sanityFetch } from '@/lib/sanity';
-import { photoAlbumFallback, summerAlbumFallback } from '@/data/hub/live-links';
+import { photoAlbumFallback } from '@/data/hub/live-links';
 
 const CLASSES = [
   { slug: 'twos', label: 'Twos', icon: 'blocks' },
@@ -27,7 +26,6 @@ interface ClassAlbumRow {
   photoAlbumUrl?: string;
 }
 let sanityAlbums: Record<string, string> = {};
-let summerFromSanity: string | undefined;
 try {
   const rows = await sanityFetch<ClassAlbumRow[]>(
     `*[_type == "class"]{ "slug": slug.current, photoAlbumUrl }`,
@@ -36,19 +34,12 @@ try {
 } catch {
   sanityAlbums = {};
 }
-try {
-  summerFromSanity =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].summerAlbumUrl`)) ?? undefined;
-} catch {
-  summerFromSanity = undefined;
-}
 
 const albums = CLASSES.map((c) => ({
   ...c,
   href: sanityAlbums[c.slug] ?? photoAlbumFallback[c.slug],
 })).filter((a) => a.href);
-const summerHref = summerFromSanity ?? summerAlbumFallback;
-const empty = albums.length === 0 && !summerHref;
+const empty = albums.length === 0;
 ---
 
 <HomeWidgetCard
@@ -81,30 +72,6 @@ const empty = albums.length === 0 && !summerHref;
           </span>
         </a>
       ))
-    }
-    {
-      summerHref && (
-        <a
-          href={summerHref}
-          target="_blank"
-          rel="noopener"
-          class="col-span-2 flex items-center gap-2.5 rounded-lg bg-grey p-2.5 no-underline transition-colors hover:bg-navy/10 dark:hover:bg-white/10"
-        >
-          <span
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy/10 text-heading"
-            aria-hidden="true"
-          >
-            <Icon name="tent" class="h-4 w-4" />
-          </span>
-          <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-bold text-heading">Summer Playdates</span>
-            <span class="block text-[0.68rem] font-semibold tracking-wide text-ink-muted uppercase">
-              View album
-            </span>
-          </span>
-          <Icon name="external-link" class="h-3.5 w-3.5 shrink-0 text-ink-muted" />
-        </a>
-      )
     }
   </div>
 </HomeWidgetCard>

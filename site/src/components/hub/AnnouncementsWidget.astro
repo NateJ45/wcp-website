@@ -2,6 +2,10 @@
 /* ============================================================================
    AnnouncementsWidget — pinned + most-recent `update` docs (the same source
    as the full Updates page). Pinned first, then newest, capped at 3.
+   Meeting minutes are `update` docs too (category "minutes") — they belong to
+   the Meeting Minutes widget, so they're filtered out here. `coalesce` keeps
+   older docs (written before the category field existed) counting as
+   announcements.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import { sanityFetch } from '@/lib/sanity';
@@ -18,7 +22,7 @@ interface UpdateDoc {
 let updates: UpdateDoc[] = [];
 try {
   updates = await sanityFetch<UpdateDoc[]>(
-    `*[_type == "update"] | order(pinned desc, publishedAt desc)[0...3]{ _id, title, publishedAt, pinned, "slug": slug.current }`,
+    `*[_type == "update" && coalesce(category, "announcement") == "announcement"] | order(pinned desc, publishedAt desc)[0...3]{ _id, title, publishedAt, pinned, "slug": slug.current }`,
   );
 } catch {
   updates = [];

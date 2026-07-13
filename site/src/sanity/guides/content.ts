@@ -212,11 +212,19 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'primary',
         title: 'Some hub content is edited in its own spot.',
-        text: 'The document list, class notes, co-op roles, and family cards each have their own place in the Family Hub menu. This page is for the wording around them.',
+        text: 'The document list, co-op roles, and family cards each have their own place in the Family Hub menu. This page is for the wording around them.',
       },
       {
         kind: 'p',
         text: 'The **President’s note** (the welcome letter that pops up the first time a family visits the hub) also lives in the Family Hub menu. Edit the letter freely; when it’s rewritten for a new year, change its **version stamp** so families who closed the old one see the new one. Turn **Show the note?** off to retire it.',
+      },
+      {
+        kind: 'p',
+        text: 'The **Teacher welcome notes** work exactly the same way, one per class — each pops up the first time a family visits that class’s hub page. Same rules: rewrite freely, bump the version stamp for a new year, toggle it off to retire it.',
+      },
+      {
+        kind: 'p',
+        text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
       {
         kind: 'seealso',
@@ -516,7 +524,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'primary',
         title: 'Each year, refresh the two links on the Basics tab',
-        text: 'Every class has a **Helper schedule link** (the Google Sheet where families sign up to help) and a **Class photo album link** (this year’s Google Photos album). Both show on the Family Hub home, so paste in the new links at the start of each school year. The school-wide Summer Playdates album lives in **Site Settings → School year**.',
+        text: 'Every class has a **Helper schedule link** (the Google Sheet where families sign up to help) and a **Class photo album link** (this year’s Google Photos album). Both show on the Family Hub home, so paste in the new links at the start of each school year.',
       },
       { kind: 'h', text: 'To add a brand-new class' },
       {
@@ -699,7 +707,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **School year** tab also holds the Family Hub’s live-data links: the **Summer Playdates photo album**, the **Budget Google Sheet ID** (the treasurer’s tracking sheet that powers the Budget Snapshot and Fundraising numbers), and the **Calendar feed link** (powers the Upcoming Events list). These rarely change — update them only when the sheet, album, or feed is replaced.',
+        text: 'The **School year** tab also holds the Family Hub’s live-data links: the **Budget Google Sheet ID** (the treasurer’s tracking sheet that powers the Budget Snapshot and Fundraising numbers) and the **Calendar feed link** (powers the Upcoming Events list). These rarely change — update them only when the sheet or feed is replaced.',
       },
       {
         kind: 'p',

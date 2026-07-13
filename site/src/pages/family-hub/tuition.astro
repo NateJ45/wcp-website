@@ -178,6 +178,10 @@ const intro =
         <ul class="mt-6 grid gap-4 sm:grid-cols-2">
           {
             classRows.map((c) => (
+              /* Class color everywhere it's safe: solid name pill (white on the
+                 class ink — theme-stable, AA), tinted icon chip, colored price,
+                 and a class-colored Pay button, so the four cards read apart at
+                 a glance (the old site's strongest cue). */
               <HubCard as="li" class="flex flex-col">
                 <div class="flex-1">
                   <div class="flex items-center gap-3">
@@ -191,8 +195,15 @@ const intro =
                       <Icon name={c.icon} class="h-5 w-5" />
                     </span>
                     <div class="min-w-0">
-                      <p class="font-extrabold text-heading">{c.name}</p>
-                      <p class="text-sm text-ink-muted">{c.days}</p>
+                      <span
+                        class={cn(
+                          'inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold tracking-wide uppercase',
+                          classStyles(c.slug).badge,
+                        )}
+                      >
+                        {c.name}
+                      </span>
+                      <p class="mt-1 text-sm text-ink-muted">{c.days}</p>
                     </div>
                     <p class="ml-auto text-right">
                       <span class={cn('block text-2xl font-extrabold', classStyles(c.slug).text)}>
@@ -216,7 +227,7 @@ const intro =
                   rel="noopener"
                   variant="primary"
                   size="md"
-                  class="mt-5 w-full"
+                  class={cn('mt-5 w-full', classStyles(c.slug).button)}
                 >
                   Pay {c.name} Tuition
                 </Button>

@@ -33,7 +33,7 @@ import {
   EVENT_TYPE_META,
   type HubEvent,
 } from '@/lib/hub-calendar';
-import { calendarFeedUrlFallback } from '@/data/hub/live-links';
+import { calendarFeedUrlFallback, googleCalendarIdFallback } from '@/data/hub/live-links';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
@@ -43,16 +43,16 @@ interface HubPageDoc {
   sections?: any[];
 }
 
-let calId = '';
+let calId = googleCalendarIdFallback;
 let feedUrl = calendarFeedUrlFallback;
 try {
   const s = await sanityFetch<{ googleCalendarId?: string; calendarFeedUrl?: string } | null>(
     `*[_type == "siteSettings"][0]{ googleCalendarId, calendarFeedUrl }`,
   );
-  calId = s?.googleCalendarId ?? '';
+  calId = s?.googleCalendarId || googleCalendarIdFallback;
   feedUrl = s?.calendarFeedUrl || calendarFeedUrlFallback;
 } catch {
-  calId = '';
+  calId = googleCalendarIdFallback;
 }
 
 // The upcoming list — the live Google Calendar feed (Sanity events fallback).
@@ -105,6 +105,9 @@ const icalUrl = calId
               </Button>
               <Button href={icalUrl} variant="outline" size="sm">
                 Apple / Outlook
+              </Button>
+              <Button href={calEmbedUrl} target="_blank" rel="noopener" variant="outline" size="sm">
+                Open in browser
               </Button>
             </span>
           </HubCard>

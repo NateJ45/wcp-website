@@ -86,7 +86,7 @@ const PLACED = new Set([
   'photoAlbum',
   'update',
   'hubDocument',
-  'classNote',
+  'teacherNote',
   'directoryEntry',
   'hubPage',
   'presidentNote',
@@ -240,7 +240,9 @@ export const structure: StructureResolver = (S, context) =>
               singleton(S, 'presidentNote', "President's note", emoji('💌')),
               S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
               S.documentTypeListItem('hubDocument').title('Documents & Forms').icon(emoji('📄')),
-              S.documentTypeListItem('classNote').title('Class Notes').icon(emoji('📓')),
+              S.documentTypeListItem('teacherNote')
+                .title('Teacher welcome notes')
+                .icon(emoji('💌')),
               S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
               orderableDocumentListDeskItem({
                 type: 'coopRole',

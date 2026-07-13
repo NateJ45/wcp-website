@@ -4,25 +4,22 @@
    ============================================================================
    Given a class slug, renders the app-style page: a class-colored HubPageHeader
    (icon chip + class name + pay / see-program actions), an "at a glance" facts
-   card, the class notes (their own editable Sanity docs), and any Board-added
-   sections. All four class pages (twos / threes / pre-k-am / pre-k-pm) share
-   this body, so each page file stays a few lines. The class page uses `bare`
-   HubShell (no navy band) and lets this component own the header.
+   card, the teacher's welcome-note modal, and any Board-added sections. All
+   four class pages (twos / threes / pre-k-am / pre-k-pm) share this body, so
+   each page file stays a few lines. The class page uses `bare` HubShell (no
+   navy band) and lets this component own the header.
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
-import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { payUrl, type WcpClass } from '@/data/classes';
 import { getHubClass } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
-import { sanityFetch } from '@/lib/sanity';
-import { renderPortableText } from '@/lib/portable-text';
 import { site } from '@/data/site';
-import type { PortableTextBlock } from '@portabletext/types';
 
 interface Props {
   slug: WcpClass['slug'];
@@ -44,24 +41,6 @@ const cc = classStyles(slug);
 
 const heading = title || c.name;
 const subtitle = intro || c.tagline;
-
-interface ClassNote {
-  _id: string;
-  title: string;
-  publishedAt: string;
-  body?: PortableTextBlock[];
-}
-let notes: ClassNote[] = [];
-try {
-  notes = await sanityFetch<ClassNote[]>(
-    `*[_type == "classNote" && class == $slug] | order(publishedAt desc){ _id, title, publishedAt, body }`,
-    { slug },
-  );
-} catch {
-  notes = [];
-}
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
 // Both Pre-K classes share one public marketing page.
 const publicHref =
@@ -111,43 +90,11 @@ const facts = [
         }
       </dl>
     </HubCard>
-
-    {/* Class-specific notes (their own editable Sanity docs). */}
-    <div class="mt-12" data-reveal>
-      <h2 class="text-xl font-extrabold text-heading">Class notes & updates</h2>
-      <p class="mt-1 max-w-2xl text-ink-muted">
-        Notes from your teacher — supply reminders, special days, and what’s happening in the {
-          c.name
-        }
-        room.
-      </p>
-      {
-        notes.length === 0 ? (
-          <HubEmptyState
-            icon="megaphone"
-            title="No class notes posted yet"
-            source="sanity"
-            class="mt-6"
-          />
-        ) : (
-          <ul class="mt-6 grid gap-4">
-            {notes.map((n) => (
-              <HubCard as="li">
-                <p class="text-sm text-ink-muted">{fmtDate(n.publishedAt)}</p>
-                <h3 class="mt-1 text-lg font-extrabold text-heading">{n.title}</h3>
-                {n.body && (
-                  <div class="prose-sm mt-2 max-w-none leading-relaxed text-ink [&_a]:text-navy [&_a]:underline dark:[&_a]:text-sky">
-                    <Fragment set:html={renderPortableText(n.body)} />
-                  </div>
-                )}
-              </HubCard>
-            ))}
-          </ul>
-        )
-      }
-    </div>
   </div>
 </Section>
 
 {/* Editable section(s) from the class's hubPage doc (Board-managed). */}
 <SectionRenderer sections={sections} site={site} />
+
+{/* The teacher's welcome letter — first-visit modal, President's-note style. */}
+<TeacherNoteModal slug={slug} />

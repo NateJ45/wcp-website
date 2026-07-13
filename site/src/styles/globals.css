@@ -617,7 +617,7 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-group],
 html[data-rail-collapsed] .hub-rail-aside [data-rail-logo] {
   display: none;
 }
-html[data-rail-collapsed] .hub-rail-aside [data-rail-top] {
+html[data-rail-collapsed] .hub-rail-aside [data-rail-toggle-row] {
   justify-content: center;
 }
 html[data-rail-collapsed] .hub-rail-aside .hub-rail-link {

@@ -1,17 +1,14 @@
 ---
 /* ============================================================================
-   PresidentNoteModal — the Board President's welcome letter (first visit)
+   TeacherNoteModal — the teacher's welcome letter on a class hub page
    ============================================================================
-   Reads the `presidentNote` singleton live behind the gate and renders a
-   hidden modal; src/scripts/president-note.ts opens it once per version
-   stamp (localStorage remembers the dismissal, bumping `version` in the
-   Studio re-shows it to everyone). Renders nothing at all when the note is
-   off or missing, so the hub home pays no cost.
-
-   A11y: role="dialog" + aria-modal, focus moves to the close button on open
-   and returns to the page on close, Esc / backdrop / X all close, body
-   scroll locks while open, Tab is trapped inside. Entrance is a gentle
-   fade+rise, disabled under prefers-reduced-motion.
+   The class-page twin of PresidentNoteModal: reads that class's `teacherNote`
+   doc live behind the gate and renders a hidden modal; src/scripts/note-modal
+   opens it once per version stamp (localStorage key is per class, so a Twos
+   family still sees the Pre-K letter when they visit that page). Renders
+   nothing when the note is off or missing. Same a11y contract as the
+   President's note: role=dialog, focus trap, Esc/backdrop/X, scroll lock.
+   The photo ring picks up the class brand color.
    ============================================================================ */
 import '@fontsource/great-vibes/index.css'; // signature script — loads only where this modal renders
 import Icon from '@/components/Icon.astro';
@@ -19,9 +16,15 @@ import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { renderPortableText } from '@/lib/portable-text';
+import { classStyles } from '@/lib/class-colors';
 import type { PortableTextBlock } from '@portabletext/types';
 
-interface PresidentNote {
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+
+interface TeacherNote {
   active?: boolean;
   version?: string;
   heading?: string;
@@ -34,10 +37,11 @@ interface PresidentNote {
   photo?: { asset?: unknown; alt?: string } | null;
 }
 
-let note: PresidentNote | null = null;
+let note: TeacherNote | null = null;
 try {
-  note = await sanityFetch<PresidentNote | null>(
-    `*[_type == "presidentNote"][0]{ active, version, heading, dateLabel, salutation, body, signName, signRole, email, photo }`,
+  note = await sanityFetch<TeacherNote | null>(
+    `*[_type == "teacherNote" && class == $slug][0]{ active, version, heading, dateLabel, salutation, body, signName, signRole, email, photo }`,
+    { slug },
   );
 } catch {
   note = null;
@@ -46,8 +50,8 @@ try {
 const show = Boolean(note?.active && note?.version && note?.heading && note?.body?.length);
 const bodyHtml = show ? renderPortableText(note!.body) : '';
 const initial = (note?.signName ?? 'W').trim().charAt(0).toUpperCase();
-// "Board President, 2026-27" must never wrap between "2026-" and "27": swap
-// hyphens between digits for non-breaking hyphens (U+2011) before rendering.
+const cc = classStyles(slug);
+// Year labels like "2026-27" must never wrap mid-year (see PresidentNoteModal).
 const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
 ---
 
@@ -56,7 +60,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
     <div
       hidden
       data-note-modal
-      data-storage-key="wcp-president-note-seen"
+      data-storage-key={`wcp-teacher-note-${slug}`}
       data-version={note!.version}
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
@@ -66,8 +70,8 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="president-note-heading"
-        class="president-note-box relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[var(--radius)] bg-white shadow-2xl dark:bg-surface"
+        aria-labelledby="teacher-note-heading"
+        class="teacher-note-box relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[var(--radius)] bg-white shadow-2xl dark:bg-surface"
         style="max-height: 92dvh"
       >
         <button
@@ -86,14 +90,14 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
               {note!.photo?.asset ? (
                 <SanityImage
                   source={note!.photo as never}
-                  alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
+                  alt={note!.photo!.alt ?? note!.signName ?? 'Teacher'}
                   widths={[160, 320]}
                   sizes="10rem"
-                  class="h-20 w-20 rounded-full border-4 border-amber object-cover sm:h-32 sm:w-32"
+                  class={`h-20 w-20 rounded-full border-4 object-cover sm:h-32 sm:w-32 ${cc.border}`}
                 />
               ) : (
                 <span
-                  class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-amber bg-grey font-display text-3xl text-heading sm:h-32 sm:w-32"
+                  class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-grey font-display text-3xl text-heading sm:h-32 sm:w-32 ${cc.border}`}
                   aria-hidden="true"
                 >
                   {initial}
@@ -107,10 +111,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
 
             {/* Letter */}
             <div class="min-w-0 flex-1">
-              <h2
-                id="president-note-heading"
-                class="font-display text-2xl text-heading sm:text-3xl"
-              >
+              <h2 id="teacher-note-heading" class="font-display text-2xl text-heading sm:text-3xl">
                 {note!.heading}
               </h2>
               {note!.dateLabel && <p class="mt-1 text-sm text-ink-muted">{note!.dateLabel}</p>}
@@ -120,10 +121,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
               </Prose>
               <div class="mt-6 border-t border-border pt-4">
                 <p class="text-sm text-ink-muted">With warmth,</p>
-                {/* Handwritten-signature moment — Great Vibes runs small for its
-                    em size, so the jump to text-4xl reads as normal sign-off
-                    scale. -rotate-2 gives it the slight off-axis of a real pen
-                    stroke. */}
+                {/* Handwritten-signature moment — see PresidentNoteModal. */}
                 <p class="w-fit -rotate-2 pt-1 pl-1 font-signature text-4xl text-heading">
                   {note!.signName}
                 </p>
@@ -155,11 +153,11 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
 <style>
   /* Gentle entrance — state-conveying, short, reduced-motion-safe. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-note-modal]:not([hidden]) .president-note-box {
-      animation: president-note-in 0.25s ease-out both;
+    [data-note-modal]:not([hidden]) .teacher-note-box {
+      animation: teacher-note-in 0.25s ease-out both;
     }
   }
-  @keyframes president-note-in {
+  @keyframes teacher-note-in {
     from {
       opacity: 0;
       transform: translateY(14px) scale(0.98);

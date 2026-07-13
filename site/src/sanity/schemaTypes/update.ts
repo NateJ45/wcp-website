@@ -45,6 +45,21 @@ export const update = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'category',
+      title: 'Category',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Announcement', value: 'announcement' },
+          { title: 'Meeting minutes', value: 'minutes' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'announcement',
+      description:
+        'Announcements show in the hub home’s Announcements widget; meeting minutes show in its Meeting Minutes widget. Both appear on the Updates page.',
+    }),
+    defineField({
       name: 'audience',
       title: 'Who is this for?',
       type: 'string',

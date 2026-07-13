@@ -14,7 +14,6 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
-import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import OrgChart from '@/components/hub/OrgChart.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { site } from '@/data/site';
@@ -95,7 +94,7 @@ try {
 const title = doc?.heading || 'Co-op Jobs';
 const intro =
   doc?.intro ||
-  'How WCP is run, the roles families fill each year, and the org chart that ties it together. Your job assignment lives here once it’s set.';
+  'How WCP is run, the roles families fill each year, and the org chart that ties it together.';
 ---
 
 <HubShell title={title} bare pageTitle="Co-op Jobs — WCP Family Hub">
@@ -103,19 +102,8 @@ const intro =
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="heart-handshake" />
 
-      {/* Your assignment (live from Sanity behind the gate) */}
-      <div aria-labelledby="your-job">
-        <h2 id="your-job" class="text-xl font-extrabold text-heading">Your co-op job</h2>
-        <HubEmptyState
-          icon="clipboard-list"
-          title="Your assignment will show here"
-          source="sanity"
-          class="mt-6"
-        />
-      </div>
-
       {/* How WCP is organized — the guiding principles */}
-      <div class="mt-12" aria-labelledby="principles">
+      <div aria-labelledby="principles">
         <h2 id="principles" class="text-xl font-extrabold text-heading">Run by its families</h2>
         <p class="mt-1 max-w-2xl text-ink-muted">
           Our teachers and administrator are the only paid staff. Every other role is filled by a

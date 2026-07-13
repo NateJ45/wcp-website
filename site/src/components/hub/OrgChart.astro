@@ -1,100 +1,194 @@
 ---
 /* ============================================================================
-   OrgChart — how WCP's co-op roles report to one another
+   OrgChart — how WCP's co-op runs, as a real chart (the old site's flow)
    ============================================================================
-   A vertical, indented tree (file-tree style) so it stays readable on a phone
-   and reads correctly as a nested list to screen readers. Structure mirrors the
-   reporting lines in src/data/hub/coop-roles.ts (reportsTo). Role descriptions
-   live in the section below; this is just the shape of the org.
-   ============================================================================ */
-import OrgNode, { type OrgNodeData } from './OrgNode.astro';
+   Rebuilt from the old Squarespace chart: tiered person cards instead of a
+   file-tree. Executive Board (president over the three officers) → Paid
+   Staff → the two cabinet branches ("Reports to Secretary" / "Reports to
+   VP", each chair with the committees it leads) → every family, with a live
+   Directory count. WHO holds each role comes from src/data/hub/org-holders.ts
+   (update each fall); role descriptions stay in the section above the chart.
 
-const tree: OrgNodeData = {
-  name: 'President',
-  icon: 'award',
-  children: [
-    {
-      name: 'Vice President',
-      icon: 'shield-check',
-      children: [
-        {
-          name: 'Facilities Chair',
-          icon: 'building-2',
-          children: [
-            { name: 'Playground Committee', icon: 'trees' },
-            { name: 'Laundry', icon: 'house' },
-          ],
-        },
-        {
-          name: 'Family Activities Chair',
-          icon: 'party-popper',
-          children: [{ name: 'Family Activities Committee', icon: 'gift' }],
-        },
-        {
-          name: 'Fundraising Chair',
-          icon: 'hand-heart',
-          children: [{ name: 'Fundraising Committee', icon: 'coins' }],
-        },
-      ],
-    },
-    { name: 'Treasurer', icon: 'piggy-bank' },
-    {
-      name: 'Secretary',
-      icon: 'notebook-pen',
-      children: [
-        {
-          name: 'Publicity Chair',
-          icon: 'megaphone',
-          children: [{ name: 'Publicity Assistants', icon: 'camera' }],
-        },
-        { name: 'Enrichment Coordinator', icon: 'sparkles' },
-        { name: 'Class Representatives', icon: 'users' },
-        { name: 'Copy Room Helper', icon: 'file-text' },
-      ],
-    },
-  ],
-};
+   Tier colors follow the old chart's key — president orange, board navy,
+   staff sky, chairs amber, class reps green — as avatar RINGS (decorative)
+   plus `-ink` role text (AA on the card surface in both themes). Mobile:
+   every row wraps and the columns stack; nothing scrolls sideways at 320px.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import OrgPersonCard from '@/components/hub/OrgPersonCard.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
+import {
+  president,
+  officers,
+  paidStaff,
+  secretaryBranch,
+  vpBranch,
+  classReps,
+} from '@/data/hub/org-holders';
+
+const TIER = {
+  president: { ring: 'border-[#ff8c00]', role: 'text-orange-ink' },
+  board: { ring: 'border-navy dark:border-[#7dd3fc]', role: 'text-sky-ink' },
+  staff: { ring: 'border-[#40aaed]', role: 'text-sky-ink' },
+  chair: { ring: 'border-[#ffa334]', role: 'text-amber-ink' },
+  rep: { ring: 'border-[#22c55e]', role: 'text-green-ink' },
+} as const;
+
+let familyCount: number | null = null;
+try {
+  familyCount = await sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY);
+} catch {
+  familyCount = null;
+}
 ---
 
-<div class="org-chart mx-auto max-w-2xl overflow-x-auto">
-  <ul class="org-root">
-    <OrgNode node={tree} />
+<div class="org-chart text-center">
+  {/* Color key — mirrors the old chart's legend (neutral labels, colored dots). */}
+  <ul class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-semibold text-ink-muted">
+    <li class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-[#ff8c00]" aria-hidden="true"></span>President
+    </li>
+    <li class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-navy dark:bg-[#7dd3fc]" aria-hidden="true"
+      ></span>Executive Board
+    </li>
+    <li class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-[#40aaed]" aria-hidden="true"></span>Paid Staff
+    </li>
+    <li class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-[#ffa334]" aria-hidden="true"></span>Cabinet Chair
+    </li>
+    <li class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]" aria-hidden="true"></span>Class Rep
+    </li>
   </ul>
+
+  {/* ── Executive Board ── */}
+  <div class="mt-6 rounded-2xl border-2 border-navy/25 p-4 sm:p-6 dark:border-white/20">
+    <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Executive Board</p>
+    <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+      Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and
+      oversee school operations.
+    </p>
+    <div class="mt-4 flex justify-center">
+      <OrgPersonCard person={president} large {...TIER.president} />
+    </div>
+    <div class="org-vline" aria-hidden="true"></div>
+    <div class="flex flex-wrap justify-center gap-3">
+      {officers.map((p) => <OrgPersonCard person={p} {...TIER.board} />)}
+    </div>
+  </div>
+
+  {/* ── Paid Staff ── */}
+  <div class="org-vline" aria-hidden="true"></div>
+  <p class="text-xs font-extrabold tracking-widest text-sky-ink uppercase">Paid Staff</p>
+  <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+    The teachers and administrator are the school's only paid employees.
+  </p>
+  <div class="mt-4 flex flex-wrap justify-center gap-3">
+    {paidStaff.map((p) => <OrgPersonCard person={p} {...TIER.staff} />)}
+  </div>
+
+  {/* ── Cabinet branches ── */}
+  <div class="org-vline" aria-hidden="true"></div>
+  <p class="text-xs font-extrabold tracking-widest text-amber-ink uppercase">Cabinet</p>
+  <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+    Chair-level roles split between two Board officers; each chair leads a small team of co-op
+    members.
+  </p>
+  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+    {/* Left: the Secretary's cabinet */}
+    <div class="rounded-2xl border-2 border-border p-4">
+      <p class="text-xs font-extrabold tracking-widest text-heading uppercase">
+        Reports to Secretary
+      </p>
+      <div class="mt-4 rounded-xl bg-grey/60 p-3">
+        <div class="grid grid-cols-1 justify-items-center gap-3 sm:grid-cols-2">
+          {classReps.map((p) => <OrgPersonCard person={p} {...TIER.rep} />)}
+        </div>
+        <div class="org-vline" aria-hidden="true"></div>
+        <p
+          class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface"
+        >
+          Teacher's Aides · 2-4 members
+        </p>
+      </div>
+      {
+        secretaryBranch.map((s) => (
+          <div class="mt-4 rounded-xl bg-grey/60 p-3">
+            <div class="flex justify-center">
+              <OrgPersonCard person={s.chair} {...TIER.chair} />
+            </div>
+            {s.teams && s.teams.length > 0 && (
+              <>
+                <div class="org-vline" aria-hidden="true" />
+                <div class="flex flex-wrap justify-center gap-2">
+                  {s.teams.map((t) => (
+                    <p class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface">
+                      {t.label} · {t.size}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        ))
+      }
+    </div>
+    {/* Right: the VP's cabinet */}
+    <div class="rounded-2xl border-2 border-border p-4">
+      <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Reports to VP</p>
+      {
+        vpBranch.map((s) => (
+          <div class="mt-4 rounded-xl bg-grey/60 p-3">
+            <div class="flex justify-center">
+              <OrgPersonCard person={s.chair} {...TIER.chair} />
+            </div>
+            {s.teams && s.teams.length > 0 && (
+              <>
+                <div class="org-vline" aria-hidden="true" />
+                <div class="flex flex-wrap justify-center gap-2">
+                  {s.teams.map((t) => (
+                    <p class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface">
+                      {t.label} · {t.size}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  {/* ── Everyone ── */}
+  <div class="org-vline" aria-hidden="true"></div>
+  <a
+    href="/family-hub/directory"
+    class="inline-flex flex-col items-center gap-1 rounded-2xl border-2 border-amber bg-cream/60 px-8 py-4 no-underline transition-shadow hover:shadow-md dark:bg-white/5"
+  >
+    <span class="inline-flex items-center gap-2 font-bold text-heading">
+      <Icon name="users" class="h-5 w-5 text-orange-ink" aria-hidden="true" />
+      All WCP Families
+    </span>
+    <span class="text-sm text-ink-muted">
+      {
+        familyCount
+          ? `${familyCount} enrolled famil${familyCount === 1 ? 'y' : 'ies'} · open the Directory`
+          : 'Every enrolled family holds one job · open the Directory'
+      }
+    </span>
+  </a>
 </div>
 
 <style>
-  .org-chart :global(ul) {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .org-chart :global(.org-children) {
-    margin-left: 1.1rem;
-    border-left: 2px solid var(--color-border);
-    padding-left: 1.25rem;
-  }
-  .org-chart :global(.org-node) {
-    position: relative;
-    padding: 0.3rem 0;
-  }
-  /* horizontal tick from the vertical line to each child card */
-  .org-chart :global(.org-children) > :global(.org-node)::before {
-    content: '';
-    position: absolute;
-    left: -1.25rem;
-    top: 1.35rem;
-    width: 1rem;
-    height: 2px;
+  /* Short connector line between tiers (decorative). */
+  .org-chart :global(.org-vline) {
+    width: 2px;
+    height: 1.25rem;
+    margin: 0.75rem auto;
     background: var(--color-border);
-  }
-  .org-chart :global(.org-card) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.95rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    line-height: 1.2;
   }
 </style>

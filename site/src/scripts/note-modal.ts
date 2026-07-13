@@ -1,12 +1,15 @@
 // ============================================================================
-// President's note — first-visit welcome modal on the Family Hub home
+// Note modal — first-visit welcome letters (President's note, teacher notes)
 // ============================================================================
-// The modal markup is server-rendered hidden (PresidentNoteModal.astro); this
-// opens it once per version stamp. Closing (X, backdrop, or Esc) remembers
-// the dismissed version in localStorage, so the note stays gone until the
-// Board bumps `version` in the Studio. Focus moves to the close button on
-// open, is trapped inside while open, and returns to the previous element on
-// close. Body scroll locks while open.
+// The modal markup is server-rendered hidden (PresidentNoteModal.astro /
+// TeacherNoteModal.astro tag it `data-note-modal` with a per-note
+// `data-storage-key` + `data-version`); this opens it once per version stamp.
+// Closing (X, backdrop, or Esc) remembers the dismissed version in
+// localStorage under that key, so the note stays gone until the Board bumps
+// `version` in the Studio. Focus moves to the close button on open, is
+// trapped inside while open, and returns to the previous element on close.
+// Body scroll locks while open. One modal per page (home = president's,
+// class pages = that teacher's).
 //
 // View-Transitions safe: element listeners re-bind on astro:page-load, the
 // document Esc/Tab handler binds once and re-queries live nodes, and the
@@ -14,14 +17,13 @@
 // ============================================================================
 import { onPageLoad, onBeforeSwap } from './_page-load';
 
-const KEY = 'wcp-president-note-seen';
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let lastFocused: HTMLElement | null = null;
 
 function root(): HTMLElement | null {
-  return document.querySelector<HTMLElement>('[data-president-note]');
+  return document.querySelector<HTMLElement>('[data-note-modal]');
 }
 
 function isOpen(): boolean {
@@ -44,7 +46,7 @@ function close() {
   el.hidden = true;
   document.documentElement.classList.remove('overflow-hidden');
   try {
-    localStorage.setItem(KEY, el.dataset.version ?? '');
+    localStorage.setItem(el.dataset.storageKey ?? 'wcp-note-seen', el.dataset.version ?? '');
   } catch {
     /* private browsing — show again next visit, fine */
   }
@@ -61,12 +63,12 @@ function init() {
 
   let seen: string | null = null;
   try {
-    seen = localStorage.getItem(KEY);
+    seen = localStorage.getItem(el.dataset.storageKey ?? 'wcp-note-seen');
   } catch {
     seen = null;
   }
   if (seen !== (el.dataset.version ?? '')) {
-    // A beat after load, so the dashboard paints first.
+    // A beat after load, so the page paints first.
     openTimer = setTimeout(open, 700);
   }
 }

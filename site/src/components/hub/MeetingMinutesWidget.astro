@@ -1,38 +1,57 @@
 ---
 /* ============================================================================
-   MeetingMinutesWidget — hubDocument docs in the "minutes" category, the
-   same source the Documents page's "Meeting Minutes" group reads. Filtered
-   client-side (matches documents.astro's own pattern) since there is no
-   dedicated minutes-only route to link out to — "See all" goes to Documents.
+   MeetingMinutesWidget — the latest Board meeting minutes.
+   ============================================================================
+   Primary source: `update` posts in the "minutes" category (the migrated
+   Squarespace minutes live there, with their own hub pages). If none exist,
+   falls back to `hubDocument` docs in the "minutes" category (file/link
+   minutes, the Documents page's group) so the widget still works if the
+   Board switches to posting minutes as files. "See all" goes to Updates,
+   where minute posts live alongside announcements.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { EVENT_TZ } from '@/lib/events';
+import { formatShortDate } from '@/lib/hub-dashboard-dates';
 
-interface HubDocDoc {
+interface MinuteRow {
   title: string;
-  category: string;
-  order: number;
   href?: string;
+  dateLabel?: string;
 }
-let minutes: HubDocDoc[] = [];
+let minutes: MinuteRow[] = [];
 try {
-  const docs = await sanityFetch<HubDocDoc[]>(
-    `*[_type == "hubDocument" && category == "minutes" && (defined(link) || defined(file.asset))] | order(order asc){
-      title, category, order,
-      "href": select(sourceType == "file" => file.asset->url, link)
-    }`,
+  const posts = await sanityFetch<{ title: string; publishedAt?: string; slug?: string }[]>(
+    `*[_type == "update" && category == "minutes"] | order(publishedAt desc)[0...3]{ title, publishedAt, "slug": slug.current }`,
   );
-  minutes = docs.filter((d) => d.href).slice(0, 3);
+  minutes = (posts ?? []).map((p) => ({
+    title: p.title,
+    href: p.slug ? `/family-hub/updates/${p.slug}` : undefined,
+    dateLabel: p.publishedAt ? formatShortDate(p.publishedAt, EVENT_TZ) : undefined,
+  }));
 } catch {
   minutes = [];
+}
+if (minutes.length === 0) {
+  try {
+    const docs = await sanityFetch<{ title: string; href?: string }[]>(
+      `*[_type == "hubDocument" && category == "minutes" && (defined(link) || defined(file.asset))] | order(order asc)[0...3]{
+        title,
+        "href": select(sourceType == "file" => file.asset->url, link)
+      }`,
+    );
+    minutes = (docs ?? []).filter((d) => d.href);
+  } catch {
+    minutes = [];
+  }
 }
 ---
 
 <HomeWidgetCard
   icon="file-text"
   title="Meeting Minutes"
-  seeAllHref="/family-hub/documents"
+  seeAllHref="/family-hub/updates"
   empty={minutes.length === 0}
   emptyText="Board meeting minutes will list here once posted."
 >
@@ -40,17 +59,25 @@ try {
     {
       minutes.map((m) => (
         <li>
-          <a
-            href={m.href}
-            target="_blank"
-            rel="noopener"
-            class="flex items-center gap-2 font-semibold text-heading hover:underline"
-          >
-            <Icon name="file-text" class="h-4 w-4 shrink-0 text-sky-ink" />
-            <span class="truncate" title={m.title}>
-              {m.title}
-            </span>
-          </a>
+          {m.href ? (
+            <a
+              href={m.href}
+              class="flex items-center gap-2 font-semibold text-heading hover:underline"
+            >
+              <Icon name="file-text" class="h-4 w-4 shrink-0 text-sky-ink" />
+              <span class="truncate" title={m.title}>
+                {m.title}
+              </span>
+            </a>
+          ) : (
+            <p class="flex items-center gap-2 font-semibold text-heading">
+              <Icon name="file-text" class="h-4 w-4 shrink-0 text-sky-ink" />
+              <span class="truncate" title={m.title}>
+                {m.title}
+              </span>
+            </p>
+          )}
+          {m.dateLabel && <p class="pl-6 text-sm text-ink-muted">{m.dateLabel}</p>}
         </li>
       ))
     }

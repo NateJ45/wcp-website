@@ -2,13 +2,13 @@
 // Hub live-data links — fallbacks for the Board-editable Sanity fields
 // =============================================================================
 // The Family Hub dashboard reads live content from three school-run sources:
-//   1. Google Photos albums (per class + the school-wide Summer Playdates)
+//   1. Google Photos albums (one per class)
 //   2. Google Sheets helper schedules (one per class)
 //   3. The treasurer's Budget Google Sheet (Budget + Fundraising tabs)
 //   4. A Google Apps Script that serves the school Google Calendar as JSON
 //
 // The EDITABLE sources of truth live in Sanity (class docs: `photoAlbumUrl`,
-// `helperScheduleUrl`; siteSettings: `summerAlbumUrl`, `budgetSheetId`,
+// `helperScheduleUrl`; siteSettings: `budgetSheetId`,
 // `calendarFeedUrl`) so the Board can rotate links each year in the Studio.
 // The values below are the current, working links (carried over from the old
 // Squarespace hub, verified 2026-05-14) used per field when Sanity is blank
@@ -25,9 +25,6 @@ export const photoAlbumFallback: Record<string, string> = {
   'pre-k-pm': 'https://photos.app.goo.gl/***REMOVED***',
 };
 
-/** School-wide Summer Playdates album. */
-export const summerAlbumFallback = 'https://photos.app.goo.gl/***REMOVED***';
-
 /** Per-class helper-schedule Google Sheet. Keyed by class slug. */
 export const helperScheduleFallback: Record<string, string> = {
   twos: 'https://docs.google.com/spreadsheets/d/***REMOVED***/edit?usp=sharing',
@@ -41,6 +38,12 @@ export const helperScheduleFallback: Record<string, string> = {
 
 /** The treasurer's Budget Google Sheet (tabs: "Budget", "Fundraising"). */
 export const budgetSheetIdFallback = '***REMOVED***';
+
+/** The school Google Calendar's ID — the primary calendar of the school's
+ *  contact account (from the old site's embed `cid`). Drives the calendar
+ *  page's subscribe buttons + click-to-load embed. Board-editable on
+ *  siteSettings (`googleCalendarId`). */
+export const googleCalendarIdFallback = 'contact@westchesterpreschool.org';
 
 /** Apps Script endpoint serving the school Google Calendar as JSON
  *  (rolling 12 months; deployed 2026-05-05). */

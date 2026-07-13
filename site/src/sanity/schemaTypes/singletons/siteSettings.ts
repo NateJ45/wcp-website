@@ -164,14 +164,6 @@ export const siteSettings = defineType({
         'Shown on the Family Hub home. Leave blank to use a live count of opted-in Directory families instead.',
     }),
     defineField({
-      name: 'summerAlbumUrl',
-      title: 'Summer Playdates photo album',
-      type: 'url',
-      group: 'year',
-      description:
-        'The school-wide Google Photos album for summer playdates, shown with the class albums on the Family Hub home.',
-    }),
-    defineField({
       name: 'budgetSheetId',
       title: 'Budget Google Sheet ID',
       type: 'string',

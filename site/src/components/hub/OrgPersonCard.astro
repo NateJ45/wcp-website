@@ -1,0 +1,61 @@
+---
+/* ============================================================================
+   OrgPersonCard — one person/role card on the Co-op Jobs org chart
+   ============================================================================
+   Initials avatar with a tier-colored ring (decorative), role chip in the
+   tier's `-ink` tone (AA on the card in both themes), the holder's name (or
+   "Open role" while unfilled), and an optional mail-icon link to the role's
+   mailbox. Holders come from src/data/hub/org-holders.ts.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import type { OrgPerson } from '@/data/hub/org-holders';
+
+interface Props {
+  person: OrgPerson;
+  /** Ring/role tint classes, e.g. { ring: 'border-[#ffa334]', role: 'text-amber-ink' }. */
+  ring: string;
+  role: string;
+  /** Larger avatar (the President card). */
+  large?: boolean;
+}
+const { person, ring, role, large = false } = Astro.props;
+
+const initials = person.name
+  ? person.name
+      .replace(/^(Mrs?|Ms|Dr)\.?\s+/i, '')
+      .split(/\s+/)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+  : '?';
+---
+
+<div class="flex min-w-36 flex-col items-center rounded-xl bg-white p-3 shadow-sm dark:bg-surface">
+  <span
+    class={`flex items-center justify-center rounded-full border-4 bg-grey font-display text-heading ${ring} ${
+      large ? 'h-20 w-20 text-2xl' : 'h-14 w-14 text-lg'
+    }`}
+    aria-hidden="true"
+  >
+    {initials}
+  </span>
+  <span
+    class={`mt-2 inline-flex items-center gap-1 text-[0.68rem] font-extrabold tracking-wide uppercase ${role}`}
+  >
+    <Icon name={person.icon} class="h-3.5 w-3.5" aria-hidden="true" />
+    {person.role}
+  </span>
+  <span class="mt-0.5 text-sm font-bold text-heading">{person.name ?? 'Open role'}</span>
+  {
+    person.email && (
+      <a
+        href={`mailto:${person.email}`}
+        aria-label={`Email the ${person.role}`}
+        class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-sky-ink transition-colors hover:bg-grey"
+      >
+        <Icon name="mail" class="h-4 w-4" />
+      </a>
+    )
+  }
+</div>
