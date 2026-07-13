@@ -1,6 +1,6 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { useClient, useWorkspace } from 'sanity';
-import { IntentLink } from 'sanity/router';
+import { IntentLink, useRouter } from 'sanity/router';
 import { Box, Card, Stack, Text, Heading, Flex, Spinner } from '@sanity/ui';
 
 // =============================================================================
@@ -144,7 +144,14 @@ function Chip({ tint, children }: { tint: keyof typeof CHIPS; children: ReactNod
 }
 
 // One task card: icon chip + label + hint, wrapping either an IntentLink
-// (document edit/create) or a plain href (tool / structure pane).
+// (document edit/create) or a router-path link (tool / structure pane).
+//
+// The path variant MUST go through the Studio router, not a raw <a href>:
+// the deployed embedded Studio uses HASH routing, where the workspace
+// basePath is "/everyday" — a plain anchor to "/everyday/media" leaves the
+// Studio and 404s on the public site (bit us live 2026-07-13). Clicks call
+// router.navigateUrl (correct in hash AND browser modes); the href is a
+// best-effort real URL so middle-click / open-in-new-tab still works.
 function TaskCard(props: {
   icon: string;
   tint: keyof typeof CHIPS;
@@ -152,9 +159,11 @@ function TaskCard(props: {
   hint: string;
   intent?: ComponentProps<typeof IntentLink>['intent'];
   params?: Record<string, string>;
-  href?: string;
+  /** Router path incl. workspace basePath, e.g. `${basePath}/media`. */
+  path?: string;
 }) {
-  const { icon, tint, label, hint, intent, params, href } = props;
+  const { icon, tint, label, hint, intent, params, path } = props;
+  const router = useRouter();
   const inner = (
     <Card className="wcp-task-card" padding={3} radius={3} border style={{ height: '100%' }}>
       <Flex align="center" gap={3}>
@@ -171,12 +180,26 @@ function TaskCard(props: {
     </Card>
   );
   const linkStyle = { textDecoration: 'none', color: 'inherit', display: 'block' } as const;
-  return intent ? (
-    <IntentLink intent={intent} params={params} style={linkStyle}>
-      {inner}
-    </IntentLink>
-  ) : (
-    <a href={href} style={linkStyle}>
+  if (intent) {
+    return (
+      <IntentLink intent={intent} params={params} style={linkStyle}>
+        {inner}
+      </IntentLink>
+    );
+  }
+  const isHashRouted = typeof window !== 'undefined' && window.location.hash.startsWith('#/');
+  const href = isHashRouted ? `${window.location.pathname}#${path}` : path;
+  return (
+    <a
+      href={href}
+      style={linkStyle}
+      onClick={(event) => {
+        // Let modified clicks (new tab etc.) fall through to the href.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        event.preventDefault();
+        if (path) router.navigateUrl({ path });
+      }}
+    >
       {inner}
     </a>
   );
@@ -256,7 +279,7 @@ export function WelcomePane() {
               tint="amber"
               label="Add or manage photos"
               hint="The Media library"
-              href={`${basePath}/media`}
+              path={`${basePath}/media`}
             />
             <TaskCard
               icon="📰"
@@ -287,14 +310,14 @@ export function WelcomePane() {
               tint="green"
               label="Edit a page"
               hint="The section-by-section builder"
-              href={`${basePath}/structure/pages`}
+              path={`${basePath}/structure/pages`}
             />
             <TaskCard
               icon="❔"
               tint="sky"
               label="Open the guide"
               hint="Step-by-step walkthroughs"
-              href={`${basePath}/structure/help-and-guide`}
+              path={`${basePath}/structure/help-and-guide`}
             />
           </div>
         </Stack>
