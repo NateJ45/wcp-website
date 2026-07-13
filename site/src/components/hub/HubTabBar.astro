@@ -1,0 +1,72 @@
+---
+/* ============================================================================
+   HubTabBar — phone-only bottom tab bar for the Family Hub (< md)
+   ============================================================================
+   THE app-navigation pattern on phones: five fixed tabs — Home, Calendar,
+   Sign-ups, Updates, and More (opens the existing off-canvas drawer for
+   everything else via [data-hub-drawer-toggle]). Hidden ≥ md, where the top
+   bar's menu (md–lg) or the rail (lg+) take over.
+
+   THEME-STABLE NAVY ISLAND like the rail/top bar: identical in light and
+   dark, so active/inactive tones are hardcoded (white active, white/65
+   inactive — 7.5:1 on navy, AA for the 10px labels' bold weight). The bar
+   respects the iPhone home-indicator inset via safe-area padding; BaseLayout
+   pads the content column bottom so nothing hides underneath.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+
+const TABS = [
+  { label: 'Home', href: '/family-hub', icon: 'house' },
+  { label: 'Calendar', href: '/family-hub/calendar', icon: 'calendar-days' },
+  { label: 'Sign-ups', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
+  { label: 'Updates', href: '/family-hub/updates', icon: 'newspaper' },
+];
+
+// Active tab: exact match for Home, prefix match for the rest (so an update
+// detail page keeps the Updates tab lit).
+const path = new URL(Astro.request.url).pathname.replace(/\/+$/, '') || '/';
+const isActive = (href: string) =>
+  href === '/family-hub' ? path === '/family-hub' : path === href || path.startsWith(`${href}/`);
+---
+
+<nav
+  aria-label="Hub quick navigation"
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-navy pb-[env(safe-area-inset-bottom)] md:hidden"
+>
+  <ul class="grid grid-cols-5">
+    {
+      TABS.map((tab) => (
+        <li>
+          <a
+            href={tab.href}
+            aria-current={isActive(tab.href) ? 'page' : undefined}
+            data-tab-updates={tab.href === '/family-hub/updates' ? '' : undefined}
+            class:list={[
+              'relative flex flex-col items-center gap-0.5 px-1 pt-2 pb-1.5 text-[10px] font-bold tracking-wide uppercase',
+              isActive(tab.href) ? 'text-white' : 'text-white/65',
+            ]}
+          >
+            <Icon name={tab.icon} class="h-5 w-5" />
+            {tab.label}
+            {isActive(tab.href) && (
+              <span class="absolute top-0 h-0.5 w-8 rounded-full bg-amber" aria-hidden="true" />
+            )}
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      <button
+        type="button"
+        class="flex w-full flex-col items-center gap-0.5 px-1 pt-2 pb-1.5 text-[10px] font-bold tracking-wide text-white/65 uppercase"
+        aria-label="More — open the full menu"
+        aria-controls="hub-drawer"
+        aria-expanded="false"
+        data-hub-drawer-toggle
+      >
+        <Icon name="menu" class="h-5 w-5" />
+        More
+      </button>
+    </li>
+  </ul>
+</nav>

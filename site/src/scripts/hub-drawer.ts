@@ -12,22 +12,29 @@ import { onPageLoad, onBeforeSwap } from './_page-load';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// TWO toggles open the same drawer: the top bar's menu button (md–lg) and the
+// bottom tab bar's More button (< md). Every state change touches ALL of them
+// so their aria-expanded never disagrees; focus returns to whichever one
+// actually opened the drawer.
 function els() {
   return {
-    toggle: document.querySelector<HTMLButtonElement>('[data-hub-drawer-toggle]'),
+    toggles: [...document.querySelectorAll<HTMLButtonElement>('[data-hub-drawer-toggle]')],
     drawer: document.getElementById('hub-drawer'),
     backdrop: document.getElementById('hub-drawer-backdrop'),
   };
 }
 
+let lastTrigger: HTMLButtonElement | null = null;
+
 function isOpen() {
-  return els().toggle?.getAttribute('aria-expanded') === 'true';
+  return els().toggles[0]?.getAttribute('aria-expanded') === 'true';
 }
 
-function open() {
-  const { toggle, drawer, backdrop } = els();
-  if (!toggle || !drawer || !backdrop) return;
-  toggle.setAttribute('aria-expanded', 'true');
+function open(trigger?: HTMLButtonElement) {
+  const { toggles, drawer, backdrop } = els();
+  if (toggles.length === 0 || !drawer || !backdrop) return;
+  lastTrigger = trigger ?? toggles[0];
+  for (const t of toggles) t.setAttribute('aria-expanded', 'true');
   drawer.setAttribute('aria-hidden', 'false');
   drawer.removeAttribute('inert');
   drawer.classList.remove('-translate-x-full');
@@ -37,9 +44,9 @@ function open() {
 }
 
 function close(restoreFocus = true) {
-  const { toggle, drawer, backdrop } = els();
-  if (!toggle || !drawer || !backdrop) return;
-  toggle.setAttribute('aria-expanded', 'false');
+  const { toggles, drawer, backdrop } = els();
+  if (toggles.length === 0 || !drawer || !backdrop) return;
+  for (const t of toggles) t.setAttribute('aria-expanded', 'false');
   drawer.setAttribute('aria-hidden', 'true');
   // inert with aria-hidden: the closed drawer is still rendered (translated
   // offscreen), and aria-hidden alone leaves its links in the Tab order —
@@ -48,13 +55,14 @@ function close(restoreFocus = true) {
   drawer.classList.add('-translate-x-full');
   backdrop.classList.add('hidden');
   document.documentElement.classList.remove('overflow-hidden');
-  if (restoreFocus) toggle.focus();
+  if (restoreFocus) (lastTrigger ?? toggles[0]).focus();
 }
 
 function initDrawer() {
-  const { toggle, backdrop } = els();
-  if (!toggle) return;
-  toggle.addEventListener('click', () => (isOpen() ? close() : open()));
+  const { toggles, backdrop } = els();
+  for (const toggle of toggles) {
+    toggle.addEventListener('click', () => (isOpen() ? close() : open(toggle)));
+  }
   backdrop?.addEventListener('click', () => close());
 }
 

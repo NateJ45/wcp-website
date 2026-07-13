@@ -29,6 +29,7 @@ try {
     title: p.title,
     href: p.slug ? `/family-hub/updates/${p.slug}` : undefined,
     dateLabel: p.publishedAt ? formatShortDate(p.publishedAt, EVENT_TZ) : undefined,
+    publishedAt: p.publishedAt,
   }));
 } catch {
   minutes = [];
@@ -58,7 +59,8 @@ if (minutes.length === 0) {
   <ul class="space-y-3">
     {
       minutes.map((m) => (
-        <li>
+        /* data-published feeds the "new" pills (src/scripts/hub-fresh.ts). */
+        <li data-published={('publishedAt' in m && m.publishedAt) || undefined}>
           {m.href ? (
             <a
               href={m.href}

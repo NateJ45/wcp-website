@@ -25,6 +25,7 @@ import Icon from '@/components/Icon.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import wcpEmblem from '@/assets/brand/wcp-emblem.png';
 import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
+import { getWeather } from '@/lib/hub-weather';
 
 interface Props {
   tagline: string;
@@ -71,6 +72,9 @@ const yearPct = yearProgressPercent(yearStart, yearEnd, now);
 
 const familiesLabel =
   familyCount && familyCount > 0 ? `${familyCount} famil${familyCount === 1 ? 'y' : 'ies'}` : null;
+
+// Current weather at the school (SWR-cached; null = chip simply absent).
+const weather = await getWeather();
 ---
 
 <div
@@ -105,6 +109,14 @@ const familiesLabel =
             <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
               <Icon name={statusChip.icon} class="h-4 w-4 text-amber" />
               {statusChip.text}
+            </li>
+          )
+        }
+        {
+          weather && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name={weather.icon} class="h-4 w-4 text-amber" />
+              {weather.tempF}° · {weather.line}
             </li>
           )
         }

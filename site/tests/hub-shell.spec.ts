@@ -38,16 +38,29 @@ test.describe('Family Hub shell', () => {
     await page.goto('/family-hub', { waitUntil: 'load' });
     await settle(page);
 
-    const toggle = page.locator('[data-hub-drawer-toggle]');
+    // TWO toggles share the drawer (top-bar menu + the tab bar's More) and
+    // hub-drawer.ts must keep their aria-expanded in sync — regression: the
+    // script once bound only the first, leaving the More button dead.
+    const menuToggle = page.getByRole('button', { name: 'Open menu' });
+    const moreToggle = page.getByRole('button', { name: /More — open the full menu/ });
     const drawer = page.locator('#hub-drawer');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(moreToggle).toHaveAttribute('aria-expanded', 'false');
 
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await menuToggle.click();
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(moreToggle).toHaveAttribute('aria-expanded', 'true');
     await expect(drawer).toHaveAttribute('aria-hidden', 'false');
 
     await page.keyboard.press('Escape');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(drawer).toHaveAttribute('aria-hidden', 'true');
+
+    // The tab bar's More button opens it too.
+    await moreToggle.click();
+    await expect(drawer).toHaveAttribute('aria-hidden', 'false');
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
     await expect(drawer).toHaveAttribute('aria-hidden', 'true');
   });
 

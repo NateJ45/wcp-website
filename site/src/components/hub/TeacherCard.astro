@@ -1,0 +1,84 @@
+---
+/* ============================================================================
+   TeacherCard — the class teacher, up top where families expect a face
+   ============================================================================
+   Reads the class's teacherNote doc (same source as the first-visit welcome
+   modal — photo, name, role, email are already board-editable there, so this
+   card costs the Studio nothing new). Renders nothing when no note exists or
+   it has no name — designed absence. The photo ring rides the class color.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { urlForImage, type SanityImageSource } from '@/lib/image';
+import { classStyles } from '@/lib/class-colors';
+
+interface Props {
+  /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
+  slug: string;
+}
+const { slug } = Astro.props;
+const noteClass = slug.startsWith('pre-k') ? 'pre-k' : slug;
+
+interface TeacherDoc {
+  signName?: string;
+  signRole?: string;
+  email?: string;
+  photo?: { asset?: unknown; alt?: string } | null;
+}
+let teacher: TeacherDoc | null = null;
+try {
+  teacher = await sanityFetch<TeacherDoc | null>(
+    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, photo }`,
+    { cls: noteClass },
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  teacher = null;
+}
+
+const cc = classStyles(slug);
+const photoUrl = teacher?.photo?.asset
+  ? urlForImage(teacher.photo as SanityImageSource)
+      .width(160)
+      .height(160)
+      .url()
+  : null;
+---
+
+{
+  teacher?.signName && (
+    <div class="flex h-full items-center gap-4 rounded-[var(--radius)] bg-white p-5 shadow-sm dark:bg-surface">
+      {photoUrl ? (
+        <img
+          src={photoUrl}
+          alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+          width="80"
+          height="80"
+          loading="lazy"
+          class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover ${cc.border}`}
+        />
+      ) : (
+        <span
+          class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}
+          aria-hidden="true"
+        >
+          <Icon name="heart" class="h-8 w-8" />
+        </span>
+      )}
+      <div class="min-w-0">
+        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Your teacher</p>
+        <p class="font-display text-xl text-heading">{teacher.signName}</p>
+        {teacher.signRole && <p class="text-sm text-ink-muted">{teacher.signRole}</p>}
+        {teacher.email && (
+          <a
+            href={`mailto:${teacher.email}`}
+            class="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
+          >
+            <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
+            Say hi
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}

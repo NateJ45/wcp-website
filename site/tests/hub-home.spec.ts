@@ -71,5 +71,11 @@ test.describe('Family Hub home dashboard', () => {
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
     );
     expect(overflow).toBe(false);
+
+    // The phone-only bottom tab bar: 4 links + More, and it clears the
+    // content (BaseLayout pads main's bottom).
+    const tabBar = page.locator('nav[aria-label="Hub quick navigation"]');
+    await expect(tabBar).toBeVisible();
+    await expect(tabBar.locator('a, button')).toHaveCount(5);
   });
 });

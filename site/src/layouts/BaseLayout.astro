@@ -12,6 +12,8 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
+import HubTabBar from '@/components/hub/HubTabBar.astro';
+import HubSearch from '@/components/hub/HubSearch.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import StructuredData from '@/components/StructuredData.astro';
 import { site } from '@/data/site';
@@ -226,18 +228,28 @@ const closureAlert = await getClosureAlert();
             <HubRail />
           </aside>
 
-          {/* Content column IS the grey app canvas (bg-grey), so short pages
-              don't show a mismatched empty band under the content. No footer —
-              the hub is an app surface, not a marketing page. */}
-          <div class="flex min-w-0 flex-1 flex-col bg-grey">
+          {/* Content column IS the app canvas: bg-grey plus the construction-
+              paper texture (grain + hand-drawn doodles — see globals.css
+              "Hub canvas texture"), so short pages don't show a mismatched
+              empty band under the content. No footer — the hub is an app
+              surface, not a marketing page. */}
+          <div class="wcp-hub-canvas flex min-w-0 flex-1 flex-col bg-grey">
             <HubTopBar title={hubTitle} />
             {/* data-pagefind-body: site search (Pagefind) indexes only the main
                 content of real pages, not the header/footer chrome — and because
                 the marker exists, pages without it (the Studio SPA shell) are
                 skipped entirely. */}
-            <main id="main" tabindex="-1" data-pagefind-body class="flex-1">
+            {/* pb clears the fixed bottom tab bar on phones (+ safe area). */}
+            <main
+              id="main"
+              tabindex="-1"
+              data-pagefind-body
+              class="flex-1 pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
+            >
               <slot />
             </main>
+            <HubTabBar />
+            <HubSearch />
           </div>
         </div>
       ) : (
@@ -259,6 +271,8 @@ const closureAlert = await getClosureAlert();
       import '@/scripts/hub-drawer';
       import '@/scripts/hub-rail';
       import '@/scripts/theme';
+      import '@/scripts/my-class';
+      import '@/scripts/hub-fresh';
     </script>
   </body>
 </html>

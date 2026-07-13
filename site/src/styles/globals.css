@@ -305,6 +305,64 @@
   }
 }
 
+/* 4b. Hub canvas texture -------------------------------------------------------
+   The Family Hub's app canvas: construction-paper GRAIN + a sparse tile of
+   hand-drawn school DOODLES (sun, star, crayon, block, heart, squiggle — the
+   rail's icon family) at ~5% opacity. Cards stay white, so the texture lives
+   in the gaps and never sits under body text; both layers are inline SVG data
+   URIs (~2KB total, zero requests, no runtime cost). Light tiles stroke navy,
+   dark tiles stroke white; the grain URI is neutral noise that reads on both.
+   Direct grey Sections inside the hub go transparent so the one continuous
+   canvas shows through (inner bg-grey chips inside cards are untouched);
+   board-added white/cream/navy bands still paint on top, as intended.
+   ---------------------------------------------------------------------------- */
+:root {
+  --wcp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  --wcp-doodles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%2301457E' stroke-opacity='0.055' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
+  --wcp-doodles-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
+}
+.wcp-hub-canvas {
+  background-image: var(--wcp-grain), var(--wcp-doodles);
+}
+.dark .wcp-hub-canvas {
+  background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+}
+/* Hub pages wrap content in <Section bg="grey">; over the textured canvas
+   those direct sections go transparent so the paper shows through. Scoped to
+   main > section so bg-grey CHIPS inside cards keep their fill. */
+.wcp-hub-canvas main > section.bg-grey {
+  background-color: transparent;
+}
+
+/* Soft radial glows — the warm wash behind the hub greeting / class headers.
+   Decorative divs (aria-hidden, pointer-events-none); color per class via the
+   variants. Very low alpha so they tint the paper, never fight text. */
+.wcp-glow {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  opacity: 0.55;
+}
+.dark .wcp-glow {
+  opacity: 0.16;
+}
+.wcp-glow-cream {
+  background: radial-gradient(closest-side, var(--color-cream), transparent 70%);
+}
+.wcp-glow-amber {
+  background: radial-gradient(closest-side, var(--color-amber), transparent 70%);
+}
+.wcp-glow-green {
+  background: radial-gradient(closest-side, var(--color-green), transparent 70%);
+}
+.wcp-glow-orange {
+  background: radial-gradient(closest-side, var(--color-orange), transparent 70%);
+}
+.wcp-glow-sky {
+  background: radial-gradient(closest-side, var(--color-sky), transparent 70%);
+}
+
 /* 5. Scroll-reveal system ----------------------------------------------------
    Tag any element with data-reveal; the IntersectionObserver in BaseLayout
    adds .is-visible as it scrolls into view. The hidden-until-revealed state is

@@ -41,7 +41,9 @@ const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
   <ul class="space-y-3">
     {
       updates.map((u) => (
-        <li>
+        /* data-published feeds the "new since your last visit" pills
+           (src/scripts/hub-fresh.ts). */
+        <li data-published={u.publishedAt}>
           {u.slug ? (
             <a
               href={`/family-hub/updates/${u.slug}`}

@@ -54,7 +54,9 @@ const tiles = CLASSES.map((c) => {
     tiles.map((c) => {
       const styles = classStyles(c.slug);
       return (
-        <li>
+        /* data-class-tile: the my-class picker (src/scripts/my-class.ts)
+           moves YOUR class first and unhides its tag. */
+        <li data-class-tile={c.slug}>
           <a
             href={c.href}
             {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
@@ -68,7 +70,15 @@ const tiles = CLASSES.map((c) => {
               <Icon name={c.icon} class="h-5 w-5" />
             </span>
             <span class="min-w-0 flex-1">
-              <span class="block font-bold text-heading">{c.label}</span>
+              <span class="flex items-center gap-2 font-bold text-heading">
+                {c.label}
+                <span
+                  class="hidden rounded-full bg-amber px-2 py-0.5 text-[0.6rem] font-bold tracking-wide text-navy uppercase"
+                  data-my-class-tag
+                >
+                  Your class
+                </span>
+              </span>
               <span class="block text-[0.68rem] font-semibold tracking-wide text-ink-muted uppercase">
                 Helper schedule
               </span>

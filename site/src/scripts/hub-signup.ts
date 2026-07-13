@@ -27,11 +27,16 @@ onPageLoad(() => {
         });
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
         if (!res.ok) throw new Error(data?.error || 'failed');
-        // Success: hide the inputs, show the thank-you where the form was.
+        // Success: hide the inputs, show the thank-you where the form was —
+        // with a little confetti (reduced-motion-safe inside celebrate()).
         for (const el of form.querySelectorAll<HTMLElement>('div, button')) {
           el.classList.add('hidden');
         }
         done?.classList.remove('hidden');
+        if (done) {
+          const { celebrate } = await import('@/scripts/confetti');
+          celebrate(done);
+        }
       } catch (err) {
         if (button) button.disabled = false;
         if (error) {

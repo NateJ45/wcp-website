@@ -78,9 +78,16 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         min-content floor, so a wide unbreakable widget row would stretch the
         whole column past 320px. minmax(0,1fr) clamps it. */
     }
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+    {
+      /* overflow-x-clip: the decorative glow extends past the grid on purpose;
+        clip (not hidden — no scroll container) keeps it off the page's
+        horizontal scroll width at 320px. */
+    }
+    <div class="relative grid grid-cols-1 gap-4 overflow-x-clip lg:grid-cols-12">
+      {/* Warm wash behind the greeting — tints the paper canvas, never text. */}
+      <div class="wcp-glow wcp-glow-cream -top-24 -left-24 h-96 w-[36rem]" aria-hidden="true"></div>
       {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
-      <div class="lg:col-span-8">
+      <div class="relative lg:col-span-8">
         <HubGreeting
           tagline={settings?.tagline || site.tagline}
           yearStart={settings?.yearStart}
@@ -113,6 +120,58 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
       </div>
 
       <div class="lg:col-span-8" style="--reveal-delay: 120ms">
+        {
+          /* My-classes picker (JS-only nicety; hidden without JS). Stored on
+            the device — no accounts. MULTI-select: plenty of families have
+            kids in more than one class, so the chips toggle (aria-pressed)
+            and Done closes. src/scripts/my-class.ts shows exactly one of
+            these two strips and personalizes tiles/albums/rail from the set. */
+        }
+        <div
+          data-my-class-picker
+          hidden
+          class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
+        >
+          <span class="font-semibold text-heading">Which classes are yours?</span>
+          {
+            [
+              { slug: 'twos', label: 'Twos' },
+              { slug: 'threes', label: 'Threes' },
+              { slug: 'pre-k-am', label: 'Pre-K AM' },
+              { slug: 'pre-k-pm', label: 'Pre-K PM' },
+            ].map((c) => (
+              <button
+                type="button"
+                data-my-class-pick={c.slug}
+                aria-pressed="false"
+                class="rounded-full border border-border bg-white px-3 py-1 font-semibold text-ink transition-colors hover:border-navy hover:text-heading aria-pressed:border-navy aria-pressed:bg-navy aria-pressed:text-white dark:bg-surface"
+              >
+                {c.label}
+              </button>
+            ))
+          }
+          <button
+            type="button"
+            data-my-class-done
+            hidden
+            class="ml-auto font-bold text-sky-ink hover:underline"
+          >
+            Done
+          </button>
+        </div>
+        <div
+          data-my-class-current
+          hidden
+          class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
+        >
+          <span class="text-ink"
+            >Your class<span data-my-class-plural>es</span>:
+            <strong class="text-heading" data-my-class-label></strong></span
+          >
+          <button type="button" data-my-class-change class="font-bold text-sky-ink hover:underline">
+            Change
+          </button>
+        </div>
         <ClassHelperRow />
       </div>
 

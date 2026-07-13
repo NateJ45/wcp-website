@@ -202,6 +202,35 @@ A related nicety: the site is installable (a PWA manifest with maskable icon and
 hub/calendar shortcuts), so families can pin the hub to their phone's home screen —
 there is deliberately **no service worker** (the SSR hub must never serve stale).
 
+## The app layer (2026-07 "feel like an app" pass)
+
+- **Bottom tab bar on phones** (`HubTabBar`, < md): Home / Calendar / Sign-ups /
+  Updates / More (More opens the drawer). Theme-stable navy island; BaseLayout pads
+  `main` so content clears it.
+- **Search (Cmd/Ctrl+K)** — `HubSearch` dialog + `hub-search.ts`, fed by the gated
+  `/family-hub/api/search-index` (hub pages from `hub-nav.ts`, updates, documents,
+  open sign-up sheets). Triggers: the rail's Search row + the top bar's icon.
+- **My classes** (`my-class.ts`, localStorage `wcp-my-classes`, no accounts):
+  MULTI-select toggle chips on the home dashboard (plenty of families have kids in
+  more than one class); each picked class's helper tile moves to the front with a
+  "Your class" tag, its photo album gets a ring, and its rail link gets a dot (the
+  shared Pre-K page link is never double-dotted).
+- **"New since your last visit"** (`hub-fresh.ts`, localStorage `wcp-updates-seen`):
+  home announcement/minutes items newer than your last Updates visit get a "New"
+  pill and the Updates links (rail/drawer/tab bar) a count badge; opening Updates
+  clears it. Widgets carry `data-published` for this.
+- **Texture & flair**: the canvas is construction paper (grain + hand-drawn doodle
+  tile, light/dark variants — globals.css "Hub canvas texture"; direct grey Sections
+  render transparent over it), a warm glow sits behind the greeting and a
+  class-colored one behind each class page header, the greeting carries a live
+  weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
+  sign-up success fires a reduced-motion-safe confetti burst.
+- **Class pages** open with a `TeacherCard` (photo/name/role/email straight from the
+  class's `teacherNote` doc — the same fields that power the welcome modal) beside
+  the facts grid, then a photo "How our day flows" `storyTimelineSection` seeded from
+  each class's own schedule (`scripts/seed-class-stories.mjs`; the board swaps in
+  real class photos in the Studio).
+
 ## Updates / meeting blog
 
 The **Updates** section is the meeting blog, migrated in full from the old Squarespace

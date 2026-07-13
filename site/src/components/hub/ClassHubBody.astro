@@ -13,6 +13,7 @@ import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
+import TeacherCard from '@/components/hub/TeacherCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { payUrl, type WcpClass } from '@/data/classes';
@@ -57,10 +58,22 @@ const facts = [
   { label: 'Annual', value: c.annual },
   { label: 'Student fee', value: c.studentFee, suffix: '/ year' },
 ];
+
+// The class-colored wash behind this page's header (paints on the paper
+// canvas). Literal class names so Tailwind/our CSS never sees a template.
+const GLOW: Record<string, string> = {
+  twos: 'wcp-glow-amber',
+  threes: 'wcp-glow-green',
+  'pre-k-am': 'wcp-glow-orange',
+  'pre-k-pm': 'wcp-glow-sky',
+};
+const glow = GLOW[slug] ?? 'wcp-glow-sky';
 ---
 
 <Section bg="grey" labelledby="hub-page-title">
-  <div class="mx-auto max-w-6xl">
+  <div class="relative mx-auto max-w-6xl overflow-x-clip">
+    {/* Class-colored wash on the paper canvas (decorative). */}
+    <div class={`wcp-glow ${glow} -top-20 -left-20 h-72 w-[30rem]`} aria-hidden="true"></div>
     <HubPageHeader title={heading} subtitle={subtitle} icon={c.icon} iconChip={cc.iconChip}>
       <div slot="action" class="flex flex-wrap gap-2">
         <Button href={payUrl(c.payId)} target="_blank" rel="noopener" variant="primary" size="sm">
@@ -70,26 +83,29 @@ const facts = [
       </div>
     </HubPageHeader>
 
-    {/* At a glance — one card, clean stat grid (not six bordered mini-cards). */}
-    <HubCard>
-      <dl class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-        {
-          facts.map((f) => (
-            <div>
-              <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                {f.label}
-              </dt>
-              <dd class={cn('mt-0.5 font-bold', f.accent ? cc.text : 'text-heading')}>
-                {f.value}
-                {f.suffix && (
-                  <span class="ml-1 text-sm font-semibold text-ink-muted">{f.suffix}</span>
-                )}
-              </dd>
-            </div>
-          ))
-        }
-      </dl>
-    </HubCard>
+    {/* Teacher card + at-a-glance facts side by side on wide screens. */}
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr]">
+      <TeacherCard slug={slug} />
+      <HubCard>
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+          {
+            facts.map((f) => (
+              <div>
+                <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                  {f.label}
+                </dt>
+                <dd class={cn('mt-0.5 font-bold', f.accent ? cc.text : 'text-heading')}>
+                  {f.value}
+                  {f.suffix && (
+                    <span class="ml-1 text-sm font-semibold text-ink-muted">{f.suffix}</span>
+                  )}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </HubCard>
+    </div>
   </div>
 </Section>
 

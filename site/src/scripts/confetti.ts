@@ -43,7 +43,10 @@ function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, size: num
   ctx.restore();
 }
 
-function burst(origin: HTMLElement) {
+/** Fire a celebration burst from an element (exported for one-off moments
+ *  like a sign-up success — see hub-signup.ts). Reduced-motion is the
+ *  caller's responsibility for exported use; celebrate() below wraps that. */
+export function burst(origin: HTMLElement) {
   const rect = origin.getBoundingClientRect();
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
@@ -132,6 +135,11 @@ function init() {
   });
 }
 
-onPageLoad(init);
+/** Reduced-motion-safe burst for success moments (no cooldown gate — a
+ *  deliberate action deserves its celebration even right after a hover). */
+export function celebrate(origin: HTMLElement) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  burst(origin);
+}
 
-export {};
+onPageLoad(init);
