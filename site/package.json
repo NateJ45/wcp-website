@@ -11,7 +11,7 @@
     "build": "astro build",
     "postbuild": "pagefind --site dist/client && node scripts/generate-og.mjs",
     "preview": "astro preview",
-    "deploy": "astro build && wrangler deploy -c dist/server/wrangler.json",
+    "deploy": "npm run build && wrangler deploy -c dist/server/wrangler.json",
     "check": "astro check && oxlint src",
     "lint": "oxlint src",
     "lint:fix": "oxlint --fix src",
