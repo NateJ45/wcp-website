@@ -10,6 +10,10 @@ on:
     branches: [main]
   repository_dispatch:
     types: [sanity-publish]
+  # Manual trigger (Actions tab → Deploy → Run workflow), for catching the
+  # site up after an outage: dispatches that arrive while Actions is blocked
+  # (e.g. the July 2026 quota exhaustion) are dropped, not queued.
+  workflow_dispatch:
 
 # Coalesce webhook bursts. Sanity fires one dispatch per document change, so a
 # single Studio editing session can queue dozens of identical deploys back to
