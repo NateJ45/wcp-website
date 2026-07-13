@@ -62,7 +62,7 @@ let documentGroups = fallbackGroups;
 try {
   // Both link-type docs and uploaded files (file.asset dereferenced to its URL).
   const docs = await sanityFetch<HubDocDoc[]>(
-    `*[_type == "hubDocument" && (defined(link) || defined(file.asset))] | order(category asc, order asc){
+    `*[_type == "hubDocument" && (defined(link) || defined(file.asset))] | order(category asc, coalesce(orderRank, "~") asc, order asc){
       title, category, description, icon, order,
       "href": select(sourceType == "file" => file.asset->url, link)
     }`,

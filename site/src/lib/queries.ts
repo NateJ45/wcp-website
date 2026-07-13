@@ -57,7 +57,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     },
     _type == "faqSection" => {
       "items": select(
-        source == "category" => *[_type == "faqItem" && category == ^.category] | order(order asc){ question, answer },
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
       )
     },
@@ -84,7 +84,7 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
     _type == "faqSection" => {
       "items": select(
-        source == "category" => *[_type == "faqItem" && category == ^.category] | order(order asc){ question, answer },
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
       )
     }
@@ -173,7 +173,10 @@ export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
   paymentTerms[]{ icon, question, answer }
 }`;
 
-export const FAQ_ITEMS_QUERY = `*[_type == "faqItem"] | order(category asc, order asc){ question, answer, category, order }`;
+// Drag order (orderRank) decides order within each category; the coalesce("~")
+// fallback keeps not-yet-ranked docs at the end of their category, tie-broken
+// by the legacy `order` number so pre-drag content keeps today's order.
+export const FAQ_ITEMS_QUERY = `*[_type == "faqItem"] | order(category asc, coalesce(orderRank, "~") asc, order asc){ question, answer, category, order }`;
 
 export const LEGAL_PAGE_LAST_UPDATED_QUERY = `*[_type == "legalPage" && slug == $slug][0].lastUpdated`;
 

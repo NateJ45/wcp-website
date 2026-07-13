@@ -13,7 +13,10 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 
 - **Project ID:** `niemhgev` · **Dataset:** `production` (private) · **API version:** `2025-01-01`
 - **Studio config:** [sanity.config.ts](../sanity.config.ts) · schemas in [src/sanity/schemaTypes/](../src/sanity/schemaTypes/)
-- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), `sanity-plugin-media` (the "Media" library), `sanity-plugin-documents-pane` (a "Used on" tab), `@sanity/orderable-document-list` (drag-to-reorder), and `sanity-plugin-link-checker` (the "Link Checker" tool — scans content for broken links). Custom panes: a **Welcome** dashboard (recent edits + orientation) and an **SEO preview** tab (Google + social card) — both free, added via `defaultDocumentNode` in `sanity.config.ts`. Growth-plan features (AI Assist, Comments/Tasks) are **not** enabled — see the note below.
+- **Workspaces:** the Studio is TWO views of the same dataset — **Everyday edits** (`/studio/everyday`, where `/studio` lands: the volunteer menu) and **Everything** (`/studio/everything`: adds Menus, Community & content, and the Link Checker). Switch via the workspace name in the top-left. The trim is menu-only comfort, not permission (see [ROLES.md](ROLES.md)). Both are defined by one shared `workspace()` factory in `sanity.config.ts`; the left-nav structures live in [src/sanity/structure.ts](../src/sanity/structure.ts) (`structure` + `everydayStructure`), organized by task-frequency bands (Everyday edits / School info / Family Hub / Site setup / Inboxes) with a **Money & payments** folder gathering the fee schedule, class tuition, and campaigns.
+- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), `sanity-plugin-media` (the "Media" library), `sanity-plugin-documents-pane` (a "Used on" tab), `@sanity/orderable-document-list` (drag-to-reorder — Classes, Testimonials, School-Year Events, FAQs, hub Documents & Forms, and the Community collections), and `sanity-plugin-link-checker` (the "Link Checker" tool, Everything workspace only). Custom panes: a **Welcome** launcher (task cards deep-linking to tuition/alert/news/etc. + recent edits) and an **SEO preview** tab (Google + social card) — both free, added via `defaultDocumentNode` in `sanity.config.ts`. Growth-plan features (AI Assist, Comments/Tasks) are **not** enabled — see the note below.
+- **Studio look & feel:** brand navy chrome + Quicksand via `--font-family-base` in [src/sanity/theme.ts](../src/sanity/theme.ts); font files + the sun+cloud workspace icon load through `src/sanity/components/StudioLayout.tsx` (`studio.components.layout`). Money-sensitive field descriptions name their walkthrough explicitly ('Help & Guide → "Change tuition or fees"') — deliberately plain strings: Sanity's types allow a React element as a field `description`, but `sanity schema validate` warns it is "known to cause problems and will not be supported in future versions", so don't use JSX there.
+- **One-time seed (pending):** `node scripts/seed-orderrank.mjs` — gives existing FAQs and hub Documents their drag-order rank matching today's order (additive `setIfMissing`; the frontend falls back to the legacy `order` number until then, so nothing breaks unseeded — the drag list just won't match today's order until the first drag or the seed).
 - **Read clients:** [src/lib/cms.ts](../src/lib/cms.ts) (public build-time reads),
   [src/lib/sanity.ts](../src/lib/sanity.ts) (gated hub, request-time),
   [src/lib/cms-preview.ts](../src/lib/cms-preview.ts) (Studio draft preview, stega on)
@@ -226,11 +229,14 @@ when Sanity tells it a document was published.
      baked into the static public pages at build time and DOES need a redeploy.
 
      Combined filter:
+
      ```
      !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote"])
      ```
+
      If a new document type is added later, decide which bucket it belongs to by
      checking whether the page(s) that read it have `prerender = false`.
+
    - Save. Sanity will now ping GitHub on every publish of a type that isn't
      filtered out, and the `Deploy` workflow picks it up within a minute or two.
 

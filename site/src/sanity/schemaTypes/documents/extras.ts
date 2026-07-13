@@ -112,13 +112,13 @@ export const campaign = defineType({
       name: 'goalAmount',
       title: 'Goal ($)',
       type: 'number',
-      validation: (R) => R.min(0),
+      validation: (R) => R.min(0).error('The goal can’t be a negative number.'),
     }),
     defineField({
       name: 'raisedAmount',
       title: 'Raised so far ($)',
       type: 'number',
-      validation: (R) => R.min(0),
+      validation: (R) => R.min(0).error('The raised amount can’t be a negative number.'),
     }),
     defineField({ name: 'deadline', title: 'Deadline (optional)', type: 'date' }),
     defineField({
@@ -178,7 +178,12 @@ export const jobPosting = defineType({
   preview: {
     select: { title: 'title', active: 'active', type: 'type' },
     prepare({ title, active, type }) {
-      return { title: `${active ? '' : '(closed) '}${title}`, subtitle: type };
+      const labels: Record<string, string> = {
+        teaching: 'Teaching',
+        board: 'Board / volunteer',
+        other: 'Other',
+      };
+      return { title: `${active ? '' : '(closed) '}${title}`, subtitle: labels[type] ?? type };
     },
   },
 });
@@ -216,7 +221,15 @@ export const resource = defineType({
     orderRankField({ type: 'resource' }),
   ],
   orderings: [orderRankOrdering],
-  preview: { select: { title: 'title', subtitle: 'category' } },
+  preview: {
+    select: { title: 'title', category: 'category' },
+    prepare({ title, category }) {
+      return {
+        title,
+        subtitle: RESOURCE_CATEGORIES.find((c) => c.value === category)?.title ?? category,
+      };
+    },
+  },
 });
 
 export const photoAlbum = defineType({
@@ -232,7 +245,7 @@ export const photoAlbum = defineType({
       title: 'Photos',
       type: 'array',
       of: [defineArrayMember({ type: 'figureImage' })],
-      validation: (R) => R.min(1),
+      validation: (R) => R.min(1).error('Add at least one photo — an empty album can’t be shown.'),
     }),
   ],
   preview: {

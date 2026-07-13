@@ -1,4 +1,13 @@
 import { defineType, defineField } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
+import { iconField } from './objects/_shared';
+
+const HUB_DOC_CATEGORIES = [
+  { title: 'Required Form', value: 'required' },
+  { title: 'Handbook & Policy', value: 'handbook' },
+  { title: 'Orientation Material', value: 'orient' },
+  { title: 'Meeting Minutes', value: 'minutes' },
+];
 
 // Documents & Forms — handbook, bylaws, required state forms, meeting minutes.
 // A document is either an external link (Drive/Canva) or an uploaded file.
@@ -8,21 +17,22 @@ export const hubDocument = defineType({
   type: 'document',
   icon: () => '📄',
   fields: [
-    defineField({ name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (R) => R.required().error('Give the document a title families will recognize.'),
+    }),
     defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
       options: {
-        list: [
-          { title: 'Required Form', value: 'required' },
-          { title: 'Handbook & Policy', value: 'handbook' },
-          { title: 'Orientation Material', value: 'orient' },
-          { title: 'Meeting Minutes', value: 'minutes' },
-        ],
+        list: HUB_DOC_CATEGORIES,
         layout: 'dropdown',
       },
-      validation: (R) => R.required(),
+      validation: (R) =>
+        R.required().error('Pick which section of Documents & Forms this belongs in.'),
     }),
     defineField({
       name: 'description',
@@ -30,11 +40,8 @@ export const hubDocument = defineType({
       description: 'Optional one-line context shown under the title.',
       type: 'string',
     }),
-    defineField({
-      name: 'icon',
-      title: 'Icon',
-      description: 'Icon name shown next to this document, e.g. "file-text", "shield-check".',
-      type: 'string',
+    iconField('icon', {
+      description: 'The little picture shown next to this document (optional).',
     }),
     defineField({
       name: 'sourceType',
@@ -54,34 +61,40 @@ export const hubDocument = defineType({
       name: 'link',
       title: 'Link',
       type: 'url',
+      description: 'Paste the full link, e.g. a Google Drive share link.',
       hidden: ({ parent }) => parent?.sourceType !== 'link',
-      validation: (R) => R.uri({ scheme: ['http', 'https'] }),
+      validation: (R) =>
+        R.uri({ scheme: ['http', 'https'] }).error(
+          'That doesn’t look like a link. Paste the full address, starting with https://',
+        ),
     }),
     defineField({
       name: 'file',
       title: 'File',
       type: 'file',
+      description: 'Upload the file itself (PDF works best).',
       hidden: ({ parent }) => parent?.sourceType !== 'file',
     }),
+    // Legacy manual sort — superseded by drag-to-reorder (orderRank), hidden.
+    // The Documents page groups by category, so dragging reorders WITHIN a
+    // category; the category shows in the list so that's clear.
     defineField({
       name: 'order',
       title: 'Sort order',
-      description: 'Lower numbers show first within a category.',
       type: 'number',
       initialValue: 0,
+      hidden: true,
     }),
+    orderRankField({ type: 'hubDocument' }),
   ],
-  orderings: [
-    {
-      title: 'Category, then order',
-      name: 'grouped',
-      by: [
-        { field: 'category', direction: 'asc' },
-        { field: 'order', direction: 'asc' },
-      ],
-    },
-  ],
+  orderings: [orderRankOrdering],
   preview: {
-    select: { title: 'title', subtitle: 'category' },
+    select: { title: 'title', category: 'category' },
+    prepare({ title, category }) {
+      return {
+        title,
+        subtitle: HUB_DOC_CATEGORIES.find((c) => c.value === category)?.title ?? category,
+      };
+    },
   },
 });

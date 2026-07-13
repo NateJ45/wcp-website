@@ -18,7 +18,7 @@ export const testimonial = defineType({
       title: 'Quote',
       type: 'text',
       rows: 4,
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Paste or type the quote itself.'),
     }),
     defineField({
       name: 'author',

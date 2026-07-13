@@ -1,6 +1,6 @@
 import { Badge, Box, Card, Flex, Heading, Stack, Text } from '@sanity/ui';
 import type { ComponentType } from 'react';
-import { guides, type DiyLevel, type GuideBlock } from '../guides/content';
+import { guides, SITE, type DiyLevel, type GuideBlock } from '../guides/content';
 
 // =============================================================================
 // GuideView — read-only Help pane rendered inside the Studio structure
@@ -36,7 +36,7 @@ function DiyBadge({ level }: { level?: DiyLevel }) {
   if (level === 'ask')
     return (
       <Badge tone="caution" fontSize={1} padding={2}>
-        Check with {'Nathan'} first
+        Check with {SITE.contactName} first
       </Badge>
     );
   if (level === 'mixed')
@@ -84,18 +84,37 @@ function BlockView({ block }: { block: GuideBlock }) {
       );
     case 'path':
       return (
-        <Card tone="primary" padding={3} radius={2} border>
-          <Stack space={2}>
-            <Text size={1} weight="semibold">
-              Where in the Studio
-            </Text>
-            <Text size={2}>{block.items.join('   →   ')}</Text>
-          </Stack>
+        <Card tone="primary" padding={4} radius={3} border>
+          <Flex align="flex-start" gap={3}>
+            <span
+              aria-hidden
+              style={{
+                background: '#e3eef7',
+                color: '#166FA8',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 30,
+                height: 30,
+                borderRadius: 9,
+                fontSize: 15,
+                flexShrink: 0,
+              }}
+            >
+              🧭
+            </span>
+            <Stack space={2} style={{ paddingTop: 4 }}>
+              <Text size={1} weight="semibold">
+                Where in the Studio
+              </Text>
+              <Text size={2}>{block.items.join('   →   ')}</Text>
+            </Stack>
+          </Flex>
         </Card>
       );
     case 'callout':
       return (
-        <Card tone={block.tone ?? 'default'} padding={3} radius={2} border>
+        <Card tone={block.tone ?? 'default'} padding={4} radius={3} border>
           <Stack space={3}>
             {block.title && (
               <Text size={1} weight="semibold">
@@ -134,7 +153,25 @@ export function makeGuideView(slug: string): ComponentType {
       <Box padding={4}>
         <Box style={{ maxWidth: 680, margin: '0 auto' }}>
           <Flex align="center" gap={3} style={{ flexWrap: 'wrap' }}>
-            <Heading as="h1" size={4}>
+            {/* The hub-style icon chip: soft sky tint behind the guide's emoji. */}
+            <span
+              aria-hidden
+              style={{
+                background: '#e3eef7',
+                color: '#166FA8',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              {guide.icon}
+            </span>
+            <Heading as="h1" size={4} className="wcp-display">
               {guide.title}
             </Heading>
             <DiyBadge level={guide.diy} />

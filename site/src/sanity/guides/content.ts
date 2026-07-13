@@ -76,25 +76,26 @@ export const guides: Guide[] = [
         title: 'Give it a minute.',
         text: 'The website does not update the instant you publish. It rebuilds in the background, so wait a couple of minutes and then refresh the page you changed.',
       },
-      { kind: 'h', text: 'The left menu, top to bottom' },
+      { kind: 'h', text: 'The left menu, band by band' },
+      {
+        kind: 'p',
+        text: 'The left menu is grouped by how often you need things, with a small heading over each band.',
+      },
       {
         kind: 'bullets',
         items: [
-          '**Alert banner** — a snow-day / urgent banner across the top of every page. Turn on, write a message, publish.',
-          '**Site Settings** — the school’s phone, email, address, and the current school year. Set once, used everywhere.',
-          '**Menus (header & footer)** — the links along the top of the site and in the footer.',
-          '**Pages** — every public page, built from stacked sections you can add, reorder, and edit. This is where you build a brand-new page too.',
-          '**News** — your blog: announcements, updates, and stories, shown newest first.',
-          '**Events** — upcoming open houses, tours, and community events.',
-          '**Media** — every photo you have uploaded, in one searchable place.',
-          '**Classes** — one card per class, with its schedule, ages, and tuition.',
-          '**Staff** — your teachers. Their names and bios come from here.',
-          '**Tuition & Fees** — registration and participation fees, and how payments work.',
-          '**FAQs**, **Testimonials** — the FAQ page and parent quotes.',
-          '**Form submissions** — messages people send through contact forms.',
-          '**Newsletter subscribers** — people who signed up for the newsletter.',
-          '**Family Hub** — the private, families-only content (announcements, documents, and more).',
+          '**Everyday edits** — the usual jobs. **Alert banner** (a snow-day banner across every page), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too).',
+          '**School info** — the school facts: **Classes** (schedule, ages, tuition per class), **Staff** (teacher names and bios), **FAQs**, **Testimonials**, **School-Year Events**, and **Community & content** (programs, board, partners, photo albums).',
+          '**Family Hub** — the private, families-only content (announcements, documents, sign-ups, the directory).',
+          '**Site setup** — set-once things: **Site Settings** (phone, email, address, school year) and **Menus (header & footer)**.',
+          '**Inboxes** — what the site sends YOU: **Form submissions** and **Newsletter subscribers**.',
+          'And in the top bar: **Media** — every photo you have uploaded, in one searchable place.',
         ],
+      },
+      { kind: 'h', text: 'Two views of the same Studio' },
+      {
+        kind: 'p',
+        text: 'The Studio opens in **Everyday edits** — a shorter menu with everything a volunteer normally touches. Click the workspace name in the top-left corner to switch to **Everything**, which adds the rarely-needed extras (Menus, Community & content, the Link Checker). Both edit the same website; nothing is different except how much menu you see.',
       },
       {
         kind: 'seealso',
@@ -261,7 +262,14 @@ export const guides: Guide[] = [
         title: 'One place for every menu.',
         text: 'The top navigation bar, the footer columns, and the small legal links at the very bottom all come from **Menus (header & footer)**. Change a link once here and it updates everywhere that menu shows.',
       },
-      { kind: 'path', items: ['Menus (header & footer)', 'edit', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['switch to Everything (top-left)', 'Menus (header & footer)', 'edit', 'Publish'],
+      },
+      {
+        kind: 'p',
+        text: 'Menus live in the **Everything** workspace (they are easy to break, so they sit out of the everyday menu). Click the workspace name in the top-left corner and pick **Everything** first.',
+      },
       { kind: 'h', text: 'Add a link to the top menu' },
       {
         kind: 'steps',
@@ -550,7 +558,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Click **Classes**, then the **＋** (new) button at the top of the list.',
-          'Fill in the name, then click **Generate** next to the URL slug.',
+          'Fill in the name, then click **Generate** next to the web address (slug).',
           'Fill in the schedule, ages, and tuition. Pick the teacher from the Staff list.',
           '**Publish**. The new class appears on the site automatically.',
         ],
@@ -560,7 +568,7 @@ export const guides: Guide[] = [
         tone: 'caution',
         title: 'PayPal buttons',
         text:
-          'The **PayPal button ID** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
+          'The **PayPal button code** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
           SITE.contactName +
           ' before filling those in.',
       },
@@ -584,13 +592,13 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Registration, participation, and student fees' },
       {
         kind: 'p',
-        text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**.',
+        text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**, inside **Money & payments** — the one folder that gathers every dollar amount on the site (fees, class tuition, fundraising campaigns).',
       },
-      { kind: 'path', items: ['Tuition & Fees'] },
+      { kind: 'path', items: ['Money & payments', 'Tuition & Fees'] },
       { kind: 'h', text: 'The PayPal "Pay" buttons' },
       {
         kind: 'p',
-        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button ID"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. Paste only the button ID, the short code of letters and numbers, and not a full web link.',
+        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button code"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. Paste only the button code, the short mix of letters and numbers from PayPal, and not a full web link.',
       },
       {
         kind: 'callout',
@@ -670,7 +678,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Drag to reorder',
-        text: 'In the Testimonials list, grab the handle on the left of a quote and drag it up or down. The order you set is the order the site shows. The same drag-to-reorder works for Classes and School-Year Events.',
+        text: 'In the Testimonials list, grab the handle on the left of a quote and drag it up or down. The order you set is the order the site shows. The same drag-to-reorder works for Classes, School-Year Events, FAQs, and the Family Hub’s Documents & Forms.',
       },
     ],
   },
@@ -689,7 +697,7 @@ export const guides: Guide[] = [
           'Click **FAQs**.',
           'Open one to edit, or **＋** to add a new question.',
           'Write the question and answer, and choose a **Category** so it lands in the right group.',
-          'Use **Sort order** to move important ones higher (lower numbers show first).',
+          'To move important ones higher, grab the handle on the left of the list and **drag** — the FAQ page groups by category, so dragging changes the order within each category.',
           '**Publish**.',
         ],
       },
@@ -802,7 +810,7 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'p',
-        text: 'Under **Community & content** in the left menu you will find a few small collections. Each one powers a matching **section** you can add to any page. You keep the list up to date here, and the page updates itself, so you never type the same thing in two places.',
+        text: 'Under **Community & content** you will find a few small collections. Each one powers a matching **section** you can add to any page. You keep the list up to date here, and the page updates itself, so you never type the same thing in two places. This group lives in the **Everything** workspace — click the workspace name in the top-left corner and pick **Everything** to see it.',
       },
       {
         kind: 'bullets',
@@ -810,7 +818,7 @@ export const guides: Guide[] = [
           '**Programs** — enrichment, summer, or special offerings. Shows as a row of cards (the *Programs* section).',
           '**Board / leadership** — your officers, separate from teaching Staff. Shows as a people grid (the *Board* section).',
           '**Partners / sponsors** and **Accreditations** — logos. Show as a tidy logo row (the *Logo strip* section).',
-          '**Fundraising campaigns** — one active campaign with a goal. Shows as a progress bar (the *Fundraising progress* section).',
+          '**Fundraising campaigns** — one active campaign with a goal, shown as a progress bar (the *Fundraising progress* section). These moved to **Money & payments** in the everyday menu, since they are money.',
           '**Job postings** — open positions. Show as a list (the *Open positions* section).',
           '**Downloads & resources** — a handbook, calendar, or form, as an uploaded file or a link (the *Downloads* section).',
           '**Photo albums** — a reusable set of photos you can show on any page (the *Photo album* section).',
@@ -860,6 +868,8 @@ export const guides: Guide[] = [
           '**Alt text** — a short description of a photo, for screen readers.',
           '**Singleton** — a one-of-a-kind page, like **Site Settings**. There is only ever one, on purpose.',
           '**Field** — one box you type into, like "Phone number".',
+          '**Workspace** — a view of the Studio. **Everyday edits** (where you start) shows the usual menu; **Everything** adds the rare extras. Switch with the name in the top-left corner. Both edit the same website.',
+          '**PayPal button code** — the short mix of letters and numbers that connects a Pay button to the school’s PayPal. Not a price and not a web link.',
         ],
       },
       {
@@ -929,7 +939,7 @@ export const guides: Guide[] = [
           'Adding or editing a family in the directory.',
           'Posting a Family Hub announcement.',
           'Updating the phone, email, address, or Facebook and Instagram links in Site Settings.',
-          'Updating a PayPal button ID the treasurer gave you (then click the Pay button to check it opens the right amount).',
+          'Updating a PayPal button code the treasurer gave you (then click the Pay button to check it opens the right amount).',
         ],
       },
       { kind: 'h', text: 'Check with the board / ' + SITE.contactName + ' first' },

@@ -33,8 +33,10 @@ export const signupSheet = defineType({
     }),
     defineField({
       name: 'kind',
-      title: 'Kind',
+      title: 'What type of sheet is this?',
       type: 'string',
+      description:
+        'A sign-up sheet has specific jobs or spots families claim; an RSVP just counts who’s coming.',
       options: {
         list: [
           { title: 'Sign-up sheet (named slots to fill)', value: 'signup' },

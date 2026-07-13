@@ -80,11 +80,26 @@ export const hubPage = defineType({
     }),
   ],
   preview: {
-    select: { title: 'title', subtitle: 'hubKey' },
-    prepare({ title, subtitle }) {
+    select: { title: 'title', hubKey: 'hubKey' },
+    prepare({ title, hubKey }) {
+      const labels: Record<string, string> = {
+        home: 'Hub home',
+        calendar: 'Calendar',
+        'coop-jobs': 'Co-op Jobs',
+        documents: 'Documents',
+        tuition: 'Tuition',
+        updates: 'Updates',
+        fundraising: 'Fundraising',
+        health: 'Health',
+        directory: 'Directory',
+        twos: 'Twos classroom',
+        threes: 'Threes classroom',
+        'pre-k-am': 'Pre-K AM classroom',
+        'pre-k-pm': 'Pre-K PM classroom',
+      };
       return {
         title: title || '(untitled hub page)',
-        subtitle: subtitle ? `Hub: ${subtitle}` : '',
+        subtitle: hubKey ? (labels[hubKey] ?? hubKey) : '',
       };
     },
   },

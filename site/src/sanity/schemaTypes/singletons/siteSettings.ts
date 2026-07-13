@@ -15,6 +15,9 @@ export const siteSettings = defineType({
     { name: 'contact', title: 'Contact' },
     { name: 'location', title: 'Location' },
     { name: 'year', title: 'School year' },
+    // Set-once plumbing (Google codes and feeds) lives apart from the
+    // fields volunteers touch every year, so "School year" stays approachable.
+    { name: 'services', title: 'Connected services' },
     { name: 'social', title: 'Social & store' },
     { name: 'legal', title: 'Licensing' },
   ],
@@ -25,7 +28,8 @@ export const siteSettings = defineType({
       title: 'School name',
       type: 'string',
       group: 'identity',
-      validation: (R) => R.required(),
+      validation: (R) =>
+        R.required().error('The school name appears everywhere — it can’t be blank.'),
     }),
     defineField({
       name: 'shortName',
@@ -97,12 +101,14 @@ export const siteSettings = defineType({
       title: 'Administrator email',
       type: 'string',
       group: 'contact',
+      description: 'Shown where families are pointed to the administrator.',
     }),
     defineField({
       name: 'emailTreasurer',
       title: 'Treasurer email',
       type: 'string',
       group: 'contact',
+      description: 'Shown on tuition and payment pages for money questions.',
     }),
 
     // Location
@@ -145,11 +151,11 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: 'googleCalendarId',
-      title: 'Google Calendar ID (Family Hub calendar)',
+      title: 'Family Hub calendar — Google Calendar code',
       type: 'string',
-      group: 'year',
+      group: 'services',
       description:
-        'The public Google Calendar ID (e.g. abc123@group.calendar.google.com). Make the school calendar public in Google Calendar settings, paste its ID here, and it appears on the Family Hub Calendar page. Leave blank to hide the calendar.',
+        'The code that connects the school’s Google Calendar (it looks like abc123@group.calendar.google.com, from Google Calendar’s settings). Make the calendar public in Google Calendar first, then paste the code here and it appears on the Family Hub Calendar page. Leave blank to hide the calendar. Set once — check with Nathan before changing.',
     }),
     defineField({
       name: 'yearStart',
@@ -185,27 +191,27 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: 'budgetSheetId',
-      title: 'Budget Google Sheet ID',
+      title: 'Budget spreadsheet code (Google Sheets)',
       type: 'string',
-      group: 'year',
+      group: 'services',
       description:
-        'The ID from the treasurer’s Budget Google Sheet link (the long code between /d/ and /edit). Powers the Budget Snapshot and Fundraising numbers on the Family Hub. The sheet needs "Anyone with the link can view".',
+        'The long code from the treasurer’s Budget Google Sheet link (the part between /d/ and /edit in the link). Powers the Budget Snapshot and Fundraising numbers on the Family Hub. The sheet needs "Anyone with the link can view". Set once — check with Nathan before changing.',
     }),
     defineField({
       name: 'availabilitySheetId',
-      title: 'Class availability Google Sheet ID',
+      title: 'Class availability spreadsheet code (Google Sheets)',
       type: 'string',
-      group: 'year',
+      group: 'services',
       description:
-        'Powers the "Spots open / Waitlist" badges on the public class cards. Make a Sheet with a tab named "Availability", two columns: class (twos, threes, pre-k-am, pre-k-pm) and status (open, few, waitlist, full). Share it "Anyone with the link can view" and paste the ID from its link (the long code between /d/ and /edit). Leave blank to hide the badges.',
+        'Powers the "Spots open / Waitlist" badges on the public class cards. Make a Sheet with a tab named "Availability", two columns: class (twos, threes, pre-k-am, pre-k-pm) and status (open, few, waitlist, full). Share it "Anyone with the link can view" and paste the long code from its link (between /d/ and /edit). Leave blank to hide the badges.',
     }),
     defineField({
       name: 'calendarFeedUrl',
-      title: 'Calendar feed link (Apps Script)',
+      title: 'Calendar feed link',
       type: 'url',
-      group: 'year',
+      group: 'services',
       description:
-        'The Google Apps Script web-app link that serves the school calendar as a feed. Powers the Upcoming Events list on the Family Hub. Ask before changing this one.',
+        'The special Google link that feeds the Upcoming Events list on the Family Hub. Set up once by Nathan — check with him before changing it.',
     }),
     defineField({
       name: 'pastFundraisingTotals',
@@ -244,11 +250,23 @@ export const siteSettings = defineType({
     }),
 
     // Social & store
-    defineField({ name: 'facebook', title: 'Facebook URL', type: 'url', group: 'social' }),
-    defineField({ name: 'instagram', title: 'Instagram URL', type: 'url', group: 'social' }),
+    defineField({
+      name: 'facebook',
+      title: 'Facebook link',
+      type: 'url',
+      group: 'social',
+      description: 'The full link to the school’s Facebook page.',
+    }),
+    defineField({
+      name: 'instagram',
+      title: 'Instagram link',
+      type: 'url',
+      group: 'social',
+      description: 'The full link to the school’s Instagram profile.',
+    }),
     defineField({
       name: 'storeUrl',
-      title: 'Merch store URL',
+      title: 'Merch store link',
       type: 'url',
       group: 'social',
       description: 'The online store link (opens in a new tab).',

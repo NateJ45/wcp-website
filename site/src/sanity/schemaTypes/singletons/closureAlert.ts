@@ -26,7 +26,18 @@ export const closureAlert = defineType({
       type: 'text',
       rows: 2,
       description: 'e.g. "Closed today, Jan 8, due to snow. Class resumes tomorrow."',
-      validation: (R) => R.max(300),
+      validation: (R) => [
+        R.max(300).error(
+          'Keep the banner under 300 characters — short enough to read at a glance.',
+        ),
+        R.custom((message, context) => {
+          const doc = context.document as { active?: boolean } | undefined;
+          if (doc?.active && !message?.trim()) {
+            return 'The alert is switched ON but has no message. Write the message here, or turn the alert off.';
+          }
+          return true;
+        }),
+      ],
     }),
     defineField({
       name: 'tone',

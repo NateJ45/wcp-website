@@ -27,8 +27,19 @@ export const legalPage = defineType({
       },
       validation: (R) => R.required(),
     }),
-    defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
-    defineField({ name: 'lead', title: 'Intro line', type: 'text', rows: 2 }),
+    defineField({
+      name: 'eyebrow',
+      title: 'Eyebrow (small label above the title)',
+      type: 'string',
+      description: 'e.g. "Our policies". Optional.',
+    }),
+    defineField({
+      name: 'lead',
+      title: 'Intro line',
+      type: 'text',
+      rows: 2,
+      description: 'The sentence under the title. Optional.',
+    }),
     defineField({ name: 'body', title: 'Policy body', type: 'blockContent' }),
     defineField({
       name: 'lastUpdated',
@@ -37,5 +48,15 @@ export const legalPage = defineType({
       description: 'Shown at the top of the policy.',
     }),
   ],
-  preview: { select: { title: 'title', subtitle: 'slug' } },
+  preview: {
+    select: { title: 'title', slug: 'slug' },
+    prepare({ title, slug }) {
+      const labels: Record<string, string> = {
+        accessibility: 'Accessibility page',
+        privacy: 'Privacy page',
+        terms: 'Terms page',
+      };
+      return { title, subtitle: labels[slug] ?? slug };
+    },
+  },
 });

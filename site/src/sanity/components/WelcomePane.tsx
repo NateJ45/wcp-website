@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useClient } from 'sanity';
+import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { useClient, useWorkspace } from 'sanity';
+import { IntentLink } from 'sanity/router';
 import { Box, Card, Stack, Text, Heading, Flex, Spinner } from '@sanity/ui';
 
 // =============================================================================
-// WelcomePane — a friendly Studio landing screen
+// WelcomePane — the Studio landing screen, in the Family Hub's card language
 // =============================================================================
-// A warm "home" for volunteers instead of dropping straight into a document
-// list: a hello, a pointer to the Help & Guide, and a live list of what was
-// edited most recently (so you can jump back to whatever you were doing). It's
-// the first item in the Studio nav. No plan gating — just a component.
+// The first thing a volunteer sees: a warm hello, a grid of TASK cards that
+// deep-link straight to the thing they came to do ("change tuition", "post an
+// alert", "add photos"), and a live "recently edited" list to resume work.
+// Visual language mirrors the hub's HubCard: rounded cards, soft icon chips
+// (sky/amber/green/orange tints behind an emoji), hover lift (reduced-motion
+// safe). Colors are the brand "ink" shades from theme.ts. No plan gating.
 // =============================================================================
 
 interface RecentDoc {
@@ -17,8 +20,12 @@ interface RecentDoc {
   _updatedAt: string;
   title?: string;
   name?: string;
+  question?: string;
+  familyName?: string;
+  heading?: string;
 }
 
+// Friendly labels for every editable type (mirrors structure.ts naming).
 const TYPE_LABELS: Record<string, string> = {
   page: 'Page',
   post: 'News post',
@@ -32,12 +39,68 @@ const TYPE_LABELS: Record<string, string> = {
   navigation: 'Menus',
   feeSchedule: 'Tuition & Fees',
   schoolYearEvent: 'School-year event',
+  closureAlert: 'Alert banner',
+  hubPage: 'Family Hub page',
+  update: 'Hub update',
+  hubDocument: 'Document / Form',
+  teacherNote: "Teacher's welcome note",
+  presidentNote: "President's note",
+  directoryEntry: 'Family Directory',
+  signupSheet: 'Sign-up sheet',
+  signupEntry: 'Sign-up response',
+  coopRole: 'Co-op Role',
+  submission: 'Form submission',
+  subscriber: 'Newsletter subscriber',
+  program: 'Program',
+  boardMember: 'Board / leadership',
+  partner: 'Partner / sponsor',
+  credential: 'Accreditation',
+  campaign: 'Fundraising campaign',
+  jobPosting: 'Job posting',
+  resource: 'Download / resource',
+  photoAlbum: 'Photo album',
 };
 
+// Everything a human edits (machine-made inbox types are left out on purpose).
+const RECENT_TYPES = [
+  'page',
+  'post',
+  'event',
+  'legalPage',
+  'class',
+  'staff',
+  'faqItem',
+  'testimonial',
+  'siteSettings',
+  'navigation',
+  'feeSchedule',
+  'schoolYearEvent',
+  'closureAlert',
+  'hubPage',
+  'update',
+  'hubDocument',
+  'teacherNote',
+  'presidentNote',
+  'directoryEntry',
+  'signupSheet',
+  'coopRole',
+  'program',
+  'boardMember',
+  'partner',
+  'credential',
+  'campaign',
+  'jobPosting',
+  'resource',
+  'photoAlbum',
+];
+
 const RECENT_QUERY = `*[
-  _type in ["page","post","event","legalPage","class","staff","faqItem","testimonial","siteSettings","navigation","feeSchedule","schoolYearEvent"]
-  && !(_id in path("drafts.**"))
-] | order(_updatedAt desc)[0...6]{ _id, _type, _updatedAt, title, name }`;
+  _type in $types && !(_id in path("drafts.**"))
+] | order(_updatedAt desc)[0...6]{ _id, _type, _updatedAt, title, name, question, familyName, heading }`;
+
+function docLabel(doc: RecentDoc): string {
+  return doc.title || doc.name || doc.question || doc.familyName || doc.heading || 'Untitled';
+}
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -50,14 +113,84 @@ function timeAgo(iso: string): string {
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
+// The hub's icon-chip tints (soft tint behind a decorative emoji; label text
+// stays neutral — same AA convention as HubCard).
+const CHIPS = {
+  sky: { background: '#e3eef7', color: '#166FA8' },
+  amber: { background: '#fdf2d4', color: '#8a6100' },
+  green: { background: '#e2f2e6', color: '#0E7B2E' },
+  orange: { background: '#fdeadb', color: '#A85300' },
+} as const;
+
+function Chip({ tint, children }: { tint: keyof typeof CHIPS; children: ReactNode }) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        ...CHIPS[tint],
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        fontSize: 17,
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+// One task card: icon chip + label + hint, wrapping either an IntentLink
+// (document edit/create) or a plain href (tool / structure pane).
+function TaskCard(props: {
+  icon: string;
+  tint: keyof typeof CHIPS;
+  label: string;
+  hint: string;
+  intent?: ComponentProps<typeof IntentLink>['intent'];
+  params?: Record<string, string>;
+  href?: string;
+}) {
+  const { icon, tint, label, hint, intent, params, href } = props;
+  const inner = (
+    <Card className="wcp-task-card" padding={3} radius={3} border style={{ height: '100%' }}>
+      <Flex align="center" gap={3}>
+        <Chip tint={tint}>{icon}</Chip>
+        <Stack space={2}>
+          <Text size={1} weight="semibold">
+            {label}
+          </Text>
+          <Text size={1} muted>
+            {hint}
+          </Text>
+        </Stack>
+      </Flex>
+    </Card>
+  );
+  const linkStyle = { textDecoration: 'none', color: 'inherit', display: 'block' } as const;
+  return intent ? (
+    <IntentLink intent={intent} params={params} style={linkStyle}>
+      {inner}
+    </IntentLink>
+  ) : (
+    <a href={href} style={linkStyle}>
+      {inner}
+    </a>
+  );
+}
+
 export function WelcomePane() {
   const client = useClient({ apiVersion: '2025-01-01' });
+  const { basePath } = useWorkspace();
   const [recent, setRecent] = useState<RecentDoc[] | null>(null);
 
   useEffect(() => {
     let alive = true;
     client
-      .fetch<RecentDoc[]>(RECENT_QUERY)
+      .fetch<RecentDoc[]>(RECENT_QUERY, { types: RECENT_TYPES })
       .then((docs) => alive && setRecent(docs))
       .catch(() => alive && setRecent([]));
     return () => {
@@ -67,9 +200,18 @@ export function WelcomePane() {
 
   return (
     <Box padding={4}>
-      <Stack space={5} style={{ maxWidth: 640, margin: '0 auto' }}>
+      {/* Hover lift, gated for reduced motion — matches the site's wcp-lift. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .wcp-task-card { transition: transform 150ms ease, box-shadow 150ms ease; }
+          a:hover .wcp-task-card { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(1, 69, 126, 0.12); }
+        }
+      `}</style>
+      <Stack space={5} style={{ maxWidth: 680, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3}>👋 Welcome to the West Chester Preschool control room</Heading>
+          <Heading size={3} className="wcp-display">
+            👋 Welcome to the West Chester Preschool control room
+          </Heading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             This is where you edit the website. Nothing goes live until you click{' '}
             <strong>Publish</strong>, so click around and explore. New here? Open{' '}
@@ -77,19 +219,85 @@ export function WelcomePane() {
           </Text>
         </Stack>
 
-        <Card padding={4} radius={2} tone="primary" border>
-          <Stack space={2}>
-            <Text size={1} weight="semibold">
-              A few things you can do
-            </Text>
-            <Text size={1} muted style={{ lineHeight: 1.6 }}>
-              • <strong>Pages</strong> — edit any page or build a new one from sections
-              <br />• <strong>News</strong> — write a post (it shows on the homepage automatically)
-              <br />• <strong>Events</strong> — add an open house or tour
-              <br />• <strong>Site Settings</strong> — phone, email, address, school year
-            </Text>
-          </Stack>
-        </Card>
+        <Stack space={3}>
+          <Text
+            size={1}
+            weight="semibold"
+            muted
+            style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}
+          >
+            What do you want to do?
+          </Text>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: 12,
+            }}
+          >
+            <TaskCard
+              icon="💳"
+              tint="green"
+              label="Change tuition or fees"
+              hint="Prices, deposits, payment info"
+              intent="edit"
+              params={{ id: 'feeSchedule', type: 'feeSchedule' }}
+            />
+            <TaskCard
+              icon="🚨"
+              tint="orange"
+              label="Post a closure or alert"
+              hint="Snow day? Banner on every page"
+              intent="edit"
+              params={{ id: 'closureAlert', type: 'closureAlert' }}
+            />
+            <TaskCard
+              icon="📸"
+              tint="amber"
+              label="Add or manage photos"
+              hint="The Media library"
+              href={`${basePath}/media`}
+            />
+            <TaskCard
+              icon="📰"
+              tint="sky"
+              label="Write a news post"
+              hint="Shows on the homepage feed"
+              intent="create"
+              params={{ type: 'post' }}
+            />
+            <TaskCard
+              icon="📅"
+              tint="sky"
+              label="Add an event"
+              hint="Open house, tour, fundraiser"
+              intent="create"
+              params={{ type: 'event' }}
+            />
+            <TaskCard
+              icon="📣"
+              tint="amber"
+              label="Post a Family Hub update"
+              hint="Announcements for families"
+              intent="create"
+              params={{ type: 'update' }}
+            />
+            <TaskCard
+              icon="🧱"
+              tint="green"
+              label="Edit a page"
+              hint="The section-by-section builder"
+              href={`${basePath}/structure/pages`}
+            />
+            <TaskCard
+              icon="❔"
+              tint="sky"
+              label="Open the guide"
+              hint="Step-by-step walkthroughs"
+              href={`${basePath}/structure/help-and-guide`}
+            />
+          </div>
+        </Stack>
 
         <Stack space={3}>
           <Text
@@ -114,21 +322,28 @@ export function WelcomePane() {
           ) : (
             <Stack space={2}>
               {recent.map((doc) => (
-                <Card key={doc._id} padding={3} radius={2} border>
-                  <Flex align="center" justify="space-between" gap={3}>
-                    <Stack space={1}>
-                      <Text size={1} weight="medium">
-                        {doc.title || doc.name || 'Untitled'}
-                      </Text>
+                <IntentLink
+                  key={doc._id}
+                  intent="edit"
+                  params={{ id: doc._id, type: doc._type }}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Card className="wcp-task-card" padding={3} radius={3} border>
+                    <Flex align="center" justify="space-between" gap={3}>
+                      <Stack space={1}>
+                        <Text size={1} weight="medium">
+                          {docLabel(doc)}
+                        </Text>
+                        <Text size={0} muted>
+                          {TYPE_LABELS[doc._type] ?? doc._type}
+                        </Text>
+                      </Stack>
                       <Text size={0} muted>
-                        {TYPE_LABELS[doc._type] ?? doc._type}
+                        {timeAgo(doc._updatedAt)}
                       </Text>
-                    </Stack>
-                    <Text size={0} muted>
-                      {timeAgo(doc._updatedAt)}
-                    </Text>
-                  </Flex>
-                </Card>
+                    </Flex>
+                  </Card>
+                </IntentLink>
               ))}
             </Stack>
           )}

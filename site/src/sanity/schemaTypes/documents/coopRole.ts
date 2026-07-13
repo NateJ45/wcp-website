@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
+import { iconField } from '../objects/_shared';
 
 // A co-op job/role (shown on the Family Hub co-op jobs page, grouped by tier).
 export const coopRole = defineType({
@@ -12,7 +13,7 @@ export const coopRole = defineType({
       name: 'name',
       title: 'Role',
       type: 'string',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Name the role, e.g. "Treasurer".'),
     }),
     defineField({
       name: 'tier',
@@ -27,9 +28,11 @@ export const coopRole = defineType({
         ],
         layout: 'dropdown',
       },
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Pick which group this role belongs to.'),
     }),
-    defineField({ name: 'icon', title: 'Icon', type: 'string' }),
+    iconField('icon', {
+      description: 'The little picture shown next to this role (optional).',
+    }),
     defineField({
       name: 'team',
       title: 'Team size',
@@ -62,5 +65,16 @@ export const coopRole = defineType({
     orderRankField({ type: 'coopRole' }),
   ],
   orderings: [orderRankOrdering],
-  preview: { select: { title: 'name', subtitle: 'tier' } },
+  preview: {
+    select: { title: 'name', tier: 'tier' },
+    prepare({ title, tier }) {
+      const labels: Record<string, string> = {
+        board: 'Executive Board',
+        chairs: 'Cabinet Chairs',
+        reps: 'Class Representatives',
+        committee: 'Committee Members',
+      };
+      return { title, subtitle: labels[tier] ?? tier };
+    },
+  },
 });

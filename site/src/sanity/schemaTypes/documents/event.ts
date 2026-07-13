@@ -25,13 +25,14 @@ export const event = defineType({
       name: 'title',
       title: 'Title',
       type: 'string',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Give the event a name, e.g. "Fall Open House".'),
     }),
     defineField({
       name: 'startDate',
       title: 'Starts',
       type: 'datetime',
-      validation: (R) => R.required(),
+      initialValue: () => new Date().toISOString(),
+      validation: (R) => R.required().error('Pick the date (and time) the event starts.'),
     }),
     defineField({
       name: 'endDate',
@@ -75,7 +76,11 @@ export const event = defineType({
       name: 'ctaUrl',
       title: 'Button link (optional)',
       type: 'url',
-      validation: (R) => R.uri({ scheme: ['http', 'https', 'mailto', 'tel'], allowRelative: true }),
+      description: 'A page path like /contact, or a full https:// link.',
+      validation: (R) =>
+        R.uri({ scheme: ['http', 'https', 'mailto', 'tel'], allowRelative: true }).error(
+          'That doesn’t look like a link. Try a page path like /contact or a full https:// address.',
+        ),
     }),
   ],
   orderings: [
@@ -87,7 +92,8 @@ export const event = defineType({
       const when = date
         ? new Date(date).toLocaleDateString('en-US', { timeZone: 'UTC' })
         : 'No date';
-      return { title, subtitle: `${when}${category ? ` · ${category}` : ''}` };
+      const label = EVENT_CATEGORIES.find((c) => c.value === category)?.title ?? category;
+      return { title, subtitle: `${when}${label ? ` · ${label}` : ''}` };
     },
   },
 });

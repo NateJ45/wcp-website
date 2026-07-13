@@ -25,7 +25,7 @@ export const post = defineType({
   type: 'document',
   groups: [
     { name: 'content', title: 'Content', default: true },
-    { name: 'seo', title: 'SEO & sharing' },
+    { name: 'seo', title: 'Search & sharing' },
   ],
   fields: [
     defineField({
@@ -33,18 +33,21 @@ export const post = defineType({
       title: 'Title',
       type: 'string',
       group: 'content',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Give the post a title before publishing.'),
     }),
     defineField({
       name: 'slug',
-      title: 'URL slug',
+      title: 'Web address (slug)',
       type: 'slug',
       group: 'content',
       options: { source: 'title', maxLength: 96 },
+      description: 'The web address piece after /news/. Click Generate.',
       validation: (R) =>
-        R.required().custom((value) =>
-          value?.current === 'page' ? '"page" is reserved — pick another slug.' : true,
-        ),
+        R.required()
+          .error('Click Generate to give this post a web address.')
+          .custom((value) =>
+            value?.current === 'page' ? '"page" is reserved — pick another slug.' : true,
+          ),
     }),
     defineField({
       name: 'publishedAt',
@@ -101,18 +104,21 @@ export const post = defineType({
     }),
     defineField({
       name: 'seoTitle',
-      title: 'SEO title (optional)',
+      title: 'Browser tab / search title (optional)',
       type: 'string',
       group: 'seo',
       description: 'Overrides the browser-tab / search title. Defaults to the post title.',
+      validation: (R) => R.max(65).warning('Titles over ~65 characters get cut off in Google.'),
     }),
     defineField({
       name: 'seoDescription',
-      title: 'SEO description (optional)',
+      title: 'Search description (optional)',
       type: 'text',
       rows: 2,
       group: 'seo',
       description: 'Overrides the search / share description. Defaults to the summary.',
+      validation: (R) =>
+        R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
     }),
     defineField({
       name: 'ogImage',
@@ -130,6 +136,13 @@ export const post = defineType({
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'category', media: 'coverImage' },
+    select: { title: 'title', category: 'category', media: 'coverImage' },
+    prepare({ title, category, media }) {
+      return {
+        title,
+        subtitle: POST_CATEGORIES.find((c) => c.value === category)?.title ?? category,
+        media,
+      };
+    },
   },
 });

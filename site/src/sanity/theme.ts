@@ -6,8 +6,9 @@ import { buildLegacyTheme } from 'sanity';
 // buildLegacyTheme derives a full light/dark palette from a handful of CSS
 // custom properties that mirror the site's brand tokens (see globals.css):
 // navy as the brand/nav color, orange/amber warmth, and the accessible "ink"
-// shades for anything that reads as text or state. Colors only here; the
-// friendly body font is injected by StudioLayout.
+// shades for anything that reads as text or state. --font-family-base points
+// the whole Studio at Quicksand (the site's body font); the font FILES are
+// loaded by components/StudioLayout.tsx (studio.components.layout).
 //
 // The props object is a plain `const` first (not inlined) so TypeScript skips
 // excess-property checks on the legacy `--*--inverted` keys — a known gotcha.
@@ -19,6 +20,9 @@ const skyInk = '#166FA8'; // AA-safe sky, used for focus
 const greenInk = '#0E7B2E'; // AA-safe green for success
 
 const props = {
+  // The site's friendly body font, Studio-wide (headings, labels, text).
+  '--font-family-base': "'Quicksand Variable', system-ui, sans-serif",
+
   '--black': '#0d2740', // deep navy-ink instead of pure black — warmer, on-brand
   '--white': '#ffffff',
 

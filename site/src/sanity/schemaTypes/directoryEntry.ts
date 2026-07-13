@@ -91,14 +91,14 @@ export const directoryEntry = defineType({
       title: 'Home address (for the map)',
       type: 'string',
       description:
-        'Street address, e.g. "123 Main St, West Chester, OH". Shown only on the gated directory map. After adding or changing it, run the geocode step so the pin lands in the right spot.',
+        'Street address, e.g. "123 Main St, West Chester, OH". Shown only on the gated directory map. After adding or changing it, ask Nathan to refresh the map pins so this one lands in the right spot.',
     }),
     defineField({
       name: 'location',
       title: 'Map pin (auto-filled from the address)',
       type: 'geopoint',
       description:
-        'The geocode step fills this from the address. You can also fine-tune it by hand if a pin is off.',
+        'Filled in automatically from the address when the map pins are refreshed. You can also fine-tune it by hand if a pin is off.',
     }),
     defineField({ name: 'notes', title: 'Notes', type: 'text', rows: 2 }),
   ],

@@ -1,4 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
+import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Fee Schedule (SINGLETON) — enrollment fees + payment rules
@@ -35,15 +36,18 @@ export const feeSchedule = defineType({
     }),
     defineField({
       name: 'registrationPayId',
-      title: 'PayPal button ID — registration',
+      title: 'PayPal button code — registration',
       type: 'string',
       group: 'enrollment',
+      description:
+        'The code from the PayPal "registration fee" button (a short mix of letters and numbers, copied from PayPal — not a price). Changing it changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'participationFee',
       title: 'Participation deposit',
       type: 'string',
       group: 'enrollment',
+      description: 'e.g. "$150".',
     }),
     defineField({
       name: 'participationNote',
@@ -56,9 +60,11 @@ export const feeSchedule = defineType({
     }),
     defineField({
       name: 'participationPayId',
-      title: 'PayPal button ID — participation',
+      title: 'PayPal button code — participation',
       type: 'string',
       group: 'enrollment',
+      description:
+        'The code from the PayPal "participation deposit" button. Changing it changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'annualAdjustmentNote',
@@ -80,9 +86,20 @@ export const feeSchedule = defineType({
         defineArrayMember({
           type: 'object',
           fields: [
-            { name: 'label', title: 'Applies to', type: 'string' },
-            { name: 'amount', title: 'Amount', type: 'string' },
-            { name: 'payId', title: 'PayPal button ID', type: 'string' },
+            {
+              name: 'label',
+              title: 'Applies to',
+              type: 'string',
+              description: 'Which classes this fee covers, e.g. "Twos & Threes".',
+            },
+            { name: 'amount', title: 'Amount', type: 'string', description: 'e.g. "$45".' },
+            {
+              name: 'payId',
+              title: 'PayPal button code',
+              type: 'string',
+              description:
+                'The code from the matching PayPal button (letters and numbers, copied from PayPal). Help & Guide → "Change tuition or fees".',
+            },
           ],
           preview: { select: { title: 'label', subtitle: 'amount' } },
         }),
@@ -101,8 +118,15 @@ export const feeSchedule = defineType({
         defineArrayMember({
           type: 'object',
           fields: [
-            { name: 'icon', title: 'Icon', type: 'string' },
-            { name: 'question', title: 'Question / label', type: 'string' },
+            iconField('icon', {
+              description: 'A little picture shown next to this answer (optional).',
+            }),
+            {
+              name: 'question',
+              title: 'Question / label',
+              type: 'string',
+              description: 'e.g. "When is tuition due?"',
+            },
             { name: 'answer', title: 'Answer', type: 'text', rows: 3 },
           ],
           preview: { select: { title: 'question', subtitle: 'answer' } },

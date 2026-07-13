@@ -22,7 +22,7 @@ export const staff = defineType({
       type: 'string',
       group: 'identity',
       description: 'e.g. "Erin Schmerr" (no title — set the title below).',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Every staff member needs a name.'),
     }),
     defineField({
       name: 'honorific',
@@ -45,7 +45,13 @@ export const staff = defineType({
       group: 'identity',
       description: 'Free text, e.g. "10+ years". Optional.',
     }),
-    defineField({ name: 'email', title: 'Email', type: 'string', group: 'identity' }),
+    defineField({
+      name: 'email',
+      title: 'Email',
+      type: 'string',
+      group: 'identity',
+      description: 'Shown publicly on their profile. Leave blank to hide it.',
+    }),
     defineField({
       name: 'photo',
       title: 'Photo',
@@ -68,15 +74,18 @@ export const staff = defineType({
       group: 'bio',
       description: 'Their full introduction. Appears on the About and class pages.',
     }),
+    // Legacy manual sort — staff never renders as an ordered list on the site
+    // (pages pick people by hand), so the number did nothing. Hidden, not
+    // removed, so old documents keep validating.
     defineField({
       name: 'order',
       title: 'Sort order',
       type: 'number',
       initialValue: 0,
-      description: 'Lower numbers show first.',
+      hidden: true,
     }),
   ],
-  orderings: [{ title: 'Sort order', name: 'order', by: [{ field: 'order', direction: 'asc' }] }],
+  orderings: [{ title: 'Name', name: 'name', by: [{ field: 'name', direction: 'asc' }] }],
   preview: {
     select: { name: 'name', honorific: 'honorific', role: 'role', media: 'photo' },
     prepare({ name, honorific, role, media }) {

@@ -6,12 +6,23 @@ export const update = defineType({
   title: 'Update / Announcement',
   type: 'document',
   icon: () => '📣',
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'audience', title: 'Audience & timing' },
+  ],
   fields: [
-    defineField({ name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      group: 'content',
+      validation: (R) => R.required().error('Give the update a title before publishing.'),
+    }),
     defineField({
       name: 'slug',
-      title: 'Link (slug)',
+      title: 'Web address (slug)',
       type: 'slug',
+      group: 'content',
       options: { source: 'title', maxLength: 96 },
       description: 'Gives this post its own page. Click Generate.',
     }),
@@ -20,6 +31,7 @@ export const update = defineType({
       title: 'Excerpt',
       type: 'text',
       rows: 2,
+      group: 'content',
       description: 'Short summary shown in the Updates list (optional).',
     }),
     defineField({
@@ -27,6 +39,7 @@ export const update = defineType({
       title: 'Image (optional)',
       type: 'image',
       options: { hotspot: true },
+      group: 'content',
       fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
       description: 'A flyer or photo shown with the post (e.g. a newsletter graphic).',
     }),
@@ -34,20 +47,23 @@ export const update = defineType({
       name: 'publishedAt',
       title: 'Published',
       type: 'datetime',
+      group: 'audience',
       initialValue: () => new Date().toISOString(),
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Pick a publish date (it starts as right now).'),
     }),
     defineField({
       name: 'pinned',
       title: 'Pin to hub home',
       description: 'Pinned updates surface at the top of the Family Hub home.',
       type: 'boolean',
+      group: 'audience',
       initialValue: false,
     }),
     defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
+      group: 'audience',
       options: {
         list: [
           { title: 'Announcement', value: 'announcement' },
@@ -63,6 +79,7 @@ export const update = defineType({
       name: 'audience',
       title: 'Who is this for?',
       type: 'string',
+      group: 'audience',
       options: {
         list: [
           { title: 'All families', value: 'all' },
@@ -75,7 +92,7 @@ export const update = defineType({
       },
       initialValue: 'all',
     }),
-    defineField({ name: 'body', title: 'Body', type: 'blockContent' }),
+    defineField({ name: 'body', title: 'Body', type: 'blockContent', group: 'content' }),
   ],
   orderings: [
     { title: 'Newest first', name: 'newest', by: [{ field: 'publishedAt', direction: 'desc' }] },

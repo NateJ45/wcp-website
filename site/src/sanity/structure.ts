@@ -8,9 +8,11 @@ import { WelcomePane } from './components/WelcomePane';
 // =============================================================================
 // Studio structure — the left-hand navigation a volunteer sees
 // =============================================================================
-// Deliberately organized so the important things are one click away and grouped
-// by what they are, not dumped in one long alphabetical list. Singletons (Site
-// Settings, Tuition & Fees) open straight into their single editor.
+// Organized by TASK frequency, not by document type: titled bands walk from
+// "Everyday edits" (alert, money, news, events) through "School info" and the
+// Family Hub down to "Site setup" and the read-only "Inboxes". Money lives in
+// ONE place ("Money & payments": fee schedule + class tuition + campaigns).
+// Singletons (Site Settings, Tuition & Fees) open straight into their editor.
 //
 // Icons are plain emoji (friendly, and matches the schema icons) — Astro 7's
 // bundler doesn't tree-shake the @sanity/icons barrel cleanly.
@@ -56,6 +58,86 @@ function singleton(S: StructureBuilder, schemaType: string, title: string, icon:
     .id(schemaType)
     .icon(icon)
     .child(S.document().schemaType(schemaType).documentId(schemaType).title(title));
+}
+
+// Shared groups — used by BOTH workspaces (Everyday edits + Everything), so
+// each is built once here and never drifts between the two.
+
+// Money & payments — every dollar amount and PayPal button code in one place:
+// the fee schedule, per-class tuition, and fundraising campaigns.
+function moneyGroup(S: StructureBuilder) {
+  return S.listItem()
+    .title('Money & payments')
+    .id('money')
+    .icon(emoji('💳'))
+    .child(
+      S.list()
+        .title('Money & payments')
+        .items([
+          singleton(S, 'feeSchedule', 'Tuition & Fees', emoji('💳')),
+          S.documentTypeListItem('class')
+            .id('class-tuition')
+            .title('Class tuition (open a class)')
+            .icon(emoji('🎒')),
+          S.documentTypeListItem('campaign').title('Fundraising campaigns').icon(emoji('💛')),
+        ]),
+    );
+}
+
+// Pages — the page builder (every public page as a stack of sections), plus
+// the simple long-form legal pages.
+function pagesGroup(S: StructureBuilder) {
+  return S.listItem()
+    .title('Pages')
+    .id('pages')
+    .icon(emoji('📄'))
+    .child(
+      S.list()
+        .title('Pages')
+        .items([
+          S.documentTypeListItem('page').title('Pages (section builder)').icon(emoji('🧱')),
+          S.documentTypeListItem('legalPage').title('Legal pages').icon(emoji('📜')),
+        ]),
+    );
+}
+
+// Family Hub — the gated, families-only content.
+function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolver>[1]) {
+  return S.listItem()
+    .title('Family Hub')
+    .id('family-hub')
+    .icon(emoji('🔒'))
+    .child(
+      S.list()
+        .title('Family Hub')
+        .items([
+          S.documentTypeListItem('hubPage').title('Hub pages (edit content)').icon(emoji('🧱')),
+          singleton(S, 'presidentNote', "President's note", emoji('💌')),
+          S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
+          orderableDocumentListDeskItem({
+            type: 'hubDocument',
+            S,
+            context,
+            title: 'Documents & Forms',
+            icon: emoji('📄'),
+          }),
+          S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
+          S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
+          S.documentTypeListItem('signupSheet')
+            .title('Sign-ups & RSVPs (create sheets)')
+            .icon(emoji('📝')),
+          S.documentTypeListItem('signupEntry')
+            .title('Sign-up responses (inbox)')
+            .icon(emoji('🙋')),
+          orderableDocumentListDeskItem({
+            type: 'coopRole',
+            S,
+            context,
+            title: 'Co-op Roles',
+            icon: emoji('🤝'),
+          }),
+        ]),
+    );
 }
 
 // Everything placed explicitly below — kept out of the fallback list.
@@ -110,33 +192,18 @@ export const structure: StructureResolver = (S, context) =>
 
       howThisWorks(S),
 
-      S.divider(),
+      // ── Everyday edits ── the things volunteers log in to change most:
+      // the alert banner, anything money, news, events, hub announcements.
+      S.divider().title('Everyday edits'),
 
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
-      singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
-      singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
-
-      // Pages — the page builder. "Pages" holds every public page as an
-      // ordered stack of sections a volunteer can add / reorder / edit (and
-      // "＋ Create" makes a brand-new page). Legal pages keep their own simple
-      // long-form editor.
-      S.listItem()
-        .title('Pages')
-        .id('pages')
-        .icon(emoji('📄'))
-        .child(
-          S.list()
-            .title('Pages')
-            .items([
-              S.documentTypeListItem('page').title('Pages (section builder)').icon(emoji('🧱')),
-              S.documentTypeListItem('legalPage').title('Legal pages').icon(emoji('📜')),
-            ]),
-        ),
-
+      moneyGroup(S),
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
+      pagesGroup(S),
 
-      S.divider(),
+      // ── School info ── the school facts that change a few times a year.
+      S.divider().title('School info'),
 
       // Drag-to-reorder lists (orderable-document-list): the order you set by
       // dragging is exactly the order the site shows.
@@ -148,8 +215,13 @@ export const structure: StructureResolver = (S, context) =>
         icon: emoji('🎒'),
       }),
       S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
-      singleton(S, 'feeSchedule', 'Tuition & Fees', emoji('💳')),
-      S.documentTypeListItem('faqItem').title('FAQs').icon(emoji('❓')),
+      orderableDocumentListDeskItem({
+        type: 'faqItem',
+        S,
+        context,
+        title: 'FAQs',
+        icon: emoji('❓'),
+      }),
       orderableDocumentListDeskItem({
         type: 'testimonial',
         S,
@@ -164,14 +236,11 @@ export const structure: StructureResolver = (S, context) =>
         title: 'School-Year Events',
         icon: emoji('📅'),
       }),
-      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
-      S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
-
-      S.divider(),
 
       // Community & content — the future-proofing collections that feed the
-      // Programs / Board / Logo strip / Campaign / Jobs / Downloads / Album
-      // page-builder sections. Drag to reorder the list-style ones.
+      // Programs / Board / Logo strip / Jobs / Downloads / Album page-builder
+      // sections. Drag to reorder the list-style ones. (Fundraising campaigns
+      // moved to Money & payments above.)
       S.listItem()
         .title('Community & content')
         .id('community')
@@ -222,46 +291,105 @@ export const structure: StructureResolver = (S, context) =>
                 title: 'Downloads & resources',
                 icon: emoji('📁'),
               }),
-              S.documentTypeListItem('campaign').title('Fundraising campaigns').icon(emoji('💛')),
               S.documentTypeListItem('photoAlbum').title('Photo albums').icon(emoji('📸')),
             ]),
         ),
 
-      S.divider(),
+      // ── Family Hub ── the gated, families-only content.
+      S.divider().title('Family Hub'),
 
-      // Family Hub — the gated, families-only content
-      S.listItem()
-        .title('Family Hub')
-        .id('family-hub')
-        .icon(emoji('🔒'))
-        .child(
-          S.list()
-            .title('Family Hub')
-            .items([
-              S.documentTypeListItem('hubPage').title('Hub pages (edit content)').icon(emoji('🧱')),
-              singleton(S, 'presidentNote', "President's note", emoji('💌')),
-              S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
-              S.documentTypeListItem('hubDocument').title('Documents & Forms').icon(emoji('📄')),
-              S.documentTypeListItem('teacherNote')
-                .title('Teacher welcome notes')
-                .icon(emoji('💌')),
-              S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
-              S.documentTypeListItem('signupSheet')
-                .title('Sign-ups & RSVPs (create sheets)')
-                .icon(emoji('📝')),
-              S.documentTypeListItem('signupEntry')
-                .title('Sign-up responses (inbox)')
-                .icon(emoji('🙋')),
-              orderableDocumentListDeskItem({
-                type: 'coopRole',
-                S,
-                context,
-                title: 'Co-op Roles',
-                icon: emoji('🤝'),
-              }),
-            ]),
-        ),
+      familyHubGroup(S, context),
+
+      // ── Site setup ── set-up-once surfaces, out of the everyday eye-line.
+      S.divider().title('Site setup'),
+
+      singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
+      singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
+
+      // ── Inboxes ── things the site sends TO the board (read, don't edit).
+      S.divider().title('Inboxes'),
+
+      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
+      S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 
       // Fallback: any type not explicitly placed above still shows up here.
       ...S.documentTypeListItems().filter((item) => !PLACED.has(item.getId() as string)),
+    ]);
+
+// =============================================================================
+// The "Everyday edits" workspace structure — every VOLUNTEER task (each Help &
+// Guide walkthrough works here), minus the rarely-touched / riskier surfaces:
+// Menus (header & footer) and Community & content. The workspace switcher
+// (top-left) opens "Everything" for those. NOTE: this trims the MENU only —
+// it is comfort, not security (free-plan editors are Administrators either
+// way, see docs/ROLES.md).
+// =============================================================================
+export const everydayStructure: StructureResolver = (S, context) =>
+  S.list()
+    .title('Everyday edits')
+    .items([
+      S.listItem()
+        .id('welcome')
+        .title('Welcome')
+        .icon(emoji('🏠'))
+        .child(
+          S.component(WelcomePane as never)
+            .id('welcome-pane')
+            .title('Welcome'),
+        ),
+
+      howThisWorks(S),
+
+      S.divider().title('Everyday edits'),
+
+      singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
+      moneyGroup(S),
+      S.documentTypeListItem('post').title('News').icon(emoji('📰')),
+      S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
+      pagesGroup(S),
+
+      S.divider().title('School info'),
+
+      orderableDocumentListDeskItem({
+        type: 'class',
+        S,
+        context,
+        title: 'Classes',
+        icon: emoji('🎒'),
+      }),
+      S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
+      orderableDocumentListDeskItem({
+        type: 'faqItem',
+        S,
+        context,
+        title: 'FAQs',
+        icon: emoji('❓'),
+      }),
+      orderableDocumentListDeskItem({
+        type: 'testimonial',
+        S,
+        context,
+        title: 'Testimonials',
+        icon: emoji('💬'),
+      }),
+      orderableDocumentListDeskItem({
+        type: 'schoolYearEvent',
+        S,
+        context,
+        title: 'School-Year Events',
+        icon: emoji('📅'),
+      }),
+
+      S.divider().title('Family Hub'),
+
+      familyHubGroup(S, context),
+
+      S.divider().title('Site setup'),
+
+      singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
+
+      S.divider().title('Inboxes'),
+
+      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
+      S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
     ]);

@@ -37,7 +37,7 @@ try {
 if (minutes.length === 0) {
   try {
     const docs = await sanityFetch<{ title: string; href?: string }[]>(
-      `*[_type == "hubDocument" && category == "minutes" && (defined(link) || defined(file.asset))] | order(order asc)[0...3]{
+      `*[_type == "hubDocument" && category == "minutes" && (defined(link) || defined(file.asset))] | order(coalesce(orderRank, "~") asc, order asc)[0...3]{
         title,
         "href": select(sourceType == "file" => file.asset->url, link)
       }`,

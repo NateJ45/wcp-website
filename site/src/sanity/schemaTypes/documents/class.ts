@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
+import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Class / Program
@@ -28,23 +29,20 @@ export const classType = defineType({
       type: 'string',
       group: 'basics',
       description: 'e.g. "Twos" or "Pre-K AM".',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Every class needs a name so families can find it.'),
     }),
     defineField({
       name: 'slug',
-      title: 'URL slug',
+      title: 'Web address (slug)',
       type: 'slug',
       group: 'basics',
       options: { source: 'name', maxLength: 40 },
       description: 'The web address piece, e.g. "twos". Click Generate.',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Click Generate to give this class a web address.'),
     }),
-    defineField({
-      name: 'icon',
-      title: 'Icon',
-      type: 'string',
+    iconField('icon', {
       group: 'basics',
-      description: 'Icon name, e.g. "star", "sprout", "sun", "moon".',
+      description: 'The little picture shown next to this class (optional).',
     }),
     defineField({
       name: 'color',
@@ -158,7 +156,13 @@ export const classType = defineType({
       group: 'tuition',
       description: 'As shown, e.g. "$70".',
     }),
-    defineField({ name: 'annual', title: 'Annual tuition', type: 'string', group: 'tuition' }),
+    defineField({
+      name: 'annual',
+      title: 'Annual tuition',
+      type: 'string',
+      group: 'tuition',
+      description: 'As shown, e.g. "$630".',
+    }),
     defineField({
       name: 'studentFee',
       title: 'Student fee (per year)',
@@ -168,16 +172,19 @@ export const classType = defineType({
     }),
     defineField({
       name: 'payId',
-      title: 'PayPal button ID — tuition',
+      title: 'PayPal button code — tuition',
       type: 'string',
       group: 'tuition',
-      description: 'The PayPal hosted-button ID for paying this class’s tuition. Ask if unsure.',
+      description:
+        'The code from the PayPal button for this class’s tuition (letters and numbers, copied from PayPal — not a price). Changing it changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'studentFeePayId',
-      title: 'PayPal button ID — student fee',
+      title: 'PayPal button code — student fee',
       type: 'string',
       group: 'tuition',
+      description:
+        'The code from the PayPal button for this class’s student fee. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
 
     // Page details

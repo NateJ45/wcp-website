@@ -19,7 +19,7 @@ export const page = defineType({
   icon: () => '📄',
   groups: [
     { name: 'content', title: 'Content', default: true },
-    { name: 'hero', title: 'Hero' },
+    { name: 'hero', title: 'Hero (top banner)' },
     { name: 'seo', title: 'Search & sharing' },
     { name: 'settings', title: 'Settings' },
   ],
@@ -30,7 +30,7 @@ export const page = defineType({
       type: 'string',
       group: 'settings',
       description: 'Just so you can find it in the list, e.g. "Home" or "About".',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Give the page a name so you can find it in the list.'),
     }),
     defineField({
       name: 'slug',
@@ -49,9 +49,10 @@ export const page = defineType({
     }),
     defineField({
       name: 'hero',
-      title: 'Hero',
+      title: 'Hero (top banner)',
       type: 'heroObject',
       group: 'hero',
+      description: 'The big banner at the very top of the page: headline, photo, buttons.',
     }),
     defineField({
       name: 'sections',
@@ -66,6 +67,7 @@ export const page = defineType({
       title: 'Browser tab / search title',
       type: 'string',
       group: 'seo',
+      description: 'What Google and the browser tab show. Leave blank to use the page name.',
       validation: (R) => R.max(65).warning('Titles over ~65 characters get cut off in Google.'),
     }),
     defineField({
@@ -74,6 +76,7 @@ export const page = defineType({
       type: 'text',
       rows: 2,
       group: 'seo',
+      description: 'The sentence shown under this page in Google results.',
       validation: (R) =>
         R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
     }),
@@ -83,6 +86,8 @@ export const page = defineType({
       type: 'image',
       options: { hotspot: true },
       group: 'seo',
+      description:
+        'The picture shown when this page is shared (texts, Facebook). Leave blank for the automatic card.',
     }),
   ],
   preview: {

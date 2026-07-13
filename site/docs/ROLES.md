@@ -34,7 +34,7 @@ depends on your plan**:
   consider paying.
 
 Because everyone with edit access is effectively an Administrator on free, the
-money-sensitive fields (tuition, PayPal button IDs) are protected by **convention, not
+money-sensitive fields (tuition, PayPal button codes) are protected by **convention, not
 permission**: the in-Studio Help & Guide flags them with "check with Nathan first," and
 the "never click Remove field" rule is spelled out there too. For a small, trusted board
 this is usually the right amount of friction. If you ever need _hard_ enforcement, that's

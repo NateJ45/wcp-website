@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--prefix", "site"],
       "port": 4321
+    },
+    {
+      "name": "sanity-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "studio:dev", "--prefix", "site"],
+      "port": 3333
     }
   ]
 }
