@@ -28,10 +28,19 @@ interface Props {
 const { photos, class: className } = Astro.props;
 ---
 
+{
+  /* content-visibility on each item defers layout/paint of offscreen figures —
+     on the ~80-photo A Day gallery that's most of the page's render cost. The
+     intrinsic-size placeholder keeps the scrollbar stable before they render. */
+}
 <ul class={cn('grid gap-4 sm:grid-cols-2 lg:grid-cols-3', className)}>
   {
     photos.map((p, i) => (
-      <li data-reveal style={`--reveal-delay: ${i * 60}ms`}>
+      <li
+        class="[contain-intrinsic-size:auto_260px] [content-visibility:auto]"
+        data-reveal
+        style={`--reveal-delay: ${i * 60}ms`}
+      >
         <figure class="group overflow-hidden rounded-[var(--radius)] bg-navy shadow-sm">
           <div class="aspect-[4/3] overflow-hidden">
             {p.sanityImage ? (

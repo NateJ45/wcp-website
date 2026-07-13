@@ -1,0 +1,32 @@
+---
+/* ============================================================================
+   HubWidgetSkeleton — the fallback shown while a server island streams in
+   ============================================================================
+   Matches HomeWidgetCard's frame so nothing jumps when the real widget
+   arrives. Used as `slot="fallback"` on the hub home's server:defer widgets
+   (the Google-backed ones), so the dashboard shell paints instantly and the
+   slow data pops in a beat later. Pulse is motion-safe only.
+   ============================================================================ */
+interface Props {
+  /** Announced to screen readers while the widget loads. */
+  title: string;
+  /** Rough content rows, to approximate the real widget's height. */
+  lines?: number;
+}
+const { title, lines = 3 } = Astro.props;
+---
+
+<div
+  class="h-full rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+  role="status"
+  aria-label={`${title} is loading`}
+>
+  <div class="h-5 w-32 rounded bg-grey motion-safe:animate-pulse dark:bg-white/10"></div>
+  <div class="mt-5 space-y-3">
+    {
+      Array.from({ length: lines }).map(() => (
+        <div class="h-4 w-full rounded bg-grey/70 motion-safe:animate-pulse dark:bg-white/5" />
+      ))
+    }
+  </div>
+</div>

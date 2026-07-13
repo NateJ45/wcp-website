@@ -15,8 +15,10 @@
 // the video to look right, and we respect people's bandwidth and preferences.
 // The <video> has no `autoplay` attribute for exactly this reason.
 //
-// Runs on `astro:page-load` (initial load + each navigation), which fires after
-// the swapped-in page is ready, so we defer straight to idle here.
+// Runs once per document via onPageLoad. Speculation-Rules guard: in a
+// PRERENDERED (hidden) document we wait for activation before touching the
+// video — otherwise hovering a link could quietly download ~9MB for a page
+// the visitor never opens.
 // ============================================================================
 import { onPageLoad } from './_page-load';
 
@@ -57,6 +59,13 @@ function init(): void {
   else window.setTimeout(kick, 250);
 }
 
-onPageLoad(init);
+onPageLoad(() => {
+  const doc = document as Document & { prerendering?: boolean };
+  if (doc.prerendering) {
+    document.addEventListener('prerenderingchange', init, { once: true });
+  } else {
+    init();
+  }
+});
 
 export {};

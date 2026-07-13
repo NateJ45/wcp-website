@@ -96,17 +96,19 @@ const faqsFallback = [
   },
 ];
 
+// The three Sanity reads are independent — start them together, await in
+// order (2026-07 hub-speed pass; each keeps its original failure fallback).
+const feePromise = sanityFetch<FeeSchedule | null>(FEE_SCHEDULE_HUB_QUERY).catch(() => null);
+const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'tuition' }).catch(
+  () => null,
+);
+
 // Class facts + tuition button ids, from Sanity (data-file fallback per field).
 const classRows = await getHubClasses();
 
 // Fee amounts, notes, PayPal button ids, and the payment FAQ, from the
 // feeSchedule singleton (falls back to the arrays above, per field).
-let fee: FeeSchedule | null = null;
-try {
-  fee = await sanityFetch<FeeSchedule | null>(FEE_SCHEDULE_HUB_QUERY);
-} catch {
-  fee = null;
-}
+const fee: FeeSchedule | null = await feePromise;
 const studentBands =
   fee?.studentFeeBands && fee.studentFeeBands.length > 0
     ? fee.studentFeeBands
@@ -140,12 +142,7 @@ const faqs =
       }))
     : faqsFallback;
 
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'tuition' });
-} catch {
-  doc = null;
-}
+const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Tuition & Payments';
 const intro =
   doc?.intro ||

@@ -59,6 +59,12 @@ interface CoopRoleDoc {
   stipend?: string;
   body?: string;
 }
+// Independent of the roles read — start now, await later (2026-07 hub-speed
+// pass).
+const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'coop-jobs' }).catch(
+  () => null,
+);
+
 let coopTiers = coopTiersFallback;
 try {
   const roleDocs = await sanityFetch<CoopRoleDoc[]>(
@@ -85,12 +91,7 @@ try {
   coopTiers = coopTiersFallback;
 }
 
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'coop-jobs' });
-} catch {
-  doc = null;
-}
+const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Co-op Jobs';
 const intro =
   doc?.intro ||

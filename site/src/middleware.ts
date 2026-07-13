@@ -32,10 +32,17 @@ const HUB_OPEN = true;
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname.replace(/\/+$/, '') || '/';
   const inHub = path === HUB_PREFIX || path.startsWith(`${HUB_PREFIX}/`);
+  // Server-island endpoints (/_server-islands/<Component>) render hub widgets
+  // OUTSIDE the /family-hub prefix — every island on the site today is gated
+  // hub content (the home dashboard's Google-backed widgets), so they take
+  // the same check. Revisit if a PUBLIC page ever gains a server island.
+  const isServerIsland = path.startsWith('/_server-islands/');
 
-  if (!HUB_OPEN && inHub && !PUBLIC_HUB_PATHS.has(path)) {
+  if (!HUB_OPEN && (inHub || isServerIsland) && !PUBLIC_HUB_PATHS.has(path)) {
     const authed = await context.session?.get('familyAuthed');
     if (!authed) {
+      // An island fetch can't follow a login redirect — just refuse it.
+      if (isServerIsland) return new Response('Unauthorized', { status: 401 });
       // Remember where they were headed so we can return them after sign-in.
       const to = encodeURIComponent(context.url.pathname);
       return context.redirect(`/family-hub/login?to=${to}`);

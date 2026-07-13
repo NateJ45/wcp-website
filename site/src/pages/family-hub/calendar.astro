@@ -43,6 +43,12 @@ interface HubPageDoc {
   sections?: any[];
 }
 
+// Independent of the settings→feed chain below — start it now, await later
+// (2026-07 hub-speed pass).
+const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'calendar' }).catch(
+  () => null,
+);
+
 let calId = googleCalendarIdFallback;
 let feedUrl = calendarFeedUrlFallback;
 try {
@@ -58,12 +64,7 @@ try {
 // The upcoming list — the live Google Calendar feed (Sanity events fallback).
 const events: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 12);
 
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'calendar' });
-} catch {
-  doc = null;
-}
+const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'School Calendar';
 const intro =
   doc?.intro ||

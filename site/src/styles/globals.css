@@ -42,6 +42,17 @@
    below to key off that class instead of the OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Cross-document View Transitions: the soft cross-fade between page loads
+   (Chrome 126+, Safari 18.2+; others just do a normal load). This replaced
+   Astro's <ClientRouter /> in the 2026-07 performance pass so Speculation
+   Rules can truly PRERENDER public pages (see BaseLayout). Gated behind
+   no-preference: reduced-motion visitors get an instant swap, no animation. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
 /* 2. Fonts -------------------------------------------------------------------
    Quicksand (body) is a variable font from Fontsource; Vite bundles + hashes
    its woff2 automatically. Captain Comic (headings) is licensed to WCP and

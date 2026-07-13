@@ -50,6 +50,12 @@ interface HubDocDoc {
   href?: string;
   order: number;
 }
+// Independent of the document-list read — start now, await later (2026-07
+// hub-speed pass).
+const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'documents' }).catch(
+  () => null,
+);
+
 let documentGroups = fallbackGroups;
 try {
   // Both link-type docs and uploaded files (file.asset dereferenced to its URL).
@@ -82,12 +88,7 @@ try {
 
 // Editable heading/intro + closing section(s), from the hubPage doc (falls back
 // to the built-in strings + Drive card if no doc exists yet).
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'documents' });
-} catch {
-  doc = null;
-}
+const doc: HubPageDoc | null = await hubDocPromise;
 const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
 const title = doc?.heading || 'Handbook & Documents';
 const intro =

@@ -23,6 +23,7 @@ import ClassPhotosWidget from '@/components/hub/ClassPhotosWidget.astro';
 import MeetingMinutesWidget from '@/components/hub/MeetingMinutesWidget.astro';
 import BudgetSnapshotWidget from '@/components/hub/BudgetSnapshotWidget.astro';
 import FundraisingWidget from '@/components/hub/FundraisingWidget.astro';
+import HubWidgetSkeleton from '@/components/hub/HubWidgetSkeleton.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
@@ -93,8 +94,20 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
       }
       <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
 
+      {
+        /* The three Google-backed widgets (calendar feed, treasurer's sheet)
+          are SERVER ISLANDS (server:defer): the dashboard shell paints
+          immediately and they stream in behind a matching skeleton. This is
+          what keeps even a cold-cache visit (fresh deploy, quiet morning)
+          from blanking the whole page while Google answers — worst case is
+          now "page instantly, numbers a beat later". The Sanity-backed
+          widgets stay inline: the authenticated CDN answers in ~100ms, below
+          the cost of an extra island round-trip. */
+      }
       <div class="lg:col-span-4 lg:row-span-2" style="--reveal-delay: 60ms">
-        <UpcomingEventsWidget />
+        <UpcomingEventsWidget server:defer>
+          <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
+        </UpcomingEventsWidget>
       </div>
 
       <div class="lg:col-span-8" style="--reveal-delay: 120ms">
@@ -105,7 +118,9 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         <AnnouncementsWidget />
       </div>
       <div class="lg:col-span-4" style="--reveal-delay: 240ms">
-        <FundraisingWidget />
+        <FundraisingWidget server:defer>
+          <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
+        </FundraisingWidget>
       </div>
 
       <div class="lg:col-span-4" style="--reveal-delay: 300ms">
@@ -115,7 +130,9 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         <ClassPhotosWidget />
       </div>
       <div class="lg:col-span-4" style="--reveal-delay: 420ms">
-        <BudgetSnapshotWidget />
+        <BudgetSnapshotWidget server:defer>
+          <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
+        </BudgetSnapshotWidget>
       </div>
     </div>
   </Section>

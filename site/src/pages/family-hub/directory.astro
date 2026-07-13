@@ -58,6 +58,12 @@ interface DirEntry {
   location?: { lat?: number; lng?: number } | null;
   notes?: string;
 }
+// Independent of the entries read — start now, await later (2026-07 hub-speed
+// pass).
+const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'directory' }).catch(
+  () => null,
+);
+
 let entries: DirEntry[] = [];
 try {
   entries = await sanityFetch<DirEntry[]>(
@@ -101,12 +107,7 @@ const points = [
   },
 ];
 
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'directory' });
-} catch {
-  doc = null;
-}
+const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Family Directory';
 const intro =
   doc?.intro ||

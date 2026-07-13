@@ -7,7 +7,6 @@
    scripts. Page content goes in the <slot /> inside <main>.
    ============================================================================ */
 import '../styles/globals.css';
-import { ClientRouter } from 'astro:transitions';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
@@ -76,34 +75,59 @@ const closureAlert = await getClosureAlert();
     <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
 
+    <!-- Every photo on the site serves from Sanity's CDN; warming the
+         connection here saves DNS+TLS setup (~100-300ms on mobile) before the
+         first image request. Plain preconnect on purpose: <img> fetches are
+         no-cors, so a crossorigin preconnect would open the WRONG connection
+         pool and be wasted. -->
+    <link rel="preconnect" href="https://cdn.sanity.io" />
+
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#01457E" />
 
-    <!-- View Transitions: smooth cross-page navigation (a soft cross-fade by
-         default). Scripts re-init on `astro:page-load` (see src/scripts/*). The
-         built-in fallback animates even in browsers without native VT support,
-         and a visitor with prefers-reduced-motion gets an instant swap, no
-         animation — so the a11y contract is preserved. -->
-    <ClientRouter />
-    <meta name="view-transition" content="same-origin" />
-
-    <!-- View-transition load tracker. Runs before the deferred module scripts,
-         so it reliably records the router's page-load lifecycle for the CURRENT
-         view: `.loaded` is true once astro:page-load has fired and is cleared at
-         the start of each navigation. src/scripts/_page-load.ts reads it so a
-         late-registering script still initializes on first paint without
-         double-running during a navigation. -->
-    <script is:inline>
-      window.__wcpVT = { loaded: false };
-      document.addEventListener('astro:before-swap', function () {
-        window.__wcpVT.loaded = false;
-      });
-      document.addEventListener('astro:page-load', function () {
-        window.__wcpVT.loaded = true;
-      });
-    </script>
+    <!-- Navigation architecture (2026-07 performance pass): NATIVE
+         cross-document View Transitions + Speculation Rules prerendering,
+         replacing Astro's <ClientRouter />. Every navigation is a real
+         document load again, which is exactly what lets Chrome/Edge fully
+         PRERENDER the next public page on hover — a click then activates an
+         already-rendered page (0ms perceived). Safari/Firefox ignore the
+         rules and ride Astro's prefetch instead; Chrome+Safari both get the
+         soft cross-fade from the `@view-transition` rule in globals.css
+         (reduced-motion users get an instant swap — see that block).
+         Per-page scripts run per document now; src/scripts/_page-load.ts
+         keeps the onPageLoad/onBeforeSwap API every script already uses. -->
+    {
+      chrome === 'site' && (
+        <script
+          type="speculationrules"
+          is:inline
+          set:html={JSON.stringify({
+            // Public marketing pages only: they're static files, so a
+            // prerender costs one cached asset fetch. SSR surfaces (hub,
+            // api, preview, studio) are excluded — prerendering those would
+            // burn Worker time (and, for the hub, hit gated routes).
+            prerender: [
+              {
+                where: {
+                  and: [
+                    { href_matches: '/*' },
+                    { not: { href_matches: '/family-hub/*' } },
+                    { not: { href_matches: '/api/*' } },
+                    { not: { href_matches: '/studio/*' } },
+                    { not: { href_matches: '/preview/*' } },
+                    { not: { href_matches: '*.pdf' } },
+                    { not: { selector_matches: '[download]' } },
+                  ],
+                },
+                eagerness: 'moderate',
+              },
+            ],
+          })}
+        />
+      )
+    }
 
     <!-- Open Graph + Twitter card for rich link previews. -->
     <meta property="og:type" content={ogType} />

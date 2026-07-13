@@ -1,38 +1,39 @@
 // ============================================================================
-// Page-load lifecycle helpers (for Astro View Transitions / ClientRouter)
+// Page-load lifecycle helpers
 // ============================================================================
-// With the ClientRouter in BaseLayout, navigations swap the <body> WITHOUT a
-// full reload, so a module script's top-level code runs only once. Per-page DOM
-// wiring must therefore re-run on `astro:page-load`, which fires on the initial
-// load AND after every client-side navigation.
+// HISTORY: these once bridged Astro's <ClientRouter /> (astro:page-load /
+// astro:before-swap), where navigations swapped the <body> without a reload.
+// The 2026-07 performance pass replaced the router with NATIVE cross-document
+// View Transitions (the `@view-transition` rule in globals.css) + Speculation
+// Rules prerendering (see BaseLayout) — every navigation is a real document
+// again, which is what lets Chrome/Edge fully prerender the next page.
 //
-// Rules for callers:
-//   - Element-level listeners bound inside the callback are safe to re-bind:
-//     the elements are freshly swapped in each navigation, so the previous ones
-//     (and their listeners) are already gone — no duplicates, no leak.
-//   - window/document/global listeners must be bound ONCE (guard with a
-//     module-level flag) and should re-query the DOM at event time rather than
-//     closing over elements that get swapped away.
-//   - Intervals and IntersectionObservers must be cleaned up in onBeforeSwap
-//     (and/or disconnected at the top of the page-load callback) so they don't
-//     accumulate across navigations.
+// The exported API is unchanged so no caller had to move:
+//   - onPageLoad(fn): per-document DOM wiring. Runs once per page — on
+//     DOMContentLoaded if the document is still parsing, immediately if the
+//     module loaded later (deferred bundles land in 'interactive', dynamic
+//     imports in 'complete'; both mean the DOM is queryable).
+//   - onBeforeSwap(fn): cleanup before the page goes away — now `pagehide`.
+//     Mostly belt-and-suspenders in MPA land (the document's timers and
+//     observers die with it), but it keeps semantics for anything that talks
+//     to the outside world.
+//
+// NOTE for prerendered documents (Speculation Rules): scripts run while the
+// page is still hidden. That's fine for DOM wiring; anything that must wait
+// for the user to actually arrive (autoplay, analytics pings) should check
+// `document.prerendering` and defer to the `prerenderingchange` event.
 // ============================================================================
 
-/** Run `fn` on the initial load and after every client-side navigation. */
+/** Run `fn` once this document's DOM is ready (immediately if it already is). */
 export function onPageLoad(fn: () => void): void {
-  document.addEventListener('astro:page-load', fn);
-  // Bundled module scripts are deferred, so this listener can register AFTER the
-  // router already dispatched `astro:page-load` for the CURRENT view. An early
-  // inline tracker in <head> (see BaseLayout) flags that: it sets `.loaded` on
-  // each astro:page-load and clears it on astro:before-swap. If the current
-  // view's page-load already fired, run `fn` once now to catch up. During a
-  // navigation the flag is cleared before new scripts run, so a freshly loaded
-  // module waits for that navigation's page-load instead of double-running.
-  const vt = (window as unknown as { __wcpVT?: { loaded?: boolean } }).__wcpVT;
-  if (vt?.loaded) fn();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fn, { once: true });
+  } else {
+    fn();
+  }
 }
 
-/** Run `fn` just before the current page is swapped away (cleanup hook). */
+/** Run `fn` when the page is being left (cleanup hook). */
 export function onBeforeSwap(fn: () => void): void {
-  document.addEventListener('astro:before-swap', fn);
+  window.addEventListener('pagehide', fn);
 }
