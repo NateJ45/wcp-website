@@ -45,8 +45,7 @@ const mapQuery = encodeURIComponent(
       <h2 class="text-heading">{section.visitHeading ?? 'Visit'}</h2>
       <address class="mt-4 leading-relaxed text-ink not-italic">
         {site.address.street}<br />
-        {site.address.city}, {site.address.state}
-        {site.address.zip}<br />
+        {`${site.address.city}, ${site.address.state} ${site.address.zip}`}<br />
         <span class="text-ink-muted">Inside Crestview Presbyterian Church</span>
       </address>
       {site.calendar && <p class="mt-3 text-sm text-ink-muted">{site.calendar}</p>}

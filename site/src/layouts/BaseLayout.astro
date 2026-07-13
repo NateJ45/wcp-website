@@ -37,7 +37,7 @@ interface Props {
 
 const {
   title,
-  description = site.tagline,
+  description,
   ogImage,
   ogType = 'website',
   chrome = 'site',
@@ -53,6 +53,11 @@ const DEFAULT_OG_IMAGE = '/hero/wcp-hero-poster.webp';
 const canonical = new URL(Astro.url.pathname, site.url).toString();
 const ogImageUrl = new URL(ogImage ?? DEFAULT_OG_IMAGE, site.url).toString();
 
+// `||` (not a destructuring default): Sanity returns NULL for an unset
+// seoDescription, and null bypasses a `= default` — which shipped every
+// page-builder page with an empty meta description until the 2026-07 audit.
+const metaDescription = description || site.tagline;
+
 // Site-wide alert (snow days / urgent notices). null unless the Alert singleton
 // is active with a message — baked in at build, so it appears/clears on the
 // next rebuild after Publish.
@@ -67,7 +72,7 @@ const closureAlert = await getClosureAlert();
          .wcp-container adds safe-area padding so content never hides under it. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
 
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
@@ -103,12 +108,12 @@ const closureAlert = await getClosureAlert();
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDescription} />
     <meta property="og:site_name" content={site.name} />
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
     <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDescription} />
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <!-- Google Ads tag + search-console verification (env-driven, see component). -->
