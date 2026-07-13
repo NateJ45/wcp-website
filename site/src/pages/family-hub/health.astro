@@ -16,7 +16,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 
@@ -28,7 +28,11 @@ interface HubPageDoc {
 }
 let doc: HubPageDoc | null = null;
 try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'health' });
+  doc = await sanityFetch<HubPageDoc | null>(
+    HUB_PAGE_QUERY,
+    { key: 'health' },
+    { cache: BOARD_CONTENT_CACHE },
+  );
 } catch {
   doc = null;
 }

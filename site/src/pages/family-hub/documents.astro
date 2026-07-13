@@ -18,7 +18,7 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { documentGroups as fallbackGroups, driveFolderUrl } from '@/data/hub/documents';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 
@@ -52,9 +52,11 @@ interface HubDocDoc {
 }
 // Independent of the document-list read — start now, await later (2026-07
 // hub-speed pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'documents' }).catch(
-  () => null,
-);
+const hubDocPromise = sanityFetch<HubPageDoc | null>(
+  HUB_PAGE_QUERY,
+  { key: 'documents' },
+  { cache: BOARD_CONTENT_CACHE },
+).catch(() => null);
 
 let documentGroups = fallbackGroups;
 try {

@@ -17,14 +17,20 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { getAvailability } from '@/lib/gsheets';
 import { SITE_SETTINGS_AVAILABILITY_SHEET_QUERY } from '@/lib/queries';
 
 export const GET: APIRoute = async () => {
   let items: unknown[] = [];
   try {
-    const sheetId = await sanityFetch<string | null>(SITE_SETTINGS_AVAILABILITY_SHEET_QUERY);
+    const sheetId = await sanityFetch<string | null>(
+      SITE_SETTINGS_AVAILABILITY_SHEET_QUERY,
+      {},
+      {
+        cache: BOARD_CONTENT_CACHE,
+      },
+    );
     if (sheetId) items = await getAvailability(sheetId);
   } catch (err) {
     console.error('[availability] fetch failed', err);
@@ -32,7 +38,9 @@ export const GET: APIRoute = async () => {
   return new Response(JSON.stringify(items), {
     headers: {
       'content-type': 'application/json',
-      'cache-control': 'public, max-age=300',
+      // Browser-side SWR too: repeat visitors get instant badges from their
+      // HTTP cache while the browser refetches in the background.
+      'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
     },
   });
 };

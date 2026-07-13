@@ -18,7 +18,7 @@ import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { classStyles } from '@/lib/class-colors';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 
@@ -60,9 +60,11 @@ interface DirEntry {
 }
 // Independent of the entries read — start now, await later (2026-07 hub-speed
 // pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'directory' }).catch(
-  () => null,
-);
+const hubDocPromise = sanityFetch<HubPageDoc | null>(
+  HUB_PAGE_QUERY,
+  { key: 'directory' },
+  { cache: BOARD_CONTENT_CACHE },
+).catch(() => null);
 
 let entries: DirEntry[] = [];
 try {

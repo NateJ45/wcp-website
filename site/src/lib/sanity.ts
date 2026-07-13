@@ -18,6 +18,17 @@
 import { createClient, type SanityClient } from '@sanity/client';
 import { env } from 'cloudflare:workers';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
+import { cached } from '@/lib/hub-cache';
+
+/**
+ * Cache tuning for BOARD-EDITED content (hubPage docs, Site Settings): fresh
+ * for a minute, then up to 10 minutes of serve-stale-instantly-and-refresh-
+ * behind-the-response. A publish is wide within ~a minute of the next visit.
+ * NEVER use for PII queries (directory entries, health details) — this path
+ * writes through to the CACHE KV namespace, and family data doesn't belong
+ * in a second store. And never for read-after-write surfaces (sign-ups).
+ */
+export const BOARD_CONTENT_CACHE = { ttlMs: 60_000, swrMs: 600_000 };
 
 export function getSanityClient(opts: { fresh?: boolean } = {}): SanityClient {
   return createClient({
@@ -30,14 +41,23 @@ export function getSanityClient(opts: { fresh?: boolean } = {}): SanityClient {
   });
 }
 
-/** Run a GROQ query with the gated server client. Pass `fresh: true` for
- *  read-after-write surfaces (e.g. the sign-ups page must show a family's
- *  own just-submitted response on reload — 60s of CDN staleness there would
- *  read as "my sign-up vanished"). */
+/** Run a GROQ query with the gated server client.
+ *  - `fresh: true` for read-after-write surfaces (e.g. the sign-ups page must
+ *    show a family's own just-submitted response on reload — 60s of CDN
+ *    staleness there would read as "my sign-up vanished").
+ *  - `cache: BOARD_CONTENT_CACHE` for board-edited lookups repeated on every
+ *    page view (hubPage docs, Site Settings): rides the hub-cache SWR tiers
+ *    so repeat navigations skip the Sanity round-trip entirely. Mutually
+ *    exclusive with `fresh` (fresh wins). Never for PII — see the const. */
 export async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
-  opts: { fresh?: boolean } = {},
+  opts: { fresh?: boolean; cache?: { ttlMs: number; swrMs: number } } = {},
 ): Promise<T> {
-  return getSanityClient(opts).fetch<T>(query, params);
+  const run = () => getSanityClient(opts).fetch<T>(query, params);
+  if (opts.cache && !opts.fresh) {
+    const key = `groq:${query}:${JSON.stringify(params)}`;
+    return cached(key, opts.cache.ttlMs, run, { swrMs: opts.cache.swrMs });
+  }
+  return run();
 }

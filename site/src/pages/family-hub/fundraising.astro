@@ -19,7 +19,7 @@ import HubProgress from '@/components/hub/HubProgress.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
 import { budgetSheetIdFallback, pastFundraisingTotalsFallback } from '@/data/hub/live-links';
@@ -48,11 +48,19 @@ const [campaignsResult, docResult, settingsResult] = await Promise.allSettled([
   sanityFetch<Campaign[]>(
     `*[_type == "campaign" && active == true] | order(_createdAt desc){ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`,
   ),
-  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'fundraising' }),
+  sanityFetch<HubPageDoc | null>(
+    HUB_PAGE_QUERY,
+    { key: 'fundraising' },
+    { cache: BOARD_CONTENT_CACHE },
+  ),
   sanityFetch<{
     budgetSheetId?: string | null;
     pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
-  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`),
+  } | null>(
+    `*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  ),
 ]);
 const campaigns = campaignsResult.status === 'fulfilled' ? campaignsResult.value : [];
 const doc = docResult.status === 'fulfilled' ? docResult.value : null;

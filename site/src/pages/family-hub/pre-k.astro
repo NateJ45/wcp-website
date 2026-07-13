@@ -27,7 +27,7 @@ import { payUrl } from '@/data/classes';
 import { getHubClass } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
 import { site } from '@/data/site';
@@ -40,7 +40,11 @@ interface HubPageDoc {
 }
 let doc: HubPageDoc | null = null;
 try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'pre-k' });
+  doc = await sanityFetch<HubPageDoc | null>(
+    HUB_PAGE_QUERY,
+    { key: 'pre-k' },
+    { cache: BOARD_CONTENT_CACHE },
+  );
 } catch {
   doc = null;
 }

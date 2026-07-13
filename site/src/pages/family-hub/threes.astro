@@ -11,7 +11,7 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import ClassHubBody from '@/components/hub/ClassHubBody.astro';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 
 interface HubPageDoc {
@@ -22,7 +22,11 @@ interface HubPageDoc {
 }
 let doc: HubPageDoc | null = null;
 try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'threes' });
+  doc = await sanityFetch<HubPageDoc | null>(
+    HUB_PAGE_QUERY,
+    { key: 'threes' },
+    { cache: BOARD_CONTENT_CACHE },
+  );
 } catch {
   doc = null;
 }

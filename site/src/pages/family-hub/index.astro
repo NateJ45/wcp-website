@@ -24,7 +24,7 @@ import MeetingMinutesWidget from '@/components/hub/MeetingMinutesWidget.astro';
 import BudgetSnapshotWidget from '@/components/hub/BudgetSnapshotWidget.astro';
 import FundraisingWidget from '@/components/hub/FundraisingWidget.astro';
 import HubWidgetSkeleton from '@/components/hub/HubWidgetSkeleton.astro';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 
@@ -48,9 +48,11 @@ interface SettingsDoc {
 // preserves each fetch's existing fallback (null / null / 0) even if one
 // (or more) of the three fails, matching the previous try/catch behavior.
 const [docResult, settingsResult, familyCountResult] = await Promise.allSettled([
-  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }),
-  sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY),
-  sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY),
+  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }, { cache: BOARD_CONTENT_CACHE }),
+  sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+  // The count is a scalar over directory docs (no PII in the result), so it
+  // rides the same cache — a new opt-in showing a few minutes late is fine.
+  sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
 ]);
 const doc = docResult.status === 'fulfilled' ? docResult.value : null;
 const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;

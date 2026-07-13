@@ -18,7 +18,7 @@ import OrgChart from '@/components/hub/OrgChart.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { site } from '@/data/site';
 import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 
 interface HubPageDoc {
@@ -61,9 +61,11 @@ interface CoopRoleDoc {
 }
 // Independent of the roles read — start now, await later (2026-07 hub-speed
 // pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'coop-jobs' }).catch(
-  () => null,
-);
+const hubDocPromise = sanityFetch<HubPageDoc | null>(
+  HUB_PAGE_QUERY,
+  { key: 'coop-jobs' },
+  { cache: BOARD_CONTENT_CACHE },
+).catch(() => null);
 
 let coopTiers = coopTiersFallback;
 try {

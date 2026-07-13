@@ -22,7 +22,7 @@ import { classStyles } from '@/lib/class-colors';
 import { safeIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
-import { sanityFetch } from '@/lib/sanity';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, FEE_SCHEDULE_HUB_QUERY } from '@/lib/queries';
 
 interface HubPageDoc {
@@ -98,10 +98,18 @@ const faqsFallback = [
 
 // The three Sanity reads are independent — start them together, await in
 // order (2026-07 hub-speed pass; each keeps its original failure fallback).
-const feePromise = sanityFetch<FeeSchedule | null>(FEE_SCHEDULE_HUB_QUERY).catch(() => null);
-const hubDocPromise = sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'tuition' }).catch(
-  () => null,
-);
+const feePromise = sanityFetch<FeeSchedule | null>(
+  FEE_SCHEDULE_HUB_QUERY,
+  {},
+  {
+    cache: BOARD_CONTENT_CACHE,
+  },
+).catch(() => null);
+const hubDocPromise = sanityFetch<HubPageDoc | null>(
+  HUB_PAGE_QUERY,
+  { key: 'tuition' },
+  { cache: BOARD_CONTENT_CACHE },
+).catch(() => null);
 
 // Class facts + tuition button ids, from Sanity (data-file fallback per field).
 const classRows = await getHubClasses();
