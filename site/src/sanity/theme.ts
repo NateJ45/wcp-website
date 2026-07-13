@@ -49,4 +49,31 @@ const props = {
   '--main-navigation-color--inverted': '#ffffff',
 };
 
-export const wcpStudioTheme = buildLegacyTheme(props);
+const base = buildLegacyTheme(props);
+const baseFonts = base.fonts;
+
+// Quicksand's regular (400) is airy and reads thin at Studio UI sizes, so
+// shift the whole weight scale up one notch (the variable font covers any
+// weight 300-700). The steps stay distinct so hierarchy still reads; code
+// keeps its default weights (it's not Quicksand). Typed structurally off the
+// built theme so we don't need @sanity/ui's ThemeFont import.
+type StudioFont = NonNullable<typeof baseFonts>['text'];
+
+function bumpWeights<T extends StudioFont>(font: T): T {
+  return {
+    ...font,
+    weights: { ...font.weights, regular: 500, medium: 600, semibold: 650, bold: 700 },
+  };
+}
+
+export const wcpStudioTheme = baseFonts
+  ? {
+      ...base,
+      fonts: {
+        ...baseFonts,
+        text: bumpWeights(baseFonts.text),
+        label: bumpWeights(baseFonts.label),
+        heading: bumpWeights(baseFonts.heading),
+      },
+    }
+  : base;
