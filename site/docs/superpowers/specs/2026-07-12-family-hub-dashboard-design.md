@@ -6,8 +6,8 @@
 
 ## Goal
 
-Turn the Family Hub from a set of page-to-page *website* pages into a persistent-shell
-*web-app dashboard*: a left navigation rail that never reloads, an at-a-glance Home, and
+Turn the Family Hub from a set of page-to-page _website_ pages into a persistent-shell
+_web-app dashboard_: a left navigation rail that never reloads, an at-a-glance Home, and
 app-like polish across every section. The whole hub, every page.
 
 This is a presentation/shell change. It does **not** change the gate model, the SSR data
@@ -33,7 +33,7 @@ already meets.
 ## What the user sees (approved via mockups)
 
 - **Shell** — persistent left rail: logo (sun + cloud emblem) at top, sections grouped
-  (*News & Events / Resources / Money / Community*), an SVG icon per item, active item in
+  (_News & Events / Resources / Money / Community_), an SVG icon per item, active item in
   navy-on-orange, and a **"Sign out"** link pinned to the bottom (ends the session).
 - **Home** —
   - Greeting (time-of-day) + a warm tagline.
@@ -81,7 +81,7 @@ Reference mockups (session scratchpad, not committed): `hub-home-v3.html` (deskt
     source is empty (the existing hub pattern): `UpcomingEventsWidget`, `AnnouncementsWidget`,
     `ClassPhotosWidget`, `MeetingMinutesWidget`, `BudgetSnapshotWidget`, `FundraisingWidget`.
 
-Each widget answers: *what does it show, where does its data come from, what's its empty state.*
+Each widget answers: _what does it show, where does its data come from, what's its empty state._
 None reaches into another's internals.
 
 ## Data flow
@@ -129,7 +129,7 @@ The design covers the **whole hub**, but implementation ships in two low-risk ph
 
 - **Phase 1 — Shell + Home.** Build `HubShell`, `HubNav`, the mobile drawer, and the nav
   config; rebuild the Home page as the dashboard (greeting, chips, class row, widgets); add the
-  `siteSettings` school-year/family fields. Every *other* hub page immediately starts rendering
+  `siteSettings` school-year/family fields. Every _other_ hub page immediately starts rendering
   **inside the new shell** while keeping its current body. This delivers the web-app feel right
   away.
 - **Phase 2 — Reskin inner sections.** Bring each section's body up to the app styling (cards,

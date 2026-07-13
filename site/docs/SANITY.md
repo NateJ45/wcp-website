@@ -140,7 +140,7 @@ public marketing site.
   run `npx sanity schema deploy`. The Studio is already served publicly with no auth wall,
   which is the other requirement.
 - **Ignore Sanity's "set up auto-updates" prompt.** It wants a `deployment: { appId,
-  autoUpdates }` block in [sanity.cli.ts](../sanity.cli.ts), but auto-updates only works for
+autoUpdates }` block in [sanity.cli.ts](../sanity.cli.ts), but auto-updates only works for
   studios built with `sanity build`; ours is built by `@sanity/astro`, so the block does
   nothing. The Studio stays current the simple way — it rebuilds on every deploy, so its
   Sanity version is whatever's pinned in `package.json` (bump the dependency to update). We

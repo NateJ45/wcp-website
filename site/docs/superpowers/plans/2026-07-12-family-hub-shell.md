@@ -31,6 +31,7 @@ Use the `verify` skill / the Browser-pane preview tools for the browser checks i
 ## File structure
 
 **Create:**
+
 - `src/components/hub/HubRail.astro` — the desktop left rail: logo, grouped nav (from `hub-nav.ts`), active state, Sign out. Also rendered as the mobile drawer's contents.
 - `src/components/hub/HubTopBar.astro` — mobile-only top bar: logo, current page title, menu button.
 - `src/scripts/hub-drawer.ts` — off-canvas drawer behavior (open/close, focus trap, Esc, backdrop, scroll-lock), View-Transitions safe.
@@ -38,6 +39,7 @@ Use the `verify` skill / the Browser-pane preview tools for the browser checks i
 - `playwright.hub.config.ts` — Task 7 Playwright config that boots the SSR dev server.
 
 **Modify:**
+
 - `src/data/hub-nav.ts` — regroup into the rail's ordered groups; update class icons.
 - `src/lib/lucide-icons.ts` — add `blocks` and `crayon` glyphs.
 - `src/layouts/BaseLayout.astro:163-172` — the `chrome === 'hub'` branch becomes the rail + content flex layout.
@@ -45,6 +47,7 @@ Use the `verify` skill / the Browser-pane preview tools for the browser checks i
 - `docs/FAMILY_HUB.md`, `CLAUDE.md` — document the new shell.
 
 **Retire (after Task 6):**
+
 - `src/components/hub/HubHeader.astro` — replaced by `HubRail` + `HubTopBar`. Leave the file until Task 6 flips `BaseLayout`, then delete it in Task 6's commit.
 
 ---
@@ -52,6 +55,7 @@ Use the `verify` skill / the Browser-pane preview tools for the browser checks i
 ## Task 1: Regroup the nav config for the rail
 
 **Files:**
+
 - Modify: `src/data/hub-nav.ts`
 
 The rail shows one flat, grouped list (no dropdowns). Reorder into the spec's groups and update the class icons (Twos → `blocks`, Threes → `crayon`; keep `sun`/`moon`). Keep the `Store` external link. Keep the `HubLink`/`HubGroup` interfaces so `HubHeader` still compiles until it is retired in Task 6.
@@ -125,6 +129,7 @@ git commit -m "Hub nav: regroup sections for the rail (News & Events / Resources
 ## Task 2: Add the `blocks` and `crayon` icons
 
 **Files:**
+
 - Modify: `src/lib/lucide-icons.ts`
 
 `hub-nav.ts` now references `blocks` and `crayon`. `Icon.astro` throws at render if a name is missing, so add them before anything renders the rail. Bodies are `viewBox="0 0 24 24"`, and the icon set is stroke-based (they inherit color from a `text-*` class). `crayon` is not a Lucide icon, so use a simple custom glyph consistent with the set.
@@ -159,6 +164,7 @@ git commit -m "Icons: add blocks (Twos) and crayon (Threes) glyphs for the class
 ## Task 3: Build `HubRail.astro` (desktop rail + drawer contents)
 
 **Files:**
+
 - Create: `src/components/hub/HubRail.astro`
 
 The rail is the whole nav: logo → hub home, the grouped section list with an icon per item and `aria-current="page"` on the active one, and the Sign out form (reuses `/api/hub-logout`). Colors come from brand tokens so it themes automatically. This same component is slotted into the mobile drawer in Task 6, so it must not assume a fixed width itself — the parent sets width/position.
@@ -200,7 +206,11 @@ const groups = hubNav.slice(1);
   </a>
 
   <nav aria-label="Family Hub" class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-    <a href={homeLink.href} class="hub-rail-link" aria-current={isActive(homeLink.href) ? 'page' : undefined}>
+    <a
+      href={homeLink.href}
+      class="hub-rail-link"
+      aria-current={isActive(homeLink.href) ? 'page' : undefined}
+    >
       <Icon name={homeLink.icon} class="h-4 w-4" />
       <span>{homeLink.label}</span>
     </a>
@@ -286,13 +296,14 @@ git add site/src/components/hub/HubRail.astro
 git commit -m "Hub: add HubRail nav component (rail + drawer contents)"
 ```
 
-*(No standalone render test yet — `HubRail` is wired into the layout in Task 6, where it gets its browser verification.)*
+_(No standalone render test yet — `HubRail` is wired into the layout in Task 6, where it gets its browser verification.)_
 
 ---
 
 ## Task 4: Build `HubTopBar.astro` (mobile top bar)
 
 **Files:**
+
 - Create: `src/components/hub/HubTopBar.astro`
 
 Shown only below the `lg` breakpoint. Holds the logo (→ hub home), the current page title, and the menu button that controls the drawer. The button carries `data-hub-drawer-toggle`, `aria-controls="hub-drawer"`, `aria-expanded="false"`, and an accessible label; `hub-drawer.ts` (Task 5) wires it.
@@ -312,7 +323,9 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<div class="flex items-center gap-3 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden">
+<div
+  class="flex items-center gap-3 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden"
+>
   <button
     type="button"
     class="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
@@ -347,6 +360,7 @@ git commit -m "Hub: add HubTopBar (mobile top bar + menu button)"
 ## Task 5: Write `hub-drawer.ts` (off-canvas drawer behavior)
 
 **Files:**
+
 - Create: `src/scripts/hub-drawer.ts`
 
 Progressive enhancement: the drawer markup exists in the DOM (Task 6) and is hidden with a `-translate-x-full` transform + `aria-hidden`; this script toggles it. Modeled on `nav.ts`'s `initMobile`/`bindGlobals`: `onPageLoad` re-binds element listeners each navigation; document-level Esc is bound once and re-queries live elements. Adds a real focus trap and backdrop click (the old mobile panel did not need those; a modal drawer does).
@@ -469,6 +483,7 @@ git commit -m "Hub: add hub-drawer.ts (off-canvas drawer: focus trap, Esc, backd
 ## Task 6: Wire the rail into `BaseLayout` and retire `HubHeader`
 
 **Files:**
+
 - Modify: `src/layouts/BaseLayout.astro:163-172` (the hub chrome branch + `<main>`)
 - Modify: `src/layouts/HubShell.astro` (pass the page title to the top bar)
 - Delete: `src/components/hub/HubHeader.astro`
@@ -478,8 +493,8 @@ This is the pivot: the hub renders as `[rail | (topbar + main + footer)]` with t
 - [ ] **Step 1: Add imports** at the top of `src/layouts/BaseLayout.astro` (near the other component imports, ~line 14), and remove the `HubHeader` import:
 
 ```astro
-import HubRail from '@/components/hub/HubRail.astro';
-import HubTopBar from '@/components/hub/HubTopBar.astro';
+import HubRail from '@/components/hub/HubRail.astro'; import HubTopBar from
+'@/components/hub/HubTopBar.astro';
 ```
 
 (`HubShell` will pass a `hubTitle` prop through `BaseLayout` so the top bar has the page title — add `hubTitle?: string` to `BaseLayout`'s `Props` interface and destructure it with a default of `'Family Hub'`.)
@@ -487,61 +502,60 @@ import HubTopBar from '@/components/hub/HubTopBar.astro';
 - [ ] **Step 2: Replace the body chrome region.** Change the current block:
 
 ```astro
-    {chrome === 'hub' ? <HubHeader /> : <Header />}
+{chrome === 'hub' ? <HubHeader /> : <Header />}
 
-    <main id="main" tabindex="-1" data-pagefind-body><slot /></main>
+<main id="main" tabindex="-1" data-pagefind-body><slot /></main>
 
-    {chrome === 'hub' ? <HubFooter /> : <Footer />}
+{chrome === 'hub' ? <HubFooter /> : <Footer />}
 ```
 
 to:
 
 ```astro
-    {
-      chrome === 'hub' ? (
-        <div class="flex min-h-screen">
-          <aside class="sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto lg:block">
-            <HubRail />
-          </aside>
+{
+  chrome === 'hub' ? (
+    <div class="flex min-h-screen">
+      <aside class="sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto lg:block">
+        <HubRail />
+      </aside>
 
-          {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
-          <div
-            id="hub-drawer-backdrop"
-            class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden"
-          />
-          <aside
-            id="hub-drawer"
-            aria-hidden="true"
-            class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
-          >
-            <HubRail />
-          </aside>
+      {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
+      <div id="hub-drawer-backdrop" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden" />
+      <aside
+        id="hub-drawer"
+        aria-hidden="true"
+        class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
+      >
+        <HubRail />
+      </aside>
 
-          <div class="flex min-w-0 flex-1 flex-col">
-            <HubTopBar title={hubTitle} />
-            <main id="main" tabindex="-1" data-pagefind-body class="flex-1"><slot /></main>
-            <HubFooter />
-          </div>
-        </div>
-      ) : (
-        <>
-          <Header />
-          <main id="main" tabindex="-1" data-pagefind-body>
-            <slot />
-          </main>
-          <Footer />
-        </>
-      )
-    }
+      <div class="flex min-w-0 flex-1 flex-col">
+        <HubTopBar title={hubTitle} />
+        <main id="main" tabindex="-1" data-pagefind-body class="flex-1">
+          <slot />
+        </main>
+        <HubFooter />
+      </div>
+    </div>
+  ) : (
+    <>
+      <Header />
+      <main id="main" tabindex="-1" data-pagefind-body>
+        <slot />
+      </main>
+      <Footer />
+    </>
+  )
+}
 ```
 
 - [ ] **Step 3: Load the drawer script.** In the `<body>` script block at the bottom of `BaseLayout` (where `reveal` is imported, ~line 177), add the drawer import so it loads on hub pages (harmless elsewhere — it no-ops when the toggle is absent):
 
 ```astro
-    <script>
-      import '@/scripts/reveal';
-      import '@/scripts/hub-drawer';
-    </script>
+<script>
+  import '@/scripts/reveal';
+  import '@/scripts/hub-drawer';
+</script>
 ```
 
 - [ ] **Step 4: Pass the title through `HubShell`.** In `src/layouts/HubShell.astro`, forward the page title to `BaseLayout` as `hubTitle` (the shell already receives `title`):
@@ -554,7 +568,7 @@ Change the `<BaseLayout ...>` open tag to include `hubTitle={title}`:
   hubTitle={title}
   title={pageTitle ?? `${title} — WCP Family Hub`}
   description={description ?? 'The West Chester Preschool Family Hub for enrolled families.'}
->
+/>
 ```
 
 - [ ] **Step 5: Delete the old header**
@@ -592,6 +606,7 @@ git commit -m "Hub: render the left rail + mobile drawer shell; retire HubHeader
 ## Task 7: Automated SSR coverage — hub-shell Playwright spec
 
 **Files:**
+
 - Create: `playwright.hub.config.ts`
 - Create: `tests/hub-shell.spec.ts`
 
@@ -641,7 +656,10 @@ test.describe('Family Hub shell', () => {
         document.documentElement.classList.toggle('dark', t === 'dark');
       }, theme);
       const results = await new AxeBuilder({ page }).analyze();
-      expect(results.violations, `[${theme}] ` + results.violations.map((v) => v.id).join(', ')).toEqual([]);
+      expect(
+        results.violations,
+        `[${theme}] ` + results.violations.map((v) => v.id).join(', '),
+      ).toEqual([]);
     }
   });
 
@@ -698,6 +716,7 @@ git commit -m "Test: SSR Playwright spec for the hub shell (rail, 320px reflow, 
 ## Task 8: Update the docs
 
 **Files:**
+
 - Modify: `docs/FAMILY_HUB.md`, `CLAUDE.md`
 
 Per the repo's keep-docs-in-sync rule, document the new shell in the same change set.
@@ -724,5 +743,6 @@ git commit -m "Docs: describe the Family Hub rail shell + drawer, and the SSR te
 ## Execution note
 
 Two flagged unknowns to resolve at implementation time, both with a stated fallback so they can't block:
+
 1. **Token names** (`--color-orange` / `--color-navy`) — confirm against `globals.css`; use the exact names.
 2. **SSR `webServer`** for Task 7 — `astro dev` vs `npm run preview` (wrangler); skip-with-comment is the documented-precedent fallback.
