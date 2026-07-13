@@ -1,71 +1,88 @@
-# Contact forms
+# Website forms — how submissions flow, and the one-time Google setup
 
-Any page can have a **contact / tour-request / inquiry form**: in the page builder add a
-**Contact form** section, set its _topic_ (e.g. "Tour request") and labels. The fields are
-fixed (name, email, optional phone, message) so it stays on-brand and simple.
+Any page can carry a form: in the page builder add a **Contact form** section, set its
+_topic_, and pick its **Form fields** variant. The variants reproduce the old Squarespace
+forms field-for-field (see the VARIANTS map in
+[`ContactForm.astro`](../src/components/ContactForm.astro)):
 
-## How a submission flows
+| Variant   | Used on       | Asks for                                                                |
+| --------- | ------------- | ----------------------------------------------------------------------- |
+| `general` | /contact      | First + last name, email, subject, message                              |
+| `enroll`  | /enroll       | Parent + child name, child's birthdate, phone, class checkboxes, extras |
+| `tour`    | /virtual-tour | Child info, class checkboxes, preferred dates/times                     |
+| `teach`   | /work-with-us | Experience, age groups, ECE certification, about-you                    |
 
-1. A visitor submits. With JavaScript the form posts in the background and shows an inline
-   thank-you; without JS it posts natively and lands on `/thank-you`.
-2. [`/api/contact`](../src/pages/api/contact.ts) (SSR) runs in the Worker: it drops obvious
-   spam (a hidden **honeypot** field), validates, and then:
-   - **Always** stores the message as a `submission` document in Sanity → the board reads
-     it in the Studio under **Form submissions** (mark "Handled" when replied). Nothing is
-     ever lost, even if email isn't configured.
-   - **If a Resend key is set**, also emails the office so someone is notified in real time.
+The **Newsletter sign-up** section (first name, last name, email) posts to
+[`/api/subscribe`](../src/pages/api/subscribe.ts); everything else posts to
+[`/api/contact`](../src/pages/api/contact.ts). With JavaScript the form submits in the
+background and shows an inline thank-you; without JS it posts natively and lands on
+`/thank-you`. A hidden honeypot drops obvious bots first.
 
-So the form works the moment it's on a page — the email step is an optional upgrade.
+## How a submission fans out
 
-## Enabling email notifications (Resend) — the one setup step
+Each step is independent — one failure never loses a message:
 
-Email is off until you add a [Resend](https://resend.com) key (free tier: 3,000
-emails/month, 100/day). Steps:
+1. **Sanity (always on, zero config)** — stored as a `submission` / `subscriber` doc.
+   Studio → **Form submissions** / **Newsletter subscribers**. The safety net.
+2. **The Google forms inbox (free — the recommended one to turn on)** — a Google Apps
+   Script web app on the school Workspace that appends a row to a Google Sheet AND emails
+   the board's Gmail with **reply-to set to the family**, so staff answer by just hitting
+   Reply in Gmail.
+3. **Resend / newsletter provider (optional)** — legacy email path (`RESEND_API_KEY`) and
+   list-provider push (Buttondown/Mailchimp secrets, see below). Redundant once the
+   Google inbox is live.
 
-1. Create a Resend account and **verify your sending domain** (e.g.
-   `westchesterpreschool.org`) in the Resend dashboard. (You can test first with their
-   `onboarding@resend.dev` sender and skip domain verification.)
-2. Create an **API key** in Resend.
-3. Add it as a secret to the deployed Worker **and** to GitHub (so builds have it):
+## Turning on the Google inbox (once, ~5 minutes)
+
+1. In the school Google Workspace, create a Sheet named **WCP Website Submissions**.
+2. In that Sheet: **Extensions → Apps Script**, delete the placeholder, and paste the
+   whole of [`scripts/apps-script/forms-inbox.gs`](../scripts/apps-script/forms-inbox.gs).
+3. At the top of the script set:
+   - `NOTIFY_EMAIL` — the Gmail address submissions should land in
+     (e.g. `contact@westchesterpreschool.org`).
+   - `SHARED_TOKEN` — any long random string (stops strangers who find the URL from
+     injecting fake submissions).
+4. **Deploy → New deployment → Web app** · _Execute as: Me_ · _Who has access: Anyone_ →
+   **Deploy** → copy the web app URL.
+5. Hand both values to the Worker:
 
    ```sh
-   # From site/ , with wrangler logged in:
-   npx wrangler secret put RESEND_API_KEY
-   # optional overrides (defaults: CONTACT_TO = site general email,
-   # CONTACT_FROM = onboarding@resend.dev):
-   npx wrangler secret put CONTACT_TO       # e.g. president@westchesterpreschool.org
-   npx wrangler secret put CONTACT_FROM      # e.g. "WCP Website <hello@westchesterpreschool.org>"
+   cd site
+   npx wrangler secret put FORMS_WEBHOOK_URL     # paste the web app URL
+   npx wrangler secret put FORMS_WEBHOOK_TOKEN   # paste the same token
    ```
 
-   For local testing, put the same keys in `site/.dev.vars`.
+   Add the same two lines to `site/.dev.vars` for local dev, then redeploy
+   (`npm run deploy`).
 
-That's it — new submissions will email `CONTACT_TO` (with the visitor's address as
-reply-to) and continue to be saved in the Studio.
+From then on every inquiry emails the board (reply-to the family) and lands as a row in
+the Sheet — `contact` and `newsletter` tabs are created automatically. Newsletter signups
+go to the Sheet only (no email — they'd be noisy). Quota is ~1,500 emails/day on
+Workspace; the forms will never come close.
 
-## Newsletter sign-up
+**Updating the script later:** edit in the Sheet's Apps Script editor, then
+**Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy**. The URL
+stays the same. (Do NOT "New deployment" — that mints a new URL and needs a new
+`FORMS_WEBHOOK_URL`.)
 
-The same machinery powers the **Newsletter sign-up** section (add it to any page). It
-posts to [`/api/subscribe`](../src/pages/api/subscribe.ts), which **always** stores the
-subscriber in Sanity (**Newsletter subscribers**) and, if a provider is configured, also
-adds them to your email list. Pick a provider by setting secrets (like the Resend step
-above):
+## Optional extras
 
-- **Buttondown** (simplest): `NEWSLETTER_PROVIDER=buttondown` + `BUTTONDOWN_API_KEY`.
-- **Mailchimp**: `NEWSLETTER_PROVIDER=mailchimp` + `MAILCHIMP_API_KEY` +
-  `MAILCHIMP_LIST_ID` + `MAILCHIMP_SERVER_PREFIX` (e.g. `us21`).
-
-Until a provider is set it is store-only — you can export the list from the Studio.
-Subscribers are deduped by email, so the same person signing up twice is harmless.
+- **Resend email** (`RESEND_API_KEY`, optional `CONTACT_TO` / `CONTACT_FROM`): the older
+  notification path; needs a verified sending domain for a branded From address.
+- **Newsletter list provider**: `NEWSLETTER_PROVIDER=buttondown` + `BUTTONDOWN_API_KEY`,
+  or `NEWSLETTER_PROVIDER=mailchimp` + `MAILCHIMP_API_KEY` + `MAILCHIMP_LIST_ID` +
+  `MAILCHIMP_SERVER_PREFIX`. Until set, signups are store-only (export from the Studio).
 
 ## Spam
 
-A honeypot field blocks basic bots with zero friction (no CAPTCHA). If spam ever becomes a
-problem, the next step is Cloudflare **Turnstile** (a free, privacy-friendly CAPTCHA) — a
-site key + secret and a check in `/api/contact`. Not needed for a low-traffic site.
+The honeypot blocks basic bots with zero friction. If real spam ever gets through, the
+next step is Cloudflare **Turnstile** (free, privacy-friendly) — a site key + secret and
+a token check in `/api/contact`. Not needed for a low-traffic site.
 
 ## Notes
 
 - Astro's CSRF protection (`security.checkOrigin`) requires a same-origin `Origin` header
-  on the POST, so the form only accepts submissions from the site itself.
-- Submissions can contain a prospective family's name, email, and phone — treat the
-  **Form submissions** inbox as private contact info.
+  on the POST, so the forms only accept submissions from the site itself.
+- Submissions contain a prospective family's contact details (and a child's name and
+  birthdate on the enroll form) — treat the submissions inbox, the notification Gmail,
+  and the Google Sheet as private contact info.

@@ -113,7 +113,36 @@ export const POST: APIRoute = async (context) => {
     // Don't fail the visitor if storage hiccups; still try to email below.
   }
 
-  // 2. Email the office via Resend, if configured.
+  // 2. Forward to the school's Google Apps Script inbox, if configured: one
+  //    free webhook that emails the board's Gmail (reply-to = the family) AND
+  //    appends a row to the submissions Google Sheet. See docs/FORMS.md and
+  //    scripts/apps-script/forms-inbox.gs. Fire-and-forget: a webhook hiccup
+  //    never fails the visitor (the submission is already safe in Sanity).
+  const webhookUrl = env.FORMS_WEBHOOK_URL;
+  if (webhookUrl) {
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          token: env.FORMS_WEBHOOK_TOKEN ?? '',
+          kind: 'contact',
+          topic,
+          name,
+          email,
+          phone,
+          message,
+          pageUrl: referer,
+          submittedAt,
+        }),
+      });
+      if (!res.ok) console.error('[contact] forms webhook responded', res.status);
+    } catch (err) {
+      console.error('[contact] forms webhook failed', err);
+    }
+  }
+
+  // 3. Email the office via Resend, if configured.
   const resendKey = env.RESEND_API_KEY;
   if (resendKey) {
     const to = env.CONTACT_TO || site.email.general;

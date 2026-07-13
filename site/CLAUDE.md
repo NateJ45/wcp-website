@@ -131,5 +131,5 @@ docs/                        # PAGE_BUILDER.md, SANITY.md, FAMILY_HUB.md
 - [docs/SANITY.md](docs/SANITY.md) — Sanity project, the Studio, secrets, the auto-deploy webhook.
 - [docs/FAMILY_HUB.md](docs/FAMILY_HUB.md) — the gated family area and its password gate.
 - [docs/ROLES.md](docs/ROLES.md) — Sanity roles/access (owner-only admin task); what the tiers allow.
-- [docs/FORMS.md](docs/FORMS.md) — contact forms: how submissions flow, and the Resend email setup step.
+- [docs/FORMS.md](docs/FORMS.md) — forms: variants, how submissions fan out (Sanity → Google Apps Script inbox → optional Resend), and the one-time Google setup.
 - [docs/REDIRECTS.md](docs/REDIRECTS.md) — mapping old Squarespace URLs → new at domain cutover.

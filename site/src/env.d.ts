@@ -46,6 +46,12 @@ declare namespace Cloudflare {
     CONTACT_TO?: string;
     /** Verified Resend "from" address (defaults to the Resend test sender). */
     CONTACT_FROM?: string;
+    /** Google Apps Script web-app URL — the free forms inbox that emails the
+     *  board + logs to a Google Sheet. Unset = skip. See docs/FORMS.md. */
+    FORMS_WEBHOOK_URL?: string;
+    /** Shared secret sent with each webhook POST; must match the script's
+     *  SHARED_TOKEN so strangers can't inject fake submissions. */
+    FORMS_WEBHOOK_TOKEN?: string;
     /** Newsletter provider: "buttondown" | "mailchimp". Unset = store-only. */
     NEWSLETTER_PROVIDER?: string;
     BUTTONDOWN_API_KEY?: string;

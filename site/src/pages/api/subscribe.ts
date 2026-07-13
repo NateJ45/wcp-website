@@ -116,5 +116,27 @@ export const POST: APIRoute = async (context) => {
     console.error('[subscribe] provider push failed', err);
   }
 
+  // 3. Log to the school's Google Apps Script inbox, if configured — the
+  //    newsletter tab of the submissions Sheet (see docs/FORMS.md).
+  const webhookUrl = env.FORMS_WEBHOOK_URL;
+  if (webhookUrl) {
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          token: env.FORMS_WEBHOOK_TOKEN ?? '',
+          kind: 'newsletter',
+          name,
+          email,
+          pageUrl: referer,
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+    } catch (err) {
+      console.error('[subscribe] forms webhook failed', err);
+    }
+  }
+
   return ok();
 };
