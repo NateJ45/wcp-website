@@ -18,6 +18,7 @@
 //      is 7/8am ET, so the calendar day survives the timezone conversion.
 // =============================================================================
 import { sanityFetch } from '@/lib/sanity';
+import { cached } from '@/lib/hub-cache';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
 import { EVENT_TZ } from '@/lib/events';
 
@@ -90,9 +91,13 @@ interface SanityEventDoc {
 export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
   const cutoff = Date.now() - 86_400_000; // yesterday, so late-running events linger a day
   try {
-    const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) throw new Error(`feed ${res.status}`);
-    const raw = (await res.json()) as HubEvent[];
+    // Cached 5 minutes per isolate (hub-cache.ts): an Apps Script execution
+    // takes 1.5-3s and was THE dominant slice of hub navigation time.
+    const raw = await cached(`calfeed:${feedUrl}`, 300_000, async () => {
+      const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`feed ${res.status}`);
+      return (await res.json()) as HubEvent[];
+    });
     const events = (raw ?? [])
       .filter((e) => e && e.title && e.start && eventDate(e.start).getTime() >= cutoff)
       .sort((a, b) => eventDate(a.start).getTime() - eventDate(b.start).getTime());

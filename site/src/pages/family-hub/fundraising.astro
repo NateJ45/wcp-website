@@ -41,40 +41,32 @@ interface HubPageDoc {
   sections?: any[];
 }
 
-let campaigns: Campaign[] = [];
-let doc: HubPageDoc | null = null;
-try {
-  campaigns = await sanityFetch<Campaign[]>(
+// The three Sanity reads are independent — run them concurrently (they were
+// sequential once, ~0.2s each; part of the 2026-07 hub-speed pass). Each keeps
+// its original fallback on failure via allSettled.
+const [campaignsResult, docResult, settingsResult] = await Promise.allSettled([
+  sanityFetch<Campaign[]>(
     `*[_type == "campaign" && active == true] | order(_createdAt desc){ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`,
-  );
-} catch {
-  campaigns = [];
-}
-try {
-  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'fundraising' });
-} catch {
-  doc = null;
-}
+  ),
+  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'fundraising' }),
+  sanityFetch<{
+    budgetSheetId?: string | null;
+    pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
+  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`),
+]);
+const campaigns = campaignsResult.status === 'fulfilled' ? campaignsResult.value : [];
+const doc = docResult.status === 'fulfilled' ? docResult.value : null;
 
 // Year at a glance — live from the treasurer's Fundraising sheet tab — plus
 // the "raised together" record of past-year grand totals (Board-editable on
 // Site Settings; falls back to the old site's numbers until set).
-let sheetId = budgetSheetIdFallback;
-let pastTotals = pastFundraisingTotalsFallback;
-try {
-  const settings = await sanityFetch<{
-    budgetSheetId?: string | null;
-    pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
-  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`);
-  sheetId = settings?.budgetSheetId || budgetSheetIdFallback;
-  const cmsTotals = (settings?.pastFundraisingTotals ?? []).filter(
-    (t): t is { yearLabel: string; amount: number } =>
-      Boolean(t.yearLabel) && typeof t.amount === 'number',
-  );
-  if (cmsTotals.length > 0) pastTotals = cmsTotals;
-} catch {
-  sheetId = budgetSheetIdFallback;
-}
+const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;
+const sheetId = settings?.budgetSheetId || budgetSheetIdFallback;
+const cmsTotals = (settings?.pastFundraisingTotals ?? []).filter(
+  (t): t is { yearLabel: string; amount: number } =>
+    Boolean(t.yearLabel) && typeof t.amount === 'number',
+);
+const pastTotals = cmsTotals.length > 0 ? cmsTotals : pastFundraisingTotalsFallback;
 const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
 const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
 const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);

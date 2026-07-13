@@ -13,20 +13,26 @@
 // Google response from stalling hub SSR.
 // =============================================================================
 
+import { cached } from '@/lib/hub-cache';
+
 interface GvizCell {
   v?: unknown;
   f?: string;
 }
 
-/** Fetch one sheet tab's rows as a cell matrix. Throws on any failure. */
+/** Fetch one sheet tab's rows as a cell matrix. Throws on any failure.
+ *  Cached 5 minutes per isolate (see hub-cache.ts): a gviz round-trip runs
+ *  0.5-1.5s, which was a big slice of hub navigation time. */
 export async function fetchSheetRows(sheetId: string, tab: string): Promise<GvizCell[][]> {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`gviz ${res.status}`);
-  const text = await res.text();
-  const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
-  const rows: { c?: (GvizCell | null)[] }[] = json?.table?.rows ?? [];
-  return rows.map((r) => (r.c ?? []).map((c) => c ?? {}));
+  return cached(`gviz:${sheetId}:${tab}`, 300_000, async () => {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`gviz ${res.status}`);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+    const rows: { c?: (GvizCell | null)[] }[] = json?.table?.rows ?? [];
+    return rows.map((r) => (r.c ?? []).map((c) => c ?? {}));
+  });
 }
 
 const cellStr = (c?: GvizCell): string => String(c?.v ?? c?.f ?? '').trim();

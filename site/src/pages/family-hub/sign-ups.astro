@@ -45,15 +45,20 @@ interface Entry {
 let sheets: Sheet[] = [];
 let entries: Entry[] = [];
 try {
+  // fresh: a family reloading right after responding must see their own name
+  // and the bumped count — CDN staleness here would read as a lost sign-up.
   sheets = await sanityFetch<Sheet[]>(
     `*[_type == "signupSheet" && open == true] | order(coalesce(eventDate, "9999-12-31") asc){
       _id, title, description, kind, eventDate, slots
     }`,
+    {},
+    { fresh: true },
   );
   if (sheets.length > 0) {
     entries = await sanityFetch<Entry[]>(
       `*[_type == "signupEntry" && sheet._ref in $ids]{ "ref": sheet._ref, slotKey, familyName }`,
       { ids: sheets.map((s) => s._id) },
+      { fresh: true },
     );
   }
 } catch {
