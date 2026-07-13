@@ -50,6 +50,11 @@ const NON_STEGA_FIELDS = new Set([
   // Drives expandRecurring() — a stega-encoded value would fail the
   // recurrence === 'weekly' check and quietly skip expansion in preview.
   'recurrence',
+  // Announcement fields that drive rendering branches (bar vs popup, tone
+  // class, waitlist auto-fill, placement match).
+  'format',
+  'template',
+  'placement',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {

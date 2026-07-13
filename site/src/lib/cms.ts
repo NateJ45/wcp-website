@@ -8,9 +8,11 @@ import {
   SCHOOL_YEAR_EVENTS_QUERY,
   NAVIGATION_QUERY,
   CLOSURE_ALERT_QUERY,
+  ANNOUNCEMENTS_QUERY,
   testimonialsQuery,
 } from '@/lib/queries';
 import { resolveNavigation, type SiteNavigation } from '@/lib/nav';
+import type { Announcement } from '@/lib/announcements';
 
 export interface ClosureAlert {
   active?: boolean;
@@ -24,6 +26,12 @@ export interface ClosureAlert {
 export async function getClosureAlert(): Promise<ClosureAlert | null> {
   const alert = await cmsFetch<ClosureAlert | null>(CLOSURE_ALERT_QUERY, {}, null);
   return alert?.active && alert.message ? alert : null;
+}
+
+/** Enabled announcements (bars + popups); [] on any failure. Placement + time
+ *  window are applied at render time by the components/scripts. */
+export async function getAnnouncements(): Promise<Announcement[]> {
+  return cmsFetch<Announcement[]>(ANNOUNCEMENTS_QUERY, {}, []);
 }
 
 // =============================================================================

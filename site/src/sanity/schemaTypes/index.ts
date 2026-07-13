@@ -41,6 +41,7 @@ import { post } from './documents/post';
 import { event } from './documents/event';
 import { redirect } from './documents/redirect';
 import { venue } from './documents/venue';
+import { announcement } from './documents/announcement';
 import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { coopRole } from './documents/coopRole';
@@ -96,6 +97,7 @@ export const schemaTypes = [
   event,
   redirect,
   venue,
+  announcement,
   submission,
   subscriber,
   coopRole,

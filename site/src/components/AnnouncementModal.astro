@@ -1,0 +1,137 @@
+---
+/* ============================================================================
+   AnnouncementModal — the top-priority board popup (public pages)
+   ============================================================================
+   Renders at most ONE popup: the highest-priority enabled `announcement`
+   (format=popup) that is in its time window and applies to this page. Opens
+   once per the chosen frequency (per visitor / per session / every load),
+   remembered in storage keyed by id+version, following the note-modal pattern.
+   Renders nothing when there's no popup to show. No-JS visitors see no popup.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import SanityImage from '@/components/SanityImage.astro';
+import { withBase } from '@/lib/utils';
+import { isInWindow, matchesPlacement, type Announcement } from '@/lib/announcements';
+
+interface Props {
+  announcements: Announcement[];
+  currentPath: string;
+}
+const { announcements, currentPath } = Astro.props;
+
+const nowMs = Date.now();
+const popup = announcements.find(
+  (a) =>
+    a.format === 'popup' &&
+    matchesPlacement(a, currentPath) &&
+    isInWindow(nowMs, a.showFrom, a.showUntil),
+);
+
+const toneAccent: Record<string, string> = {
+  info: 'border-navy',
+  good: 'border-green',
+  warning: 'border-amber',
+  urgent: 'border-[#c1272d]',
+  brand: 'border-amber',
+};
+
+let href: string | null = null;
+if (popup?.linkLabel) {
+  href =
+    popup.linkType === 'url'
+      ? (popup.url ?? null)
+      : popup.pageSlug
+        ? withBase(`/${popup.pageSlug}`, '')
+        : null;
+}
+const external = href ? /^https?:\/\//.test(href) : false;
+const image = popup?.image as { asset?: unknown; alt?: string } | undefined;
+const accent = toneAccent[popup?.tone ?? 'info'] ?? toneAccent.info;
+---
+
+{
+  popup && (
+    <div
+      hidden
+      data-ann-modal
+      data-ann-id={popup._id}
+      data-ann-version={popup.version ?? 'v1'}
+      data-ann-frequency={popup.frequency ?? 'once'}
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div data-ann-modal-close class="absolute inset-0 bg-navy/60" />
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ann-modal-heading"
+        class:list={[
+          'ann-modal-box relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius)] border-t-4 bg-white shadow-2xl dark:bg-surface',
+          accent,
+        ]}
+        style="max-height: 92dvh"
+      >
+        <button
+          type="button"
+          data-ann-modal-close
+          aria-label="Close"
+          class="absolute top-3 right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white shadow-md transition-colors hover:bg-navy/85"
+        >
+          <Icon name="x" class="h-5 w-5" />
+        </button>
+
+        <div class="overflow-y-auto overscroll-contain">
+          {image?.asset && (
+            <SanityImage
+              source={image as never}
+              alt={image.alt ?? ''}
+              widths={[512, 1024]}
+              sizes="32rem"
+              class="h-48 w-full object-cover"
+            />
+          )}
+          <div class="p-6 pt-10 text-center sm:p-8 sm:pt-10">
+            {popup.heading && (
+              <h2 id="ann-modal-heading" class="font-display text-2xl text-heading sm:text-3xl">
+                {popup.heading}
+              </h2>
+            )}
+            {popup.message && <p class="mt-3 leading-relaxed text-ink">{popup.message}</p>}
+            {href && (
+              <div class="mt-6">
+                <a
+                  href={href}
+                  data-ann-modal-cta
+                  class="inline-flex items-center justify-center rounded-full bg-navy px-7 py-3 font-semibold text-white shadow-sm transition hover:bg-navy/90"
+                  {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+                >
+                  {popup.linkLabel}
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+{popup && <script>import '@/scripts/announcement-modal';</script>}
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ann-modal]:not([hidden]) .ann-modal-box {
+      animation: ann-modal-in 0.25s ease-out both;
+    }
+  }
+  @keyframes ann-modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

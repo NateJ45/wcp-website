@@ -84,7 +84,7 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
-          '**Everyday edits** — the usual jobs. **Alert banner** (a snow-day banner across every page), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too).',
+          '**Everyday edits** — the usual jobs. **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too).',
           '**School info** — the school facts: **Classes** (schedule, ages, tuition per class), **Staff** (teacher names and bios), **FAQs**, **Testimonials**, **School-Year Events**, and **Community & content** (programs, board, partners, photo albums).',
           '**Family Hub** — the private, families-only content (announcements, documents, sign-ups, the directory).',
           '**Site setup** — set-once things: **Site Settings** (phone, email, address, school year), **Menus (header & footer)**, and **Redirects** (forward old links when you rename a page).',
@@ -527,6 +527,47 @@ export const guides: Guide[] = [
         title: 'For a planned closure, schedule it',
         text: 'You can prepare the message ahead of time and use **Schedule** so it appears on its own the morning of (see "Schedule a change for later").',
       },
+      { kind: 'seealso', items: ['Post an announcement bar or popup'] },
+    ],
+  },
+
+  {
+    slug: 'announcements',
+    title: 'Post an announcement bar or popup',
+    icon: '📢',
+    lead: 'Ready-made bars and popups you turn on and off — waitlist status, open house, fundraiser, and more.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'This is for planned, friendly messages on the public site. (The **Alert banner** is the separate, urgent snow-day one.) You can have several going at once, each turned on or off on its own, and set to appear and disappear on their own dates.',
+      },
+      { kind: 'path', items: ['Announcements', '＋ new', 'pick a type', 'turn on', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **Announcements** near the top of the left menu, then **＋**.',
+          'Pick a ready-made type: **Open house bar**, **Enrollment / waitlist bar**, **Fundraiser bar**, **General notice**, **Welcome popup**, or **Event popup**. It fills in sensible wording and colors.',
+          'Edit the message, color, and (optional) button. For a bar, it shows across the top of every page; a popup opens in the middle of the screen.',
+          'Under **When it shows**, flip **Turn it on**. Optionally set **Start showing** / **Stop showing** dates so it appears and vanishes on its own.',
+          '**Publish**. To take it down, come back and turn it off (or just let its end date pass).',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'The waitlist bar fills itself in.',
+        text: 'The **Enrollment / waitlist** type reads your class availability sheet (the same one behind the "spots open" badges) and writes the message for you, e.g. "Now enrolling — Threes & Pre-K open, Twos waitlist." It stays current on its own. Type your own message to override it.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Several at once:** turn on as many bars as you like; they stack at the top in the **Order** you set (lower number first).',
+          '**Only certain pages:** under **Where it shows**, choose "Only the pages I choose" (e.g. an open-house bar everywhere except the enroll page).',
+          '**Popups:** choose how often each visitor sees it (once, once per visit, or every time). Change the **Version stamp** after editing to show it again to people who already closed it.',
+        ],
+      },
+      { kind: 'seealso', items: ['Post a closure or alert', 'Schedule a change for later'] },
     ],
   },
 

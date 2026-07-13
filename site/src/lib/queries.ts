@@ -169,6 +169,16 @@ export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" &
 /** The site-wide alert banner (only meaningful when active). */
 export const CLOSURE_ALERT_QUERY = `*[_type == "closureAlert"][0]{ active, message, tone, linkLabel, linkUrl }`;
 
+// Enabled announcements (bars + popups), priority-ordered. Time-window and
+// per-page placement are applied at render time (see AnnouncementBars). Page
+// slugs are plain strings on the page doc, so `->slug` gives them directly.
+export const ANNOUNCEMENTS_QUERY = `*[_type == "announcement" && enabled == true] | order(priority asc, _createdAt asc){
+  _id, title, format, template, message, tone, icon, heading,
+  linkLabel, linkType, "pageSlug": page->slug, url,
+  showFrom, showUntil, priority, placement, "pageSlugs": pages[]->slug,
+  frequency, version, image
+}`;
+
 export const SCHOOL_YEAR_EVENTS_QUERY = `*[_type == "schoolYearEvent"] | order(orderRank){ month, title, body, icon, accent }`;
 
 export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee }`;

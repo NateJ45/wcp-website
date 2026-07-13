@@ -1,0 +1,100 @@
+---
+/* ============================================================================
+   AnnouncementBars — the board-managed bars, stacked at the top of the page
+   ============================================================================
+   Rendered in BaseLayout (public pages only), below the snow-day Alert banner.
+   Each bar is one `announcement` (format=bar). Placement is resolved here at
+   build time (each page ships only its own bars); the time window and the
+   waitlist auto-text are handled by src/scripts/announcement-bars.ts so bars
+   cross their from/until boundaries and stay accurate between rebuilds. No-JS
+   visitors see whatever is in-window at build. Each bar is dismissible.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { withBase } from '@/lib/utils';
+import { isInWindow, matchesPlacement, type Announcement } from '@/lib/announcements';
+
+interface Props {
+  announcements: Announcement[];
+  currentPath: string;
+}
+const { announcements, currentPath } = Astro.props;
+
+// Only bars that apply to THIS page; keep priority order (query already sorted).
+const bars = announcements.filter(
+  (a) => (a.format ?? 'bar') === 'bar' && matchesPlacement(a, currentPath),
+);
+
+const nowMs = Date.now();
+
+// Theme-stable tone pairs (fixed hex where needed) — each clears WCAG-AA in both
+// light and dark, same approach as ClosureBanner.
+const toneClass: Record<string, string> = {
+  info: 'bg-navy text-white',
+  good: 'bg-[#0e7b2e] text-white',
+  warning: 'bg-amber text-navy',
+  urgent: 'bg-[#c1272d] text-white',
+  brand: 'bg-cream text-navy',
+};
+
+function hrefFor(a: Announcement): string | null {
+  if (!a.linkLabel) return null;
+  if (a.linkType === 'url') return a.url || null;
+  return a.pageSlug ? withBase(`/${a.pageSlug}`, '') : null;
+}
+---
+
+{
+  bars.map((a) => {
+    const bg = toneClass[a.tone ?? 'info'] ?? toneClass.info;
+    const href = hrefFor(a);
+    const external = href ? /^https?:\/\//.test(href) : false;
+    const inWindow = isInWindow(nowMs, a.showFrom, a.showUntil);
+    const isWaitlist = a.template === 'waitlist';
+    return (
+      <div
+        class={bg}
+        data-ann={a._id}
+        data-ann-from={a.showFrom ?? ''}
+        data-ann-until={a.showUntil ?? ''}
+        data-ann-waitlist={isWaitlist ? 'true' : undefined}
+        role="region"
+        aria-label="Site announcement"
+        hidden={!inWindow}
+      >
+        <div class="wcp-container flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 text-center text-sm font-medium">
+          {a.icon && <Icon name={a.icon} class="h-4 w-4 shrink-0" aria-hidden="true" />}
+          <span data-ann-message>{a.message || (isWaitlist ? 'Now enrolling!' : '')}</span>
+          {href && (
+            <a
+              href={href}
+              class="font-semibold whitespace-nowrap underline underline-offset-2"
+              {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+            >
+              {a.linkLabel}
+            </a>
+          )}
+          <button
+            type="button"
+            data-ann-dismiss
+            aria-label="Dismiss this announcement"
+            class="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full opacity-80 hover:bg-black/10 hover:opacity-100"
+          >
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  })
+}
+
+{bars.length > 0 && <script>import '@/scripts/announcement-bars';</script>}

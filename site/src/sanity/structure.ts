@@ -227,6 +227,7 @@ const PLACED = new Set([
   'signupEntry',
   'redirect',
   'venue',
+  'announcement',
   // sanity-plugin-media stores its image tags as documents of this type;
   // they're managed inside the Media tool, so keep the raw list out of the
   // nav (a bare "Media Tag" item is just confusing).
@@ -254,6 +255,7 @@ export const structure: StructureResolver = (S, context) =>
       S.divider().title('Everyday edits'),
 
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
+      S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
@@ -404,6 +406,7 @@ export const everydayStructure: StructureResolver = (S, context) =>
       S.divider().title('Everyday edits'),
 
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
+      S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),

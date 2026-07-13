@@ -13,6 +13,7 @@ import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLa
 import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
+import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { structure, everydayStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
 import { wcpStudioTheme } from './src/sanity/theme';
@@ -152,7 +153,7 @@ function workspace(opts: {
       media(),
       ...(opts.extraPlugins ?? []),
     ],
-    schema: { types: schemaTypes },
+    schema: { types: schemaTypes, templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES] },
     document: {
       // Singletons keep only their editing actions (no unpublish/delete/duplicate).
       actions: (prev, { schemaType }) =>

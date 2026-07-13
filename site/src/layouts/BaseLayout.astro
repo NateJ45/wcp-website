@@ -15,9 +15,11 @@ import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
 import HubSearch from '@/components/hub/HubSearch.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
+import AnnouncementBars from '@/components/AnnouncementBars.astro';
+import AnnouncementModal from '@/components/AnnouncementModal.astro';
 import StructuredData from '@/components/StructuredData.astro';
 import { site } from '@/data/site';
-import { getClosureAlert } from '@/lib/cms';
+import { getClosureAlert, getAnnouncements } from '@/lib/cms';
 
 interface Props {
   /** Browser tab + Open Graph title. Required so no page ships untitled. */
@@ -64,6 +66,11 @@ const metaDescription = description || site.tagline;
 // is active with a message — baked in at build, so it appears/clears on the
 // next rebuild after Publish.
 const closureAlert = await getClosureAlert();
+
+// Board-managed announcement bars + popups (public site only). Placement and
+// time-window are resolved in the components/scripts; the fetch never throws.
+const announcements = chrome === 'site' ? await getAnnouncements() : [];
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -199,6 +206,11 @@ const closureAlert = await getClosureAlert();
     </a>
 
     {closureAlert && <ClosureBanner alert={closureAlert} />}
+    {
+      chrome === 'site' && announcements.length > 0 && (
+        <AnnouncementBars announcements={announcements} currentPath={currentPath} />
+      )
+    }
 
     <!-- body is `relative` so the big header's absolute overlay (Header.astro,
          `data-big-header`) positions against the full document, not just the
@@ -259,6 +271,9 @@ const closureAlert = await getClosureAlert();
             <slot />
           </main>
           <Footer />
+          {announcements.length > 0 && (
+            <AnnouncementModal announcements={announcements} currentPath={currentPath} />
+          )}
         </>
       )
     }
