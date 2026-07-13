@@ -33,8 +33,8 @@ const formId = `form-${section._key}`;
   <div class="mt-8">
     <ContactForm
       topic={(section.topic as string) ?? 'Contact us'}
+      variant={(section.variant as 'general' | 'enroll' | 'tour' | 'teach') ?? 'general'}
       showPhone={section.showPhone !== false}
-      showEnrollFields={/enrol/i.test((section.topic as string) ?? '')}
       buttonLabel={(section.buttonLabel as string) ?? 'Send message'}
       successMessage={(section.successMessage as string) ?? undefined}
       formId={formId}

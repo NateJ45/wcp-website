@@ -25,26 +25,44 @@ export const POST: APIRoute = async (context) => {
   const referer = context.request.headers.get('referer') ?? '';
 
   const honeypot = String(form.get('company') ?? '').trim();
-  const name = clip(String(form.get('name') ?? '').trim(), 200);
+  // First/last from the split fields (every form variant); a single `name`
+  // field is still accepted for compatibility.
+  const fname = String(form.get('fname') ?? '').trim();
+  const lname = String(form.get('lname') ?? '').trim();
+  const name = clip(
+    [fname, lname].filter(Boolean).join(' ') || String(form.get('name') ?? '').trim(),
+    200,
+  );
   const email = clip(String(form.get('email') ?? '').trim(), 200);
   const phone = clip(String(form.get('phone') ?? '').trim(), 60);
   let message = clip(String(form.get('message') ?? '').trim(), 5000);
   const topic = clip(String(form.get('topic') ?? 'Contact').trim(), 120);
 
-  // Enrollment inquiries carry structured child details (see ContactForm's
-  // showEnrollFields). Fold them into the stored/emailed message so the board
-  // sees everything in one place without a schema change.
-  const childName = clip(String(form.get('childName') ?? '').trim(), 200);
-  const childBirthdate = clip(String(form.get('childBirthdate') ?? '').trim(), 40);
-  const classInterest = clip(String(form.get('classInterest') ?? '').trim(), 40);
-  const childDetails = [
-    childName && `Child: ${childName}`,
-    childBirthdate && `Birthdate: ${childBirthdate}`,
-    classInterest && `Class: ${classInterest}`,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  if (childDetails) message = `${childDetails}\n\n${message}`;
+  // Variant extras (see ContactForm's VARIANTS): fold every structured field
+  // into the stored/emailed message so the board sees one complete note and
+  // no submission-schema change is needed per form. Checkbox groups post the
+  // same name multiple times, hence getAll().
+  const EXTRAS: Record<string, string> = {
+    subject: 'Subject',
+    childName: 'Child',
+    childBirthdate: 'Birthdate',
+    childInfo: 'Child (name & birthdate)',
+    classInterest: 'Class interest',
+    datesTimes: 'Preferred dates/times',
+    experienceYears: 'Experience with children',
+    ageGroups: 'Age groups',
+    certification: 'ECE certification/degree',
+    hearAbout: 'How they heard of us',
+  };
+  const detailLines: string[] = [];
+  for (const [key, label] of Object.entries(EXTRAS)) {
+    const values = form
+      .getAll(key)
+      .map((v) => clip(String(v).trim(), 300))
+      .filter(Boolean);
+    if (values.length) detailLines.push(`${label}: ${values.join(', ')}`);
+  }
+  if (detailLines.length) message = `${detailLines.join('\n')}${message ? `\n\n${message}` : ''}`;
 
   const ok = () =>
     wantsJson
@@ -63,8 +81,10 @@ export const POST: APIRoute = async (context) => {
 
   // Honeypot filled → a bot. Pretend success and drop it.
   if (honeypot) return ok();
+  // Structured variants (enroll/tour/teach) may leave the free-text box empty —
+  // their detail lines are the message. Only a fully empty note is rejected.
   if (!name || !isEmail(email) || !message)
-    return bad('Please fill in your name, a valid email, and a message.');
+    return bad('Please fill in your name, a valid email, and the details of your note.');
 
   const submittedAt = new Date().toISOString();
 

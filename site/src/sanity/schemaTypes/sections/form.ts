@@ -25,6 +25,22 @@ export const formSection = defineType({
       validation: (R) => R.required(),
     }),
     defineField({
+      name: 'variant',
+      title: 'Form fields',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'General (subject + message)', value: 'general' },
+          { title: 'Enrollment inquiry (child details + classes)', value: 'enroll' },
+          { title: 'Tour request (child + preferred dates)', value: 'tour' },
+          { title: 'Teaching application (experience + certification)', value: 'teach' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'general',
+      description: 'Which set of questions the form asks (matches the forms families know).',
+    }),
+    defineField({
       name: 'showPhone',
       title: 'Ask for a phone number?',
       type: 'boolean',

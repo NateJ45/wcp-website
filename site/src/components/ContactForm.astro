@@ -1,31 +1,115 @@
 ---
 /* ============================================================================
-   ContactForm — accessible contact/inquiry form, posts to /api/contact
+   ContactForm — accessible inquiry forms, posts to /api/contact
    ============================================================================
    Progressive enhancement: with no JS the native POST redirects to /thank-you;
    with JS it submits in the background and swaps in an inline thank-you. A
-   hidden honeypot field ("company") catches basic bots. Fixed fields keep it
-   simple and on-brand — the section only configures the topic/labels.
+   hidden honeypot field ("company") catches basic bots.
+
+   VARIANTS reproduce the live Squarespace forms field-for-field (captured
+   from the rendered old site 2026-07 — they're JS-hydrated there, so view
+   source lies):
+     general → the old /contact form  (First, Last, Email, Subject, Message)
+     enroll  → the old /enroll form   (parent + child details, class checkboxes)
+     tour    → the old /tour form     (child info, preferred dates/times)
+     teach   → the old /work-with-us  (experience, age groups, certification)
+   Every field posts under a stable name; /api/contact folds the extras into
+   the stored submission + email, so no schema change is needed per variant.
    ============================================================================ */
 interface Props {
   topic: string;
+  variant?: 'general' | 'enroll' | 'tour' | 'teach';
   showPhone?: boolean;
-  /** Enrollment inquiries add structured child fields (name/birthdate/class). */
-  showEnrollFields?: boolean;
   buttonLabel?: string;
   successMessage?: string;
   formId: string;
 }
 const {
   topic,
+  variant = 'general',
   showPhone = true,
-  showEnrollFields = false,
   buttonLabel = 'Send message',
   successMessage = 'Thank you! We have your message and will be in touch soon.',
   formId,
 } = Astro.props;
 
-const CLASS_OPTIONS = ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM', 'Not sure yet'];
+// One flat field list per variant, rendered generically below. `name`s are
+// what /api/contact receives; keep them stable.
+type Field =
+  | {
+      kind: 'text' | 'email' | 'tel' | 'date';
+      name: string;
+      label: string;
+      required?: boolean;
+      autocomplete?: string;
+      optionalNote?: boolean;
+    }
+  | { kind: 'textarea'; name: string; label: string; required?: boolean }
+  | { kind: 'select'; name: string; label: string; required?: boolean; options: string[] }
+  | { kind: 'checkboxes'; name: string; label: string; options: string[] };
+
+const VARIANTS: Record<string, Field[]> = {
+  general: [
+    { kind: 'text', name: 'subject', label: 'Subject', required: true },
+    { kind: 'textarea', name: 'message', label: 'Message', required: true },
+  ],
+  enroll: [
+    { kind: 'text', name: 'childName', label: 'Child’s name', required: true },
+    { kind: 'date', name: 'childBirthdate', label: 'Child’s date of birth', required: true },
+    {
+      kind: 'checkboxes',
+      name: 'classInterest',
+      label: 'Class interested in',
+      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM'],
+    },
+    { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
+    { kind: 'textarea', name: 'message', label: 'Anything else you’d like us to know' },
+  ],
+  tour: [
+    { kind: 'text', name: 'childInfo', label: 'Child’s name and birthdate', required: true },
+    {
+      kind: 'checkboxes',
+      name: 'classInterest',
+      label: 'Class interested in',
+      options: ['Twos', 'Threes', 'Pre-K'],
+    },
+    { kind: 'text', name: 'datesTimes', label: 'Dates/times that work for you', required: true },
+    { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
+    { kind: 'textarea', name: 'message', label: 'Anything else you want us to know?' },
+  ],
+  teach: [
+    {
+      kind: 'select',
+      name: 'experienceYears',
+      label: 'Years of experience working with children',
+      required: true,
+      options: ['Less than 1 year', '1-2 years', '3-5 years', '5-10 years', '10+ years'],
+    },
+    {
+      kind: 'checkboxes',
+      name: 'ageGroups',
+      label: 'Age groups you’re interested in teaching',
+      options: ['Toddlers (2s)', 'Threes (3s)', 'Pre-K (4-5s)'],
+    },
+    {
+      kind: 'select',
+      name: 'certification',
+      label: 'Do you hold an early childhood education certification or degree?',
+      required: true,
+      options: ['Yes', 'No', 'Currently pursuing'],
+    },
+    {
+      kind: 'textarea',
+      name: 'message',
+      label: 'Briefly tell us about yourself and why you’re interested in teaching at WCP',
+      required: true,
+    },
+    { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
+  ],
+};
+const extraFields = VARIANTS[variant] ?? VARIANTS.general;
+// The old enroll form required a phone; the others treated it as optional.
+const phoneRequired = variant === 'enroll';
 
 const field =
   'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
@@ -46,16 +130,30 @@ const label = 'block text-sm font-semibold text-heading';
       <label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
     </div>
 
-    <div>
-      <label class={label} for={`${formId}-name`}>Your name</label>
-      <input
-        class={field}
-        id={`${formId}-name`}
-        name="name"
-        type="text"
-        required
-        autocomplete="name"
-      />
+    {/* First + last name, like every form on the old site. */}
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class={label} for={`${formId}-fname`}>First name</label>
+        <input
+          class={field}
+          id={`${formId}-fname`}
+          name="fname"
+          type="text"
+          required
+          autocomplete="given-name"
+        />
+      </div>
+      <div>
+        <label class={label} for={`${formId}-lname`}>Last name</label>
+        <input
+          class={field}
+          id={`${formId}-lname`}
+          name="lname"
+          type="text"
+          required
+          autocomplete="family-name"
+        />
+      </div>
     </div>
     <div>
       <label class={label} for={`${formId}-email`}>Email</label>
@@ -72,54 +170,79 @@ const label = 'block text-sm font-semibold text-heading';
       showPhone && (
         <div>
           <label class={label} for={`${formId}-phone`}>
-            Phone <span class="font-normal text-ink-muted">(optional)</span>
+            Phone {!phoneRequired && <span class="font-normal text-ink-muted">(optional)</span>}
           </label>
-          <input class={field} id={`${formId}-phone`} name="phone" type="tel" autocomplete="tel" />
+          <input
+            class={field}
+            id={`${formId}-phone`}
+            name="phone"
+            type="tel"
+            autocomplete="tel"
+            required={phoneRequired}
+          />
         </div>
       )
     }
+
     {
-      /* Enrollment inquiries: the structured details the board needs to place
-         a child (the old site's enroll copy asked for exactly these). */
-      showEnrollFields && (
-        <>
-          <div class="grid gap-4 sm:grid-cols-2">
+      extraFields.map((f) => {
+        const id = `${formId}-${f.name}`;
+        if (f.kind === 'checkboxes')
+          return (
+            <fieldset>
+              <legend class={label}>{f.label}</legend>
+              <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
+                {f.options.map((opt) => (
+                  <label class="inline-flex items-center gap-2 text-ink">
+                    <input
+                      type="checkbox"
+                      name={f.name}
+                      value={opt}
+                      class="h-4 w-4 rounded border-border text-navy focus:ring-2 focus:ring-navy/30"
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          );
+        if (f.kind === 'select')
+          return (
             <div>
-              <label class={label} for={`${formId}-child-name`}>
-                Child’s name
+              <label class={label} for={id}>
+                {f.label}
               </label>
-              <input class={field} id={`${formId}-child-name`} name="childName" type="text" />
+              <select class={field} id={id} name={f.name} required={f.required}>
+                <option value="">Select an option…</option>
+                {f.options.map((opt) => (
+                  <option value={opt}>{opt}</option>
+                ))}
+              </select>
             </div>
+          );
+        if (f.kind === 'textarea')
+          return (
             <div>
-              <label class={label} for={`${formId}-child-birthdate`}>
-                Child’s birthdate
+              <label class={label} for={id}>
+                {f.label}
+                {!f.required && <span class="font-normal text-ink-muted"> (optional)</span>}
               </label>
-              <input
-                class={field}
-                id={`${formId}-child-birthdate`}
-                name="childBirthdate"
-                type="date"
-              />
+              <textarea class={field} id={id} name={f.name} rows="5" required={f.required} />
             </div>
-          </div>
+          );
+        return (
           <div>
-            <label class={label} for={`${formId}-class-interest`}>
-              Class you’re interested in
+            <label class={label} for={id}>
+              {f.label}
+              {'optionalNote' in f && f.optionalNote && (
+                <span class="font-normal text-ink-muted"> (optional)</span>
+              )}
             </label>
-            <select class={field} id={`${formId}-class-interest`} name="classInterest">
-              <option value="">Choose a class…</option>
-              {CLASS_OPTIONS.map((c) => (
-                <option value={c}>{c}</option>
-              ))}
-            </select>
+            <input class={field} id={id} name={f.name} type={f.kind} required={f.required} />
           </div>
-        </>
-      )
+        );
+      })
     }
-    <div>
-      <label class={label} for={`${formId}-message`}>Message</label>
-      <textarea class={field} id={`${formId}-message`} name="message" rows="5" required></textarea>
-    </div>
 
     <p class="hidden text-sm text-destructive" data-form-error role="alert">
       Something went wrong. Please try again, or email us directly.
