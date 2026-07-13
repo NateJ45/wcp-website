@@ -1,0 +1,314 @@
+---
+/* ============================================================================
+   Family Hub — Sign-ups & RSVPs (GATED)
+   ============================================================================
+   The co-op's SignUpGenius replacement. The board creates sheets in the
+   Studio (Family Hub → Sign-ups & RSVPs); families take slots or RSVP here.
+   Counts come from signupEntry docs (created by /family-hub/api/signup), so
+   they're live on every visit. Two kinds of card:
+     - RSVP: one big "we'll be there" count + a short form.
+     - Sign-up sheet: one row per slot with capacity ("2 of 3"), who's taken
+       it, and a native <details> form (works without JS; enhanced by
+       src/scripts/hub-signup.ts).
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import Icon from '@/components/Icon.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+interface Slot {
+  _key: string;
+  label?: string;
+  detail?: string;
+  capacity?: number;
+}
+interface Sheet {
+  _id: string;
+  title?: string;
+  description?: string;
+  kind?: 'signup' | 'rsvp';
+  eventDate?: string;
+  slots?: Slot[];
+}
+interface Entry {
+  ref: string;
+  slotKey?: string;
+  familyName?: string;
+}
+
+let sheets: Sheet[] = [];
+let entries: Entry[] = [];
+try {
+  sheets = await sanityFetch<Sheet[]>(
+    `*[_type == "signupSheet" && open == true] | order(coalesce(eventDate, "9999-12-31") asc){
+      _id, title, description, kind, eventDate, slots
+    }`,
+  );
+  if (sheets.length > 0) {
+    entries = await sanityFetch<Entry[]>(
+      `*[_type == "signupEntry" && sheet._ref in $ids]{ "ref": sheet._ref, slotKey, familyName }`,
+      { ids: sheets.map((s) => s._id) },
+    );
+  }
+} catch {
+  sheets = [];
+}
+
+const entriesFor = (sheetId: string, slotKey?: string) =>
+  entries.filter((e) => e.ref === sheetId && (slotKey === undefined || e.slotKey === slotKey));
+
+const fmtDate = (iso?: string) =>
+  iso
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'America/New_York',
+      })
+    : null;
+
+// The no-JS success path lands back here with ?thanks=1.
+const showThanks = new URL(Astro.request.url).searchParams.has('thanks');
+---
+
+<HubShell title="Sign-ups & RSVPs" bare pageTitle="Sign-ups — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-4xl">
+      <HubPageHeader
+        title="Sign-ups & RSVPs"
+        subtitle="Take a helper slot, claim a snack day, or tell us you’re coming — right here, no outside sign-up site."
+        icon="clipboard-list"
+      />
+
+      {
+        showThanks && (
+          <HubCard class="mb-6 border-l-4 border-l-green">
+            <p class="font-semibold text-heading">You’re on the list — thank you!</p>
+          </HubCard>
+        )
+      }
+
+      {
+        sheets.length === 0 ? (
+          <HubEmptyState
+            icon="clipboard-list"
+            title="Sign-up sheets and RSVPs will show here"
+            source="sanity"
+          />
+        ) : (
+          <ul class="space-y-6">
+            {sheets.map((sheet) => {
+              const date = fmtDate(sheet.eventDate);
+              const isRsvp = sheet.kind === 'rsvp';
+              const going = isRsvp ? entriesFor(sheet._id).length : 0;
+              return (
+                <HubCard as="li">
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="font-display text-xl text-heading">{sheet.title}</h2>
+                    {date && <p class="text-sm font-semibold text-ink-muted">{date}</p>}
+                  </div>
+                  {sheet.description && <p class="mt-1 text-ink-muted">{sheet.description}</p>}
+
+                  {isRsvp ? (
+                    <div class="mt-4">
+                      <p class="font-display text-3xl text-heading" data-rsvp-count>
+                        {going}
+                        <span class="font-sans text-sm font-normal text-ink-muted">
+                          {' '}
+                          {going === 1 ? 'family is' : 'families are'} coming
+                        </span>
+                      </p>
+                      <form
+                        method="POST"
+                        action="/family-hub/api/signup"
+                        class="mt-4 flex flex-wrap items-end gap-3"
+                        data-signup-form
+                      >
+                        <input type="hidden" name="sheetId" value={sheet._id} />
+                        <div class="absolute -left-[9999px]" aria-hidden="true">
+                          <label>
+                            Company
+                            <input type="text" name="company" tabindex="-1" autocomplete="off" />
+                          </label>
+                        </div>
+                        <div class="min-w-48 flex-1">
+                          <label
+                            class="block text-sm font-semibold text-heading"
+                            for={`${sheet._id}-name`}
+                          >
+                            Family name
+                          </label>
+                          <input
+                            id={`${sheet._id}-name`}
+                            name="familyName"
+                            type="text"
+                            required
+                            class="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          class="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+                        >
+                          <Icon name="hand" class="h-4 w-4" aria-hidden="true" />
+                          We’ll be there
+                        </button>
+                        <p
+                          class="hidden w-full text-sm font-semibold text-green-ink"
+                          data-signup-done
+                        >
+                          Got it — see you there!
+                        </p>
+                        <p
+                          class="hidden w-full text-sm text-destructive"
+                          data-signup-error
+                          role="alert"
+                        >
+                          Something went wrong — try again?
+                        </p>
+                      </form>
+                    </div>
+                  ) : (
+                    <ul class="mt-4 divide-y divide-border">
+                      {(sheet.slots ?? []).map((slot) => {
+                        const taken = entriesFor(sheet._id, slot._key);
+                        const cap = slot.capacity ?? 0;
+                        const full = cap > 0 && taken.length >= cap;
+                        const names = taken
+                          .map((e) => e.familyName)
+                          .filter(Boolean)
+                          .join(', ');
+                        return (
+                          <li class="py-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                              <div class="min-w-0">
+                                <p class="font-semibold text-heading">{slot.label}</p>
+                                {slot.detail && <p class="text-sm text-ink-muted">{slot.detail}</p>}
+                              </div>
+                              <p class="shrink-0 text-sm font-semibold text-ink-muted">
+                                {cap > 0
+                                  ? `${taken.length} of ${cap} filled`
+                                  : `${taken.length} signed up`}
+                              </p>
+                            </div>
+                            {cap > 0 && (
+                              <HubProgress
+                                class="mt-2"
+                                height="h-1.5"
+                                value={taken.length}
+                                max={cap}
+                                fill={full ? 'bg-green' : 'bg-amber'}
+                                label={`${slot.label ?? 'Slot'} filled`}
+                                valueText={`${taken.length} of ${cap} filled`}
+                              />
+                            )}
+                            {names && <p class="mt-1.5 text-sm text-ink-muted">{names}</p>}
+                            {full ? (
+                              <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
+                                <Icon
+                                  name="check"
+                                  class="h-4 w-4 text-green-ink"
+                                  aria-hidden="true"
+                                />
+                                All set — this one’s covered!
+                              </p>
+                            ) : (
+                              <details class="mt-2">
+                                <summary class="cursor-pointer text-sm font-bold text-sky-ink hover:underline">
+                                  Sign up for this slot
+                                </summary>
+                                <form
+                                  method="POST"
+                                  action="/family-hub/api/signup"
+                                  class="mt-3 flex flex-wrap items-end gap-3"
+                                  data-signup-form
+                                >
+                                  <input type="hidden" name="sheetId" value={sheet._id} />
+                                  <input type="hidden" name="slotKey" value={slot._key} />
+                                  <div class="absolute -left-[9999px]" aria-hidden="true">
+                                    <label>
+                                      Company
+                                      <input
+                                        type="text"
+                                        name="company"
+                                        tabindex="-1"
+                                        autocomplete="off"
+                                      />
+                                    </label>
+                                  </div>
+                                  <div class="min-w-40 flex-1">
+                                    <label
+                                      class="block text-sm font-semibold text-heading"
+                                      for={`${sheet._id}-${slot._key}-name`}
+                                    >
+                                      Family name
+                                    </label>
+                                    <input
+                                      id={`${sheet._id}-${slot._key}-name`}
+                                      name="familyName"
+                                      type="text"
+                                      required
+                                      class="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface"
+                                    />
+                                  </div>
+                                  <div class="min-w-40 flex-1">
+                                    <label
+                                      class="block text-sm font-semibold text-heading"
+                                      for={`${sheet._id}-${slot._key}-note`}
+                                    >
+                                      Note{' '}
+                                      <span class="font-normal text-ink-muted">(optional)</span>
+                                    </label>
+                                    <input
+                                      id={`${sheet._id}-${slot._key}-note`}
+                                      name="note"
+                                      type="text"
+                                      class="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface"
+                                    />
+                                  </div>
+                                  <button
+                                    type="submit"
+                                    class="rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+                                  >
+                                    Take this slot
+                                  </button>
+                                  <p
+                                    class="hidden w-full text-sm font-semibold text-green-ink"
+                                    data-signup-done
+                                  >
+                                    You’ve got it — thank you!
+                                  </p>
+                                  <p
+                                    class="hidden w-full text-sm text-destructive"
+                                    data-signup-error
+                                    role="alert"
+                                  >
+                                    Something went wrong — try again?
+                                  </p>
+                                </form>
+                              </details>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </HubCard>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </Section>
+</HubShell>
+
+<script>
+  import '@/scripts/hub-signup';
+</script>

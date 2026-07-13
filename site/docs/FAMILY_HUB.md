@@ -175,11 +175,32 @@ Each page's live/private data reads from Sanity behind the gate:
 | Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)   |
 | Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton           |
 | Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only              |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)   |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
 `src/data/classes.ts`, so a fixed widget always renders. Nothing in those files is PII (no
 family or board-member names, addresses, phones, or finances).
+
+## Sign-ups & RSVPs
+
+`/family-hub/sign-ups` is the co-op's SignUpGenius replacement. The board creates
+`signupSheet` docs in the Studio (**Family Hub → Sign-ups & RSVPs**): either a
+**sign-up sheet** (named slots, optional per-slot capacity — helper shifts, snack days,
+workday jobs) or an **event RSVP** (one tap, a live "N families are coming" count; used
+instead of per-event RSVP because calendar events live in Google, not Sanity, and have
+no stable identity to hang responses on). Families respond on the page; each response
+posts to `/family-hub/api/signup` (inside the hub prefix, so the middleware gate covers
+it), which validates open/slot/capacity server-side, stores a `signupEntry` doc (the
+count source and the board's Studio inbox), and forwards a row + FYI email through the
+Google forms inbox when configured (see [FORMS.md](FORMS.md)). Forms work without JS
+(native POST → redirect with `?thanks=1`); `src/scripts/hub-signup.ts` upgrades them to
+background submits. Two clearly-titled example sheets are seeded by
+`scripts/seed-signup-examples.mjs`.
+
+A related nicety: the site is installable (a PWA manifest with maskable icon and
+hub/calendar shortcuts), so families can pin the hub to their phone's home screen —
+there is deliberately **no service worker** (the SSR hub must never serve stale).
 
 ## Updates / meeting blog
 

@@ -29,10 +29,18 @@
 const NOTIFY_EMAIL = 'contact@westchesterpreschool.org'; // where submissions land
 const SHARED_TOKEN = 'CHANGE-ME-to-a-long-random-string'; // must match FORMS_WEBHOOK_TOKEN
 
+// Weekly digest (optional): where the Monday-morning family digest goes —
+// usually the all-families Google Group. To turn it on, set these and add a
+// time-driven trigger: Apps Script editor → Triggers (clock icon) →
+// Add Trigger → weeklyDigest → Time-driven → Week timer → Monday, 7-8am.
+const DIGEST_TO = ''; // e.g. 'families@westchesterpreschool.org' — blank = off
+const SITE_URL = 'https://wcp-website.nathanjnixon86.workers.dev'; // no trailing slash
+
 // One tab per submission kind, created on first use.
 const SHEETS = {
   contact: ['When', 'Topic', 'Name', 'Email', 'Phone', 'Message', 'From page'],
   newsletter: ['When', 'Name', 'Email', 'From page'],
+  signup: ['When', 'Sheet', 'Slot', 'Name', 'Note'],
 };
 
 function doPost(e) {
@@ -46,7 +54,7 @@ function doPost(e) {
     return respond({ ok: false, error: 'bad token' });
   }
 
-  const kind = data.kind === 'newsletter' ? 'newsletter' : 'contact';
+  const kind = SHEETS[data.kind] ? data.kind : 'contact';
   const when = data.submittedAt || new Date().toISOString();
 
   // 1. Append to the Sheet.
@@ -60,6 +68,15 @@ function doPost(e) {
     }
     if (kind === 'newsletter') {
       sheet.appendRow([when, data.name || '', data.email || '', data.pageUrl || '']);
+    } else if (kind === 'signup') {
+      // A Family Hub sign-up / RSVP (see site/src/pages/family-hub/api/signup.ts).
+      sheet.appendRow([
+        when,
+        data.sheetTitle || '',
+        data.slot || '',
+        data.name || '',
+        data.note || '',
+      ]);
     } else {
       sheet.appendRow([
         when,
@@ -75,8 +92,35 @@ function doPost(e) {
     console.error('sheet append failed: ' + err);
   }
 
-  // 2. Email the board (skip newsletter signups — they'd be noisy; they're in
-  //    the Sheet and in Sanity/Mailchimp already).
+  // 2. Email the board. Newsletter signups skip email (they'd be noisy);
+  //    hub sign-ups/RSVPs send a short FYI note (no reply expected).
+  if (kind === 'signup') {
+    try {
+      MailApp.sendEmail({
+        to: NOTIFY_EMAIL,
+        subject: '[WCP hub] ' + (data.sheetTitle || 'Sign-up') + ' — ' + (data.name || 'Someone'),
+        body:
+          'A family responded on the hub sign-ups page:\n\n' +
+          'Sheet: ' +
+          (data.sheetTitle || '-') +
+          '\n' +
+          'Slot:  ' +
+          (data.slot || '-') +
+          '\n' +
+          'Name:  ' +
+          (data.name || '-') +
+          '\n' +
+          (data.note ? 'Note:  ' + data.note + '\n' : '') +
+          'When:  ' +
+          when +
+          '\n\n' +
+          'All responses: the "signup" tab of this Sheet, or the Studio inbox\n' +
+          '(Family Hub -> Sign-up responses).',
+      });
+    } catch (err) {
+      console.error('mail failed: ' + err);
+    }
+  }
   if (kind === 'contact') {
     try {
       MailApp.sendEmail({
@@ -116,4 +160,63 @@ function respond(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
     ContentService.MimeType.JSON,
   );
+}
+
+// ── Weekly family digest ─────────────────────────────────────────────────────
+// Runs on a weekly time-driven trigger (see the Settings note above). Pulls
+// the week's hub announcements + the next two weeks of events from the
+// website (/api/digest, token-protected) and emails one tidy note to
+// DIGEST_TO. Sends nothing when there's nothing new.
+function weeklyDigest() {
+  if (!DIGEST_TO) return;
+  let data;
+  try {
+    const res = UrlFetchApp.fetch(
+      SITE_URL + '/api/digest?token=' + encodeURIComponent(SHARED_TOKEN),
+      { muteHttpExceptions: true },
+    );
+    if (res.getResponseCode() !== 200) {
+      console.error('digest fetch failed: ' + res.getResponseCode());
+      return;
+    }
+    data = JSON.parse(res.getContentText());
+  } catch (err) {
+    console.error('digest fetch failed: ' + err);
+    return;
+  }
+
+  const announcements = data.announcements || [];
+  const events = data.events || [];
+  if (announcements.length === 0 && events.length === 0) return; // quiet week
+
+  let body = 'Hi WCP families! Here is what is happening this week.\n';
+  if (announcements.length) {
+    body += '\nNEW THIS WEEK\n';
+    for (const a of announcements) {
+      body +=
+        '\n• ' +
+        a.title +
+        (a.excerpt ? '\n  ' + a.excerpt : '') +
+        (a.url ? '\n  ' + a.url : '') +
+        '\n';
+    }
+  }
+  if (events.length) {
+    body += '\nCOMING UP\n';
+    for (const e of events) {
+      body += '\n• ' + e.when + ' — ' + e.title + (e.location ? ' (' + e.location + ')' : '');
+    }
+    body += '\n';
+  }
+  body += '\nEverything lives on the Family Hub: ' + SITE_URL + '/family-hub\n';
+
+  try {
+    MailApp.sendEmail({
+      to: DIGEST_TO,
+      subject: '[WCP] This week at preschool',
+      body: body,
+    });
+  } catch (err) {
+    console.error('digest mail failed: ' + err);
+  }
 }

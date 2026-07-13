@@ -90,6 +90,8 @@ const PLACED = new Set([
   'directoryEntry',
   'hubPage',
   'presidentNote',
+  'signupSheet',
+  'signupEntry',
 ]);
 
 export const structure: StructureResolver = (S, context) =>
@@ -244,6 +246,12 @@ export const structure: StructureResolver = (S, context) =>
                 .title('Teacher welcome notes')
                 .icon(emoji('💌')),
               S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
+              S.documentTypeListItem('signupSheet')
+                .title('Sign-ups & RSVPs (create sheets)')
+                .icon(emoji('📝')),
+              S.documentTypeListItem('signupEntry')
+                .title('Sign-up responses (inbox)')
+                .icon(emoji('🙋')),
               orderableDocumentListDeskItem({
                 type: 'coopRole',
                 S,

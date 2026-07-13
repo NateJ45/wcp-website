@@ -230,6 +230,17 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
+      { kind: 'h', text: 'Sign-up sheets and RSVPs' },
+      {
+        kind: 'p',
+        text: 'The hub’s **Sign-ups** page replaces SignUpGenius. Create a sheet under **Family Hub → Sign-ups & RSVPs**: pick *Sign-up sheet* for named slots (helper shifts, snack days — give each slot a "how many needed" cap if you want one) or *Event RSVP* for a simple "we’ll be there" count. Families respond on the hub page; every response lands in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Closing a sheet',
+        text: 'Turn **Open for responses?** off and the sheet disappears from the hub page — the responses stay in your inbox. Two "Example" sheets are pre-loaded to copy from; rename or delete them freely.',
+      },
       {
         kind: 'seealso',
         items: ['Build or edit a page', 'Do it yourself vs. ask for help'],

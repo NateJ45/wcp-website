@@ -1,9 +1,25 @@
 {
   "name": "West Chester Preschool",
   "short_name": "WCP",
+  "description": "A parent-run cooperative preschool in West Chester, Ohio. Families: install this for one-tap access to the Family Hub.",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Family Hub",
+      "url": "/family-hub",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calendar",
+      "url": "/family-hub/calendar",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
   ],
   "theme_color": "#01457E",
   "background_color": "#ffffff",

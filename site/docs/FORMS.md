@@ -56,9 +56,26 @@ Each step is independent — one failure never loses a message:
    (`npm run deploy`).
 
 From then on every inquiry emails the board (reply-to the family) and lands as a row in
-the Sheet — `contact` and `newsletter` tabs are created automatically. Newsletter signups
-go to the Sheet only (no email — they'd be noisy). Quota is ~1,500 emails/day on
-Workspace; the forms will never come close.
+the Sheet — `contact`, `newsletter`, and `signup` tabs are created automatically.
+Newsletter signups go to the Sheet only (no email — they'd be noisy); hub sign-ups and
+RSVPs (`/family-hub/sign-ups`, kind `signup`) send a short FYI email plus their Sheet
+row. Quota is ~1,500 emails/day on Workspace; the forms will never come close.
+
+## The weekly family digest (optional)
+
+The same script can email families a Monday-morning digest — the week's hub
+announcements plus the next two weeks of calendar events, pulled from the site's
+token-protected `/api/digest` endpoint (it 404s without the matching
+`FORMS_WEBHOOK_TOKEN`, so hub content stays private). To turn it on, in the Apps
+Script editor:
+
+1. Set `DIGEST_TO` (usually the all-families Google Group) and check `SITE_URL`.
+2. **Triggers (clock icon) → Add Trigger** → function `weeklyDigest` → Time-driven →
+   Week timer → Monday, 7–8am.
+
+Quiet weeks (nothing new, nothing coming up) send nothing. It runs on the Google side
+on purpose: Workers can't send email on the free tier, and the Apps Script already
+holds the mailer, the token, and the recipients.
 
 **Updating the script later:** edit in the Sheet's Apps Script editor, then
 **Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy**. The URL

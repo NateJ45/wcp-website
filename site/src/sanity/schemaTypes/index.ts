@@ -59,6 +59,7 @@ import { hubDocument } from './hubDocument';
 import { teacherNote } from './teacherNote';
 import { directoryEntry } from './directoryEntry';
 import { hubPage } from './documents/hubPage';
+import { signupSheet, signupEntry } from './documents/signupSheet';
 
 export const schemaTypes = [
   // Shared objects
@@ -109,6 +110,8 @@ export const schemaTypes = [
   teacherNote,
   directoryEntry,
   hubPage,
+  signupSheet,
+  signupEntry,
 ];
 
 // Types treated as singletons (one instance, pinned; no create/delete/duplicate).
