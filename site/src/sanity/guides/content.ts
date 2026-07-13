@@ -463,14 +463,18 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Every message sent through a form on the website is saved under **Form submissions**, so nothing gets lost. If email notifications are set up, you also get an email when one arrives.',
       },
-      { kind: 'path', items: ['Form submissions', 'open a message', 'reply', 'mark Handled'] },
+      {
+        kind: 'path',
+        items: ['Form submissions', 'pick a folder', 'open a message', 'reply', 'mark Handled'],
+      },
       {
         kind: 'steps',
         items: [
-          'Click **Form submissions** in the left menu. Newest is on top.',
+          'Click **Form submissions** in the left menu.',
+          'Pick a folder: **Needs a reply** shows everything not yet handled; below that is one folder per form (Tour request, Contact us, and so on — new forms get their own folder automatically); **All messages** is the whole pile. Newest is on top.',
           'Open a message to see the name, email, phone, and what they wrote.',
           'Reply from your own email using the address shown.',
-          'Turn on **Handled?** so the board knows it has been taken care of.',
+          'Turn on **Handled?** so the board knows it has been taken care of (it leaves the Needs a reply folder).',
         ],
       },
       {

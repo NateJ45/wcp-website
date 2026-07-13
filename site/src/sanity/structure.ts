@@ -101,6 +101,57 @@ function pagesGroup(S: StructureBuilder) {
     );
 }
 
+// Form submissions — an inbox grouped BY FORM, not one flat pile. The folders
+// are built live from the `topic` values that actually exist in the data (the
+// board names topics freely on each form section), so a brand-new form shows
+// up here automatically. "Needs a reply" (not yet marked Handled) sits on top.
+function submissionsGroup(S: StructureBuilder, context: Parameters<StructureResolver>[1]) {
+  const apiVersion = '2025-01-01';
+  return S.listItem()
+    .title('Form submissions')
+    .id('submissions')
+    .icon(emoji('📨'))
+    .child(async () => {
+      const client = context.getClient({ apiVersion });
+      const topics = await client.fetch<(string | null)[]>(
+        'array::unique(*[_type == "submission"].topic)',
+      );
+      const known = topics.filter((t): t is string => typeof t === 'string' && t.length > 0);
+      known.sort((a, b) => a.localeCompare(b));
+      const topicList = (title: string, filter: string, params?: Record<string, string>) =>
+        S.documentList()
+          .id(`submissions-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
+          .title(title)
+          .schemaType('submission')
+          .filter(`_type == "submission" && ${filter}`)
+          .params(params ?? {})
+          .apiVersion(apiVersion)
+          .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]);
+      return S.list()
+        .id('submissions-by-form')
+        .title('Form submissions')
+        .items([
+          S.listItem()
+            .id('submissions-unhandled')
+            .title('Needs a reply')
+            .icon(emoji('🔴'))
+            .child(topicList('Needs a reply', 'handled != true')),
+          S.divider(),
+          ...known.map((topic) =>
+            S.listItem()
+              .id(`submissions-topic-${topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
+              .title(topic)
+              .icon(emoji('📮'))
+              .child(topicList(topic, 'topic == $topic', { topic })),
+          ),
+          S.divider(),
+          // documentTypeList (not a filtered list) so search/intent links for
+          // submissions still have a pane that can open them.
+          S.documentTypeListItem('submission').title('All messages').icon(emoji('🗂️')),
+        ]);
+    });
+}
+
 // Family Hub — the gated, families-only content.
 function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolver>[1]) {
   return S.listItem()
@@ -313,7 +364,7 @@ export const structure: StructureResolver = (S, context) =>
       // ── Inboxes ── things the site sends TO the board (read, don't edit).
       S.divider().title('Inboxes'),
 
-      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
+      submissionsGroup(S, context),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 
       // Fallback: any type not explicitly placed above still shows up here.
@@ -360,6 +411,6 @@ export const everydayStructure: StructureResolver = (S, context) =>
 
       S.divider().title('Inboxes'),
 
-      S.documentTypeListItem('submission').title('Form submissions').icon(emoji('📨')),
+      submissionsGroup(S, context),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
     ]);

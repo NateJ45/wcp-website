@@ -23,7 +23,10 @@ background and shows an inline thank-you; without JS it posts natively and lands
 Each step is independent — one failure never loses a message:
 
 1. **Sanity (always on, zero config)** — stored as a `submission` / `subscriber` doc.
-   Studio → **Form submissions** / **Newsletter subscribers**. The safety net.
+   Studio → **Form submissions** / **Newsletter subscribers**. The safety net. The
+   submissions inbox is foldered: **Needs a reply** (not yet marked Handled), then one
+   folder per form `topic` (built live from the data, so a new form auto-appears), then
+   **All messages**.
 2. **The Google forms inbox (free — the recommended one to turn on)** — a Google Apps
    Script web app on the school Workspace that appends a row to a Google Sheet AND emails
    the board's Gmail with **reply-to set to the family**, so staff answer by just hitting
