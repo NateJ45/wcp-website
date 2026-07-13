@@ -50,6 +50,19 @@ is for adding more later.
 
 ## How to add redirects
 
+**The board can do this themselves now** — no code change. In the Studio, switch to the
+**Everything** workspace → **Site setup** → **Redirects** → **＋** and fill in the old path
+and where it should go. On Publish, the next rebuild (which the publish itself triggers)
+turns it into a real 301. `astro.config.mjs` reads these `redirect` documents at build via
+`fetchCmsRedirects()` and folds them into the `redirects` map alongside the launch ones
+below. Fully fail-safe: if Sanity is unreachable at build the CMS redirects are skipped and
+the build still succeeds on the static launch redirects.
+
+The developer-edited launch redirects (below) stay in code because they're SEO-critical and
+one-time. Anything the board adds later goes in the Studio.
+
+### Developer: the launch redirects
+
 Edit the `redirects` map in [`astro.config.mjs`](../astro.config.mjs) — one line per old
 path:
 
@@ -82,5 +95,8 @@ the homepage (`'/old-thing': '/'`) so it never 404s.
   `/calendar` → `/events`) so those common guesses work regardless.
 - Redirect only **paths that changed**. If an old URL is identical to a new one (e.g.
   `/about`), you don't need a redirect.
-- This is developer-edited (not in the Studio), because it's a one-time launch task and
-  getting a 301 wrong can hurt SEO. Send the old URL list to whoever maintains the code.
+- The **launch** redirects here are developer-edited because they're a one-time SEO-critical
+  task. **Ongoing** renames are self-service in the Studio (see "How to add redirects" above),
+  so the board never has to send an old URL list to the developer again. A board entry for the
+  same `from` path wins over a launch one (the CMS map is spread last), so a launch mistake
+  can be corrected without a code change.

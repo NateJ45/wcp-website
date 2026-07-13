@@ -39,6 +39,7 @@ import { legalPage } from './documents/legalPage';
 import { page } from './documents/page';
 import { post } from './documents/post';
 import { event } from './documents/event';
+import { redirect } from './documents/redirect';
 import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { coopRole } from './documents/coopRole';
@@ -92,6 +93,7 @@ export const schemaTypes = [
   page,
   post,
   event,
+  redirect,
   submission,
   subscriber,
   coopRole,

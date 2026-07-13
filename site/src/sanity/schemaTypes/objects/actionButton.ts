@@ -17,7 +17,8 @@ export const actionButton = defineType({
       name: 'label',
       title: 'Button text',
       type: 'string',
-      validation: (R) => R.required(),
+      description: 'What the button says, e.g. "Schedule a tour".',
+      validation: (R) => R.required().error('Give the button some text.'),
     }),
     defineField({
       name: 'style',
@@ -66,7 +67,13 @@ export const actionButton = defineType({
   preview: {
     select: { title: 'label', style: 'style' },
     prepare({ title, style }) {
-      return { title: title || '(button)', subtitle: style };
+      const labels: Record<string, string> = {
+        accent: 'Solid orange',
+        'outline-white': 'Outline (on photo)',
+        primary: 'Solid navy',
+        outline: 'Outline navy',
+      };
+      return { title: title || '(button)', subtitle: labels[style] ?? style };
     },
   },
 });

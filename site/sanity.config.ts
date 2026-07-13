@@ -1,4 +1,4 @@
-import { defineConfig, type PluginOptions, type WorkspaceOptions } from 'sanity';
+import { defineConfig, type PluginOptions, type Tool, type WorkspaceOptions } from 'sanity';
 import {
   structureTool,
   type DefaultDocumentNodeResolver,
@@ -10,6 +10,7 @@ import { linkChecker } from 'sanity-plugin-link-checker';
 import DocumentsPane from 'sanity-plugin-documents-pane';
 import { SeoPreviewPane } from './src/sanity/components/SeoPreviewPane';
 import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLayout';
+import { ExportTool } from './src/sanity/components/ExportTool';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { structure, everydayStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
@@ -63,9 +64,22 @@ import { projectId, dataset } from './src/sanity/env';
 
 // Extra document tabs, added by type:
 //  - page / post / legal: a read-only SEO + social-share preview.
-//  - shared docs (class/staff/quote/FAQ): a "Used on" panel listing the
-//    pages and posts that reference this one (answers "is it safe to
-//    change/delete?"). Both are free — no plan gating.
+//  - shared docs: a "Used on" panel listing the pages/sections that reference
+//    this one (answers "is it safe to change/delete?"). Kept on every type that
+//    is genuinely referenced by others — staff (class.teacher, post.author) and
+//    photoAlbum (album/instagram sections) are the real ones; page is included
+//    because menus/buttons/CTAs point at pages (as reference OR path string),
+//    and campaign because a section pulls it. All free — no plan gating.
+const USED_ON_TYPES = [
+  'page',
+  'staff',
+  'photoAlbum',
+  'campaign',
+  'class',
+  'testimonial',
+  'faqItem',
+];
+
 const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => {
   if (['page', 'post', 'legalPage'].includes(schemaType)) {
     return S.document().views([
@@ -74,24 +88,26 @@ const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => 
         .component(SeoPreviewPane)
         .title('SEO preview')
         .icon(() => '🔎'),
+      ...(USED_ON_TYPES.includes(schemaType) ? [usedOnView(S)] : []),
     ]);
   }
-  if (['class', 'staff', 'testimonial', 'faqItem'].includes(schemaType)) {
-    return S.document().views([
-      S.view.form(),
-      S.view
-        .component(DocumentsPane)
-        .options({
-          query: `*[references($id)]{ _id, _type, title, name }`,
-          params: { id: `_id` },
-          options: { perspective: 'previewDrafts' },
-        })
-        .title('Used on')
-        .icon(() => '🔗'),
-    ]);
+  if (USED_ON_TYPES.includes(schemaType)) {
+    return S.document().views([S.view.form(), usedOnView(S)]);
   }
   return S.document().views([S.view.form()]);
 };
+
+function usedOnView(S: Parameters<DefaultDocumentNodeResolver>[0]) {
+  return S.view
+    .component(DocumentsPane)
+    .options({
+      query: `*[references($id)]{ _id, _type, title, name }`,
+      params: { id: `_id` },
+      options: { perspective: 'previewDrafts' },
+    })
+    .title('Used on')
+    .icon(() => '🔗');
+}
 
 // Everything both workspaces share; only name/title/structure/extras differ.
 function workspace(opts: {
@@ -100,6 +116,8 @@ function workspace(opts: {
   subtitle: string;
   structure: StructureResolver;
   extraPlugins?: PluginOptions[];
+  /** Extra Studio tools (navbar entries), e.g. the CSV export tool. */
+  extraTools?: Tool[];
 }): WorkspaceOptions {
   return {
     name: opts.name,
@@ -115,6 +133,8 @@ function workspace(opts: {
     releases: { enabled: false },
     scheduledDrafts: { enabled: true },
     studio: { components: { layout: StudioLayout } },
+    // Append any extra tools (e.g. CSV export) after the built-in ones.
+    tools: (prev) => [...prev, ...(opts.extraTools ?? [])],
     plugins: [
       structureTool({ structure: opts.structure, defaultDocumentNode }),
       presentationTool({
@@ -169,6 +189,16 @@ export default defineConfig([
       // the built site). Kept to the full workspace to keep Everyday's toolbar
       // small.
       linkChecker(),
+    ],
+    extraTools: [
+      // Export — download subscribers / submissions / directory as a CSV, so
+      // the board can move email providers or hand off without the developer.
+      {
+        name: 'export',
+        title: 'Export',
+        component: ExportTool,
+        icon: () => '📤',
+      },
     ],
   }),
 ]);

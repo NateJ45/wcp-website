@@ -26,7 +26,8 @@ export const cardGridSection = defineType({
       type: 'array',
       of: [defineArrayMember({ type: 'iconCard' })],
       group: 'content',
-      validation: (R) => R.min(1),
+      description: 'Add one card per point. Each has an icon, a short title, and a line of text.',
+      validation: (R) => R.min(1).error('Add at least one card, or remove this section.'),
     }),
     defineField({
       name: 'columns',
@@ -83,26 +84,51 @@ export const statBandSection = defineType({
   fields: [
     defineField({
       name: 'ariaLabel',
-      title: 'Accessible label',
+      title: 'Section label (for screen readers)',
       type: 'string',
-      description: 'A short name for screen readers, e.g. "West Chester Preschool by the numbers".',
-      validation: (R) => R.required(),
+      description:
+        'A short name a screen reader announces for this band. Visitors don’t see it, e.g. "West Chester Preschool by the numbers".',
+      initialValue: 'By the numbers',
+      validation: (R) =>
+        R.required().error('Add a short label so screen readers can announce this band.'),
     }),
     defineField({
       name: 'stats',
       title: 'Stats',
       type: 'array',
-      validation: (R) => R.min(1).max(4),
+      description: 'Add 1 to 4 big numbers, e.g. "55+ years" or "$70 tuition".',
+      validation: (R) =>
+        R.min(1)
+          .error('Add at least one number, or remove this section.')
+          .max(4)
+          .error('Keep it to four numbers so the band stays readable.'),
       of: [
         defineArrayMember({
           type: 'object',
           name: 'stat',
           fields: [
-            { name: 'value', title: 'Number', type: 'string', validation: (R) => R.required() },
+            {
+              name: 'value',
+              title: 'Number',
+              type: 'string',
+              description: 'The big number itself, e.g. "55" or "70".',
+              validation: (R) => R.required().error('Every stat needs a number.'),
+            },
             { name: 'prefix', title: 'Prefix (e.g. $)', type: 'string' },
             { name: 'suffix', title: 'Suffix (e.g. +)', type: 'string' },
-            { name: 'label', title: 'Label', type: 'string', validation: (R) => R.required() },
-            { name: 'note', title: 'Note under it', type: 'string' },
+            {
+              name: 'label',
+              title: 'Label',
+              type: 'string',
+              description: 'What the number means, e.g. "years serving families".',
+              validation: (R) => R.required().error('Every stat needs a label under the number.'),
+            },
+            {
+              name: 'note',
+              title: 'Note under it',
+              type: 'string',
+              description: 'An optional smaller line under the label.',
+            },
           ],
           preview: {
             select: { value: 'value', label: 'label' },

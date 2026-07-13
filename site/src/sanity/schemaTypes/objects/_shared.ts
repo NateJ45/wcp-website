@@ -86,6 +86,90 @@ export const ICON_NAMES = [
   'users',
 ] as const;
 
+// Human-friendly labels for the dropdown, so a volunteer sees "Dollar sign"
+// not "circle-dollar-sign". Any icon missing here falls back to a titleized
+// version of its slug (so adding an icon to ICON_NAMES can't break the list).
+const ICON_LABELS: Partial<Record<(typeof ICON_NAMES)[number], string>> = {
+  'arrow-right': 'Arrow',
+  award: 'Award ribbon',
+  baby: 'Baby',
+  banknote: 'Cash / banknote',
+  bell: 'Bell',
+  blocks: 'Building blocks',
+  'book-open': 'Open book',
+  'building-2': 'Building',
+  cake: 'Cake',
+  calculator: 'Calculator',
+  'calendar-days': 'Calendar',
+  camera: 'Camera',
+  check: 'Checkmark',
+  'circle-dollar-sign': 'Dollar sign',
+  'clipboard-list': 'Clipboard',
+  clock: 'Clock',
+  coins: 'Coins',
+  contact: 'Contact card',
+  'door-open': 'Open door',
+  dumbbell: 'Dumbbell',
+  egg: 'Egg',
+  eye: 'Eye',
+  'file-check': 'Checked file',
+  'file-pen': 'File with pen',
+  'file-text': 'Document',
+  flower: 'Flower',
+  folder: 'Folder',
+  'folder-open': 'Open folder',
+  gift: 'Gift',
+  'graduation-cap': 'Graduation cap',
+  hand: 'Hand',
+  'hand-heart': 'Caring hand',
+  heart: 'Heart',
+  'heart-handshake': 'Handshake with heart',
+  'heart-pulse': 'Heartbeat / health',
+  house: 'House',
+  image: 'Picture',
+  info: 'Info',
+  languages: 'Languages',
+  leaf: 'Leaf',
+  list: 'List',
+  lock: 'Lock',
+  mail: 'Envelope',
+  'map-pin': 'Map pin',
+  megaphone: 'Megaphone',
+  'message-circle': 'Speech bubble',
+  microscope: 'Microscope',
+  moon: 'Moon',
+  newspaper: 'Newspaper',
+  'notebook-pen': 'Notebook',
+  palette: 'Paint palette',
+  'party-popper': 'Party popper',
+  pencil: 'Pencil',
+  phone: 'Phone',
+  'piggy-bank': 'Piggy bank',
+  puzzle: 'Puzzle piece',
+  scale: 'Balance scale',
+  school: 'School',
+  send: 'Paper plane',
+  'shield-check': 'Shield / safety',
+  'shopping-bag': 'Shopping bag',
+  snowflake: 'Snowflake',
+  sparkles: 'Sparkles',
+  sprout: 'Sprout',
+  star: 'Star',
+  sun: 'Sun',
+  tent: 'Tent',
+  trees: 'Trees',
+  'trending-down': 'Trending down',
+  users: 'People',
+};
+
+const iconLabel = (v: (typeof ICON_NAMES)[number]): string =>
+  ICON_LABELS[v] ?? v.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+// The dropdown list, alphabetized by friendly label so it's easy to scan.
+const ICON_OPTIONS = ICON_NAMES.map((v) => ({ title: iconLabel(v), value: v })).sort((a, b) =>
+  a.title.localeCompare(b.title),
+);
+
 /** A validated icon-name dropdown field. */
 export function iconField(
   name = 'icon',
@@ -96,9 +180,9 @@ export function iconField(
     title: opts.title ?? 'Icon',
     type: 'string',
     group: opts.group,
-    description: opts.description ?? 'Pick an icon (optional).',
+    description: opts.description ?? 'Pick a little picture (optional).',
     options: {
-      list: ICON_NAMES.map((v) => ({ title: v, value: v })),
+      list: ICON_OPTIONS,
     },
   });
 }

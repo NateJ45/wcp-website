@@ -225,6 +225,7 @@ const PLACED = new Set([
   'presidentNote',
   'signupSheet',
   'signupEntry',
+  'redirect',
   // sanity-plugin-media stores its image tags as documents of this type;
   // they're managed inside the Media tool, so keep the raw list out of the
   // nav (a bare "Media Tag" item is just confusing).
@@ -360,6 +361,7 @@ export const structure: StructureResolver = (S, context) =>
 
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
+      S.documentTypeListItem('redirect').title('Redirects (old links)').icon(emoji('↪️')),
 
       // ── Inboxes ── things the site sends TO the board (read, don't edit).
       S.divider().title('Inboxes'),

@@ -60,6 +60,14 @@ export const update = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'showUntil',
+      title: 'Hide from the hub home after (optional)',
+      type: 'datetime',
+      group: 'audience',
+      description:
+        'Leave blank to keep showing. Set a date/time and this drops off the hub home then, so a snow-day pin clears itself. It stays in the full Updates list either way.',
+    }),
+    defineField({
       name: 'category',
       title: 'Category',
       type: 'string',

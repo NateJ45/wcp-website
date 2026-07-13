@@ -28,13 +28,14 @@ export const callout = defineType({
       name: 'body',
       title: 'Text',
       type: 'inlineText',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Write the callout text, or remove the callout.'),
     }),
   ],
   preview: {
     select: { tone: 'tone' },
     prepare({ tone }) {
-      return { title: 'Callout', subtitle: tone };
+      const labels: Record<string, string> = { sky: 'Sky (info)', warm: 'Warm note' };
+      return { title: 'Callout', subtitle: labels[tone] ?? tone };
     },
   },
 });

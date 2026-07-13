@@ -20,9 +20,10 @@ export const heroObject = defineType({
   fields: [
     defineField({
       name: 'eyebrow',
-      title: 'Eyebrow (small label above)',
+      title: 'Small label above the title',
       type: 'string',
       group: 'text',
+      description: 'An optional short line above the headline, e.g. "Since 1969".',
     }),
     defineField({
       name: 'title',
@@ -30,7 +31,8 @@ export const heroObject = defineType({
       type: 'text',
       rows: 2,
       group: 'text',
-      validation: (R) => R.required(),
+      description: 'The big line at the top of the page.',
+      validation: (R) => R.required().error('Every page needs a headline at the top.'),
     }),
     defineField({
       name: 'accentWord',
@@ -57,7 +59,14 @@ export const heroObject = defineType({
       initialValue: 'amber',
       hidden: ({ parent }) => !parent?.accentWord,
     }),
-    defineField({ name: 'lead', title: 'Intro line', type: 'text', rows: 3, group: 'text' }),
+    defineField({
+      name: 'lead',
+      title: 'Intro line',
+      type: 'text',
+      rows: 3,
+      group: 'text',
+      description: 'An optional sentence or two under the headline.',
+    }),
     defineField({
       name: 'actions',
       title: 'Buttons',

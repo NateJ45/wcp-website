@@ -25,7 +25,7 @@ export const proseSection = defineType({
       title: 'Text',
       type: 'richProse',
       group: 'content',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Add some text, or remove this section.'),
     }),
     defineField({
       name: 'callout',
@@ -55,17 +55,30 @@ export const ctaSection = defineType({
   name: 'ctaSection',
   title: 'Call-to-action banner',
   type: 'object',
+  description: 'A bold band with a headline and a button or two (e.g. "Ready to enroll?").',
   fields: [
-    defineField({ name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() }),
-    defineField({ name: 'lead', title: 'Intro line', type: 'text', rows: 2 }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      description: 'The headline, e.g. "Come see us in person".',
+      validation: (R) => R.required().error('The banner needs a headline.'),
+    }),
+    defineField({
+      name: 'lead',
+      title: 'Intro line',
+      type: 'text',
+      rows: 2,
+      description: 'An optional sentence under the headline.',
+    }),
     defineField({
       name: 'tone',
-      title: 'Style',
+      title: 'Band color',
       type: 'string',
       options: {
         list: [
-          { title: 'Navy band', value: 'navy' },
-          { title: 'Cream band', value: 'cream' },
+          { title: 'Navy (dark band)', value: 'navy' },
+          { title: 'Warm cream', value: 'cream' },
         ],
         layout: 'radio',
       },
@@ -75,6 +88,8 @@ export const ctaSection = defineType({
       name: 'seam',
       title: 'Cloud seam at top',
       type: 'boolean',
+      description:
+        'Adds the soft cloud divider at the top of this band. Use where the color changes from the section above.',
       initialValue: true,
     }),
     defineField({
@@ -105,9 +120,25 @@ export const noticeBarSection = defineType({
       name: 'text',
       title: 'Message',
       type: 'string',
-      validation: (R) => R.required(),
+      description: 'The short line shown in the strip.',
+      validation: (R) => R.required().error('Write the message this strip shows.'),
     }),
-    defineField({ name: 'linkLabel', title: 'Link text (optional)', type: 'string' }),
+    defineField({
+      name: 'linkLabel',
+      title: 'Link text (optional)',
+      type: 'string',
+      description: 'Leave blank for no link. If you fill this in, set where it goes below.',
+      validation: (R) =>
+        R.custom((label, context) => {
+          const parent = context.parent as
+            { linkType?: string; page?: unknown; url?: string } | undefined;
+          if (!label) return true;
+          const hasDest = parent?.linkType === 'url' ? !!parent?.url : !!parent?.page;
+          return hasDest
+            ? true
+            : 'You added link text but no destination. Pick a page or web address below.';
+        }).warning(),
+    }),
     defineField({
       name: 'linkType',
       title: 'Link goes to',
@@ -131,8 +162,9 @@ export const noticeBarSection = defineType({
     }),
     defineField({
       name: 'url',
-      title: 'URL / email',
+      title: 'Web address / email',
       type: 'string',
+      description: 'A full https:// link, or mailto:someone@example.org.',
       hidden: ({ parent }) => !parent?.linkLabel || parent?.linkType !== 'url',
     }),
   ],
@@ -160,6 +192,7 @@ export const contactDetailsSection = defineType({
       title: 'Left heading',
       type: 'string',
       group: 'content',
+      description: 'Heading over the phone/email column.',
       initialValue: 'Reach us',
     }),
     defineField({
@@ -167,6 +200,7 @@ export const contactDetailsSection = defineType({
       title: 'Right heading',
       type: 'string',
       group: 'content',
+      description: 'Heading over the address/parking column.',
       initialValue: 'Visit',
     }),
     defineField({

@@ -16,11 +16,18 @@ export const sectionHeader = defineType({
   fields: [
     defineField({
       name: 'eyebrow',
-      title: 'Eyebrow (small label above the title)',
+      title: 'Small label above the title',
       type: 'string',
+      description: 'An optional short line above the heading, e.g. "Our classes".',
     }),
     defineField({ name: 'title', title: 'Title', type: 'string' }),
-    defineField({ name: 'lead', title: 'Intro line (optional)', type: 'text', rows: 2 }),
+    defineField({
+      name: 'lead',
+      title: 'Intro line (optional)',
+      type: 'text',
+      rows: 2,
+      description: 'A sentence under the heading.',
+    }),
     defineField({
       name: 'align',
       title: 'Alignment',

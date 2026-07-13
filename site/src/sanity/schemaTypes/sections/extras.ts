@@ -21,7 +21,10 @@ export const videoSection = defineType({
       title: 'Video link',
       type: 'url',
       description: 'Paste a YouTube or Vimeo link.',
-      validation: (R) => R.required().uri({ scheme: ['http', 'https'] }),
+      validation: (R) =>
+        R.required()
+          .uri({ scheme: ['http', 'https'] })
+          .error('Paste a full YouTube or Vimeo link (starting with https://).'),
     }),
     defineField({
       name: 'thumbnail',
@@ -33,9 +36,9 @@ export const videoSection = defineType({
     ...bandFields('white'),
   ],
   preview: {
-    select: { title: 'header.title', url: 'videoUrl' },
-    prepare({ title, url }) {
-      return { title: title || 'Video', subtitle: url };
+    select: { title: 'header.title' },
+    prepare({ title }) {
+      return { title: title || 'Video', subtitle: 'Video' };
     },
   },
 });
@@ -52,7 +55,7 @@ export const mapSection = defineType({
       type: 'text',
       rows: 2,
       description: 'The address to show and to power the "Get directions" button.',
-      validation: (R) => R.required(),
+      validation: (R) => R.required().error('Enter the address the map should show.'),
     }),
     ...bandFields('white'),
   ],
@@ -75,7 +78,8 @@ export const accordionSection = defineType({
       name: 'items',
       title: 'Rows',
       type: 'array',
-      validation: (R) => R.min(1),
+      description: 'Each row is a label people click to expand, with content underneath.',
+      validation: (R) => R.min(1).error('Add at least one row, or remove this section.'),
       of: [
         defineArrayMember({
           type: 'object',
@@ -85,7 +89,8 @@ export const accordionSection = defineType({
               name: 'label',
               title: 'Label',
               type: 'string',
-              validation: (R) => R.required(),
+              description: 'The line people click to open the row.',
+              validation: (R) => R.required().error('Give the row a label.'),
             }),
             defineField({ name: 'body', title: 'Content', type: 'inlineText' }),
           ],
@@ -115,7 +120,12 @@ export const quickFactsSection = defineType({
       name: 'facts',
       title: 'Facts',
       type: 'array',
-      validation: (R) => R.min(1).max(6),
+      description: 'Add 1 to 6 quick facts, each with an icon, a value, and a label.',
+      validation: (R) =>
+        R.min(1)
+          .error('Add at least one fact, or remove this section.')
+          .max(6)
+          .error('Keep it to six facts so the row stays tidy.'),
       of: [
         defineArrayMember({
           type: 'object',
@@ -127,14 +137,14 @@ export const quickFactsSection = defineType({
               title: 'Value',
               type: 'string',
               description: 'e.g. "9am – 12pm" or "1:8".',
-              validation: (R) => R.required(),
+              validation: (R) => R.required().error('Every fact needs a value.'),
             }),
             defineField({
               name: 'label',
               title: 'Label',
               type: 'string',
               description: 'e.g. "Class hours" or "Teacher ratio".',
-              validation: (R) => R.required(),
+              validation: (R) => R.required().error('Every fact needs a label.'),
             }),
           ],
           preview: {
@@ -165,7 +175,8 @@ export const pullQuoteSection = defineType({
       title: 'Statement',
       type: 'text',
       rows: 3,
-      validation: (R) => R.required(),
+      description: 'The big line, e.g. your philosophy in one sentence.',
+      validation: (R) => R.required().error('Write the statement to feature.'),
     }),
     defineField({ name: 'attribution', title: 'Attribution (optional)', type: 'string' }),
     ...bandFields('cream'),
@@ -189,7 +200,8 @@ export const countdownSection = defineType({
       name: 'targetDate',
       title: 'Counting down to',
       type: 'datetime',
-      validation: (R) => R.required(),
+      description: 'The date and time the countdown ends.',
+      validation: (R) => R.required().error('Pick the date to count down to.'),
     }),
     defineField({
       name: 'completedMessage',

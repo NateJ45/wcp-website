@@ -94,7 +94,13 @@ export const testimonialSection = defineType({
   preview: {
     select: { title: 'header.title', source: 'source' },
     prepare({ title, source }) {
-      return { title: title || 'Testimonials', subtitle: `Source: ${source}` };
+      const labels: Record<string, string> = {
+        featured: 'Featured quotes',
+        all: 'All quotes',
+        tag: 'By class tag',
+        manual: 'Hand-picked',
+      };
+      return { title: title || 'Testimonials', subtitle: labels[source] ?? 'Testimonials' };
     },
   },
 });
@@ -121,7 +127,7 @@ export const teacherSection = defineType({
       group: 'content',
       of: [defineArrayMember({ type: 'reference', to: [{ type: 'staff' }] })],
       description: 'Pick from Staff — their name, photo, and bio come from there.',
-      validation: (R) => R.min(1),
+      validation: (R) => R.min(1).error('Pick at least one teacher, or remove this section.'),
     }),
     defineField({
       name: 'callout',
@@ -161,7 +167,7 @@ export const classCardsSection = defineType({
       group: 'content',
       of: [defineArrayMember({ type: 'reference', to: [{ type: 'class' }] })],
       description: 'Pick from Classes — schedule, ages, and price come from there.',
-      validation: (R) => R.min(1),
+      validation: (R) => R.min(1).error('Pick at least one class, or remove this section.'),
     }),
     ...bandFields('white'),
   ],
@@ -233,7 +239,7 @@ export const faqSection = defineType({
               name: 'question',
               title: 'Question',
               type: 'string',
-              validation: (R) => R.required(),
+              validation: (R) => R.required().error('Write the question.'),
             },
             { name: 'answer', title: 'Answer', type: 'blockContent' },
           ],
@@ -246,7 +252,17 @@ export const faqSection = defineType({
   preview: {
     select: { title: 'header.title', category: 'category' },
     prepare({ title, category }) {
-      return { title: title || 'FAQ', subtitle: category ? `Category: ${category}` : 'FAQ' };
+      const labels: Record<string, string> = {
+        coop: 'About the Co-op',
+        classes: 'Classes & Schedules',
+        enrollment: 'Enrollment & Fees',
+        about: 'About WCP',
+        donation: 'Donations',
+      };
+      return {
+        title: title || 'FAQ',
+        subtitle: category ? (labels[category] ?? category) : 'FAQ',
+      };
     },
   },
 });

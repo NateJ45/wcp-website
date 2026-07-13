@@ -12,6 +12,7 @@ export const programCardsSection = defineType({
   name: 'programCardsSection',
   title: 'Programs',
   type: 'object',
+  description: 'A row of program cards, pulled from your Program documents. Hides when none exist.',
   fields: [
     defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
     ...bandFields('white'),
@@ -28,6 +29,8 @@ export const boardMembersSection = defineType({
   name: 'boardMembersSection',
   title: 'Board / leadership',
   type: 'object',
+  description:
+    'A people grid, pulled from your Board / leadership documents. Hides when none exist.',
   fields: [
     defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
     ...bandFields('white'),
@@ -139,7 +142,17 @@ export const downloadsSection = defineType({
   preview: {
     select: { title: 'header.title', category: 'category' },
     prepare({ title, category }) {
-      return { title: title || 'Downloads & resources', subtitle: category || 'all' };
+      const labels: Record<string, string> = {
+        all: 'All resources',
+        handbook: 'Handbook & policies',
+        calendar: 'Calendar',
+        forms: 'Enrollment & forms',
+        other: 'Other',
+      };
+      return {
+        title: title || 'Downloads & resources',
+        subtitle: labels[category] ?? 'All resources',
+      };
     },
   },
 });
@@ -155,7 +168,8 @@ export const albumSection = defineType({
       title: 'Album',
       type: 'reference',
       to: [{ type: 'photoAlbum' }],
-      validation: (R) => R.required(),
+      description: 'Pick a Photo album to show here.',
+      validation: (R) => R.required().error('Pick which album to show, or remove this section.'),
     }),
     ...bandFields('white'),
   ],

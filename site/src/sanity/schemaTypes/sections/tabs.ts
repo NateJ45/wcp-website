@@ -19,7 +19,12 @@ export const tabsSection = defineType({
       name: 'tabs',
       title: 'Tabs',
       type: 'array',
-      validation: (R) => R.min(2).max(6),
+      description: 'Add 2 to 6 tabs. Each has a short label and its own content.',
+      validation: (R) =>
+        R.min(2)
+          .error('A tabs section needs at least two tabs.')
+          .max(6)
+          .error('Keep it to six tabs so the row fits.'),
       of: [
         defineArrayMember({
           type: 'object',
@@ -29,7 +34,8 @@ export const tabsSection = defineType({
               name: 'label',
               title: 'Tab label',
               type: 'string',
-              validation: (R) => R.required(),
+              description: 'The short word on the tab, e.g. "Morning".',
+              validation: (R) => R.required().error('Give the tab a label.'),
             }),
             defineField({ name: 'body', title: 'Content', type: 'inlineText' }),
           ],

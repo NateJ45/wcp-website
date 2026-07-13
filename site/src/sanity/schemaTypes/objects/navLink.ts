@@ -12,7 +12,13 @@ export const navLink = defineType({
   title: 'Link',
   type: 'object',
   fields: [
-    defineField({ name: 'label', title: 'Label', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'label',
+      title: 'Label',
+      type: 'string',
+      description: 'The wording shown in the menu.',
+      validation: (R) => R.required().error('Give the menu item a label.'),
+    }),
     defineField({
       name: 'linkType',
       title: 'Links to',
@@ -57,7 +63,13 @@ export const navGroup = defineType({
   title: 'Dropdown group',
   type: 'object',
   fields: [
-    defineField({ name: 'label', title: 'Label', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'label',
+      title: 'Label',
+      type: 'string',
+      description: 'The wording shown in the menu.',
+      validation: (R) => R.required().error('Give the menu item a label.'),
+    }),
     defineField({
       name: 'children',
       title: 'Links',

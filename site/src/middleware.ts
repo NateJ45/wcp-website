@@ -3,6 +3,11 @@ import { defineMiddleware } from 'astro:middleware';
 // =============================================================================
 // Family Hub gate
 // =============================================================================
+// (Board-managed redirects are applied at BUILD time via the `redirects` map
+// in astro.config.mjs, which reads the `redirect` documents from Sanity — they
+// emit real 301s through the Cloudflare adapter, same as the launch redirects.
+// See docs/REDIRECTS.md. Nothing to do here.)
+// =============================================================================
 // Everything under /family-hub is for enrolled families only. A visitor must
 // have signed in (shared password → session flag) to see any of it; otherwise
 // they are bounced to the sign-in page. The login page itself is the one

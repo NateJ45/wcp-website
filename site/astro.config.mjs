@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { loadEnv } from 'vite';
 
 import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
@@ -7,6 +8,42 @@ import partytown from '@astrojs/partytown';
 import react from '@astrojs/react';
 import sanity from '@sanity/astro';
 import tailwindcss from '@tailwindcss/vite';
+
+// -----------------------------------------------------------------------------
+// Board-managed redirects (read from Sanity at build time)
+// -----------------------------------------------------------------------------
+// The board adds `redirect` documents in the Studio when they rename or remove
+// a page; we fold them into the same `redirects` map as the launch-migration
+// ones below, so they emit real 301s via the Cloudflare adapter. Publishing a
+// redirect fires the deploy webhook (redirect isn't in the webhook's excluded
+// types), so it takes effect on the next rebuild like any other content edit.
+// FULLY fail-safe: any error (no token, Sanity down, bad data) → no CMS
+// redirects, and the build still succeeds with the static launch redirects.
+async function fetchCmsRedirects() {
+  const env = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
+  const token = process.env.SANITY_TOKEN || env.SANITY_TOKEN;
+  if (!token) return {};
+  try {
+    const query = '*[_type == "redirect" && defined(from) && defined(to)]{from,to,permanent}';
+    const url = `https://niemhgev.apicdn.sanity.io/v2025-01-01/data/query/production?query=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return {};
+    const { result } = await res.json();
+    /** @type {Record<string, string | { status: number, destination: string }>} */
+    const map = {};
+    for (const r of result || []) {
+      if (!r.from || !r.to || r.from === r.to) continue;
+      map[r.from] =
+        r.permanent === false
+          ? { status: 302, destination: r.to }
+          : { status: 301, destination: r.to };
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+const cmsRedirects = await fetchCmsRedirects();
 
 // =============================================================================
 // Astro config — West Chester Preschool
@@ -76,6 +113,11 @@ export default defineConfig({
     '/threes-classroom': '/family-hub/threes',
     '/pre-k-am-classroom': '/family-hub/pre-k-am',
     '/pre-k-pm-classroom': '/family-hub/pre-k-pm',
+
+    // Board-managed redirects from the Studio (see fetchCmsRedirects above).
+    // Spread LAST so a board entry wins over a stale launch one for the same
+    // path — the board can correct a launch redirect without a code change.
+    ...cmsRedirects,
   },
 
   prefetch: {

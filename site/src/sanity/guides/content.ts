@@ -87,7 +87,7 @@ export const guides: Guide[] = [
           '**Everyday edits** — the usual jobs. **Alert banner** (a snow-day banner across every page), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too).',
           '**School info** — the school facts: **Classes** (schedule, ages, tuition per class), **Staff** (teacher names and bios), **FAQs**, **Testimonials**, **School-Year Events**, and **Community & content** (programs, board, partners, photo albums).',
           '**Family Hub** — the private, families-only content (announcements, documents, sign-ups, the directory).',
-          '**Site setup** — set-once things: **Site Settings** (phone, email, address, school year) and **Menus (header & footer)**.',
+          '**Site setup** — set-once things: **Site Settings** (phone, email, address, school year), **Menus (header & footer)**, and **Redirects** (forward old links when you rename a page).',
           '**Inboxes** — what the site sends YOU: **Form submissions** and **Newsletter subscribers**.',
           'And in the top bar: **Media** — every photo you have uploaded, in one searchable place.',
         ],
@@ -95,7 +95,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Two views of the same Studio' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Everyday edits** — a short menu with just the publish-something-now jobs: the alert banner, money, news, events, pages, the Family Hub, and your inboxes. Click the workspace name in the top-left corner to switch to **Everything**, which adds the occasional stuff: School info (classes, staff, FAQs, testimonials, the school-year timeline), Community & content, Site Settings, and Menus. Both edit the same website; nothing is different except how much menu you see.',
+        text: 'The Studio opens in **Everyday edits** — a short menu with just the publish-something-now jobs: the alert banner, money, news, events, pages, the Family Hub, and your inboxes. Click the workspace name in the top-left corner to switch to **Everything**, which adds the occasional stuff: School info (classes, staff, FAQs, testimonials, the school-year timeline), Community & content, Site Settings, Menus, Redirects, and the Export tool. Both edit the same website; nothing is different except how much menu you see.',
       },
       {
         kind: 'seealso',
@@ -882,6 +882,79 @@ export const guides: Guide[] = [
         text: 'Programs, board members, partners, accreditations, job postings, and downloads all use the same drag handle you know from Classes and Testimonials: grab it on the left and drag to set the order the page shows.',
       },
       { kind: 'seealso', items: ['Build or edit a page', 'Photos and images'] },
+    ],
+  },
+
+  {
+    slug: 'redirects',
+    title: 'Fix a broken old link',
+    icon: '↪️',
+    lead: 'Renamed or removed a page? Send its old link to the new place so nobody hits a dead end.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Every page has a web address (its slug). If you change it, anyone who bookmarked the old one, or found it on Google, would land on a "page not found". A **redirect** quietly forwards them to the right new page instead.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Better yet, avoid renaming.',
+        text: 'The simplest fix is not to change an existing page’s web address in the first place. But when you must, add a redirect so no links break.',
+      },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'Site setup', 'Redirects', '＋ new', 'Publish'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Switch to the **Everything** workspace (the name in the top-left corner).',
+          'Open **Redirects** under Site setup, then **＋**.',
+          'In **Old address**, type the path people still use, starting with a slash, e.g. "/co-op-life".',
+          'In **Send them to**, type the new page path, e.g. "/community" (or a full https:// link).',
+          'Leave **Permanent move?** on, then **Publish**. It works a minute or two after the site rebuilds.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You can also fix an old typo redirect here.',
+        text: 'If a forward ever points at the wrong place, just add a redirect here for that old address — your entry wins over the built-in ones.',
+      },
+    ],
+  },
+
+  {
+    slug: 'export-list',
+    title: 'Download a list (subscribers, messages, directory)',
+    icon: '📤',
+    lead: 'Get your newsletter list, form messages, or the family directory out as a spreadsheet, any time.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Handy for moving to a new email tool, handing off to next year’s board, or just keeping your own copy. The file is a **CSV**, which opens in Excel or Google Sheets.',
+      },
+      {
+        kind: 'path',
+        items: ['Everything workspace', 'Export (top nav)', 'pick a list', 'Download CSV'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Switch to the **Everything** workspace (the name in the top-left corner).',
+          'Click **Export** in the top navigation.',
+          'Choose Newsletter subscribers, Form submissions, or the Family directory.',
+          'Click **Download CSV**. The file saves to your computer.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'The directory file has private info.',
+        text: 'The family directory export includes names and contact details. Keep the file somewhere safe and delete it when you’re done with it.',
+      },
     ],
   },
 

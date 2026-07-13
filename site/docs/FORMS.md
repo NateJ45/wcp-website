@@ -91,7 +91,9 @@ stays the same. (Do NOT "New deployment" — that mints a new URL and needs a ne
   notification path; needs a verified sending domain for a branded From address.
 - **Newsletter list provider**: `NEWSLETTER_PROVIDER=buttondown` + `BUTTONDOWN_API_KEY`,
   or `NEWSLETTER_PROVIDER=mailchimp` + `MAILCHIMP_API_KEY` + `MAILCHIMP_LIST_ID` +
-  `MAILCHIMP_SERVER_PREFIX`. Until set, signups are store-only (export from the Studio).
+  `MAILCHIMP_SERVER_PREFIX`. Until set, signups are store-only — download them as a CSV any
+  time with the **Export** tool (Everything workspace → **Export** in the top nav), which
+  also exports form submissions and the family directory. No developer or CLI needed.
 
 ## Spam
 
