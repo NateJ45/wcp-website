@@ -187,6 +187,41 @@ export const siteSettings = defineType({
       description:
         'The Google Apps Script web-app link that serves the school calendar as a feed. Powers the Upcoming Events list on the Family Hub. Ask before changing this one.',
     }),
+    defineField({
+      name: 'pastFundraisingTotals',
+      title: 'Past fundraising totals',
+      type: 'array',
+      group: 'year',
+      description:
+        'Grand totals from finished school years, newest first — shown in the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the year that just ended (the treasurer’s final number).',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'yearLabel',
+              title: 'School year',
+              type: 'string',
+              description: 'e.g. "2025-26"',
+              validation: (R) => R.required(),
+            }),
+            defineField({
+              name: 'amount',
+              title: 'Total raised ($)',
+              type: 'number',
+              validation: (R) => R.required().min(0),
+            }),
+          ],
+          preview: {
+            select: { title: 'yearLabel', amount: 'amount' },
+            prepare: ({ title, amount }) => ({
+              title: title || 'School year',
+              subtitle: typeof amount === 'number' ? `$${amount.toLocaleString('en-US')}` : '',
+            }),
+          },
+        },
+      ],
+    }),
 
     // Social & store
     defineField({ name: 'facebook', title: 'Facebook URL', type: 'url', group: 'social' }),

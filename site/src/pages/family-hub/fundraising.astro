@@ -23,7 +23,7 @@ import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
-import { budgetSheetIdFallback } from '@/data/hub/live-links';
+import { budgetSheetIdFallback, pastFundraisingTotalsFallback } from '@/data/hub/live-links';
 import { site } from '@/data/site';
 
 interface Campaign {
@@ -57,12 +57,22 @@ try {
   doc = null;
 }
 
-// Year at a glance — live from the treasurer's Fundraising sheet tab.
+// Year at a glance — live from the treasurer's Fundraising sheet tab — plus
+// the "raised together" record of past-year grand totals (Board-editable on
+// Site Settings; falls back to the old site's numbers until set).
 let sheetId = budgetSheetIdFallback;
+let pastTotals = pastFundraisingTotalsFallback;
 try {
-  sheetId =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
-    budgetSheetIdFallback;
+  const settings = await sanityFetch<{
+    budgetSheetId?: string | null;
+    pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
+  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`);
+  sheetId = settings?.budgetSheetId || budgetSheetIdFallback;
+  const cmsTotals = (settings?.pastFundraisingTotals ?? []).filter(
+    (t): t is { yearLabel: string; amount: number } =>
+      Boolean(t.yearLabel) && typeof t.amount === 'number',
+  );
+  if (cmsTotals.length > 0) pastTotals = cmsTotals;
 } catch {
   sheetId = budgetSheetIdFallback;
 }
@@ -263,6 +273,37 @@ const waysToRaise = [
       </div>
 
       {
+        /* FIXED: the running record — the old site's "What We Have Raised
+          Together" band. Past-year grand totals, Board-editable on Site
+          Settings → School year. This is the page's ONE navy emphasis moment
+          (it absorbed the old "Where your money goes" card), and like the
+          home hero it's a theme-stable island: navy + amber + white/…, all
+          identical in light and dark. */
+      }
+      {
+        pastTotals.length > 0 && (
+          <HubCard class="mt-12 bg-navy text-center text-white">
+            <h2 id="raised-together" class="font-display text-2xl text-white">
+              What we’ve raised together
+            </h2>
+            {/* One short line — the Board's editable "Where your money goes"
+                section below tells the longer version of this story. */}
+            <p class="mx-auto mt-2 max-w-xl leading-relaxed text-white/85">
+              Every dollar goes straight back into our school.
+            </p>
+            <ul class="mt-6 flex flex-wrap justify-center gap-4">
+              {pastTotals.map((t) => (
+                <li class="min-w-40 rounded-xl bg-white/10 px-6 py-5">
+                  <p class="font-display text-3xl text-amber">{money(t.amount)}</p>
+                  <p class="mt-1 text-sm font-semibold text-white/85">{t.yearLabel} total</p>
+                </li>
+              ))}
+            </ul>
+          </HubCard>
+        )
+      }
+
+      {
         !hasSections && (
           <>
             {/* Editable body fallback — the ways WCP raises money. */}
@@ -291,22 +332,6 @@ const waysToRaise = [
                 ))}
               </ul>
             </div>
-
-            {/* The single navy emphasis moment — where the money goes. */}
-            <HubCard class="mt-8 bg-navy text-white">
-              <span
-                class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-amber"
-                aria-hidden="true"
-              >
-                <Icon name="graduation-cap" class="h-7 w-7" />
-              </span>
-              <p class="text-lg font-bold text-white">Where your money goes</p>
-              <p class="mt-2 max-w-xl leading-relaxed text-white/85">
-                Every dollar raised goes straight back into the classrooms — supplies, enrichment,
-                playground upkeep, and the special days that make WCP feel like home. No overhead,
-                no salaries skimmed off the top.
-              </p>
-            </HubCard>
           </>
         )
       }

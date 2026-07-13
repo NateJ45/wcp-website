@@ -70,6 +70,7 @@ working values as per-field fallbacks in `src/data/hub/live-links.ts`:
 | Upcoming Events (widget + Calendar)  | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs                       |
 | Calendar subscribe buttons           | built from `googleCalendarId`                                    | Site Settings → **Google Calendar ID**                                                          |
 | President's note (first-visit modal) | `presidentNote` singleton (live read)                            | Family Hub → **President's note** (bump the version stamp to re-show)                           |
+| "What we've raised together" band    | past-year grand totals (Fundraising page navy band)              | Site Settings → **Past fundraising totals** (add the just-ended year each fall)                 |
 
 Every fetch is try/catch'd with a short timeout — a failed source degrades to the designed
 empty state, never a broken card. Seed/refresh the letter with

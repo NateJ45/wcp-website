@@ -701,6 +701,10 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **School year** tab also holds the Family Hub’s live-data links: the **Summer Playdates photo album**, the **Budget Google Sheet ID** (the treasurer’s tracking sheet that powers the Budget Snapshot and Fundraising numbers), and the **Calendar feed link** (powers the Upcoming Events list). These rarely change — update them only when the sheet, album, or feed is replaced.',
       },
+      {
+        kind: 'p',
+        text: 'Same tab: **Past fundraising totals** — the list behind the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the school year that just ended with the treasurer’s final grand total (newest first).',
+      },
     ],
   },
 

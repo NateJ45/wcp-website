@@ -46,3 +46,11 @@ export const budgetSheetIdFallback = '***REMOVED***';
  *  (rolling 12 months; deployed 2026-05-05). */
 export const calendarFeedUrlFallback =
   'https://script.google.com/macros/s/***REMOVED***/exec';
+
+/** Grand totals from finished school years — the old site's "What We Have
+ *  Raised Together" band, now on the hub Fundraising page. Editable on
+ *  Site Settings → School year (`pastFundraisingTotals`), newest first. */
+export const pastFundraisingTotalsFallback: { yearLabel: string; amount: number }[] = [
+  { yearLabel: '2025-26', amount: 4450 },
+  { yearLabel: '2024-25', amount: 6653 },
+];
