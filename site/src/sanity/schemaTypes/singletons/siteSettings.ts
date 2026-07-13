@@ -142,6 +142,31 @@ export const siteSettings = defineType({
       description: 'Turns the "Now Enrolling" labels on or off.',
     }),
     defineField({
+      name: 'enrollmentMode',
+      title: 'Enrollment mode',
+      type: 'string',
+      group: 'year',
+      options: {
+        list: [
+          { title: 'Open — accepting new families', value: 'open' },
+          { title: 'Waitlist — full, taking waitlist names', value: 'waitlist' },
+          { title: 'Closed — between enrollment seasons', value: 'closed' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'open',
+      description:
+        'Flip this and every "Enrollment status" banner you added to a page changes its wording and button to match (Apply now / Join the waitlist / Opens soon).',
+    }),
+    defineField({
+      name: 'enrollmentDeadline',
+      title: 'Enrollment deadline (optional)',
+      type: 'date',
+      group: 'year',
+      description:
+        'Shown in the enrollment banner while enrollment is open, e.g. "Apply by March 1".',
+    }),
+    defineField({
       name: 'closureStatement',
       title: 'Weather-closure statement',
       type: 'text',

@@ -15,6 +15,8 @@ import {
   faqSection,
   schoolYearSection,
   tuitionTableSection,
+  tuitionCalculatorSection,
+  enrollmentCtaSection,
 } from './library';
 import {
   scheduleSection,
@@ -58,6 +60,8 @@ const BODY_SECTIONS = [
   faqSection,
   schoolYearSection,
   tuitionTableSection,
+  tuitionCalculatorSection,
+  enrollmentCtaSection,
   scheduleSection,
   stepListSection,
   compareSection,

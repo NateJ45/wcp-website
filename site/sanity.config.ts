@@ -12,6 +12,7 @@ import { SeoPreviewPane } from './src/sanity/components/SeoPreviewPane';
 import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLayout';
 import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
+import { HealthTool } from './src/sanity/components/HealthTool';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { structure, everydayStructure } from './src/sanity/structure';
@@ -208,6 +209,14 @@ export default defineConfig([
         title: 'Clean up',
         component: CleanupTool,
         icon: () => '🧹',
+      },
+      // Checkup — read-only "what needs attention?" report (banner left on,
+      // old messages, stale pages, class gaps).
+      {
+        name: 'checkup',
+        title: 'Checkup',
+        component: HealthTool,
+        icon: () => '🩺',
       },
     ],
   }),

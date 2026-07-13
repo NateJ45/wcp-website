@@ -677,7 +677,44 @@ export const guides: Guide[] = [
           SITE.contactName +
           ' before you publish. Editing the number is easy; the point is to make sure it is the agreed number.',
       },
-      { kind: 'seealso', items: ['Add or change a class'] },
+      { kind: 'seealso', items: ['Add or change a class', 'Enrollment status & cost calculator'] },
+    ],
+  },
+
+  {
+    slug: 'enrollment-status',
+    title: 'Enrollment status & cost calculator',
+    icon: '📝',
+    lead: 'One switch changes your enrollment message everywhere, plus a "what will it cost?" tool for families.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'Flip your enrollment status in one place' },
+      {
+        kind: 'p',
+        text: 'In **Site Settings → School year** there is an **Enrollment mode**: **Open** (accepting families), **Waitlist** (full, taking names), or **Closed** (between seasons). Set it once and every "Enrollment status banner" you have added to a page updates its wording and button to match.',
+      },
+      {
+        kind: 'path',
+        items: [
+          'Everything workspace',
+          'Site Settings',
+          'School year',
+          'Enrollment mode',
+          'Publish',
+        ],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'To place the banner: open a **page**, add an **Enrollment status banner** section, and set where its button points (usually your enroll or contact page).',
+          'When enrollment is open, you can set an optional **deadline** in Site Settings, and the banner shows "Apply by ...".',
+        ],
+      },
+      { kind: 'h', text: 'The tuition cost calculator' },
+      {
+        kind: 'p',
+        text: 'Add a **Tuition calculator** section to a page (great on the enroll or tuition page). Families tick the class they are considering and see the monthly tuition and fees, pulled straight from your Classes and Tuition & Fees, so it is always current. Nothing to keep updated.',
+      },
     ],
   },
 
@@ -1044,6 +1081,25 @@ export const guides: Guide[] = [
         ],
       },
       { kind: 'seealso', items: ['Download a list (subscribers, messages, directory)'] },
+    ],
+  },
+
+  {
+    slug: 'checkup',
+    title: 'Run a site checkup',
+    icon: '🩺',
+    lead: 'A one-click "what needs attention?" report — a banner left on, old messages, stale pages, gaps in your classes.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Checkup** tool looks over the site and lists anything worth a look. It never changes anything, it just points you to what to fix.',
+      },
+      { kind: 'path', items: ['Everything workspace', 'Checkup (top nav)'] },
+      {
+        kind: 'p',
+        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. Handy at the start of each month.',
+      },
     ],
   },
 

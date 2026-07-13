@@ -328,3 +328,83 @@ export const tuitionTableSection = defineType({
     },
   },
 });
+
+export const tuitionCalculatorSection = defineType({
+  name: 'tuitionCalculatorSection',
+  title: 'Tuition calculator',
+  type: 'object',
+  description:
+    'An interactive "what will it cost?" tool. Visitors pick their class(es) and see the monthly tuition and fees, from your live Classes + Tuition & Fees. Great on the enroll or tuition page.',
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'appearance', title: 'Appearance' },
+  ],
+  fields: [
+    defineField({
+      name: 'header',
+      title: 'Heading (optional)',
+      type: 'sectionHeader',
+      group: 'content',
+    }),
+    defineField({
+      name: 'note',
+      title: 'Small print (optional)',
+      type: 'string',
+      group: 'content',
+      description:
+        'A reminder shown under the total, e.g. "Estimate only. Confirm with the office."',
+      initialValue: 'This is an estimate. We will confirm exact amounts when you enroll.',
+    }),
+    ...bandFields('grey'),
+  ],
+  preview: {
+    select: { title: 'header.title' },
+    prepare({ title }) {
+      return { title: title || 'Tuition calculator', subtitle: 'Interactive cost estimate' };
+    },
+  },
+});
+
+export const enrollmentCtaSection = defineType({
+  name: 'enrollmentCtaSection',
+  title: 'Enrollment status banner',
+  type: 'object',
+  description:
+    'A call-to-action whose wording and button follow the Enrollment mode in Site Settings (Apply now / Join the waitlist / Opens soon). Flip the mode once and every one of these updates.',
+  fields: [
+    defineField({
+      name: 'linkType',
+      title: 'Button goes to',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'A page on this site', value: 'page' },
+          { title: 'A web address', value: 'url' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'page',
+    }),
+    defineField({
+      name: 'page',
+      title: 'Page',
+      type: 'reference',
+      to: [{ type: 'page' }],
+      description: 'Usually your enroll or contact page.',
+      hidden: ({ parent }) => parent?.linkType === 'url',
+    }),
+    defineField({
+      name: 'url',
+      title: 'Web address',
+      type: 'url',
+      hidden: ({ parent }) => parent?.linkType !== 'url',
+      validation: (R) => R.uri({ scheme: ['http', 'https'] }),
+    }),
+    ...bandFields('navy'),
+  ],
+  preview: {
+    prepare() {
+      return { title: 'Enrollment status banner', subtitle: 'Follows the Enrollment mode' };
+    },
+  },
+});

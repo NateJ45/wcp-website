@@ -9,6 +9,7 @@ import {
   NAVIGATION_QUERY,
   CLOSURE_ALERT_QUERY,
   ANNOUNCEMENTS_QUERY,
+  SITE_ENROLLMENT_QUERY,
   testimonialsQuery,
 } from '@/lib/queries';
 import { resolveNavigation, type SiteNavigation } from '@/lib/nav';
@@ -226,6 +227,20 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       instagram: doc.instagram ?? f.social.instagram,
     },
   } as unknown as T;
+}
+
+/** Enrollment mode + deadline for the self-adapting enrollment CTA. */
+export async function getEnrollment(): Promise<import('@/lib/enrollment').EnrollmentInfo> {
+  const doc = await cmsFetch<{ enrollmentMode?: string; enrollmentDeadline?: string } | null>(
+    SITE_ENROLLMENT_QUERY,
+    {},
+    null,
+  );
+  const mode = doc?.enrollmentMode;
+  return {
+    mode: mode === 'waitlist' || mode === 'closed' ? mode : 'open',
+    deadline: doc?.enrollmentDeadline,
+  };
 }
 
 /**

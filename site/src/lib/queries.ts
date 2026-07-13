@@ -41,6 +41,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
     _type == "noticeBarSection" => { "pageSlug": page->slug },
+    _type == "enrollmentCtaSection" => { "pageSlug": page->slug },
     _type == "testimonialSection" => {
       "items": select(
         source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role },
@@ -153,7 +154,7 @@ export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, emai
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, storeUrl, license, licenseAuthority }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, storeUrl, license, licenseAuthority }`;
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
@@ -182,6 +183,15 @@ export const ANNOUNCEMENTS_QUERY = `*[_type == "announcement" && enabled == true
 export const SCHOOL_YEAR_EVENTS_QUERY = `*[_type == "schoolYearEvent"] | order(orderRank){ month, title, body, icon, accent }`;
 
 export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee }`;
+
+// Enrollment mode + deadline (drives the self-adapting enrollment CTA).
+export const SITE_ENROLLMENT_QUERY = `*[_type == "siteSettings"][0]{ enrollmentMode, enrollmentDeadline }`;
+
+// Tuition calculator: class prices + the one-time enrollment fees.
+export const TUITION_CALC_QUERY = `{
+  "classes": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
+  "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+}`;
 
 export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
 

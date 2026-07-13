@@ -1,0 +1,134 @@
+---
+/* ============================================================================
+   TuitionCalculatorSection — interactive "what will it cost?" estimator
+   ============================================================================
+   Config-only in Sanity; pulls class prices + the one-time enrollment fees at
+   build time. Visitors tick the class(es) they're considering and see a live
+   monthly total plus the one-time start cost and yearly student fees. Prices
+   come straight from Classes + Tuition & Fees, so it's always current. Works
+   with no JS (the class list + prices are visible; only the live total needs
+   the script).
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { cmsFetch } from '@/lib/cms';
+import { TUITION_CALC_QUERY } from '@/lib/queries';
+import { classStyles } from '@/lib/class-colors';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+
+interface CalcClass {
+  name?: string;
+  slug?: string;
+  color?: string;
+  monthly?: string;
+  studentFee?: string;
+}
+interface CalcData {
+  classes: CalcClass[];
+  fees?: { registrationFee?: string; participationFee?: string } | null;
+}
+
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const note = section.note as string | undefined;
+
+const data = await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
+const money = (s?: string): number => (s ? Number(String(s).replace(/[^0-9.]/g, '')) || 0 : 0);
+const fmt = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+
+const classes = (data.classes ?? []).filter((c) => c.name && money(c.monthly) > 0);
+const reg = money(data.fees?.registrationFee);
+const participation = money(data.fees?.participationFee);
+const oneTime = reg + participation;
+---
+
+{
+  classes.length > 0 && (
+    <Section
+      bg={(section.background as never) ?? 'grey'}
+      seam={section.seam as boolean}
+      size={bandSize(section)}
+      labelledby={titleId}
+    >
+      <SectionHeader
+        eyebrow={header?.eyebrow}
+        title={header?.title ?? 'What will it cost?'}
+        lead={header?.lead ?? 'Pick the class you’re considering to see an estimate.'}
+        titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background)}
+        as="h2"
+      />
+
+      <div
+        class="mx-auto mt-8 max-w-3xl"
+        data-tuition-calc
+        data-onetime={oneTime}
+        data-reg={reg}
+        data-participation={participation}
+      >
+        <div class="grid gap-8 md:grid-cols-2">
+          <fieldset class="rounded-2xl border border-navy/10 bg-white p-5 dark:bg-surface">
+            <legend class="px-1 font-semibold text-heading">Choose class(es)</legend>
+            <div class="mt-2 space-y-2">
+              {classes.map((c) => {
+                const st = classStyles(c.slug);
+                return (
+                  <label class="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-grey">
+                    <input
+                      type="checkbox"
+                      data-calc-class
+                      data-monthly={money(c.monthly)}
+                      data-studentfee={money(c.studentFee)}
+                      class="h-5 w-5 shrink-0 rounded border-navy/30"
+                    />
+                    <span
+                      class:list={['h-3 w-3 shrink-0 rounded-full', st.dot]}
+                      aria-hidden="true"
+                    />
+                    <span class="flex-1 font-medium text-ink">{c.name}</span>
+                    <span class="text-sm font-semibold text-ink-muted">
+                      {fmt(money(c.monthly))}/mo
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <div class="rounded-2xl border border-navy/10 bg-white p-5 dark:bg-surface">
+            <p class="font-semibold text-heading">Your estimate</p>
+            <dl class="mt-4 space-y-3" aria-live="polite">
+              <div class="flex items-end justify-between gap-4">
+                <dt class="text-ink-muted">Monthly tuition</dt>
+                <dd class="font-display text-2xl text-heading" data-calc-monthly>
+                  {fmt(0)}
+                </dd>
+              </div>
+              {oneTime > 0 && (
+                <div class="flex items-end justify-between gap-4">
+                  <dt class="text-ink-muted">One-time to start</dt>
+                  <dd class="font-semibold text-heading" data-calc-onetime>
+                    {fmt(0)}
+                  </dd>
+                </div>
+              )}
+              <div class="flex items-end justify-between gap-4">
+                <dt class="text-ink-muted">Yearly student fee</dt>
+                <dd class="font-semibold text-heading" data-calc-studentfee>
+                  {fmt(0)}
+                </dd>
+              </div>
+            </dl>
+            <p class="mt-4 border-t border-border pt-3 text-sm text-ink-muted" data-calc-empty>
+              Tick a class to see your estimate.
+            </p>
+            {note && <p class="mt-3 text-xs text-ink-muted">{note}</p>}
+          </div>
+        </div>
+      </div>
+
+      <script>import '@/scripts/tuition-calculator';</script>
+    </Section>
+  )
+}

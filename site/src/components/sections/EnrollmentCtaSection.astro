@@ -1,0 +1,52 @@
+---
+/* ============================================================================
+   EnrollmentCtaSection — a call-to-action that follows the enrollment mode
+   ============================================================================
+   Reads the single Enrollment mode from Site Settings and shows the matching
+   wording + button (Apply now / Join the waitlist / Get in touch). The board
+   flips the mode once and every one of these banners updates. Config here is
+   just where the button points.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import { getEnrollment } from '@/lib/cms';
+import { enrollmentCopy } from '@/lib/enrollment';
+import { titleIdFor, bandSize, isExternal, slugHref, type SectionData } from './section-helpers';
+
+const { section, linkBase = '' } = Astro.props as { section: SectionData; linkBase?: string };
+const titleId = titleIdFor(section);
+
+const info = await getEnrollment();
+const copy = enrollmentCopy(info);
+
+const linkType = section.linkType as string | undefined;
+const url = section.url as string | undefined;
+const href =
+  linkType === 'url' ? (url ?? null) : slugHref(section.pageSlug as string | undefined, linkBase);
+const external = href ? isExternal(url ?? '') : false;
+---
+
+<Section
+  bg={(section.background as never) ?? 'navy'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={titleId}
+>
+  <div class="mx-auto max-w-2xl text-center">
+    <p class="font-semibold tracking-widest text-amber uppercase">{copy.eyebrow}</p>
+    <h2 id={titleId} class="mt-2 font-display text-3xl text-white sm:text-4xl">{copy.heading}</h2>
+    <p class="mx-auto mt-4 max-w-xl text-white/85">{copy.body}</p>
+    {
+      href && (
+        <div class="mt-8">
+          <a
+            href={href}
+            class="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 font-bold text-accent-foreground no-underline shadow-sm transition hover:brightness-95"
+            {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+          >
+            {copy.cta}
+          </a>
+        </div>
+      )
+    }
+  </div>
+</Section>
