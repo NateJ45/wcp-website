@@ -47,7 +47,7 @@ const title =
 // this page at build time (see /og/[...slug].png.ts).
 const ogImage = page?.ogImage?.asset
   ? imageUrl(page.ogImage as SanityImageSource, 1200)
-  : `/og/${slug}.png`;
+  : `/og/${slug}.jpg`;
 ---
 
 <BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>

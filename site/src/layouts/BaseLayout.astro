@@ -50,7 +50,7 @@ const {
 // page's SEO image) when set, otherwise a branded card generated at build
 // time (/og/*.png, see src/pages/og/[...slug].png.ts) — so a link to any
 // page shows a real branded image on social/chat, never a blank card.
-const DEFAULT_OG_IMAGE = '/og/default.png';
+const DEFAULT_OG_IMAGE = '/og/default.jpg';
 const canonical = new URL(Astro.url.pathname, site.url).toString();
 const ogImageUrl = new URL(ogImage ?? DEFAULT_OG_IMAGE, site.url).toString();
 

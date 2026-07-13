@@ -31,7 +31,7 @@ if (!post) {
 const shareImg = post.ogImage ?? post.coverImage;
 const ogImage = shareImg?.asset
   ? imageUrl(shareImg as SanityImageSource, 1200)
-  : `/og/news/${slug}.png`;
+  : `/og/news/${slug}.jpg`;
 const title = post.seoTitle ?? `${post.title} — ${site.name}`;
 const description = post.seoDescription ?? post.excerpt;
 ---
