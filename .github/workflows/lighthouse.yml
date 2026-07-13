@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push to the same branch obsoletes the in-flight run; cancel it
+# instead of paying for both (private-repo Actions minutes are metered).
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     working-directory: site

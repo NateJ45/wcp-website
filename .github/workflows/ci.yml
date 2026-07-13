@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push to the same branch obsoletes the in-flight run; cancel it
+# instead of paying for both (private-repo Actions minutes are metered).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 # The deployable app lives in site/ ; run every step there.
 defaults:
   run:

@@ -11,6 +11,17 @@ on:
   repository_dispatch:
     types: [sanity-publish]
 
+# Coalesce webhook bursts. Sanity fires one dispatch per document change, so a
+# single Studio editing session can queue dozens of identical deploys back to
+# back (observed: 5-6 dispatches within the same second). With a shared group,
+# GitHub keeps at most one running run plus one queued run and drops the rest —
+# the queued run always builds the latest content, so nothing is lost.
+# cancel-in-progress stays false so an in-flight deploy is never killed
+# mid-upload.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 defaults:
   run:
     working-directory: site

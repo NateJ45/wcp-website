@@ -207,15 +207,27 @@ when Sanity tells it a document was published.
      ```
      {"event_type": "sanity-publish"}
      ```
-   - **Filter** — skip the document types that only feed Family Hub pages. Every
-     Family Hub route has `prerender = false` (session-gated, reads Sanity live on
-     every request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
+   - **Filter** — two exclusions, both required:
+
+     **Exclude drafts.** With "Trigger on: Create, Update, Delete" and no draft
+     filter, the webhook fires on every Studio autosave (drafts are real documents
+     with a `drafts.` id prefix, and the Studio saves continuously while someone
+     types). That is exactly what happened in July 2026: one editing session queued
+     dozens of deploys per hour and burned through the month's Actions minutes.
+     Publishing still fires — publish writes the un-prefixed document, which passes
+     the filter.
+
+     **Skip the document types that only feed Family Hub pages.** Every Family Hub
+     route has `prerender = false` (session-gated, reads Sanity live on every
+     request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
      `update`, `hubDocument`, `directoryEntry`, or `classNote` document already shows
      up immediately with no rebuild. Everything else (`testimonial`, `siteSettings`,
      `page`, `schoolYearEvent`, `faqItem`, `class`, `legalPage`, `feeSchedule`) is
-     baked into the static public pages at build time and DOES need a redeploy:
+     baked into the static public pages at build time and DOES need a redeploy.
+
+     Combined filter:
      ```
-     !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote"])
+     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote"])
      ```
      If a new document type is added later, decide which bucket it belongs to by
      checking whether the page(s) that read it have `prerender = false`.
