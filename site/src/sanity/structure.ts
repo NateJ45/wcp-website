@@ -208,6 +208,7 @@ const PLACED = new Set([
   'event',
   'submission',
   'subscriber',
+  'testimonialSubmission',
   'coopRole',
   'program',
   'boardMember',
@@ -371,6 +372,7 @@ export const structure: StructureResolver = (S, context) =>
       S.divider().title('Inboxes'),
 
       submissionsGroup(S, context),
+      S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 
       // Fallback: any type not explicitly placed above still shows up here.
@@ -419,5 +421,6 @@ export const everydayStructure: StructureResolver = (S, context) =>
       S.divider().title('Inboxes'),
 
       submissionsGroup(S, context),
+      S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
     ]);

@@ -48,6 +48,7 @@ export const POST: APIRoute = async (context) => {
     childBirthdate: 'Birthdate',
     childInfo: 'Child (name & birthdate)',
     classInterest: 'Class interest',
+    preferredStart: 'Preferred start',
     datesTimes: 'Preferred dates/times',
     experienceYears: 'Experience with children',
     ageGroups: 'Age groups',

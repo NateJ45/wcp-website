@@ -32,6 +32,7 @@ export const formSection = defineType({
         list: [
           { title: 'General (subject + message)', value: 'general' },
           { title: 'Enrollment inquiry (child details + classes)', value: 'enroll' },
+          { title: 'Waitlist / interest (child + class + start)', value: 'waitlist' },
           { title: 'Tour request (child + preferred dates)', value: 'tour' },
           { title: 'Teaching application (experience + certification)', value: 'teach' },
         ],
@@ -107,6 +108,37 @@ export const newsletterSignupSection = defineType({
     select: { title: 'header.title' },
     prepare({ title }) {
       return { title: title || 'Newsletter sign-up', subtitle: 'Email capture' };
+    },
+  },
+});
+
+// =============================================================================
+// reviewFormSection — "share your story" (a parent-submitted review)
+// =============================================================================
+// A form families fill in to leave a review. It doesn't go public on its own:
+// it lands in the Studio (Review submissions) and the board approves the good
+// ones into Testimonials with one click. Posts to /api/testimonial.
+// =============================================================================
+export const reviewFormSection = defineType({
+  name: 'reviewFormSection',
+  title: 'Leave a review form',
+  type: 'object',
+  description:
+    'A form where families share a review. Submissions go to "Review submissions" for you to approve into Testimonials, so nothing appears on the site without your OK.',
+  fields: [
+    defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
+    defineField({
+      name: 'buttonLabel',
+      title: 'Button label',
+      type: 'string',
+      initialValue: 'Share your review',
+    }),
+    ...bandFields('cream'),
+  ],
+  preview: {
+    select: { title: 'header.title' },
+    prepare({ title }) {
+      return { title: title || 'Leave a review', subtitle: 'Parent reviews (you approve them)' };
     },
   },
 });

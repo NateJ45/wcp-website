@@ -1,0 +1,96 @@
+---
+/* ============================================================================
+   ReviewFormSection — "share your story" review form (page-builder bridge)
+   ============================================================================
+   Posts to /api/testimonial, which stores a Review submission for the board to
+   approve. Progressive enhancement: no-JS native POST → /thank-you; with JS it
+   submits in the background and swaps in an inline thank-you. Honeypot for bots.
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+
+const { section } = Astro.props as { section: SectionData };
+const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const titleId = titleIdFor(section);
+const buttonLabel = (section.buttonLabel as string) ?? 'Share your review';
+const formId = `review-${section._key}`;
+
+const field =
+  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+const labelCls = 'block text-sm font-semibold text-heading';
+---
+
+<Section
+  bg={(section.background as never) ?? 'cream'}
+  seam={section.seam as boolean}
+  size={bandSize(section)}
+  labelledby={titleId}
+>
+  <SectionHeader
+    eyebrow={header?.eyebrow}
+    title={header?.title ?? 'Share your story'}
+    lead={header?.lead ??
+      'We’d love to hear what your family thinks. With your OK, we may feature it on the site.'}
+    titleId={titleId}
+    as="h2"
+  />
+
+  <div class="mx-auto mt-8 max-w-xl" data-review-root>
+    <form method="POST" action="/api/testimonial" class="grid gap-4" data-review-form id={formId}>
+      {/* Honeypot: hidden from people, catches basic bots. */}
+      <div class="hidden" aria-hidden="true">
+        <label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+      </div>
+
+      <div>
+        <label class={labelCls} for={`${formId}-quote`}>Your review</label>
+        <textarea id={`${formId}-quote`} name="quote" rows="4" required class={field}></textarea>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class={labelCls} for={`${formId}-name`}>Your name</label>
+          <input id={`${formId}-name`} name="authorName" type="text" class={field} />
+        </div>
+        <div>
+          <label class={labelCls} for={`${formId}-conn`}>Your connection</label>
+          <input
+            id={`${formId}-conn`}
+            name="connection"
+            type="text"
+            placeholder="e.g. Twos parent"
+            class={field}
+          />
+        </div>
+      </div>
+      <div>
+        <label class={labelCls} for={`${formId}-email`}>
+          Email <span class="font-normal text-ink-muted">(optional, not published)</span>
+        </label>
+        <input id={`${formId}-email`} name="email" type="email" class={field} />
+      </div>
+      <label class="flex items-start gap-3 text-sm text-ink">
+        <input type="checkbox" name="permission" required class="mt-1 h-5 w-5 shrink-0" />
+        <span>You may share my words (first name and connection) on the website.</span>
+      </label>
+
+      <div>
+        <button
+          type="submit"
+          class="rounded-full bg-navy px-7 py-3 font-semibold text-white shadow-sm transition hover:bg-navy/90"
+        >
+          {buttonLabel}
+        </button>
+      </div>
+
+      <p class="text-sm text-green-ink" data-review-success hidden>
+        Thank you! We’ve received your review.
+      </p>
+      <p class="text-sm text-[#c1272d]" data-review-error hidden></p>
+    </form>
+  </div>
+
+  <script>
+    import '@/scripts/review-form';
+  </script>
+</Section>

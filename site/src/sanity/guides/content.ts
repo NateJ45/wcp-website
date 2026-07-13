@@ -785,6 +785,19 @@ export const guides: Guide[] = [
         title: 'Drag to reorder',
         text: 'In the Testimonials list, grab the handle on the left of a quote and drag it up or down. The order you set is the order the site shows. The same drag-to-reorder works for Classes, School-Year Events, FAQs, and the Family Hub’s Documents & Forms.',
       },
+      { kind: 'h', text: 'Let families submit their own reviews' },
+      {
+        kind: 'p',
+        text: 'Add a **Leave a review form** section to a page (for example a "Share your story" page). Families fill it in, and their review lands in **Review submissions** (in your Inboxes) instead of going straight onto the site.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Review submissions** in the left menu and read a new one.',
+          'If it’s a good fit, click **Approve into Testimonials** at the bottom right. It becomes a real testimonial you can then feature or reorder.',
+          'Nothing a family submits appears on the site until you approve it.',
+        ],
+      },
     ],
   },
 

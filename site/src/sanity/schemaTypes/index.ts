@@ -44,6 +44,7 @@ import { venue } from './documents/venue';
 import { announcement } from './documents/announcement';
 import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
+import { testimonialSubmission } from './documents/testimonialSubmission';
 import { coopRole } from './documents/coopRole';
 import {
   program,
@@ -100,6 +101,7 @@ export const schemaTypes = [
   announcement,
   submission,
   subscriber,
+  testimonialSubmission,
   coopRole,
   // Future-proofing collections (surfaced via community.ts sections)
   program,

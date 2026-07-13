@@ -13,6 +13,7 @@ import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLa
 import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { HealthTool } from './src/sanity/components/HealthTool';
+import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { structure, everydayStructure } from './src/sanity/structure';
@@ -157,12 +158,15 @@ function workspace(opts: {
     schema: { types: schemaTypes, templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES] },
     document: {
       // Singletons keep only their editing actions (no unpublish/delete/duplicate).
-      actions: (prev, { schemaType }) =>
-        SINGLETON_TYPES.has(schemaType)
+      // Review submissions get a one-click "Approve into Testimonials" action.
+      actions: (prev, { schemaType }) => {
+        if (schemaType === 'testimonialSubmission') return [ApproveTestimonialAction, ...prev];
+        return SINGLETON_TYPES.has(schemaType)
           ? prev.filter(
               ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
             )
-          : prev,
+          : prev;
+      },
       // Remove singletons from the global "create new document" menu.
       newDocumentOptions: (prev, { creationContext }) =>
         creationContext.type === 'global'

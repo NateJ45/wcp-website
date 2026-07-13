@@ -27,7 +27,7 @@ import {
   splitMediaSection,
 } from './structured';
 import { latestPostsSection, upcomingEventsSection } from './blog';
-import { formSection, newsletterSignupSection } from './form';
+import { formSection, newsletterSignupSection, reviewFormSection } from './form';
 import { tabsSection } from './tabs';
 import {
   videoSection,
@@ -79,6 +79,7 @@ const BODY_SECTIONS = [
   upcomingEventsSection,
   formSection,
   newsletterSignupSection,
+  reviewFormSection,
   noticeBarSection,
   contactDetailsSection,
   programCardsSection,

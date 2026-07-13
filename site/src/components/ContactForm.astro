@@ -18,7 +18,7 @@
    ============================================================================ */
 interface Props {
   topic: string;
-  variant?: 'general' | 'enroll' | 'tour' | 'teach';
+  variant?: 'general' | 'enroll' | 'tour' | 'teach' | 'waitlist';
   showPhone?: boolean;
   buttonLabel?: string;
   successMessage?: string;
@@ -64,6 +64,23 @@ const VARIANTS: Record<string, Field[]> = {
     },
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
     { kind: 'textarea', name: 'message', label: 'Anything else you’d like us to know' },
+  ],
+  waitlist: [
+    { kind: 'text', name: 'childName', label: 'Child’s name', required: true },
+    { kind: 'date', name: 'childBirthdate', label: 'Child’s date of birth', required: true },
+    {
+      kind: 'checkboxes',
+      name: 'classInterest',
+      label: 'Class you’re hoping for',
+      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM'],
+    },
+    {
+      kind: 'text',
+      name: 'preferredStart',
+      label: 'When would you like to start?',
+      optionalNote: true,
+    },
+    { kind: 'textarea', name: 'message', label: 'Anything else we should know?' },
   ],
   tour: [
     { kind: 'text', name: 'childInfo', label: 'Child’s name and birthdate', required: true },
