@@ -91,13 +91,21 @@ interface SanityEventDoc {
 export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
   const cutoff = Date.now() - 86_400_000; // yesterday, so late-running events linger a day
   try {
-    // Cached 5 minutes per isolate (hub-cache.ts): an Apps Script execution
-    // takes 1.5-3s and was THE dominant slice of hub navigation time.
-    const raw = await cached(`calfeed:${feedUrl}`, 300_000, async () => {
-      const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) throw new Error(`feed ${res.status}`);
-      return (await res.json()) as HubEvent[];
-    });
+    // The school calendar changes at most ~daily, so it rides hub-cache's
+    // long stale-while-revalidate window: 15 min fresh, then up to 24h of
+    // serve-stale-instantly-and-refresh-behind-the-response. Visitors never
+    // wait on the 1.5-3s Apps Script execution, and an edit still shows
+    // within minutes of the next visit.
+    const raw = await cached(
+      `calfeed:${feedUrl}`,
+      900_000,
+      async () => {
+        const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`feed ${res.status}`);
+        return (await res.json()) as HubEvent[];
+      },
+      { swrMs: 86_400_000 },
+    );
     const events = (raw ?? [])
       .filter((e) => e && e.title && e.start && eventDate(e.start).getTime() >= cutoff)
       .sort((a, b) => eventDate(a.start).getTime() - eventDate(b.start).getTime());

@@ -1,74 +1,110 @@
 // =============================================================================
-// hub-cache — two-tier TTL cache for the hub's slow external fetches
+// hub-cache — two-tier TTL cache with stale-while-revalidate
 // =============================================================================
 // WHY: hub pages render per request, and the Google round-trips they lean on
 // are slow — the Apps Script calendar feed runs 1.5-3s per hit and a gviz
-// sheet read ~0.5-1.5s. Neither source changes minute-to-minute, so results
-// are cached for TTL ms in two tiers:
+// sheet read ~0.5-1.5s. Results are cached in two tiers:
 //
 //   L1 — module-scope Map. Free and instant, but lives only as long as the
 //        Worker isolate (recycled on deploys and idle spells).
 //   L2 — the CACHE KV namespace (wrangler.jsonc). Durable across isolates,
 //        so the FIRST visitor after a deploy or a quiet morning gets a ~5ms
-//        KV read instead of the 3-5s Google fan-out. Local dev/preview gets
-//        a miniflare-simulated KV automatically; if the binding is absent
-//        the cache silently degrades to L1-only.
+//        KV read instead of the Google fan-out. Local dev/preview gets a
+//        miniflare-simulated KV automatically; if the binding is absent the
+//        cache silently degrades to L1-only.
 //
-// Flow: L1 hit → return. Else L2 hit → warm L1, return. Else run fn() and
-// populate both. In-flight dedupe means concurrent renders of the same page
-// share ONE fetch instead of stampeding Google. Failures are never cached.
+// FRESHNESS MODEL (per call site): `ttlMs` is the fresh window; an optional
+// `swrMs` extends it as a stale-while-revalidate window. Within ttl → serve.
+// Within ttl+swr → serve the stale value INSTANTLY and refresh in the
+// background (waitUntil keeps the refresh alive past the response; without
+// it we still fire-and-forget — a cancelled refresh just means the next
+// request tries again). Past both → blocking fetch. The school calendar
+// changes at most ~daily, so it rides a long swr window: visitors never wait
+// on Google, yet an edit still shows within minutes of the next visit.
 //
-// KV budget note: writes happen only on a full miss (both tiers), so the
-// write rate is bounded by real visits per TTL window across a handful of
-// keys — nowhere near the free tier's daily write cap for this site.
+// Values are stored as {v, at} envelopes (age drives the swr decision) under
+// a versioned key prefix, so a shape change never chokes on old entries.
+// In-flight dedupe: concurrent renders share ONE fetch. Failures are never
+// cached, and a failed background refresh keeps serving the stale value.
 // =============================================================================
-import { env } from 'cloudflare:workers';
+import * as cfw from 'cloudflare:workers';
 
-interface Slot {
-  value: unknown;
-  expires: number;
+const env = cfw.env;
+// waitUntil keeps background refreshes alive after the response is sent.
+// Guarded: not every runtime version exports it (miniflare/dev quirks).
+const keepAlive = (p: Promise<unknown>): void => {
+  const wu = (cfw as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil;
+  if (typeof wu === 'function') wu(p.catch(() => {}));
+  else void p.catch(() => {});
+};
+
+interface Envelope {
+  v: unknown;
+  at: number;
 }
 
-const store = new Map<string, Slot>();
+const store = new Map<string, Envelope>();
 const inflight = new Map<string, Promise<unknown>>();
 
-/** Run `fn` at most once per `ttlMs` (per edge, via KV), keyed by `key`. */
-export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
-  const hit = store.get(key);
-  if (hit && hit.expires > Date.now()) return hit.value as T;
-
+async function refresh<T>(key: string, horizonMs: number, fn: () => Promise<T>): Promise<T> {
   const running = inflight.get(key);
   if (running) return running as Promise<T>;
-
-  const p = (async () => {
-    // L2: KV survives isolate recycling. Its own expiry (expirationTtl) makes
-    // entries vanish server-side, so anything readable is fresh by definition.
-    try {
-      const kvHit = await env.CACHE?.get(`hub:${key}`, 'text');
-      if (kvHit != null) {
-        const value = JSON.parse(kvHit) as T;
-        store.set(key, { value, expires: Date.now() + ttlMs });
-        return value;
+  const p = fn()
+    .then(async (v) => {
+      const envl: Envelope = { v, at: Date.now() };
+      store.set(key, envl);
+      try {
+        // KV expiry = the swr horizon: anything readable is servable.
+        await env.CACHE?.put(`hub2:${key}`, JSON.stringify(envl), {
+          expirationTtl: Math.max(60, Math.round(horizonMs / 1000)),
+        });
+      } catch {
+        /* cache write failure is not an error */
       }
-    } catch {
-      /* KV unavailable → behave as a miss */
-    }
-
-    const value = await fn();
-    store.set(key, { value, expires: Date.now() + ttlMs });
-    try {
-      // KV requires expirationTtl >= 60s; our TTLs are minutes, but clamp
-      // anyway so a future short-TTL caller can't make every put throw.
-      await env.CACHE?.put(`hub:${key}`, JSON.stringify(value), {
-        expirationTtl: Math.max(60, Math.round(ttlMs / 1000)),
-      });
-    } catch {
-      /* cache write failure is not an error — next isolate just refetches */
-    }
-    return value;
-  })().finally(() => {
-    inflight.delete(key);
-  });
+      return v;
+    })
+    .finally(() => {
+      inflight.delete(key);
+    });
   inflight.set(key, p);
   return p;
+}
+
+/**
+ * Run `fn` at most once per fresh window. `ttlMs` = serve-as-fresh window;
+ * `opts.swrMs` extends it as serve-stale-and-refresh-in-background.
+ */
+export async function cached<T>(
+  key: string,
+  ttlMs: number,
+  fn: () => Promise<T>,
+  opts: { swrMs?: number } = {},
+): Promise<T> {
+  const horizon = ttlMs + (opts.swrMs ?? 0);
+
+  let hit = store.get(key);
+  if (!hit) {
+    // L2: KV survives isolate recycling.
+    try {
+      const kvHit = await env.CACHE?.get(`hub2:${key}`, 'text');
+      if (kvHit != null) {
+        hit = JSON.parse(kvHit) as Envelope;
+        store.set(key, hit);
+      }
+    } catch {
+      /* KV unavailable → treat as a miss */
+    }
+  }
+
+  if (hit) {
+    const age = Date.now() - hit.at;
+    if (age < ttlMs) return hit.v as T;
+    if (age < horizon) {
+      // Stale but servable: answer now, refresh behind the response.
+      keepAlive(refresh(key, horizon, fn));
+      return hit.v as T;
+    }
+  }
+
+  return refresh(key, horizon, fn);
 }
