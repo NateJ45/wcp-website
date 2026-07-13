@@ -1,15 +1,17 @@
 ---
 /* ============================================================================
-   CampaignSection — the current fundraising campaign with a progress bar
+   CampaignSection — active fundraising campaign(s) with progress bars
    ============================================================================
-   Config-only in Sanity; pulls the single active Campaign at build time and
-   hides when none is running. The bar is a real ARIA progressbar with a text
-   equivalent, so it reads correctly with no color-only meaning.
+   Config-only in Sanity; pulls ALL active Campaigns at build time and hides
+   when none is running. One campaign = a single bar (the section title falls
+   back to the campaign's own). Two or more concurrent drives = a card each
+   (spring auction + scholarship fund side by side). Each bar is a real ARIA
+   progressbar with a text equivalent, so nothing relies on color alone.
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { cmsFetch } from '@/lib/cms';
-import { ACTIVE_CAMPAIGN_QUERY } from '@/lib/queries';
+import { ACTIVE_CAMPAIGNS_QUERY } from '@/lib/queries';
 import { titleIdFor, eyebrowTone, bandSize, isExternal, type SectionData } from './section-helpers';
 import { withBase } from '@/lib/utils';
 
@@ -26,24 +28,33 @@ const { section, linkBase = '' } = Astro.props as { section: SectionData; linkBa
 const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
 const titleId = titleIdFor(section);
 
-const campaign = await cmsFetch<Campaign | null>(ACTIVE_CAMPAIGN_QUERY, {}, null);
-const goal = campaign?.goalAmount ?? 0;
-const raised = campaign?.raisedAmount ?? 0;
-const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+const campaigns = (await cmsFetch<Campaign[]>(ACTIVE_CAMPAIGNS_QUERY, {}, [])) ?? [];
+const single = campaigns.length === 1;
+
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
-const deadlineText = campaign?.deadline
-  ? new Date(`${campaign.deadline}T00:00:00`).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  : null;
-const href = campaign?.linkUrl ? withBase(campaign.linkUrl, linkBase) : null;
-const external = href ? isExternal(campaign?.linkUrl ?? '') : false;
+const pctOf = (c: Campaign) => {
+  const goal = c.goalAmount ?? 0;
+  const raised = c.raisedAmount ?? 0;
+  return goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+};
+const deadlineOf = (c: Campaign) =>
+  c.deadline
+    ? new Date(`${c.deadline}T00:00:00`).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null;
+const hrefOf = (c: Campaign) => (c.linkUrl ? withBase(c.linkUrl, linkBase) : null);
+
+// With one campaign the section heading carries its title (as before); with
+// several, the section gets a generic heading and each card names its own.
+const sectionTitle = header?.title ?? (single ? campaigns[0]?.title : 'Our fundraising');
+const sectionLead = header?.lead ?? (single ? campaigns[0]?.summary : undefined);
 ---
 
 {
-  campaign && (
+  campaigns.length > 0 && (
     <Section
       bg={(section.background as never) ?? 'cream'}
       seam={section.seam as boolean}
@@ -52,49 +63,71 @@ const external = href ? isExternal(campaign?.linkUrl ?? '') : false;
     >
       <SectionHeader
         eyebrow={header?.eyebrow}
-        title={header?.title ?? campaign.title ?? 'Our campaign'}
-        lead={header?.lead ?? campaign.summary}
+        title={sectionTitle ?? 'Our campaign'}
+        lead={sectionLead}
         titleId={titleId}
         eyebrowTone={eyebrowTone(section.background)}
         as="h2"
       />
-      <div class="mx-auto mt-10 max-w-2xl">
-        {goal > 0 && (
-          <Fragment>
-            <div class="flex items-end justify-between gap-4">
-              <p class="font-display text-3xl text-heading">
-                {money(raised)}
-                <span class="text-base font-normal text-ink-muted"> raised</span>
-              </p>
-              <p class="text-sm font-semibold text-ink-muted">{money(goal)} goal</p>
-            </div>
+
+      <div
+        class:list={['mx-auto mt-10', single ? 'max-w-2xl' : 'grid max-w-5xl gap-6 sm:grid-cols-2']}
+      >
+        {campaigns.map((c) => {
+          const goal = c.goalAmount ?? 0;
+          const raised = c.raisedAmount ?? 0;
+          const pct = pctOf(c);
+          const deadlineText = deadlineOf(c);
+          const href = hrefOf(c);
+          const external = href ? isExternal(c.linkUrl ?? '') : false;
+          return (
             <div
-              class="mt-3 h-4 overflow-hidden rounded-full bg-navy/10 dark:bg-white/15"
-              role="progressbar"
-              aria-label="Fundraising progress"
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuetext={`${money(raised)} of ${money(goal)} raised (${pct}%)`}
+              class:list={[
+                !single && 'rounded-2xl border border-navy/10 bg-white/70 p-6 dark:bg-white/5',
+              ]}
             >
-              <div class="h-full rounded-full bg-sky" style={`width: ${pct}%`} />
+              {/* When several, name each drive; the single-campaign title is in the h2 above. */}
+              {!single && c.title && <h3 class="text-heading">{c.title}</h3>}
+              {!single && c.summary && <p class="mt-1 text-sm text-ink-muted">{c.summary}</p>}
+              {goal > 0 && (
+                <div class:list={[!single && 'mt-4']}>
+                  <div class="flex items-end justify-between gap-4">
+                    <p class="font-display text-3xl text-heading">
+                      {money(raised)}
+                      <span class="text-base font-normal text-ink-muted"> raised</span>
+                    </p>
+                    <p class="text-sm font-semibold text-ink-muted">{money(goal)} goal</p>
+                  </div>
+                  <div
+                    class="mt-3 h-4 overflow-hidden rounded-full bg-navy/10 dark:bg-white/15"
+                    role="progressbar"
+                    aria-label={`Fundraising progress${c.title ? ` for ${c.title}` : ''}`}
+                    aria-valuenow={pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuetext={`${money(raised)} of ${money(goal)} raised (${pct}%)`}
+                  >
+                    <div class="h-full rounded-full bg-sky" style={`width: ${pct}%`} />
+                  </div>
+                  <p class="mt-2 text-sm text-ink-muted">
+                    {pct}% of our goal{deadlineText ? ` · by ${deadlineText}` : ''}
+                  </p>
+                </div>
+              )}
+              {href && (
+                <div class:list={['text-center', single ? 'mt-8' : 'mt-5']}>
+                  <a
+                    href={href}
+                    class="inline-flex items-center justify-center rounded-full bg-navy px-7 py-3 font-semibold text-white shadow-sm transition hover:bg-navy/90"
+                    {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+                  >
+                    {c.linkLabel ?? 'Donate'}
+                  </a>
+                </div>
+              )}
             </div>
-            <p class="mt-2 text-sm text-ink-muted">
-              {pct}% of our goal{deadlineText ? ` · by ${deadlineText}` : ''}
-            </p>
-          </Fragment>
-        )}
-        {href && (
-          <div class="mt-8 text-center">
-            <a
-              href={href}
-              class="inline-flex items-center justify-center rounded-full bg-navy px-7 py-3 font-semibold text-white shadow-sm transition hover:bg-navy/90"
-              {...(external ? { target: '_blank', rel: 'noopener' } : {})}
-            >
-              {campaign.linkLabel ?? 'Donate'}
-            </a>
-          </div>
-        )}
+          );
+        })}
       </div>
     </Section>
   )

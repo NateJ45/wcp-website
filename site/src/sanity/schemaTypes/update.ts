@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { ClassAudienceInput } from '../components/ClassSelectInput';
 
 // School Updates — Board/Administrator announcements shown on the hub.
 export const update = defineType({
@@ -88,16 +89,11 @@ export const update = defineType({
       title: 'Who is this for?',
       type: 'string',
       group: 'audience',
-      options: {
-        list: [
-          { title: 'All families', value: 'all' },
-          { title: 'Twos', value: 'twos' },
-          { title: 'Threes', value: 'threes' },
-          { title: 'Pre-K AM', value: 'pre-k-am' },
-          { title: 'Pre-K PM', value: 'pre-k-pm' },
-        ],
-        layout: 'dropdown',
-      },
+      description:
+        'All families, or just one class. The class list updates itself as you add classes.',
+      // Dropdown is populated live from the Class documents (see the component),
+      // so a new class appears here automatically. Stored value = class slug.
+      components: { input: ClassAudienceInput },
       initialValue: 'all',
     }),
     defineField({ name: 'body', title: 'Body', type: 'blockContent', group: 'content' }),

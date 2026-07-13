@@ -80,7 +80,8 @@ export const campaignSection = defineType({
   name: 'campaignSection',
   title: 'Fundraising progress',
   type: 'object',
-  description: 'Shows the current campaign with a progress bar. Hides when none is running.',
+  description:
+    'Shows a progress bar for each active fundraising campaign (one, or several side by side). Hides when none is running.',
   fields: [
     defineField({ name: 'header', title: 'Heading (optional)', type: 'sectionHeader' }),
     ...bandFields('cream'),

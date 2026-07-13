@@ -15,6 +15,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { classLabel } from '@/lib/class-colors';
 import { renderPortableText } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 import type { SanityImageValue } from '@/lib/image';
@@ -40,12 +41,6 @@ try {
 }
 if (!post) return Astro.redirect('/family-hub/updates');
 
-const audienceLabel: Record<string, string> = {
-  twos: 'Twos',
-  threes: 'Threes',
-  'pre-k-am': 'Pre-K AM',
-  'pre-k-pm': 'Pre-K PM',
-};
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 // The body is the whole article, rendered directly under the page <h1>, so
@@ -75,7 +70,7 @@ const bodyHtml = renderPortableText(post.body, '', { normalizeHeadings: true });
         {
           post.audience && post.audience !== 'all' && (
             <span class="rounded-full bg-sky/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
-              {audienceLabel[post.audience] ?? post.audience}
+              {classLabel(post.audience)}
             </span>
           )
         }

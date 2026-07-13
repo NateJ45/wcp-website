@@ -12,7 +12,7 @@ import EventCard from '@/components/EventCard.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
 import { site as siteFallback } from '@/data/site';
-import type { EventDoc } from '@/lib/events';
+import { expandRecurring, type EventDoc } from '@/lib/events';
 import { titleIdFor, bandSize, type SectionData } from './section-helpers';
 import { withBase } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ const linkLabel = (section.linkLabel as string) || 'See all events';
 const titleId = titleIdFor(section);
 
 const all = await cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []);
-const events = all.slice(0, limit);
+const events = expandRecurring(all).slice(0, limit);
 const siteData = await getSiteSettings(siteFallback);
 const fallbackLocation = [siteData.address.street, siteData.address.city, siteData.address.state]
   .filter(Boolean)

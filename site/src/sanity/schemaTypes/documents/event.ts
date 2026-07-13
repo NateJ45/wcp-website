@@ -47,10 +47,43 @@ export const event = defineType({
       initialValue: false,
     }),
     defineField({
-      name: 'location',
-      title: 'Location (optional)',
+      name: 'recurrence',
+      title: 'Does it repeat?',
       type: 'string',
-      description: 'Leave blank to use the school address.',
+      options: {
+        list: [
+          { title: 'One time only', value: 'none' },
+          { title: 'Every week', value: 'weekly' },
+          { title: 'Every month', value: 'monthly' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'none',
+      description:
+        'For a repeating event, set the FIRST date above, then pick how often it repeats.',
+    }),
+    defineField({
+      name: 'recurrenceEnd',
+      title: 'Repeat until',
+      type: 'date',
+      description: 'The last date it should repeat. Leave blank and it repeats for about a year.',
+      hidden: ({ parent }) => !parent?.recurrence || parent?.recurrence === 'none',
+    }),
+    defineField({
+      name: 'venue',
+      title: 'Saved location (optional)',
+      type: 'reference',
+      to: [{ type: 'venue' }],
+      description:
+        'Pick a saved place (a second campus, a field-trip spot). Leave blank to type an address below or use the school.',
+    }),
+    defineField({
+      name: 'location',
+      title: 'Or type a location (optional)',
+      type: 'string',
+      description:
+        'Used when no saved location is picked. Leave both blank to use the school address.',
+      hidden: ({ parent }) => Boolean(parent?.venue),
     }),
     defineField({
       name: 'category',

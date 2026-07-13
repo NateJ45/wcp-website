@@ -20,7 +20,7 @@
 import { sanityFetch } from '@/lib/sanity';
 import { cached } from '@/lib/hub-cache';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
-import { EVENT_TZ } from '@/lib/events';
+import { EVENT_TZ, expandRecurring, type EventDoc } from '@/lib/events';
 
 export interface HubEvent {
   title: string;
@@ -76,13 +76,6 @@ export const EVENT_TYPE_META: Record<
   event: { label: 'Event', icon: 'party-popper', iconColor: 'text-green-ink' },
 };
 
-interface SanityEventDoc {
-  title?: string;
-  startDate?: string;
-  allDay?: boolean;
-  location?: string;
-}
-
 /**
  * Upcoming events: the Google Calendar feed first, Sanity `event` docs as the
  * fallback. Always sorted soonest-first, already filtered to today-or-later
@@ -114,8 +107,8 @@ export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
     /* fall through to Sanity */
   }
   try {
-    const docs = await sanityFetch<SanityEventDoc[]>(UPCOMING_EVENTS_QUERY);
-    return (docs ?? [])
+    const docs = await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY);
+    return expandRecurring(docs ?? [])
       .filter((d) => d.title && d.startDate)
       .map((d) => ({
         title: d.title!,

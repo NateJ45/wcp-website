@@ -424,7 +424,7 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'p',
-        text: 'The **Events** page shows what is coming up. An event drops off the page on its own once it has passed, so the list stays current with no cleanup.',
+        text: 'The **Events** page shows what is coming up. An event drops off the page on its own once it has passed (and moves into a "Past events" list at the bottom), so the list stays current with no cleanup.',
       },
       { kind: 'path', items: ['Events', '＋ new', 'fill in', 'Publish'] },
       {
@@ -433,9 +433,16 @@ export const guides: Guide[] = [
           'Click **Events** in the left menu, then **＋**.',
           'Give it a title and pick the **Starts** date and time. Add an **Ends** time if it has one.',
           'Turn on **All-day** for something without a set time (like a closure).',
-          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want.',
+          'For a repeating event (a weekly class, a monthly meeting), set **Does it repeat?** and, if you like, a **Repeat until** date. The page shows the upcoming dates automatically.',
+          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want. For a place you use often, pick a **Saved location** instead of retyping the address (add these under Community & content → Locations / venues in the Everything workspace).',
           '**Publish**. Visitors get an "Add to calendar" button automatically.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Visitors can filter by type.',
+        text: 'When there are events of different types coming up, the page shows filter buttons (Open house, Fundraiser, and so on) so visitors can narrow the list.',
       },
       {
         kind: 'callout',
@@ -955,6 +962,47 @@ export const guides: Guide[] = [
         title: 'The directory file has private info.',
         text: 'The family directory export includes names and contact details. Keep the file somewhere safe and delete it when you’re done with it.',
       },
+      { kind: 'seealso', items: ['Clear out old records'] },
+    ],
+  },
+
+  {
+    slug: 'cleanup',
+    title: 'Clear out old records',
+    icon: '🧹',
+    lead: 'Old form messages and sign-up responses build up over the years. Clear the old ones in one go.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Clean up** tool removes old **Form messages** you have already handled, and old **sign-up / RSVP responses**, in one step instead of deleting them one at a time.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'This is permanent, so it double-checks with you.',
+        text: 'The tool never touches anything recent, it shows you the exact count first, and it asks you to type DELETE before anything is removed. If you want a copy first, use the Export tool.',
+      },
+      {
+        kind: 'path',
+        items: [
+          'Everything workspace',
+          'Clean up (top nav)',
+          'pick what + how old',
+          'Check',
+          'confirm',
+        ],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Switch to the **Everything** workspace (the name in the top-left corner), then click **Clean up**.',
+          'Choose what to clear (handled messages, or sign-up responses) and how old (6 months, 1 year, 2 years).',
+          'Click **Check how many** to see the count.',
+          'If you want a copy, open **Export** first. Then type **DELETE** and press the delete button.',
+        ],
+      },
+      { kind: 'seealso', items: ['Download a list (subscribers, messages, directory)'] },
     ],
   },
 

@@ -40,6 +40,7 @@ import { page } from './documents/page';
 import { post } from './documents/post';
 import { event } from './documents/event';
 import { redirect } from './documents/redirect';
+import { venue } from './documents/venue';
 import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { coopRole } from './documents/coopRole';
@@ -94,6 +95,7 @@ export const schemaTypes = [
   post,
   event,
   redirect,
+  venue,
   submission,
   subscriber,
   coopRole,

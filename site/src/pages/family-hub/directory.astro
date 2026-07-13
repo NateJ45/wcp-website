@@ -17,7 +17,7 @@ import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { classStyles } from '@/lib/class-colors';
+import { classStyles, classLabel } from '@/lib/class-colors';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
@@ -31,13 +31,6 @@ interface HubPageDoc {
 
 // The preschool, geocoded once (9463 Cincinnati Columbus Rd, West Chester OH).
 const PRESCHOOL = { lat: 39.3143544, lng: -84.3750201, label: 'West Chester Preschool' };
-
-const classLabel: Record<string, string> = {
-  twos: 'Twos',
-  threes: 'Threes',
-  'pre-k-am': 'Pre-K AM',
-  'pre-k-pm': 'Pre-K PM',
-};
 
 interface DirChild {
   name?: string;
@@ -208,7 +201,7 @@ const intro =
                             <span
                               class={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${classStyles(cls).badge}`}
                             >
-                              {classLabel[cls] ?? cls}
+                              {classLabel(cls)}
                             </span>
                           ))}
                         </div>
@@ -233,7 +226,7 @@ const intro =
                               {ch.class && (
                                 <span class={`font-semibold ${classStyles(ch.class).text}`}>
                                   {' · '}
-                                  {classLabel[ch.class] ?? ch.class}
+                                  {classLabel(ch.class)}
                                 </span>
                               )}
                             </li>

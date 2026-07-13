@@ -47,6 +47,9 @@ const NON_STEGA_FIELDS = new Set([
   'appearance',
   'icon',
   'season',
+  // Drives expandRecurring() — a stega-encoded value would fail the
+  // recurrence === 'weekly' check and quietly skip expansion in preview.
+  'recurrence',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {

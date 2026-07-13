@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { ClassPickInput } from '../components/ClassSelectInput';
 
 // =============================================================================
 // Family Directory entry — CONTAINS PII
@@ -65,14 +66,10 @@ export const directoryEntry = defineType({
               name: 'class',
               title: 'Class',
               type: 'string',
-              options: {
-                list: [
-                  { title: 'Twos', value: 'twos' },
-                  { title: 'Threes', value: 'threes' },
-                  { title: 'Pre-K AM', value: 'pre-k-am' },
-                  { title: 'Pre-K PM', value: 'pre-k-pm' },
-                ],
-              },
+              description: 'Which class this child is in.',
+              // Populated live from the Class documents — a new class shows up
+              // here on its own. Stored value = class slug.
+              components: { input: ClassPickInput },
             },
           ],
           preview: { select: { title: 'name', subtitle: 'class' } },

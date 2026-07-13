@@ -5,6 +5,7 @@
 import {
   formatEventWhen,
   googleCalendarUrl,
+  eventPlace,
   EVENT_CATEGORY_LABELS,
   type EventDoc,
 } from '@/lib/events';
@@ -13,17 +14,22 @@ interface Props {
   event: EventDoc;
   /** School address, used when the event has no location of its own. */
   fallbackLocation?: string;
+  /** Past event (archive): dim it and drop the "add to calendar" link. */
+  past?: boolean;
 }
-const { event, fallbackLocation = '' } = Astro.props;
+const { event, fallbackLocation = '', past = false } = Astro.props;
 const when = formatEventWhen(event);
 const categoryLabel = event.category ? (EVENT_CATEGORY_LABELS[event.category] ?? 'Event') : '';
-const location = event.location || fallbackLocation;
+const location = eventPlace(event, fallbackLocation);
 const gcal = googleCalendarUrl(event, fallbackLocation);
 const hasCta = Boolean(event.ctaLabel && event.ctaUrl);
 ---
 
 <article
-  class="flex flex-col gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface"
+  class:list={[
+    'flex flex-col gap-3 rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface',
+    past && 'opacity-70',
+  ]}
 >
   <div class="flex items-center gap-2 text-xs font-semibold">
     {
@@ -45,11 +51,20 @@ const hasCta = Boolean(event.ctaLabel && event.ctaUrl);
   </div>
   {event.description && <p class="text-sm leading-relaxed text-ink">{event.description}</p>}
   <div class="mt-2 flex flex-wrap items-center gap-4 text-sm font-semibold">
-    <a href={gcal} target="_blank" rel="noopener" class="text-navy hover:underline dark:text-sky">
-      Add to calendar
-    </a>
     {
-      hasCta && (
+      !past && (
+        <a
+          href={gcal}
+          target="_blank"
+          rel="noopener"
+          class="text-navy hover:underline dark:text-sky"
+        >
+          Add to calendar
+        </a>
+      )
+    }
+    {
+      !past && hasCta && (
         <a
           href={event.ctaUrl}
           target="_blank"

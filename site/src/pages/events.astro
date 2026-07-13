@@ -12,11 +12,18 @@ export const prerender = true;
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import EventsListing from '@/components/EventsListing.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
-import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
+import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY } from '@/lib/queries';
 import { site as siteFallback } from '@/data/site';
+import { expandRecurring } from '@/lib/events';
 import type { EventDoc } from '@/lib/events';
 
-const events = await cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []);
+const [rawUpcoming, pastEvents] = await Promise.all([
+  cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []),
+  cmsFetch<EventDoc[]>(PAST_EVENTS_QUERY, {}, []),
+]);
+// Expand any recurring events into their upcoming occurrences (one-off events
+// pass through unchanged), then re-sort by date.
+const events = expandRecurring(rawUpcoming);
 const site = await getSiteSettings(siteFallback);
 const fallbackLocation = [site.address.street, site.address.city, site.address.state]
   .filter(Boolean)
@@ -27,5 +34,5 @@ const fallbackLocation = [site.address.street, site.address.city, site.address.s
   title={`Events — ${siteFallback.name}`}
   description="Upcoming open houses, tours, and community events at West Chester Preschool."
 >
-  <EventsListing events={events} fallbackLocation={fallbackLocation} />
+  <EventsListing events={events} pastEvents={pastEvents} fallbackLocation={fallbackLocation} />
 </BaseLayout>

@@ -1,17 +1,28 @@
 ---
 /* ============================================================================
-   EventsListing — the /events page (Hero + upcoming events, or empty state)
+   EventsListing — the /events page (Hero, filterable upcoming, past archive)
+   ============================================================================
+   - Upcoming events in a grid, with a category filter bar (progressive
+     enhancement: the bar is hidden until the small script enhances it, so
+     no-JS visitors just see every event).
+   - A collapsed "Past events" archive below, so history isn't invisible.
    ============================================================================ */
 import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import EventCard from '@/components/EventCard.astro';
-import type { EventDoc } from '@/lib/events';
+import { EVENT_CATEGORY_LABELS, type EventDoc } from '@/lib/events';
 
 interface Props {
   events: EventDoc[];
+  pastEvents?: EventDoc[];
   fallbackLocation?: string;
 }
-const { events, fallbackLocation = '' } = Astro.props;
+const { events, pastEvents = [], fallbackLocation = '' } = Astro.props;
+
+// The categories actually present among upcoming events, in the canonical order.
+const CATEGORY_ORDER = ['openHouse', 'community', 'fundraiser', 'closure', 'other'];
+const presentCategories = CATEGORY_ORDER.filter((c) => events.some((e) => e.category === c));
+const showFilter = presentCategories.length > 1;
 ---
 
 <Hero
@@ -29,11 +40,69 @@ const { events, fallbackLocation = '' } = Astro.props;
         <p class="mt-2 text-sm text-ink-muted">Check back soon, or reach out to schedule a tour.</p>
       </div>
     ) : (
-      <div class="grid gap-6 md:grid-cols-2">
-        {events.map((event) => (
-          <EventCard event={event} fallbackLocation={fallbackLocation} />
-        ))}
+      <div data-events-root>
+        {showFilter && (
+          <div
+            class="mb-8 flex flex-wrap gap-2"
+            data-events-filter
+            hidden
+            role="group"
+            aria-label="Filter events by type"
+          >
+            <button
+              type="button"
+              class="rounded-full border border-navy/15 px-4 py-1.5 text-sm font-semibold text-ink transition aria-pressed:bg-navy aria-pressed:text-white"
+              data-filter="all"
+              aria-pressed="true"
+            >
+              All
+            </button>
+            {presentCategories.map((c) => (
+              <button
+                type="button"
+                class="rounded-full border border-navy/15 px-4 py-1.5 text-sm font-semibold text-ink transition aria-pressed:bg-navy aria-pressed:text-white"
+                data-filter={c}
+                aria-pressed="false"
+              >
+                {EVENT_CATEGORY_LABELS[c] ?? c}
+              </button>
+            ))}
+          </div>
+        )}
+        <div class="grid gap-6 md:grid-cols-2" data-events-grid>
+          {events.map((event) => (
+            <div data-event-item data-category={event.category ?? 'other'}>
+              <EventCard event={event} fallbackLocation={fallbackLocation} />
+            </div>
+          ))}
+        </div>
+        <p class="mt-6 text-sm text-ink-muted" data-events-empty hidden>
+          No events of that type coming up.
+        </p>
       </div>
     )
   }
+
+  {
+    pastEvents.length > 0 && (
+      <details class="mt-14 border-t border-navy/10 pt-8">
+        <summary class="cursor-pointer text-lg font-semibold text-heading">
+          Past events ({pastEvents.length})
+        </summary>
+        <div class="mt-6 grid gap-6 md:grid-cols-2">
+          {pastEvents.map((event) => (
+            <EventCard event={event} fallbackLocation={fallbackLocation} past />
+          ))}
+        </div>
+      </details>
+    )
+  }
 </Section>
+
+{
+  /* Category filter enhancement — the module guards on the markup, so it's a
+   no-op when there's no filter bar. EventsListing only renders on /events. */
+}
+<script>
+  import '@/scripts/events-filter';
+</script>

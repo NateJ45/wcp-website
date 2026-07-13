@@ -226,6 +226,7 @@ const PLACED = new Set([
   'signupSheet',
   'signupEntry',
   'redirect',
+  'venue',
   // sanity-plugin-media stores its image tags as documents of this type;
   // they're managed inside the Media tool, so keep the raw list out of the
   // nav (a bare "Media Tag" item is just confusing).
@@ -348,6 +349,7 @@ export const structure: StructureResolver = (S, context) =>
                 icon: emoji('📁'),
               }),
               S.documentTypeListItem('photoAlbum').title('Photo albums').icon(emoji('📸')),
+              S.documentTypeListItem('venue').title('Locations / venues').icon(emoji('📍')),
             ]),
         ),
 

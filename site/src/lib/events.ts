@@ -19,6 +19,89 @@ export interface EventDoc {
   description?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  /** 'none' | 'weekly' | 'monthly' — how the event repeats (default one-time). */
+  recurrence?: string;
+  /** Repeat until this date (YYYY-MM-DD); blank = a sensible cap. */
+  recurrenceEnd?: string;
+  /** A saved reusable location (a second campus, a field-trip spot). */
+  venue?: { name?: string; address?: string; note?: string } | null;
+}
+
+/** The place to display for an event: a saved venue, its typed location, or ''. */
+export function eventPlace(e: EventDoc, fallbackLocation = ''): string {
+  if (e.venue?.name) {
+    return e.venue.address ? `${e.venue.name} · ${e.venue.address.split('\n')[0]}` : e.venue.name;
+  }
+  return e.location || fallbackLocation;
+}
+
+/** The address string to hand Google Calendar (venue address, typed, or fallback). */
+export function eventAddress(e: EventDoc, fallbackLocation = ''): string {
+  return e.venue?.address || e.venue?.name || e.location || fallbackLocation;
+}
+
+// How many upcoming occurrences of one recurring event we ever surface, and a
+// hard walk cap so a far-future "repeat until" can't loop unbounded.
+const RECUR_MAX_OCCURRENCES = 8;
+const RECUR_WALK_CAP = 520; // ~10 years of weeks
+
+function occurrenceStart(startMs: number, recurrence: string, i: number): number {
+  if (recurrence === 'weekly') return startMs + i * 7 * 86_400_000;
+  // monthly: step whole months, keeping the time-of-day (UTC).
+  const d = new Date(startMs);
+  d.setUTCMonth(d.getUTCMonth() + i);
+  return d.getTime();
+}
+
+/**
+ * Expand recurring events into their upcoming occurrences. One-time events
+ * (no recurrence, or 'none') pass through unchanged. A weekly/monthly event
+ * becomes up to RECUR_MAX_OCCURRENCES future occurrences (each a plain,
+ * one-time EventDoc with shifted dates and a unique _id), stopping at
+ * `recurrenceEnd`. The result is re-sorted soonest-first.
+ *
+ * `now` is injectable for tests. Times are handled in ms (UTC), which is DST-
+ * safe for weekly stepping and close enough for monthly.
+ */
+export function expandRecurring(events: EventDoc[], now: Date = new Date()): EventDoc[] {
+  const nowMs = now.getTime();
+  const out: EventDoc[] = [];
+
+  for (const e of events) {
+    const rec = e.recurrence;
+    if (!rec || rec === 'none' || (rec !== 'weekly' && rec !== 'monthly') || !e.startDate) {
+      out.push(e);
+      continue;
+    }
+    const startMs = new Date(e.startDate).getTime();
+    if (Number.isNaN(startMs)) {
+      out.push(e);
+      continue;
+    }
+    const durationMs = e.endDate ? new Date(e.endDate).getTime() - startMs : 0;
+    const untilMs = e.recurrenceEnd ? new Date(`${e.recurrenceEnd}T23:59:59Z`).getTime() : Infinity;
+
+    let emitted = 0;
+    for (let i = 0; i < RECUR_WALK_CAP && emitted < RECUR_MAX_OCCURRENCES; i++) {
+      const occStart = occurrenceStart(startMs, rec, i);
+      if (occStart > untilMs) break;
+      const occEnd = occStart + durationMs;
+      const stillUpcoming = (durationMs ? occEnd : occStart) >= nowMs;
+      if (!stillUpcoming) continue;
+      out.push({
+        ...e,
+        _id: `${e._id ?? 'evt'}__${i}`,
+        startDate: new Date(occStart).toISOString(),
+        endDate: e.endDate ? new Date(occEnd).toISOString() : e.endDate,
+        // Occurrences render as ordinary single events.
+        recurrence: 'none',
+        recurrenceEnd: undefined,
+      });
+      emitted++;
+    }
+  }
+
+  return out.sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? ''));
 }
 
 export const EVENT_CATEGORY_LABELS: Record<string, string> = {
@@ -96,7 +179,7 @@ export function googleCalendarUrl(e: EventDoc, fallbackLocation = ''): string {
     text: e.title ?? 'Event',
     dates: `${gcalStamp(start, allDay)}/${gcalStamp(end, allDay)}`,
     details: e.description ?? '',
-    location: e.location || fallbackLocation,
+    location: eventAddress(e, fallbackLocation),
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }

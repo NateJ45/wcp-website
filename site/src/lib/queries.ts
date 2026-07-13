@@ -120,10 +120,18 @@ export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0
 // Events
 // -----------------------------------------------------------------------------
 
-const EVENT_FIELDS = `_id, title, startDate, endDate, allDay, location, category, description, ctaLabel, ctaUrl`;
+const EVENT_FIELDS = `_id, title, startDate, endDate, allDay, location, category, description, ctaLabel, ctaUrl, recurrence, recurrenceEnd, venue->{name, address, note}`;
 
-/** Upcoming events (not yet ended), soonest first — Events page + section. */
-export const UPCOMING_EVENTS_QUERY = `*[_type == "event" && coalesce(endDate, startDate) >= now()] | order(startDate asc){${EVENT_FIELDS}}`;
+// A recurring event stays "active" while its repeat window is open, even after
+// its first date has passed (expandRecurring then surfaces the next dates).
+const RECURRING_STILL_ACTIVE = `recurrence in ["weekly","monthly"] && (coalesce(recurrenceEnd, "9999-12-31") + "T23:59:59Z") >= now()`;
+
+/** Upcoming events (not yet ended, OR still repeating), soonest first. */
+export const UPCOMING_EVENTS_QUERY = `*[_type == "event" && (coalesce(endDate, startDate) >= now() || (${RECURRING_STILL_ACTIVE}))] | order(startDate asc){${EVENT_FIELDS}}`;
+
+/** Past events (ended and NOT still repeating), most recent first — the Events
+ *  page archive. Capped so the archive can't grow without bound. */
+export const PAST_EVENTS_QUERY = `*[_type == "event" && coalesce(endDate, startDate) < now() && !(${RECURRING_STILL_ACTIVE})] | order(startDate desc)[0...24]{${EVENT_FIELDS}}`;
 
 // -----------------------------------------------------------------------------
 // Future-proofing collections (programs, board, partners, campaigns, jobs, …)
@@ -134,6 +142,9 @@ export const BOARD_MEMBERS_QUERY = `*[_type == "boardMember"] | order(orderRank)
 export const PARTNERS_QUERY = `*[_type == "partner"] | order(orderRank){ name, logo, url }`;
 export const CREDENTIALS_QUERY = `*[_type == "credential"] | order(orderRank){ name, logo, url }`;
 export const ACTIVE_CAMPAIGN_QUERY = `*[_type == "campaign" && active == true] | order(_createdAt desc)[0]{ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`;
+// All active campaigns (newest first) — the section shows one bar each, so two
+// concurrent drives (e.g. a spring auction + a scholarship fund) both appear.
+export const ACTIVE_CAMPAIGNS_QUERY = `*[_type == "campaign" && active == true] | order(_createdAt desc){ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`;
 export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | order(orderRank){ title, type, summary, body, applyUrl }`;
 export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
 export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;

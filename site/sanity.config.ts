@@ -11,6 +11,7 @@ import DocumentsPane from 'sanity-plugin-documents-pane';
 import { SeoPreviewPane } from './src/sanity/components/SeoPreviewPane';
 import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLayout';
 import { ExportTool } from './src/sanity/components/ExportTool';
+import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { structure, everydayStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
@@ -198,6 +199,14 @@ export default defineConfig([
         title: 'Export',
         component: ExportTool,
         icon: () => '📤',
+      },
+      // Cleanup — bulk-delete old inbox records (handled messages, past RSVPs),
+      // with a count preview + typed confirmation. Free-plan bulk delete.
+      {
+        name: 'cleanup',
+        title: 'Clean up',
+        component: CleanupTool,
+        icon: () => '🧹',
       },
     ],
   }),

@@ -26,6 +26,28 @@ const COLOR_BY_SLUG: Record<string, ClassColor> = {
 /** The brand color for a class slug (defaults to sky if unknown). */
 export const classColor = (slug?: string): ClassColor => COLOR_BY_SLUG[slug ?? ''] ?? 'sky';
 
+// Friendly display names for the known class slugs, with a titleized fallback
+// so a NEW class (e.g. a "summer" class) shows a reasonable label everywhere
+// (update audience chips, the directory) instead of its raw slug — no code
+// change needed when a class is added.
+const LABEL_BY_SLUG: Record<string, string> = {
+  twos: 'Twos',
+  threes: 'Threes',
+  'pre-k-am': 'Pre-K AM',
+  'pre-k-pm': 'Pre-K PM',
+  'pre-k': 'Pre-K',
+};
+
+/** A human label for a class slug ("summer" -> "Summer"). */
+export const classLabel = (slug?: string): string => {
+  if (!slug) return '';
+  if (LABEL_BY_SLUG[slug]) return LABEL_BY_SLUG[slug];
+  return slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+};
+
 export interface ClassStyles {
   /** Solid pill on any background (photo overlays, emphasis badges). AA: white on -ink. */
   badge: string;
