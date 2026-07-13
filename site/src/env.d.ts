@@ -40,6 +40,14 @@ interface ImportMeta {
 // binding automatically; we only type the secrets/bindings we touch directly.
 declare namespace Cloudflare {
   interface Env {
+    /** KV cache for the hub's slow external fetches (see src/lib/hub-cache.ts).
+     *  Typed structurally (get/put only) to avoid pulling in the full
+     *  @cloudflare/workers-types KVNamespace. Optional so a missing binding
+     *  (e.g. a stripped-down preview) degrades to the in-isolate cache. */
+    CACHE?: {
+      get(key: string, type: 'text'): Promise<string | null>;
+      put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
+    };
     /** Shared password for the gated Family Hub (Cloudflare secret in prod). */
     FAMILY_HUB_PASSWORD: string;
     /** Sanity Editor token — server-only reads of the private (PII) dataset. */

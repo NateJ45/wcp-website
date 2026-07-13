@@ -31,6 +31,15 @@
       "binding": "SESSION",
       "id": "7c54b45ecc2745b68975c21085de1b66",
     },
+    // Shared cache for the hub's slow external fetches (Apps Script calendar
+    // feed, gviz sheets) — the durable tier under src/lib/hub-cache.ts's
+    // in-isolate Map, so the first visitor after a deploy or an idle spell
+    // doesn't pay the 3-5s Google round-trips either. Namespace created
+    // 2026-07-13 via `wrangler kv namespace create CACHE`.
+    {
+      "binding": "CACHE",
+      "id": "022e00789a4448a79c352a2bb309415b",
+    },
   ],
   "observability": {
     "enabled": true,
