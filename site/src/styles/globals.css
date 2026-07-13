@@ -133,6 +133,10 @@
   --font-display: 'Captain Comic', system-ui, sans-serif; /* headings */
   --font-body: 'Quicksand Variable', system-ui, sans-serif; /* body */
   --font-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+  /* Handwritten-signature script (President's note sign-off). The @fontsource
+     import lives in the component that uses it, so the woff2 only loads on
+     pages that render a signature. */
+  --font-signature: 'Great Vibes', cursive;
 
   /* ---- Fluid heading scale (clamp so type scales with viewport) ---- */
   --text-h6: 1rem;

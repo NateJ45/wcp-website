@@ -32,6 +32,7 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource-variable/quicksand": "^5.2.10",
+    "@fontsource/great-vibes": "^5.2.8",
     "@portabletext/to-html": "^5.0.2",
     "@sanity/astro": "^3.4.2",
     "@sanity/client": "^7.23.0",

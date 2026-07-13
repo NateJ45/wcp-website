@@ -13,6 +13,7 @@
    scroll locks while open, Tab is trapped inside. Entrance is a gentle
    fade+rise, disabled under prefers-reduced-motion.
    ============================================================================ */
+import '@fontsource/great-vibes'; // signature script — loads only where this modal renders
 import Icon from '@/components/Icon.astro';
 import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
@@ -45,6 +46,9 @@ try {
 const show = Boolean(note?.active && note?.version && note?.heading && note?.body?.length);
 const bodyHtml = show ? renderPortableText(note!.body) : '';
 const initial = (note?.signName ?? 'W').trim().charAt(0).toUpperCase();
+// "Board President, 2026-27" must never wrap between "2026-" and "27": swap
+// hyphens between digits for non-breaking hyphens (U+2011) before rendering.
+const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
 ---
 
 {
@@ -96,7 +100,7 @@ const initial = (note?.signName ?? 'W').trim().charAt(0).toUpperCase();
               )}
               <div class="min-w-0">
                 <p class="font-bold text-heading">{note!.signName}</p>
-                {note!.signRole && <p class="text-sm text-ink-muted">{note!.signRole}</p>}
+                {role && <p class="text-sm text-ink-muted">{role}</p>}
               </div>
             </div>
 
@@ -115,12 +119,18 @@ const initial = (note?.signName ?? 'W').trim().charAt(0).toUpperCase();
               </Prose>
               <div class="mt-6 border-t border-border pt-4">
                 <p class="text-sm text-ink-muted">With warmth,</p>
-                <p class="font-display text-2xl text-heading">{note!.signName}</p>
+                {/* Handwritten-signature moment — Great Vibes runs small for its
+                    em size, so the jump to text-4xl reads as normal sign-off
+                    scale. -rotate-2 gives it the slight off-axis of a real pen
+                    stroke. */}
+                <p class="w-fit -rotate-2 pt-1 pl-1 font-signature text-4xl text-heading">
+                  {note!.signName}
+                </p>
                 <p class="text-sm text-ink-muted">
-                  {note!.signRole}
+                  {role}
                   {note!.email && (
                     <>
-                      {note!.signRole ? ' · ' : ''}
+                      {role ? ' · ' : ''}
                       <a
                         href={`mailto:${note!.email}`}
                         class="font-semibold text-sky-ink hover:underline"
