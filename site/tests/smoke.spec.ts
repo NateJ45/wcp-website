@@ -8,7 +8,7 @@ import { routes } from './routes';
 test.describe('Smoke — every route renders', () => {
   for (const route of routes) {
     test(`${route} returns 200 and renders`, async ({ page }) => {
-      const resp = await page.goto(route, { waitUntil: 'load' });
+      const resp = await page.goto(route, { waitUntil: 'domcontentloaded' }); // not 'load': WebKit stalls on the gitignored hero <video> — settle() covers real readiness
       expect(resp?.status(), `${route} HTTP status`).toBe(200);
       // A real rendered page (every title ends with the school name), not a
       // blank or error body.

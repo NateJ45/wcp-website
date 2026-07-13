@@ -22,5 +22,17 @@ export default defineConfig({
     timeout: 120_000,
   },
   use: { baseURL: 'http://localhost:4321' },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  // Chromium + a real WebKit iPhone profile — the gated hub is exactly what
+  // parents open on their phones, so it gets Safari-engine coverage too. The
+  // iPhone project runs the section-page checks (axe + header render); the
+  // shell/home specs assert desktop-rail layout and drive their own viewports.
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'webkit-iphone',
+      use: { ...devices['iPhone 14'] },
+      testMatch: /hub-sections\.spec\.ts$/,
+      grep: /renders an app header/,
+    },
+  ],
 });

@@ -19,7 +19,17 @@ interface Props {
 const { caption, columns, rows, class: className } = Astro.props;
 ---
 
-<div class={cn('overflow-x-auto rounded-[var(--radius)] shadow-sm', className)}>
+{
+  /* tabindex + region: a scrollable wrapper must be keyboard-reachable so
+    Safari users can arrow-scroll the table (axe scrollable-region-focusable —
+    caught by the webkit-iphone project). */
+}
+<div
+  class={cn('overflow-x-auto rounded-[var(--radius)] shadow-sm', className)}
+  tabindex="0"
+  role="region"
+  aria-label={caption}
+>
   <table class="w-full border-collapse text-left text-sm">
     <caption class="sr-only">{caption}</caption>
     <thead>

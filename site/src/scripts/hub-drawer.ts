@@ -29,6 +29,7 @@ function open() {
   if (!toggle || !drawer || !backdrop) return;
   toggle.setAttribute('aria-expanded', 'true');
   drawer.setAttribute('aria-hidden', 'false');
+  drawer.removeAttribute('inert');
   drawer.classList.remove('-translate-x-full');
   backdrop.classList.remove('hidden');
   document.documentElement.classList.add('overflow-hidden');
@@ -40,6 +41,10 @@ function close(restoreFocus = true) {
   if (!toggle || !drawer || !backdrop) return;
   toggle.setAttribute('aria-expanded', 'false');
   drawer.setAttribute('aria-hidden', 'true');
+  // inert with aria-hidden: the closed drawer is still rendered (translated
+  // offscreen), and aria-hidden alone leaves its links in the Tab order —
+  // an axe aria-hidden-focus violation at mobile widths.
+  drawer.setAttribute('inert', '');
   drawer.classList.add('-translate-x-full');
   backdrop.classList.add('hidden');
   document.documentElement.classList.remove('overflow-hidden');

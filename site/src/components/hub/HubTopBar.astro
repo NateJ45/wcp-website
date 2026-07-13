@@ -18,7 +18,7 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<div
+<header
   class="flex items-center gap-3 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden"
 >
   <button
@@ -36,4 +36,4 @@ const { title } = Astro.props;
   <a href="/family-hub" class="inline-flex items-center" aria-label="Family Hub home">
     <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-8 w-auto" />
   </a>
-</div>
+</header>

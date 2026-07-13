@@ -26,7 +26,19 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  // Chromium + a real WebKit iPhone profile (borrowed from GovSoft's
+  // go-for-launch playbook): most WCP parents browse on iPhones, and Safari's
+  // engine finds layout/JS issues Chromium never will. The iPhone project
+  // runs the viewport-agnostic suites (smoke + axe); reflow drives its own
+  // viewport sizes, which conflicts with mobile emulation.
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'webkit-iphone',
+      use: { ...devices['iPhone 14'] },
+      testMatch: /(smoke|a11y)\.spec\.ts$/,
+    },
+  ],
   webServer: {
     command: 'npm run build && npm run serve:dist',
     url: baseURL,

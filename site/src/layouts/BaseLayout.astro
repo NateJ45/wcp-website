@@ -178,9 +178,15 @@ const closureAlert = await getClosureAlert();
 
           {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
           <div id="hub-drawer-backdrop" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden" />
+          {/* `inert` + aria-hidden while closed: the off-canvas drawer is
+              rendered (translated offscreen) at mobile widths, and an
+              aria-hidden container with focusable links fails axe
+              (aria-hidden-focus) — inert removes them from the focus order.
+              hub-drawer.ts toggles both attributes together. */}
           <aside
             id="hub-drawer"
             aria-hidden="true"
+            inert
             class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
           >
             <HubRail />

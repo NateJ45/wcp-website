@@ -16,7 +16,7 @@ import { settle } from './helpers';
 test.describe('Accessibility — no axe violations', () => {
   for (const route of routes) {
     test(`${route} passes axe`, async ({ page }) => {
-      await page.goto(route, { waitUntil: 'load' });
+      await page.goto(route, { waitUntil: 'domcontentloaded' }); // not 'load': WebKit stalls on the gitignored hero <video> — settle() covers real readiness
       // Settle fonts + reveal content (no half-faded text) so axe audits the
       // real, fully-rendered page — otherwise mid-transition opacity produces
       // false color-contrast violations.

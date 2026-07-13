@@ -13,7 +13,14 @@ import type { Page } from '@playwright/test';
 // [data-reveal] element to its visible end-state.
 // =============================================================================
 export async function settle(page: Page): Promise<void> {
-  await page.evaluate(() => document.fonts.ready.then(() => true));
+  // Race the font wait: WebKit can leave fonts.ready pending while heavy
+  // resources (the gitignored hero video) never finish loading.
+  await page.evaluate(() =>
+    Promise.race([
+      document.fonts.ready.then(() => true),
+      new Promise((resolve) => setTimeout(() => resolve(true), 5000)),
+    ]),
+  );
   await page.addStyleTag({
     content: '*,*::before,*::after{transition:none!important;animation:none!important}',
   });
