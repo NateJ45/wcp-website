@@ -25,12 +25,15 @@ import { projectId, dataset } from './src/sanity/env';
 // log in with their own Sanity accounts; the family gate is separate.
 //
 // Workspaces (the integration derives the URLs from the names; do not set
-// basePath here — @sanity/astro overrides it):
-//  - "Everyday edits"  → /studio/everyday    the trimmed volunteer menu
-//  - "Everything"      → /studio/everything  the full menu incl. Site setup
-// /studio itself lands on the FIRST workspace (Everyday edits); the switcher
-// in the top-left swaps between them. Both edit the same content — the trim
-// is comfort, not permission (see docs/ROLES.md).
+// basePath here — @sanity/astro overrides it). Because the site is a static
+// build, the embedded Studio uses HASH routing, so the deployed URLs are:
+//  - "Everyday edits"  → /studio/#/everyday    the trimmed volunteer menu
+//  - "Everything"      → /studio/#/everything  adds Menus / Community / links
+// (Under `npx sanity dev` it's browser routing at /studio/studio/<name> —
+// dev-only quirk from sanity.cli's own /studio base.) /studio itself lands on
+// the FIRST workspace (Everyday edits); the switcher in the top-left swaps
+// between them. Both edit the same content — the trim is comfort, not
+// permission (see docs/ROLES.md).
 //
 // - theme: brand-matched navy/orange chrome + Quicksand via --font-family-base
 //   (see src/sanity/theme.ts); the font files load in StudioLayout
