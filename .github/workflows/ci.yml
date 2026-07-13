@@ -71,8 +71,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+      # Both projects from playwright.config.ts: chromium (desktop) AND
+      # webkit-iphone. Installing only chromium made every webkit test die
+      # with "Executable doesn't exist" (bit us 2026-07-13).
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
 
       # Runs the reflow (320px), smoke, and axe accessibility suites against a
       # fresh production build (see playwright.config.ts webServer). That
