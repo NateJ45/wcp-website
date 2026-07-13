@@ -81,6 +81,28 @@ export const POST: APIRoute = async (context) => {
 
   // Honeypot filled → a bot. Pretend success and drop it.
   if (honeypot) return ok();
+
+  // Turnstile (dormant until TURNSTILE_SECRET_KEY is set — see docs/FORMS.md):
+  // verify the widget token server-side; a missing/failed token is a bot.
+  const turnstileSecret = env.TURNSTILE_SECRET_KEY;
+  if (turnstileSecret) {
+    try {
+      const verify = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          secret: turnstileSecret,
+          response: String(form.get('cf-turnstile-response') ?? ''),
+        }),
+      });
+      const outcome = (await verify.json()) as { success?: boolean };
+      if (!outcome.success) return bad('Please complete the security check and try again.');
+    } catch (err) {
+      // Verification unreachable: let the submission through rather than lose
+      // a real family's message (the honeypot + Sanity inbox still apply).
+      console.error('[contact] turnstile verify failed', err);
+    }
+  }
   // Structured variants (enroll/tour/teach) may leave the free-text box empty —
   // their detail lines are the message. Only a fully empty note is rejected.
   if (!name || !isEmail(email) || !message)

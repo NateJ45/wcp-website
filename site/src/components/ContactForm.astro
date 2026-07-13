@@ -114,6 +114,12 @@ const phoneRequired = variant === 'enroll';
 const field =
   'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
 const label = 'block text-sm font-semibold text-heading';
+
+// Turnstile is DORMANT until a site key is set (see docs/FORMS.md). When it
+// is, the widget renders above the button and /api/contact verifies its token
+// server-side (TURNSTILE_SECRET_KEY). Until then: honeypot only, no widget,
+// no third-party script.
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <div class="mx-auto max-w-xl" data-contact-root>
@@ -242,6 +248,15 @@ const label = 'block text-sm font-semibold text-heading';
           </div>
         );
       })
+    }
+
+    {
+      turnstileKey && (
+        <>
+          <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="auto" />
+          <script is:inline defer src="https://challenges.cloudflare.com/turnstile/v0/api.js" />
+        </>
+      )
     }
 
     <p class="hidden text-sm text-destructive" data-form-error role="alert">

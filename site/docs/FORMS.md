@@ -92,9 +92,20 @@ stays the same. (Do NOT "New deployment" — that mints a new URL and needs a ne
 
 ## Spam
 
-The honeypot blocks basic bots with zero friction. If real spam ever gets through, the
-next step is Cloudflare **Turnstile** (free, privacy-friendly) — a site key + secret and
-a token check in `/api/contact`. Not needed for a low-traffic site.
+The honeypot blocks basic bots with zero friction. Cloudflare **Turnstile** (free,
+privacy-friendly) is wired but **dormant**: the day real spam appears, create a
+Turnstile widget in the Cloudflare dash, then set
+
+```sh
+# site/.env (and the deploy env): renders the widget on every contact form
+PUBLIC_TURNSTILE_SITE_KEY=...
+# Worker secret: makes /api/contact reject submissions that fail verification
+npx wrangler secret put TURNSTILE_SECRET_KEY
+```
+
+and redeploy. Until both are set there is no widget, no third-party script, and no
+behavior change. (If Cloudflare's verify service is ever unreachable, submissions pass
+through rather than losing a real family's message.)
 
 ## Notes
 

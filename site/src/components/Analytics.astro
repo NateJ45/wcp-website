@@ -7,6 +7,10 @@
 
      1. Search-console / Bing verification <meta> (PUBLIC_GSC_VERIFICATION)
      2. Google Ads gtag.js conversion tag (PUBLIC_GADS_ID, e.g. AW-16817798038)
+     3. Cloudflare Web Analytics beacon (PUBLIC_CF_BEACON_TOKEN) — free,
+        privacy-first (no cookies, no consent banner needed). Create the site
+        in the Cloudflare dash under Analytics → Web Analytics and paste its
+        token into the env.
 
    The IDs are NOT hardcoded — they come from environment variables so they can
    differ per environment (real in production, empty in previews) and are never
@@ -20,9 +24,21 @@
    ============================================================================ */
 const gadsId = import.meta.env.PUBLIC_GADS_ID;
 const gscToken = import.meta.env.PUBLIC_GSC_VERIFICATION;
+const cfBeacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 ---
 
 {gscToken && <meta name="msvalidate.01" content={gscToken} />}
+
+{
+  cfBeacon && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token: cfBeacon })}
+    />
+  )
+}
 
 {
   gadsId && (

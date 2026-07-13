@@ -19,6 +19,11 @@ interface ImportMetaEnv {
    *  WCP" feed. Non-public (server/build only). Unset → the section shows its
    *  fallback album instead. See docs/PAGE_BUILDER.md. */
   readonly INSTAGRAM_TOKEN?: string;
+  /** Cloudflare Web Analytics beacon token. Unset = no beacon (previews/dev). */
+  readonly PUBLIC_CF_BEACON_TOKEN?: string;
+  /** Turnstile site key — renders the anti-spam widget on the contact forms.
+   *  Unset = dormant (the forms rely on the honeypot alone). docs/FORMS.md. */
+  readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
 }
 
 interface ImportMeta {
@@ -46,6 +51,9 @@ declare namespace Cloudflare {
     CONTACT_TO?: string;
     /** Verified Resend "from" address (defaults to the Resend test sender). */
     CONTACT_FROM?: string;
+    /** Turnstile server secret — when set, /api/contact rejects submissions
+     *  whose widget token fails siteverify. Pair with PUBLIC_TURNSTILE_SITE_KEY. */
+    TURNSTILE_SECRET_KEY?: string;
     /** Google Apps Script web-app URL — the free forms inbox that emails the
      *  board + logs to a Google Sheet. Unset = skip. See docs/FORMS.md. */
     FORMS_WEBHOOK_URL?: string;
