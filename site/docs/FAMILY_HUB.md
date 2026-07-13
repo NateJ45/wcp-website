@@ -236,11 +236,20 @@ doc exists for a key, the page shows its built-in fallback content, so it can ne
 Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting content with
 `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
 
-**All hub pages are converted:** Landing (`home`), Calendar, Co-op Jobs, Documents, Tuition,
-Updates, Fundraising, Health, Directory, and the class pages (`twos`, `threes`, and the
-merged `pre-k` — both Pre-K classes share one page, with `/family-hub/pre-k-am|pm`
-301-redirecting there). Each reads its `hubPage` doc for an editable heading, intro, and a
-stack of hub-safe sections, wrapped around a **fixed widget** that stays locked in code:
+**All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —
+new-family onboarding), Calendar, Co-op Jobs, Documents, Tuition, Updates, Fundraising,
+Health, Directory, and the class pages (`twos`, `threes`, and the merged `pre-k` — both
+Pre-K classes share one page, with `/family-hub/pre-k-am|pm` 301-redirecting there). Each
+reads its `hubPage` doc for an editable heading, intro, and a stack of hub-safe sections,
+wrapped around a **fixed widget** that stays locked in code:
+
+**The knowledge base:** the 2026-27 source documents (Family Handbook, May Gathering
+orientation deck, Safety Plan, bylaws digest, member-approved budget, Super Helper
+certification) are transcribed into editable sections across getting-started / health /
+coop-jobs / tuition / fundraising / calendar / twos / threes by
+`node scripts/seed-hub-knowledge.mjs` (re-running RESETS those pages to that baseline).
+The source PDFs are uploaded as gated `hubDocument` files on the Documents page — the
+PDFs themselves are gitignored (they contain the hub password and phone numbers).
 
 **The Pre-K page carries the entire parent handbook** as editable sections (daily schedules,
 drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom, communication, dress

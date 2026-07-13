@@ -1,0 +1,54 @@
+---
+/* ============================================================================
+   Family Hub — Getting Started (GATED, page-builder)
+   ============================================================================
+   The new-family runway: enrollment checklist, the co-op commitment at a
+   glance, finding the building, communication channels, and first-year FAQs —
+   transcribed from the May Gathering orientation deck + the Family Handbook's
+   Admissions & Enrollment chapter. ENTIRELY Board-editable: everything is
+   `hubPage-getting-started` sections (seeded by scripts/seed-hub-knowledge.mjs,
+   edited in the Studio thereafter).
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  doc = await sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'getting-started' });
+} catch {
+  doc = null;
+}
+const title = doc?.heading || 'Getting Started at WCP';
+const intro =
+  doc?.intro ||
+  'New to the co-op, or need a refresher? Everything between “we’re in!” and the first day of school lives here.';
+---
+
+<HubShell
+  title={title}
+  bare
+  current="/family-hub/getting-started"
+  pageTitle="Getting Started — WCP Family Hub"
+>
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader title={title} subtitle={intro} icon="rocket" />
+    </div>
+  </Section>
+
+  {/* Everything below the header is Board-editable page-builder content. */}
+  <SectionRenderer sections={doc?.sections} site={site} />
+</HubShell>

@@ -8,6 +8,7 @@ import { settle } from './helpers';
 // 320px. The static suites can't reach these (SSR, gated) — this runs under
 // playwright.hub.config.ts against the real wrangler preview build.
 const ROUTES = [
+  '/family-hub/getting-started',
   '/family-hub/tuition',
   '/family-hub/documents',
   '/family-hub/fundraising',

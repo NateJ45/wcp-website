@@ -63,7 +63,7 @@ const chipTint: Record<string, string> = {
 
   {
     layout === 'compactIcon' ? (
-      <ul class={cn('grid gap-6', section.header?.title && 'mt-12', grid)}>
+      <ul class={cn('grid grid-cols-1 gap-6', section.header?.title && 'mt-12', grid)}>
         {cards.map((c) => (
           <li class="flex gap-4" data-reveal>
             {c.icon && (
@@ -84,7 +84,7 @@ const chipTint: Record<string, string> = {
         ))}
       </ul>
     ) : (
-      <ul class={cn('grid gap-6', section.header?.title && 'mt-12', grid)}>
+      <ul class={cn('grid grid-cols-1 gap-6', section.header?.title && 'mt-12', grid)}>
         {cards.map((c) => (
           <FeatureCard as="li" icon={c.icon} chip={c.chip ?? 'sky'} title={c.title}>
             {c.statValue && <span class="font-display text-3xl text-heading">{c.statValue}</span>}

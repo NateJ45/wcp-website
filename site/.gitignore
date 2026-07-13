@@ -1,1 +1,4 @@
 PreK parent handbook for nathan 2627.pdf
+# Source PDFs for the hub knowledge base — gated content (hub password,
+# phone numbers); they live in Sanity as hubDocument files, not in git.
+src/assets/*.pdf

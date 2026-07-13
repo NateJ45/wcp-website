@@ -173,6 +173,10 @@
   body {
     font-family: var(--font-body);
     color: var(--color-ink);
+    /* Board-typed content can contain long unbreakable tokens (emails, URLs).
+       break-word only kicks in when a token would overflow its line, so this
+       is invisible everywhere else — and keeps 320px reflow safe by default. */
+    overflow-wrap: break-word;
     background-color: var(--color-bg);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;

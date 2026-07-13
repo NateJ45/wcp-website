@@ -19,7 +19,11 @@ const num = (v: string) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
 ---
 
 <Section bg="navy" seam label={section.ariaLabel as string}>
-  <ul class="grid grid-cols-2 gap-5 lg:grid-cols-4">
+  {
+    /* grid-cols-1 at base: wide stat values (e.g. "$67,165") have a min-content
+      floor that overflows 320px in two columns. */
+  }
+  <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
     {
       stats.map((s) => (
         <li>

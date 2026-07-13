@@ -57,6 +57,7 @@ export const hubNav: HubGroup[] = [
     label: 'Resources',
     accent: '#ffa334', // amber
     links: [
+      { label: 'Getting Started', href: '/family-hub/getting-started', icon: 'rocket' },
       { label: 'Documents', href: '/family-hub/documents', icon: 'folder-open' },
       { label: 'Health', href: '/family-hub/health', icon: 'heart-pulse' },
     ],
