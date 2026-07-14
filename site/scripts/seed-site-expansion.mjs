@@ -43,7 +43,7 @@ const trustBand = () =>
   B.statBand({
     ariaLabel: 'West Chester Preschool at a glance',
     stats: [
-      { value: '4.8', label: 'Rated on Google', note: 'by WCP families' },
+      { value: '4.8', label: 'Rated on Google', note: 'from 19 reviews' },
       { value: '12', label: 'Children per class, max' },
       {
         value: '55',
@@ -192,10 +192,10 @@ async function reviewsPage() {
       eyebrow: 'From our families',
       title: 'In their words.',
       accentWord: 'their words',
-      lead: 'Real families, real reviews. This is what it feels like to be part of West Chester Preschool.',
+      lead: 'Real families, real reviews, and a 4.8 rating across 19 of them. This is what it feels like to be part of West Chester Preschool.',
       mediaType: 'none',
       height: 'short',
-      actions: [B.act('Read every review on Google', 'accent', { url: GOOGLE_REVIEWS })],
+      actions: [B.act('Read all 19 reviews on Google', 'accent', { url: GOOGLE_REVIEWS })],
     }),
     sections: [
       B.testimonials({
@@ -238,8 +238,8 @@ async function patchWhyWcp() {
     narrow: true,
     body: [
       B.p(
-        B.strong('WCP families rate us 4.8 on Google. '),
-        B.link('Read their reviews', GOOGLE_REVIEWS),
+        B.strong('WCP families rate us 4.8 on Google, across 19 reviews. '),
+        B.link('Read them', GOOGLE_REVIEWS),
       ),
     ],
   };
