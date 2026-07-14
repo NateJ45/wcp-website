@@ -187,6 +187,17 @@ export const CLASS_ROWS_QUERY = `*[_type == "class"] | order(orderRank){ name, d
 // Enrollment mode + deadline (drives the self-adapting enrollment CTA).
 export const SITE_ENROLLMENT_QUERY = `*[_type == "siteSettings"][0]{ enrollmentMode, enrollmentDeadline }`;
 
+// Co-op hours page: the per-family annual goal + the school-wide total logged.
+export const COOP_HOURS_META_QUERY = `{
+  "goal": *[_type == "siteSettings"][0].coopHoursGoal,
+  "communityHours": math::sum(*[_type == "hoursLog"].hours)
+}`;
+
+// One family's ledger, newest first (matched on the name they type in the hub).
+export const COOP_HOURS_FOR_FAMILY_QUERY = `*[_type == "hoursLog" && lower(familyName) == lower($family)] | order(date desc, _createdAt desc){
+  _id, familyName, hours, category, activity, date, verified, source
+}`;
+
 // Tuition calculator: class prices + the one-time enrollment fees.
 export const TUITION_CALC_QUERY = `{
   "classes": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },

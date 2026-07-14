@@ -46,6 +46,7 @@ import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { testimonialSubmission } from './documents/testimonialSubmission';
 import { coopRole } from './documents/coopRole';
+import { hoursLog } from './documents/hoursLog';
 import {
   program,
   boardMember,
@@ -104,6 +105,7 @@ export const schemaTypes = [
   subscriber,
   testimonialSubmission,
   coopRole,
+  hoursLog,
   // Future-proofing collections (surfaced via community.ts sections)
   program,
   boardMember,

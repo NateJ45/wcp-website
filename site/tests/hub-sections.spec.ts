@@ -22,6 +22,7 @@ const ROUTES = [
   '/family-hub/directory',
   '/family-hub/sign-ups',
   '/family-hub/celebrations',
+  '/family-hub/hours',
 ];
 
 for (const route of ROUTES) {

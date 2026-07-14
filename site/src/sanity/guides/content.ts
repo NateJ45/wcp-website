@@ -1215,6 +1215,47 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'coop-hours',
+    title: 'Co-op hours tracking',
+    icon: '⏱️',
+    lead: 'Set the yearly hours goal and confirm the hours families log.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'As a co-op, each family gives volunteer hours every year. The **My Co-op Hours** page in the Family Hub lets families see their progress and log hours; you set the goal and confirm what they log.',
+      },
+      { kind: 'h', text: 'Set this year’s goal' },
+      {
+        kind: 'path',
+        items: ['Site Settings', 'School year', 'Co-op hours per family'],
+      },
+      {
+        kind: 'p',
+        text: 'Enter the number of hours each family is asked to give (for example 20). Leave it blank or 0 to hide the whole hours tracker. Update it once a year.',
+      },
+      { kind: 'h', text: 'Confirm hours a family logs' },
+      {
+        kind: 'p',
+        text: 'When a family logs hours on the hub, a new row appears in **Family Hub → Co-op hours (ledger)** marked with an hourglass (⏳). It already counts toward their total, but is not yet confirmed.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Co-op hours (ledger)** and click a ⏳ entry.',
+          'Check it looks right, then turn on **Verified** and **Publish**. It shows a ✅ from then on.',
+          'To credit hours yourself (for a family that did not log their own), click **＋**, fill in the family name, hours, and date, turn on **Verified**, and **Publish**.',
+        ],
+      },
+      {
+        kind: 'callout',
+        text: 'Families are matched by the exact name they type, so gently keep names consistent (for example always "Nixon", not sometimes "The Nixons").',
+      },
+      { kind: 'seealso', items: ['Post a celebration', 'Do it yourself vs. ask for help'] },
+    ],
+  },
+
+  {
     slug: 'diy-vs-ask',
     title: 'Do it yourself vs. ask for help',
     icon: '🧭',

@@ -188,6 +188,7 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
             title: 'Co-op Roles',
             icon: emoji('🤝'),
           }),
+          S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
         ]),
     );
 }
@@ -211,6 +212,7 @@ const PLACED = new Set([
   'subscriber',
   'testimonialSubmission',
   'coopRole',
+  'hoursLog',
   'program',
   'boardMember',
   'partner',

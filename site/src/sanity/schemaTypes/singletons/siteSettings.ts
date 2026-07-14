@@ -207,6 +207,15 @@ export const siteSettings = defineType({
         'Powers the "N days until school" countdown on the Family Hub home before the year starts. Leave blank to hide it.',
     }),
     defineField({
+      name: 'coopHoursGoal',
+      title: 'Co-op hours per family (per year)',
+      type: 'number',
+      group: 'year',
+      validation: (R) => R.min(0).error('Use 0 or more.'),
+      description:
+        'How many volunteer hours each family is asked to give this school year. Drives the progress bar on the Family Hub "My Co-op Hours" page. Leave blank or 0 to hide the hours tracker.',
+    }),
+    defineField({
       name: 'familyCount',
       title: 'Family count (optional override)',
       type: 'number',

@@ -198,6 +198,25 @@ Google forms inbox when configured (see [FORMS.md](FORMS.md)). Forms work withou
 background submits. Two clearly-titled example sheets are seeded by
 `scripts/seed-signup-examples.mjs`.
 
+## My Co-op Hours
+
+`/family-hub/hours` is the family-facing volunteer-hours ledger (a co-op asks each
+family for N hours a year). The board sets the per-family annual goal in **Site
+Settings → School year → Co-op hours per family**; leave it blank/0 to hide the whole
+tracker. Because the hub has **no per-family login** (one shared password; identity is
+device-local), a family identifies itself by the name it types — carried in the
+`?family=` query so it works with no JS, and remembered in `localStorage`
+(`wcp-family-name`) so it auto-loads next visit (`src/scripts/hours.ts`). The page shows
+that family's progress bar (`summarizeHours` in `src/lib/coop-hours.ts`, unit-tested for
+the divide-by-zero/NaN edges), a verified-vs-pending breakdown, and a log-hours form.
+Logging posts to `/family-hub/api/log-hours`, which stores a `hoursLog` doc (`source:
+"self"`, `verified: false`) and forwards an FYI through the Google forms inbox (kind
+`hours`). The board confirms rows in the Studio (**Family Hub → Co-op hours (ledger)**)
+by flipping **Verified**, and can also credit hours directly there (`source: "board"`).
+Reads are `fresh` so a family's just-logged row shows on reload; the per-family name is
+communal knowledge inside the gate, but the ledger is never baked into the public site.
+A page-wide line totals the whole school's logged hours.
+
 A related nicety: the site is installable (a PWA manifest with maskable icon and
 hub/calendar shortcuts), so families can pin the hub to their phone's home screen —
 there is deliberately **no service worker** (the SSR hub must never serve stale).

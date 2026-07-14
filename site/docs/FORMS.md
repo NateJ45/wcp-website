@@ -62,7 +62,10 @@ From then on every inquiry emails the board (reply-to the family) and lands as a
 the Sheet — `contact`, `newsletter`, and `signup` tabs are created automatically.
 Newsletter signups go to the Sheet only (no email — they'd be noisy); hub sign-ups and
 RSVPs (`/family-hub/sign-ups`, kind `signup`) send a short FYI email plus their Sheet
-row. Quota is ~1,500 emails/day on Workspace; the forms will never come close.
+row. Co-op hours a family logs on `/family-hub/hours` forward as kind `hours` (family
+name, hours, category, activity, date) — the source of truth is the `hoursLog` doc in
+Sanity, so the webhook here is just an optional FYI/backup and the tracker works without
+it. Quota is ~1,500 emails/day on Workspace; the forms will never come close.
 
 ## The weekly family digest (optional)
 

@@ -1,0 +1,357 @@
+---
+/* ============================================================================
+   Family Hub — My Co-op Hours (GATED)
+   ============================================================================
+   A cooperative preschool asks each family for volunteer hours a year. This is
+   the family-facing ledger: enter your family name, see your logged hours vs the
+   yearly goal, and log new hours (honor system). Because the hub has no per-
+   family login (one shared password; identity is device-local), the lookup is by
+   the family name you type — remembered in localStorage and carried in the
+   ?family= query so it works with no JS too. Entries are hoursLog docs created by
+   /family-hub/api/log-hours; the board confirms them in the Studio. Read live so
+   a family's just-logged row shows on reload. Mirrors the sign-ups pattern.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import Icon from '@/components/Icon.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { COOP_HOURS_META_QUERY, COOP_HOURS_FOR_FAMILY_QUERY } from '@/lib/queries';
+import { HOURS_CATEGORIES, categoryLabel, summarizeHours } from '@/lib/coop-hours';
+
+interface Entry {
+  _id: string;
+  familyName?: string;
+  hours?: number;
+  category?: string;
+  activity?: string;
+  date?: string;
+  verified?: boolean;
+  source?: string;
+}
+
+const url = new URL(Astro.request.url);
+const family = (url.searchParams.get('family') ?? '').trim().slice(0, 120);
+const showThanks = url.searchParams.has('thanks');
+
+let meta: { goal?: number; communityHours?: number } = {};
+try {
+  meta =
+    (await sanityFetch<{ goal?: number; communityHours?: number }>(
+      COOP_HOURS_META_QUERY,
+      {},
+      { cache: BOARD_CONTENT_CACHE },
+    )) ?? meta;
+} catch {
+  /* keep defaults */
+}
+const goal = typeof meta.goal === 'number' && meta.goal > 0 ? meta.goal : 0;
+const community = Math.round(meta.communityHours ?? 0);
+const trackerOn = goal > 0;
+
+let entries: Entry[] = [];
+if (trackerOn && family) {
+  try {
+    // fresh: a family reloading right after logging must see their own new row —
+    // CDN staleness here would read as a lost entry.
+    entries = await sanityFetch<Entry[]>(COOP_HOURS_FOR_FAMILY_QUERY, { family }, { fresh: true });
+  } catch {
+    entries = [];
+  }
+}
+
+const summary = summarizeHours(entries, goal);
+const today = new Date().toISOString().slice(0, 10);
+const fmtDate = (iso?: string) =>
+  iso
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'America/New_York',
+      })
+    : '';
+
+const inputClass =
+  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+---
+
+<HubShell title="My Co-op Hours" bare pageTitle="My Co-op Hours — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-3xl">
+      <HubPageHeader
+        title="My Co-op Hours"
+        subtitle="Track your family’s volunteer hours for the year and log new ones as you go."
+        icon="clock"
+      />
+
+      {
+        !trackerOn ? (
+          <HubEmptyState icon="clock" title="Hours tracking will show here">
+            <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
+              Once the board sets this year’s co-op hours goal in Site Settings, your family’s
+              progress appears here.
+            </p>
+          </HubEmptyState>
+        ) : (
+          <>
+            {showThanks && (
+              <HubCard class="mb-6 border-l-4 border-l-green">
+                <p class="font-semibold text-heading">Logged — thank you for pitching in!</p>
+                <p class="mt-1 text-sm text-ink-muted">
+                  A board member will confirm it. It already counts toward your total below.
+                </p>
+              </HubCard>
+            )}
+
+            {/* Whose hours? — the family lookup (GET, no-JS friendly) */}
+            <HubCard class="mb-6">
+              <form method="GET" action="/family-hub/hours" class="flex flex-wrap items-end gap-3">
+                <div class="min-w-48 flex-1">
+                  <label class="block text-sm font-semibold text-heading" for="family-lookup">
+                    Your family name
+                  </label>
+                  <input
+                    id="family-lookup"
+                    name="family"
+                    type="text"
+                    required
+                    value={family}
+                    placeholder="e.g. Nixon"
+                    class={inputClass}
+                    data-family-input
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading"
+                >
+                  <Icon name="search" class="h-4 w-4" aria-hidden="true" />
+                  See my hours
+                </button>
+              </form>
+            </HubCard>
+
+            {family ? (
+              <>
+                {/* Progress against the yearly goal */}
+                <HubCard class="mb-6">
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="font-display text-xl text-heading">The {family} Family</h2>
+                    <p class="text-sm font-semibold text-ink-muted">
+                      Goal: {goal} hour{goal === 1 ? '' : 's'}
+                    </p>
+                  </div>
+
+                  <p class="mt-3 font-display text-4xl text-heading">
+                    {summary.logged}
+                    <span class="font-sans text-base font-normal text-ink-muted">
+                      {' '}
+                      of {goal} hours logged
+                    </span>
+                  </p>
+
+                  <HubProgress
+                    class="mt-3"
+                    value={summary.logged}
+                    max={goal}
+                    fill={summary.met ? 'bg-green' : 'bg-sky-ink'}
+                    label={`${family} family co-op hours`}
+                    valueText={`${summary.logged} of ${goal} hours logged`}
+                  />
+
+                  <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-muted">
+                    <span>
+                      <span class="font-semibold text-heading">{summary.verified}</span> verified
+                    </span>
+                    {summary.pending > 0 && (
+                      <span>
+                        <span class="font-semibold text-heading">{summary.pending}</span> awaiting
+                        confirmation
+                      </span>
+                    )}
+                    {!summary.met && (
+                      <span>
+                        <span class="font-semibold text-heading">{summary.remaining}</span> to go
+                      </span>
+                    )}
+                  </div>
+
+                  {summary.met && (
+                    <p class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-heading">
+                      <Icon name="party-popper" class="h-4 w-4 text-green-ink" aria-hidden="true" />
+                      You’ve reached this year’s goal. Thank you!
+                    </p>
+                  )}
+                </HubCard>
+
+                {/* Log new hours */}
+                <HubCard class="mb-6">
+                  <h2 class="font-display text-xl text-heading">Log hours</h2>
+                  <p class="mt-1 text-sm text-ink-muted">
+                    Add time you’ve given. A board member confirms it, but it counts right away.
+                  </p>
+                  <form
+                    method="POST"
+                    action="/family-hub/api/log-hours"
+                    class="mt-4 grid gap-3 sm:grid-cols-2"
+                    data-hours-form
+                  >
+                    <input type="hidden" name="familyName" value={family} />
+                    <div class="absolute -left-[9999px]" aria-hidden="true">
+                      <label>
+                        Company
+                        <input type="text" name="company" tabindex="-1" autocomplete="off" />
+                      </label>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-semibold text-heading" for="hours-amount">
+                        Hours
+                      </label>
+                      <input
+                        id="hours-amount"
+                        name="hours"
+                        type="number"
+                        min="0.25"
+                        step="0.25"
+                        required
+                        placeholder="2"
+                        class={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-semibold text-heading" for="hours-date">
+                        Date
+                      </label>
+                      <input
+                        id="hours-date"
+                        name="date"
+                        type="date"
+                        value={today}
+                        max={today}
+                        class={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-semibold text-heading" for="hours-category">
+                        What kind of help
+                      </label>
+                      <select id="hours-category" name="category" class={inputClass}>
+                        {HOURS_CATEGORIES.map((c) => (
+                          <option value={c.value}>{c.title}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-semibold text-heading" for="hours-activity">
+                        What you did <span class="font-normal text-ink-muted">(optional)</span>
+                      </label>
+                      <input
+                        id="hours-activity"
+                        name="activity"
+                        type="text"
+                        placeholder="e.g. Fall Festival setup"
+                        class={inputClass}
+                      />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                      <button
+                        type="submit"
+                        class="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+                      >
+                        <Icon name="pencil" class="h-4 w-4" aria-hidden="true" />
+                        Log these hours
+                      </button>
+                      <p class="mt-2 hidden text-sm font-semibold text-green-ink" data-hours-done>
+                        Logged — thank you!
+                      </p>
+                      <p class="mt-2 hidden text-sm text-destructive" data-hours-error role="alert">
+                        Something went wrong — try again?
+                      </p>
+                    </div>
+                  </form>
+                </HubCard>
+
+                {/* The ledger */}
+                <HubCard>
+                  <h2 class="font-display text-xl text-heading">Your entries</h2>
+                  {entries.length === 0 ? (
+                    <p class="mt-2 text-ink-muted">
+                      Nothing logged yet. Add your first hours above.
+                    </p>
+                  ) : (
+                    <ul class="mt-3 divide-y divide-border">
+                      {entries.map((e) => (
+                        <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
+                          <div class="min-w-0">
+                            <p class="font-semibold text-heading">
+                              {e.hours} hour{e.hours === 1 ? '' : 's'}
+                              <span class="font-normal text-ink-muted">
+                                {' · '}
+                                {categoryLabel(e.category)}
+                              </span>
+                            </p>
+                            {e.activity && <p class="text-sm text-ink-muted">{e.activity}</p>}
+                          </div>
+                          <div class="flex shrink-0 items-center gap-3">
+                            <span class="text-sm text-ink-muted">{fmtDate(e.date)}</span>
+                            {e.verified ? (
+                              <span class="inline-flex items-center gap-1 rounded-full bg-green/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
+                                <Icon
+                                  name="check"
+                                  class="h-3 w-3 text-green-ink"
+                                  aria-hidden="true"
+                                />
+                                Verified
+                              </span>
+                            ) : (
+                              <span class="inline-flex items-center gap-1 rounded-full bg-amber/25 px-2.5 py-0.5 text-xs font-semibold text-heading">
+                                <Icon
+                                  name="clock"
+                                  class="h-3 w-3 text-amber-ink"
+                                  aria-hidden="true"
+                                />
+                                Pending
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </HubCard>
+              </>
+            ) : (
+              <HubCard>
+                <p class="text-ink-muted">
+                  Enter your family name above to see your hours and log new ones.
+                </p>
+              </HubCard>
+            )}
+
+            {community > 0 && (
+              <p class="mt-6 text-center text-sm text-ink-muted">
+                Together, our families have logged{' '}
+                <span class="font-semibold text-heading">{community.toLocaleString('en-US')}</span>{' '}
+                co-op hours this year.
+              </p>
+            )}
+          </>
+        )
+      }
+    </div>
+  </Section>
+</HubShell>
+
+<script>
+  import '@/scripts/hours';
+</script>
