@@ -139,6 +139,22 @@ component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
   that a component compares or maps on, add it to that list.** Display strings stay
   encoded so click-to-edit keeps working.
 
+## Seeding & bulk edits
+
+Pages and their content live in Sanity, but they can be authored/edited in bulk from code
+via the `pagebuilder-lib.mjs` helpers (`hero`, `cardGrid`, `statBand`, `stepList`,
+`faqSection`, `testimonials`, `cta`, `sh`, `card`, `act`, ...) and a small script.
+`scripts/migrate-pagebuilder.mjs` seeded the whole site originally (idempotent,
+`createOrReplace` with `page-<slug>` ids). For _additive_ changes to a live site, prefer a
+surgical script like `scripts/seed-site-expansion.mjs` (2026-07-14): it `set`s single fields
+and `insert`s new sections guarded by stable `_key`s (idempotent, non-destructive), and only
+`createOrReplace`s genuinely new pages. **Never re-run the full migrate against a live
+dataset** — it clobbers Board edits. Note the gotcha the expansion script documents: only the
+`home` page had an active draft, so its hero title is `set` on both `page-home` and
+`drafts.page-home` and no home _sections_ are touched. New pages added this way (e.g.
+`/safety`, `/reviews`) must also be added to `tests/routes.ts` so the a11y/reflow/smoke
+suites cover them.
+
 ## Routing
 
 - **`src/pages/[...slug].astro`** (static, `prerender = true`): `getStaticPaths()`

@@ -13,6 +13,8 @@ export const routes = [
   '/classes/pre-k',
   '/co-op-life',
   '/why-wcp',
+  '/safety',
+  '/reviews',
   '/a-day-at-wcp',
   '/tuition',
   '/faq',
