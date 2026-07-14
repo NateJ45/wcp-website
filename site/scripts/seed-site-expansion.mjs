@@ -394,6 +394,25 @@ async function patchSignature() {
       .commit();
     console.log(`  /${slug} signature band inserted`);
   }
+
+  // Home: both the published AND draft docs share the same first five sections
+  // (noticeBar, cardGrid, splitMedia[co-op], classCards, statBand), so the
+  // signature goes after the co-op splitMedia (sections[2]) consistently in
+  // each. Patching both keeps live and Studio in sync no matter which the
+  // Board eventually publishes.
+  for (const id of ['page-home', 'drafts.page-home']) {
+    const page = await c.fetch('*[_id==$id][0]{ _id, "keys": sections[]._key }', { id });
+    if (!page) continue;
+    if ((page.keys || []).includes('seed-signature')) {
+      console.log(`  ${id} signature already present`);
+      continue;
+    }
+    await c
+      .patch(id)
+      .insert('after', 'sections[2]', [signatureBand('seed-signature')])
+      .commit();
+    console.log(`  ${id} signature band inserted`);
+  }
 }
 
 // ============================================================================

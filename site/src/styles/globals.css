@@ -410,6 +410,32 @@
   background-color: transparent;
 }
 
+/* Public paper texture (2026-07-14 site-elevation) ----------------------------
+   The same construction-paper GRAIN + hand-drawn DOODLES the hub uses, brought
+   to the marketing site's warm bands for the tactile, handmade feel that
+   separates a premium preschool site from a template (the 2026 "anti-AI-slop"
+   differentiator). Scoped to `.wcp-site-paper` (public <body> only, set in
+   BaseLayout) so the hub's .wcp-hub-canvas stays the single texture owner there
+   and never double-textures. Deliberately restrained: grain is ~5% neutral
+   noise and doodles ~5.5% strokes, both BELOW text, so contrast is unchanged
+   (Lighthouse AA holds). White bands stay clean — they carry the crisp cards
+   and dense copy — so the texture reads only in the warm/dark gaps.
+     - grey + cream bands: paper grain.
+     - cream bands: + faint navy doodles (the warm accent moments).
+     - navy bands: + faint white doodles (matches the hub's navy chrome). */
+.wcp-site-paper section.bg-grey {
+  background-image: var(--wcp-grain);
+}
+.wcp-site-paper section.bg-cream {
+  background-image: var(--wcp-grain), var(--wcp-doodles);
+}
+.wcp-site-paper section.bg-navy {
+  background-image: var(--wcp-doodles-dark);
+}
+.dark .wcp-site-paper section.bg-cream {
+  background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+}
+
 /* Soft radial glows — the warm wash behind the hub greeting / class headers.
    Decorative divs (aria-hidden, pointer-events-none); color per class via the
    variants. Very low alpha so they tint the paper, never fight text. */

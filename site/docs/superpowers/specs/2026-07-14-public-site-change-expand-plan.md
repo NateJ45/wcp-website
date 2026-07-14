@@ -161,3 +161,20 @@ Applied via `scripts/seed-site-expansion.mjs` (idempotent, additive) + `tests/ro
 - Verified: build, 320px reflow + axe (both new pages added to the suite), link check.
 
 **Deferred to later phases (need Nathan's assets/calls):** parent-testimonial VIDEO (needs footage), the home-page trust/safety bands (home has an active draft; not clobbered), the named co-op signature rollout, the public-site texture/doodle layer, the candid-photography re-curation, and the optional Google Places API auto-rating. Also: confirm/fill the exact Google review COUNT (the badge shows the 4.8 rating; the count didn't extract cleanly).
+
+## 12. Phase 2 shipped (2026-07-14): signature everywhere + the paper texture
+
+- **"Front-Row Learning" signature** now on /why-wcp, /co-op-life, AND the home
+  page (inserted after the co-op section, patched into both the published and
+  draft home docs so live + Studio stay in sync).
+- **Public paper-texture layer** (code): the hub's construction-paper GRAIN +
+  hand-drawn DOODLES brought to the marketing site's warm bands — grain on
+  grey+cream, faint navy doodles on cream, faint white doodles on navy — scoped
+  to a public-only `.wcp-site-paper` body class (BaseLayout) so the hub's
+  `.wcp-hub-canvas` stays the sole texture owner there. Restrained (~5%), sits
+  below text, white bands stay clean. Lighthouse AA holds: 199 static tests
+  (axe light+dark + 320px) pass, and the texture reads as tactile warmth in the
+  gaps. globals.css "Public paper texture".
+
+**Still deferred (need footage/photos):** parent-testimonial video, candid-photo
+re-curation.
