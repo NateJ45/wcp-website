@@ -109,6 +109,23 @@ board can note the date in the issue's **Date emailed to families** field for th
 records (it doesn't send anything). No issue published yet → the feed returns
 `{ issue: null }` so the mailer cleanly skips.
 
+## Daily board reminders (optional)
+
+A token-protected `/api/reminders?token=…` feed (matches `FORMS_WEBHOOK_TOKEN`; 404s
+without it) returns the board's current to-do and heads-up list: things left on or
+overdue (the alert banner still on, announcements past their end date, week-old
+unanswered messages, unpublished drafts) and things coming up in the next two weeks
+(the enrollment deadline, events, and sign-up sheets closing). The logic lives in
+`src/lib/reminders.ts` (unit-tested) and is shared with the Studio **Checkup** tool's
+"Coming up" section, so the emailed list and the in-Studio view never drift.
+
+To email it, add an Apps Script `boardReminders()` daily trigger (same mailer/token as
+the digest): fetch the feed, and if `reminders` is non-empty, email the board a short
+bulleted list. Set a **Time-driven → Day timer → 7–8am** trigger. Nothing due → nothing
+sent. Sending runs on the Google side because Workers can't send email on the free tier;
+a Cloudflare cron would still have to hand off to the same mailer, so the Apps Script
+trigger is the whole mechanism.
+
 ## Optional extras
 
 - **Resend email** (`RESEND_API_KEY`, optional `CONTACT_TO` / `CONTACT_FROM`): the older

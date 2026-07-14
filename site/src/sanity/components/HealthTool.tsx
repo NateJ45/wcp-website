@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useClient } from 'sanity';
 import { Badge, Box, Button, Card, Flex, Heading, Spinner, Stack, Text } from '@sanity/ui';
+import { computeReminders, type UpcomingItem } from '../../lib/reminders';
 
 // =============================================================================
 // HealthTool — a plain-language "what needs attention?" check (Everything ws)
@@ -11,7 +12,7 @@ import { Badge, Box, Button, Card, Flex, Heading, Spinner, Stack, Text } from '@
 // drafts left unpublished. No mutations — it just points; you fix in the Studio.
 // =============================================================================
 
-type Severity = 'alert' | 'warn' | 'ok';
+type Severity = 'alert' | 'warn' | 'info' | 'ok';
 
 interface CheckResult {
   id: string;
@@ -117,7 +118,7 @@ const CHECKS: Check[] = [
     id: 'drafts',
     run: async (c) => {
       const n = await c.fetch<number>(
-        'count(*[_id in path("drafts.**") && _type in ["page","post","event","announcement"]])',
+        'count(*[_id in path("drafts.**") && _type in ["page","post","event","announcement","newsletterIssue"]])',
       );
       return n > 0
         ? {
@@ -129,13 +130,57 @@ const CHECKS: Check[] = [
         : null;
     },
   },
+  {
+    // Forward-looking: deadlines, events, and sign-up sheets within two weeks.
+    // Shares the exact logic the emailed /api/reminders feed uses.
+    id: 'coming-up',
+    run: async (c) => {
+      const now = Date.now();
+      const today = new Date(now).toISOString().slice(0, 10);
+      const snap = await c.fetch<{
+        enrollmentDeadline?: string | null;
+        upcomingEvents?: UpcomingItem[];
+        closingSheets?: UpcomingItem[];
+      }>(
+        `{
+          "enrollmentDeadline": *[_type == "siteSettings"][0].enrollmentDeadline,
+          "upcomingEvents": *[_type == "event" && coalesce(endDate, startDate) >= now()] | order(startDate asc)[0...20]{ title, "date": startDate },
+          "closingSheets": *[_type == "signupSheet" && open == true && defined(eventDate) && eventDate >= $today] | order(eventDate asc){ title, "date": eventDate }
+        }`,
+        { today },
+      );
+      const upcoming = computeReminders({
+        now,
+        bannerOn: false,
+        expiredAnnouncements: 0,
+        oldUnanswered: 0,
+        drafts: 0,
+        enrollmentDeadline: snap.enrollmentDeadline ?? null,
+        upcomingEvents: (snap.upcomingEvents ?? []).filter((e) => e.title && e.date),
+        closingSheets: (snap.closingSheets ?? []).filter((s) => s.title && s.date),
+      }).filter((r) => r.kind === 'upcoming');
+      return upcoming.length
+        ? {
+            severity: 'info',
+            label: `${upcoming.length} thing${upcoming.length === 1 ? '' : 's'} coming up in the next two weeks`,
+            detail: upcoming.map((r) => r.title).join(' · '),
+          }
+        : null;
+    },
+  },
 ];
 
-const SEV_BADGE: Record<Severity, { tone: 'critical' | 'caution' | 'positive'; text: string }> = {
+const SEV_BADGE: Record<
+  Severity,
+  { tone: 'critical' | 'caution' | 'primary' | 'positive'; text: string }
+> = {
   alert: { tone: 'critical', text: 'Heads up' },
   warn: { tone: 'caution', text: 'Worth a look' },
+  info: { tone: 'primary', text: 'Coming up' },
   ok: { tone: 'positive', text: 'All clear' },
 };
+
+const SEV_RANK: Record<Severity, number> = { alert: 0, warn: 1, info: 2, ok: 3 };
 
 export function HealthTool() {
   const client = useClient({ apiVersion: '2025-01-01' });
@@ -154,7 +199,7 @@ export function HealthTool() {
           /* skip a failing check rather than break the whole report */
         }
       }
-      found.sort((a, b) => (a.severity === 'alert' ? -1 : b.severity === 'alert' ? 1 : 0));
+      found.sort((a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity]);
       setResults(found);
     } finally {
       setBusy(false);
@@ -174,7 +219,9 @@ export function HealthTool() {
           </Heading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             A quick look for things worth fixing: a banner left on, old messages, pages gone stale,
-            and gaps in your classes. Nothing is changed here — it just points you to what to check.
+            and gaps in your classes — plus what's coming up in the next two weeks. Nothing is
+            changed here; it just points you to what to check. (The same list can be emailed to the
+            board each morning — see the Reminders setup.)
           </Text>
         </Stack>
 

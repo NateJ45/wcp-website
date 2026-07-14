@@ -1142,7 +1142,13 @@ export const guides: Guide[] = [
       { kind: 'path', items: ['Everything workspace', 'Checkup (top nav)'] },
       {
         kind: 'p',
-        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. Handy at the start of each month.',
+        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Get it by email instead',
+        text: 'Nathan can turn on a daily 7am email of this same list to the board, so nobody has to remember to open Checkup. Ask him if you would like it on.',
       },
       { kind: 'seealso', items: ['Start a new school year'] },
     ],
