@@ -1,6 +1,6 @@
 import { VisualEditing } from '@sanity/visual-editing/react';
 import type { HistoryRefresh } from '@sanity/visual-editing';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 // =============================================================================
 // VisualEditingOverlay — click-to-edit overlay + auto-refresh for the preview
@@ -11,16 +11,22 @@ import { useCallback, useRef } from 'react';
 //
 //  1. `<VisualEditing>` draws the click-to-edit overlay and opens the comlink
 //     to the parent Studio window.
-//  2. The `refresh` handler makes the preview update on its OWN as you edit.
-//     The section content is server-rendered Astro, so we can't re-render it on
-//     the client the way a React app would. Instead, when the Studio reports a
-//     draft mutation over the comlink, we soft-refetch THIS preview URL and swap
-//     in the fresh <main>. Edits then appear ~instantly after you pause typing,
-//     with no full-page reload, no scroll jump, and no manual refresh — and
-//     click-to-edit keeps working because the swapped-in HTML is draft-fetched
-//     with stega too. (For `source: 'mutation'` the library has NO default
-//     behavior on purpose, so without this handler nothing happened at all —
-//     which is why the preview used to only update on a manual browser reload.)
+//  2. Auto-refresh: the section content is server-rendered Astro, so we can't
+//     re-render it on the client the way a React app would. Instead we soft-
+//     refetch THIS preview URL and swap in the fresh <main> — no full reload, no
+//     scroll jump, and click-to-edit keeps working because the swapped-in HTML
+//     is draft-fetched with stega too.
+//
+//     Two things TRIGGER that soft refresh:
+//       a. The comlink `refresh` handler — the manual "Refresh" button
+//          (`source: 'manual'`), and the `source: 'mutation'` edit event IF the
+//          Studio still sends it.
+//       b. A POLL of /preview/refresh-signal every ~1.5s. This is the reliable
+//          path: the `mutation` refresh event is DEPRECATED and no longer fires
+//          in current Studio versions (Sanity 6.x), so edits used to only appear
+//          on a manual Refresh. The poll watches the newest draft-edit timestamp
+//          and fires the SAME soft refresh when it moves. (Confirmed 2026-07-14:
+//          manual Refresh worked, auto did not — because the event was gone.)
 //
 // This deliberately does NOT re-render per keystroke: that would require porting
 // the whole Astro section renderer to React, recreating the two-renderers drift
@@ -81,6 +87,39 @@ export default function VisualEditingOverlay({ pageId }: Props) {
     },
     [pageId, softRefresh],
   );
+
+  // Poll the newest draft-edit timestamp; soft-refresh whenever it moves. This
+  // is what actually makes edits appear on their own now that the comlink's
+  // `mutation` event is gone. Only runs while the tab is visible (the preview
+  // sits in a Studio panel that can be backgrounded). The first read just sets
+  // the baseline so we don't refetch on mount.
+  useEffect(() => {
+    let lastRev: string | null = null;
+    let disposed = false;
+
+    const tick = async () => {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const res = await fetch('/preview/refresh-signal', { cache: 'no-store' });
+        const data = (await res.json()) as { rev?: string };
+        if (disposed || typeof data.rev !== 'string') return;
+        if (lastRev === null) {
+          lastRev = data.rev;
+        } else if (data.rev !== lastRev) {
+          lastRev = data.rev;
+          void softRefresh();
+        }
+      } catch {
+        /* transient network blip — try again next tick */
+      }
+    };
+
+    const id = window.setInterval(tick, 1500);
+    return () => {
+      disposed = true;
+      window.clearInterval(id);
+    };
+  }, [softRefresh]);
 
   return <VisualEditing portal refresh={refresh} />;
 }

@@ -152,15 +152,18 @@ component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
 
 **Auto-refresh as you edit.** The section content is server-rendered Astro, so it can't
 re-render on the client the way a React app would. Instead
-[`VisualEditingOverlay.tsx`](../src/components/preview/VisualEditingOverlay.tsx) gives
-`<VisualEditing>` a `refresh` handler: when the Studio reports a draft mutation over the
-comlink (no browser token involved), it soft-refetches the current preview URL and swaps
-in the fresh `#main`. So edits appear on their own ~1s after you pause typing — no full
-reload, no manual refresh — while click-to-edit keeps working (the swapped HTML is
-draft-fetched with stega). It is intentionally not per-keystroke: that would need the
-whole renderer ported to React, recreating the drift the builder avoids. (For
-`source: 'mutation'` the library has no default behavior, which is why, without this
-handler, the preview only updated on a manual browser reload.)
+[`VisualEditingOverlay.tsx`](../src/components/preview/VisualEditingOverlay.tsx) soft-
+refetches the current preview URL and swaps in the fresh `#main` — so edits appear on
+their own ~1-2s after you pause typing, no full reload, no manual refresh, and click-to-
+edit keeps working (the swapped HTML is draft-fetched with stega). It is intentionally not
+per-keystroke: that would need the whole renderer ported to React, recreating the drift
+the builder avoids. **What triggers the refresh:** the overlay POLLS
+[`/preview/refresh-signal`](../src/pages/preview/refresh-signal.ts) (the newest draft-edit
+timestamp — no content) every ~1.5s and refreshes when it moves. It also still honors the
+comlink `refresh` handler (the manual **Refresh** button, and the `source: 'mutation'`
+edit event **if** the Studio sends it). The poll is load-bearing because that `mutation`
+event is **deprecated and no longer fires in current Studio versions** (Sanity 6.x) — so
+without the poll, edits only appeared on a manual Refresh (confirmed 2026-07-14).
 
 ## Navigation
 
