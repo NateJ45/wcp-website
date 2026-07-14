@@ -164,10 +164,9 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
           hidden
           class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
         >
-          <span class="text-ink"
-            >Your class<span data-my-class-plural>es</span>:
-            <strong class="text-heading" data-my-class-label></strong></span
-          >
+          <span class="text-ink">Your class<span data-my-class-plural>es</span>:</span>
+          {/* Separate flex item so the strip's gap-2 spaces it from the label. */}
+          <strong class="text-heading" data-my-class-label></strong>
           <button type="button" data-my-class-change class="font-bold text-sky-ink hover:underline">
             Change
           </button>

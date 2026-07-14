@@ -46,10 +46,14 @@ const tiles = CLASSES.map((c) => {
 ---
 
 {
-  /* 2x2 in the bento's 8-col cell (chunkier tiles than a thin 4-up strip);
-    h-full so the block fills its grid row beside the tall events tile. */
+  /* 2x2 in the bento's 8-col cell (chunkier tiles than a thin 4-up strip).
+    `lg:h-full` fills the grid row beside the tall events tile — but ONLY at lg:
+    at the single-column (mobile/tablet) breakpoint the cell is content-sized, so
+    a plain `h-full` there resolves SHORT and the tiles overflow their cell into
+    the announcements widget below (measured 2026-07-14). Natural height at base
+    keeps each row's space. */
 }
-<ul class="grid h-full gap-4 sm:grid-cols-2">
+<ul class="grid gap-4 sm:grid-cols-2 lg:h-full">
   {
     tiles.map((c) => {
       const styles = classStyles(c.slug);
