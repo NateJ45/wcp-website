@@ -150,20 +150,20 @@ component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
   same query through the draft-aware, stega-enabled `cms-preview.ts` client. One file
   serves every page's preview.
 
-**Auto-refresh as you edit.** The section content is server-rendered Astro, so it can't
+**Refresh in the preview.** The section content is server-rendered Astro, so it can't
 re-render on the client the way a React app would. Instead
 [`VisualEditingOverlay.tsx`](../src/components/preview/VisualEditingOverlay.tsx) soft-
-refetches the current preview URL and swaps in the fresh `#main` — so edits appear on
-their own ~1-2s after you pause typing, no full reload, no manual refresh, and click-to-
-edit keeps working (the swapped HTML is draft-fetched with stega). It is intentionally not
-per-keystroke: that would need the whole renderer ported to React, recreating the drift
-the builder avoids. **What triggers the refresh:** the overlay POLLS
-[`/preview/refresh-signal`](../src/pages/preview/refresh-signal.ts) (the newest draft-edit
-timestamp — no content) every ~1.5s and refreshes when it moves. It also still honors the
-comlink `refresh` handler (the manual **Refresh** button, and the `source: 'mutation'`
-edit event **if** the Studio sends it). The poll is load-bearing because that `mutation`
-event is **deprecated and no longer fires in current Studio versions** (Sanity 6.x) — so
-without the poll, edits only appeared on a manual Refresh (confirmed 2026-07-14).
+refetches the current preview URL and swaps in the fresh `#main` — no full reload, no
+scroll jump, and click-to-edit keeps working (the swapped HTML is draft-fetched with
+stega). **What triggers it:** the comlink `refresh` handler — the preview's manual
+**Refresh** (⟳) button (`source: 'manual'`), and the `source: 'mutation'` edit event **if**
+the Studio still sends it. Note that `mutation` is **deprecated and no longer fires in
+current Studio versions** (Sanity 6.x), so in practice edits appear when you click ⟳.
+We briefly auto-refreshed by polling a `/preview/refresh-signal` timestamp every ~1.5s,
+but **removed it** (2026-07-14): a left-open preview tab burned thousands of uncached
+Sanity API requests per session. If auto-refresh is wanted back, do it cheaply — CDN read
+
+- a slow interval, or Sanity's Live Content API — never a fast uncached poll.
 
 ## Navigation
 
