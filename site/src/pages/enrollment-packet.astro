@@ -1,0 +1,370 @@
+---
+/* ============================================================================
+   /enrollment-packet — a print-ready enrollment packet (Save as PDF)
+   ============================================================================
+   Assembles the current school facts, class/tuition table, fee schedule, key
+   dates, and how-to-enroll steps into one clean, paginated document a family can
+   print or "Save as PDF" from the browser. Built statically from the CMS, so it
+   is always current (rebuilds on publish) with real, selectable text — better
+   for a multi-page document than a rasterized image PDF. The print stylesheet
+   drops the site header/footer and the on-screen toolbar so only the packet
+   prints.
+   ============================================================================ */
+export const prerender = true;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { cmsFetch } from '@/lib/cms';
+import { ENROLLMENT_PACKET_QUERY } from '@/lib/queries';
+import { site } from '@/data/site';
+
+interface ClassRow {
+  name?: string;
+  age?: string;
+  days?: string;
+  time?: string;
+  monthly?: string | number;
+  annual?: string | number;
+  studentFee?: string | number;
+  teacher?: string;
+}
+interface Band {
+  label?: string;
+  amount?: string;
+}
+interface Term {
+  question?: string;
+  answer?: string;
+}
+interface Packet {
+  settings?: {
+    name?: string;
+    shortName?: string;
+    tagline?: string;
+    phone?: string;
+    emailGeneral?: string;
+    emailAdmin?: string;
+    emailTreasurer?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    url?: string;
+    schoolYearLabel?: string;
+    enrollmentDeadline?: string;
+    firstDay?: string;
+    yearStart?: string;
+    yearEnd?: string;
+  } | null;
+  classes?: ClassRow[];
+  fees?: {
+    registrationFee?: string | number;
+    registrationNote?: string;
+    participationFee?: string | number;
+    participationNote?: string;
+    annualAdjustmentNote?: string;
+    studentFeeBands?: Band[];
+    paymentTerms?: Term[];
+  } | null;
+  calendar?: { month?: string; title?: string }[];
+}
+
+const data = await cmsFetch<Packet>(ENROLLMENT_PACKET_QUERY, {}, {} as Packet);
+const s = data.settings ?? {};
+const fees = data.fees ?? {};
+const classes = (data.classes ?? []).filter((c) => c.name);
+const calendar = (data.calendar ?? []).filter((c) => c.month || c.title);
+
+const schoolName = s.name || site.name;
+const yearLabel = s.schoolYearLabel || '';
+const money = (v?: string | number) =>
+  v === null || v === undefined || v === '' ? '' : typeof v === 'number' ? `$${v}` : String(v);
+const fmtDate = (iso?: string) =>
+  iso
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'America/New_York',
+      })
+    : '';
+
+const address = [s.street, [s.city, s.state].filter(Boolean).join(', '), s.zip]
+  .filter(Boolean)
+  .join(' · ');
+
+const keyDates = [
+  { label: 'Enrollment deadline', value: fmtDate(s.enrollmentDeadline) },
+  { label: 'First day of school', value: fmtDate(s.firstDay) },
+  { label: 'School year begins', value: fmtDate(s.yearStart) },
+  { label: 'School year ends', value: fmtDate(s.yearEnd) },
+].filter((d) => d.value);
+
+const enrollSteps = [
+  'Reach out to arrange a visit or tour, so you can meet the teachers and see the classrooms.',
+  'Choose the class that fits your child’s age and your family’s schedule.',
+  'Complete the enrollment form and return it with the one-time registration fee.',
+  'Watch for a welcome note from your child’s teacher before the first day.',
+];
+const checklist = [
+  'Enrollment form, filled in and signed',
+  'Registration fee included',
+  'Child’s up-to-date immunization record',
+  'Emergency contact details',
+  'Any custody or medical notes the teacher should know',
+];
+---
+
+<BaseLayout
+  title={`Enrollment Packet — ${schoolName}`}
+  description={`Everything you need to enroll at ${schoolName}${yearLabel ? ` for ${yearLabel}` : ''}.`}
+>
+  <style is:global>
+    @media print {
+      header,
+      footer,
+      .no-print {
+        display: none !important;
+      }
+      main {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .packet-section {
+        break-before: page;
+      }
+      .packet-section:first-of-type {
+        break-before: auto;
+      }
+      .packet a {
+        color: inherit;
+        text-decoration: none;
+      }
+      body {
+        background: #fff;
+      }
+    }
+    @page {
+      margin: 1.5cm;
+    }
+  </style>
+
+  <div class="mx-auto max-w-3xl px-5 py-10 print:px-0 print:py-0">
+    {/* On-screen toolbar (never prints) */}
+    <div
+      class="no-print mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-grey/60 p-4 dark:bg-surface"
+    >
+      <p class="text-sm text-ink-muted">
+        This packet prints cleanly. Use the button to print it or save it as a PDF.
+      </p>
+      <button
+        type="button"
+        data-print-packet
+        class="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading"
+      >
+        Print / Save as PDF
+      </button>
+    </div>
+
+    <div class="packet space-y-10 text-ink">
+      {/* 1. Cover */}
+      <section class="packet-section border-b border-border pb-8 text-center">
+        <p class="font-display text-3xl text-heading">{schoolName}</p>
+        {s.tagline && <p class="mt-1 text-ink-muted">{s.tagline}</p>}
+        <h1 class="mt-6 font-display text-2xl text-heading">Family Enrollment Packet</h1>
+        {yearLabel && <p class="mt-1 text-lg font-semibold text-ink-muted">{yearLabel}</p>}
+        {
+          (address || s.phone) && (
+            <p class="mt-6 text-sm text-ink-muted">
+              {address}
+              {address && s.phone ? ' · ' : ''}
+              {s.phone}
+            </p>
+          )
+        }
+      </section>
+
+      {/* 2. Welcome */}
+      <section class="packet-section">
+        <h2 class="font-display text-xl text-heading">Welcome</h2>
+        <p class="mt-3 leading-relaxed">
+          Thank you for considering {schoolName}. We are a parent cooperative preschool, which means
+          families are part of the classroom and the community, not just drop-off and pick-up. This
+          packet gathers everything you need to enroll: our classes and tuition, the one-time fees,
+          the key dates, and the steps to join us.
+        </p>
+      </section>
+
+      {/* 3. Classes & tuition */}
+      {
+        classes.length > 0 && (
+          <section class="packet-section">
+            <h2 class="font-display text-xl text-heading">Classes &amp; tuition</h2>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr class="border-b-2 border-border">
+                    <th class="py-2 pr-3 font-semibold text-heading">Class</th>
+                    <th class="py-2 pr-3 font-semibold text-heading">Ages</th>
+                    <th class="py-2 pr-3 font-semibold text-heading">Days</th>
+                    <th class="py-2 pr-3 font-semibold text-heading">Time</th>
+                    <th class="py-2 pr-3 font-semibold text-heading">Monthly</th>
+                    <th class="py-2 font-semibold text-heading">Student fee</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classes.map((c) => (
+                    <tr class="border-b border-border align-top">
+                      <td class="py-2 pr-3">
+                        <span class="font-semibold text-heading">{c.name}</span>
+                        {c.teacher && <div class="text-xs text-ink-muted">{c.teacher}</div>}
+                      </td>
+                      <td class="py-2 pr-3">{c.age}</td>
+                      <td class="py-2 pr-3">{c.days}</td>
+                      <td class="py-2 pr-3">{c.time}</td>
+                      <td class="py-2 pr-3">{money(c.monthly)}</td>
+                      <td class="py-2">{money(c.studentFee)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p class="mt-2 text-xs text-ink-muted">
+              Tuition is billed monthly. A student fee covers classroom supplies for the year.
+            </p>
+          </section>
+        )
+      }
+
+      {/* 4. Fees & payments */}
+      {
+        (fees.registrationFee ||
+          fees.participationFee ||
+          (fees.studentFeeBands ?? []).length > 0) && (
+          <section class="packet-section">
+            <h2 class="font-display text-xl text-heading">Fees &amp; payments</h2>
+            <dl class="mt-3 space-y-3 text-sm">
+              {fees.registrationFee && (
+                <div>
+                  <dt class="font-semibold text-heading">
+                    Registration fee: {money(fees.registrationFee)}
+                  </dt>
+                  {fees.registrationNote && <dd class="text-ink-muted">{fees.registrationNote}</dd>}
+                </div>
+              )}
+              {fees.participationFee && (
+                <div>
+                  <dt class="font-semibold text-heading">
+                    Participation fee: {money(fees.participationFee)}
+                  </dt>
+                  {fees.participationNote && (
+                    <dd class="text-ink-muted">{fees.participationNote}</dd>
+                  )}
+                </div>
+              )}
+              {(fees.studentFeeBands ?? []).length > 0 && (
+                <div>
+                  <dt class="font-semibold text-heading">Student fees</dt>
+                  <dd class="text-ink-muted">
+                    {(fees.studentFeeBands ?? [])
+                      .map((b) => [b.label, b.amount].filter(Boolean).join(': '))
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            {fees.annualAdjustmentNote && (
+              <p class="mt-3 text-xs text-ink-muted">{fees.annualAdjustmentNote}</p>
+            )}
+            {(fees.paymentTerms ?? []).length > 0 && (
+              <div class="mt-5 space-y-3">
+                {(fees.paymentTerms ?? []).map((t) => (
+                  <div>
+                    <p class="text-sm font-semibold text-heading">{t.question}</p>
+                    {t.answer && <p class="text-sm text-ink-muted">{t.answer}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )
+      }
+
+      {/* 5. School year at a glance */}
+      {
+        calendar.length > 0 && (
+          <section class="packet-section">
+            <h2 class="font-display text-xl text-heading">School year at a glance</h2>
+            <ul class="mt-3 space-y-1 text-sm">
+              {calendar.map((c) => (
+                <li class="flex gap-3">
+                  <span class="w-28 shrink-0 font-semibold text-heading">{c.month}</span>
+                  <span class="text-ink-muted">{c.title}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {/* 6. How to enroll */}
+      <section class="packet-section">
+        <h2 class="font-display text-xl text-heading">How to enroll</h2>
+        <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed">
+          {enrollSteps.map((step) => <li>{step}</li>)}
+        </ol>
+
+        <h3 class="mt-6 font-semibold text-heading">Enrollment checklist</h3>
+        <ul class="mt-2 space-y-1.5 text-sm">
+          {
+            checklist.map((item) => (
+              <li class="flex items-start gap-2">
+                <span
+                  class="mt-0.5 inline-block h-4 w-4 shrink-0 rounded border border-ink-muted"
+                  aria-hidden="true"
+                />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      {/* 7. Key dates & contact */}
+      <section class="packet-section">
+        <h2 class="font-display text-xl text-heading">Key dates &amp; contact</h2>
+        {
+          keyDates.length > 0 && (
+            <dl class="mt-3 space-y-1 text-sm">
+              {keyDates.map((d) => (
+                <div class="flex gap-3">
+                  <dt class="w-44 shrink-0 font-semibold text-heading">{d.label}</dt>
+                  <dd class="text-ink-muted">{d.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+        <div class="mt-5 text-sm">
+          <p class="font-semibold text-heading">Questions? We would love to hear from you.</p>
+          <ul class="mt-2 space-y-1 text-ink-muted">
+            {s.phone && <li>Phone: {s.phone}</li>}
+            {s.emailGeneral && <li>Email: {s.emailGeneral}</li>}
+            {s.emailTreasurer && <li>Tuition questions: {s.emailTreasurer}</li>}
+            {address && <li>{address}</li>}
+            {s.url && <li>{s.url.replace(/^https?:\/\//, '')}</li>}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { onPageLoad } from '@/scripts/_page-load';
+  onPageLoad(() => {
+    const btn = document.querySelector<HTMLButtonElement>('[data-print-packet]');
+    btn?.addEventListener('click', () => window.print());
+  });
+</script>

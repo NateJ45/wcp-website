@@ -746,6 +746,17 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Add a **Tuition calculator** section to a page (great on the enroll or tuition page). Families tick the class they are considering and see the monthly tuition and fees, pulled straight from your Classes and Tuition & Fees, so it is always current. Nothing to keep updated.',
       },
+      { kind: 'h', text: 'The printable enrollment packet' },
+      {
+        kind: 'p',
+        text: 'There is a ready-made, print-friendly enrollment packet at **/enrollment-packet**. It gathers your school info, the class and tuition table, the fees, the key dates, and how-to-enroll steps into one clean document a family can print or save as a PDF from their browser. It fills itself in from your Classes, Tuition & Fees, and Site Settings, so it is always current, with nothing to maintain.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Link it where families will find it',
+        text: 'To point families to it, add a **Button** on your enroll or tuition page (or a menu link) with the web address /enrollment-packet. The page itself is always ready at that address.',
+      },
     ],
   },
 

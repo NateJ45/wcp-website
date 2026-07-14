@@ -17,6 +17,7 @@ export const routes = [
   '/tuition',
   '/faq',
   '/enroll',
+  '/enrollment-packet',
   '/contact',
   '/virtual-tour',
   '/work-with-us',

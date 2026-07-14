@@ -228,6 +228,25 @@ export const TUITION_CALC_QUERY = `{
 
 export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
 
+// Everything the printable enrollment packet assembles: school facts + key
+// dates, the classes with ages/schedule/tuition, the fee schedule, and the
+// school-year-at-a-glance list. One build-time read; the packet is a static,
+// print-optimized page (Save as PDF from the browser).
+export const ENROLLMENT_PACKET_QUERY = `{
+  "settings": *[_type == "siteSettings"][0]{
+    name, shortName, tagline, phone, emailGeneral, emailAdmin, emailTreasurer,
+    street, city, state, zip, url, schoolYearLabel, enrollmentDeadline, firstDay, yearStart, yearEnd
+  },
+  "classes": *[_type == "class"] | order(orderRank){
+    name, age, days, time, monthly, annual, studentFee, "teacher": teacher->name
+  },
+  "fees": *[_type == "feeSchedule"][0]{
+    registrationFee, registrationNote, participationFee, participationNote,
+    annualAdjustmentNote, studentFeeBands[]{ label, amount }, paymentTerms[]{ question, answer }
+  },
+  "calendar": *[_type == "schoolYearEvent"] | order(orderRank){ month, title }
+}`;
+
 /** Everything the gated hub tuition page needs: fee amounts, notes, PayPal button
  *  ids, student-fee bands, and the payment FAQ. Falls back to hardcoded values. */
 export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
