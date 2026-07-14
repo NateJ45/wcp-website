@@ -42,14 +42,57 @@
    below to key off that class instead of the OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Cross-document View Transitions: the soft cross-fade between page loads
-   (Chrome 126+, Safari 18.2+; others just do a normal load). This replaced
-   Astro's <ClientRouter /> in the 2026-07 performance pass so Speculation
-   Rules can truly PRERENDER public pages (see BaseLayout). Gated behind
-   no-preference: reduced-motion visitors get an instant swap, no animation. */
+/* Cross-document View Transitions: the graceful cross-fade between page loads
+   (Chrome 126+, Safari 18.2+; others — e.g. Firefox — just do a normal instant
+   load). This replaced Astro's <ClientRouter /> in the 2026-07 performance pass
+   so Speculation Rules can truly PRERENDER public pages (see BaseLayout). Gated
+   behind no-preference: reduced-motion visitors get an instant swap, no anim.
+
+   The default cross-fade is quick + subtle (reads as a "jump"), so we replace it
+   with something softer: the leaving page fades out, and the arriving page fades
+   in while gently rising ~14px into place, on a calm ease-out curve. The snapshot
+   pair is composited by the browser, so this costs nothing on the LCP of a cold
+   load (there's no previous page to transition from on first paint). */
+/* MUST be top-level: browsers do NOT honor `@view-transition` when it's nested
+   inside `@media`, so the original nested version silently never enabled
+   transitions at all (which is why navigation felt like a hard jump). Motion is
+   handled below by gating the ANIMATIONS on prefers-reduced-motion instead. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Graceful transition when motion is welcome: the leaving page fades out, the
+   arriving page fades in while gently rising ~14px into place, on a calm curve. */
 @media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
+  ::view-transition-old(root) {
+    animation: wcp-page-leave 280ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: wcp-page-enter 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes wcp-page-leave {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes wcp-page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Reduced motion: kill the snapshot animations so it's an instant swap. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
