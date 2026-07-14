@@ -1,0 +1,92 @@
+---
+/* ============================================================================
+   Family Hub — Celebrations (GATED, reads from Sanity)
+   ============================================================================
+   Birthdays, shout-outs, welcomes, and milestones the Board posts to keep the
+   hub feeling like a community. Read server-side behind the gate; falls back to
+   a friendly empty state when there's nothing yet.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { sanityFetch } from '@/lib/sanity';
+
+interface Celebration {
+  _id: string;
+  kind?: string;
+  headline?: string;
+  note?: string;
+  date?: string;
+}
+
+let items: Celebration[] = [];
+try {
+  items = await sanityFetch<Celebration[]>(
+    `*[_type == "celebration"] | order(date desc)[0...60]{ _id, kind, headline, note, date }`,
+  );
+} catch {
+  items = [];
+}
+
+// Neutral chip TEXT (text-heading) on a soft tint — safe in light AND dark
+// (colored -ink text on a tint fails AA in dark mode; the emoji carries the hue).
+const META: Record<string, { emoji: string; chip: string; label: string }> = {
+  birthday: { emoji: '🎂', chip: 'bg-amber/25 text-heading', label: 'Birthday' },
+  kudos: { emoji: '👏', chip: 'bg-green/15 text-heading', label: 'Shout-out' },
+  welcome: { emoji: '👋', chip: 'bg-sky/15 text-heading', label: 'Welcome' },
+  milestone: { emoji: '⭐', chip: 'bg-amber/25 text-heading', label: 'Milestone' },
+};
+const fmt = (iso?: string) =>
+  iso
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+    : '';
+
+const title = 'Celebrations';
+const intro = 'Birthdays, thank-yous, and happy moments from around our co-op.';
+---
+
+<HubShell title={title} bare pageTitle="Celebrations — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-5xl">
+      <HubPageHeader title={title} subtitle={intro} icon="party-popper" />
+
+      {
+        items.length === 0 ? (
+          <HubEmptyState icon="party-popper" title="No celebrations yet" source="sanity" />
+        ) : (
+          <ul class="grid gap-4 sm:grid-cols-2">
+            {items.map((c) => {
+              const m = META[c.kind ?? 'kudos'] ?? META.kudos;
+              return (
+                <li>
+                  <HubCard class="flex h-full items-start gap-4 p-5">
+                    <span
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-2xl shadow-sm"
+                      aria-hidden="true"
+                    >
+                      {m.emoji}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class={`rounded-full px-2.5 py-0.5 text-xs font-bold ${m.chip}`}>
+                          {m.label}
+                        </span>
+                        {c.date && <span class="text-xs text-ink-muted">{fmt(c.date)}</span>}
+                      </div>
+                      <p class="mt-2 font-semibold text-heading">{c.headline}</p>
+                      {c.note && <p class="mt-1 text-sm text-ink-muted">{c.note}</p>}
+                    </div>
+                  </HubCard>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </Section>
+</HubShell>

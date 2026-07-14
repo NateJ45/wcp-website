@@ -1170,6 +1170,7 @@ export const guides: Guide[] = [
           '**Parents & other adults**: one entry per adult, each with a role (Parent, Grandparent, and so on) and their own email and phone.',
           '**Children**: each child’s name and which class they are in.',
           '**Family photo**, **home address**, and **notes**: all optional.',
+          '**Neighborhood**, **Open to carpooling**, **Open to playdates**: optional. When set, the family shows friendly tags so nearby families can connect.',
           '**Show in directory**: the toggle that makes a family appear. Leave it off to keep a family hidden.',
         ],
       },
@@ -1185,7 +1186,31 @@ export const guides: Guide[] = [
           'Turn on **Show in directory**, then **Publish**.',
         ],
       },
-      { kind: 'seealso', items: ['Do it yourself vs. ask for help'] },
+      { kind: 'seealso', items: ['Do it yourself vs. ask for help', 'Post a celebration'] },
+    ],
+  },
+
+  {
+    slug: 'celebrations',
+    title: 'Post a celebration',
+    icon: '🎉',
+    lead: 'Birthdays, shout-outs, welcomes — little happy notes on the Family Hub.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Celebrations** page in the Family Hub is a warm spot for birthdays, thank-yous to volunteers, welcomes for new families, and milestones. Anything you post shows there, newest first.',
+      },
+      { kind: 'path', items: ['Family Hub', 'Celebrations', '＋ new', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Celebrations** in the left menu, then **＋**.',
+          'Pick a **type** (Birthday, Shout-out, Welcome, Milestone), write a short happy **headline**, and add a line of detail if you like.',
+          '**Publish**. It appears on the hub Celebrations page for families.',
+          'Tidy up old ones now and then by deleting them.',
+        ],
+      },
     ],
   },
 

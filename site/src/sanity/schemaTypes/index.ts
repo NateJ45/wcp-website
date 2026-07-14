@@ -59,6 +59,7 @@ import {
 
 // Collections (Family Hub — gated)
 import { update } from './update';
+import { celebration } from './celebration';
 import { hubDocument } from './hubDocument';
 import { teacherNote } from './teacherNote';
 import { directoryEntry } from './directoryEntry';
@@ -114,6 +115,7 @@ export const schemaTypes = [
   photoAlbum,
   // Family Hub collections
   update,
+  celebration,
   hubDocument,
   teacherNote,
   directoryEntry,

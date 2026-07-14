@@ -21,6 +21,7 @@ const ROUTES = [
   '/family-hub/pre-k',
   '/family-hub/directory',
   '/family-hub/sign-ups',
+  '/family-hub/celebrations',
 ];
 
 for (const route of ROUTES) {

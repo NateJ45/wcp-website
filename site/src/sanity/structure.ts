@@ -165,6 +165,7 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           S.documentTypeListItem('hubPage').title('Hub pages (edit content)').icon(emoji('🧱')),
           singleton(S, 'presidentNote', "President's note", emoji('💌')),
           S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
+          S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
           orderableDocumentListDeskItem({
             type: 'hubDocument',
             S,
@@ -229,6 +230,7 @@ const PLACED = new Set([
   'redirect',
   'venue',
   'announcement',
+  'celebration',
   // sanity-plugin-media stores its image tags as documents of this type;
   // they're managed inside the Media tool, so keep the raw list out of the
   // nav (a bare "Media Tag" item is just confusing).

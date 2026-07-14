@@ -225,18 +225,22 @@ when Sanity tells it a document was published.
      Publishing still fires — publish writes the un-prefixed document, which passes
      the filter.
 
-     **Skip the document types that only feed Family Hub pages.** Every Family Hub
-     route has `prerender = false` (session-gated, reads Sanity live on every
-     request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
-     `update`, `hubDocument`, `directoryEntry`, or `classNote` document already shows
-     up immediately with no rebuild. Everything else (`testimonial`, `siteSettings`,
-     `page`, `schoolYearEvent`, `faqItem`, `class`, `legalPage`, `feeSchedule`) is
-     baked into the static public pages at build time and DOES need a redeploy.
+     **Skip the document types that only feed Family Hub pages (or inboxes).** Every
+     Family Hub route has `prerender = false` (session-gated, reads Sanity live on
+     every request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
+     `update`, `hubDocument`, `directoryEntry`, `classNote`, or `celebration` document
+     already shows up immediately with no rebuild. The submission inboxes
+     (`testimonialSubmission`, and the general `submission` created by form posts) are
+     Studio-only and never render on the public site, so they don't need a rebuild
+     either. Everything else (`testimonial`, `siteSettings`, `page`, `schoolYearEvent`,
+     `faqItem`, `class`, `legalPage`, `feeSchedule`) is baked into the static public
+     pages at build time and DOES need a redeploy. (Note: **approving** a testimonial
+     creates a `testimonial` doc, which correctly triggers a rebuild.)
 
      Combined filter:
 
      ```
-     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote"])
+     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission"])
      ```
 
      If a new document type is added later, decide which bucket it belongs to by

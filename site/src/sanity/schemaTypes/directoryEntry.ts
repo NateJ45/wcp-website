@@ -98,6 +98,26 @@ export const directoryEntry = defineType({
         'Filled in automatically from the address when the map pins are refreshed. You can also fine-tune it by hand if a pin is off.',
     }),
     defineField({ name: 'notes', title: 'Notes', type: 'text', rows: 2 }),
+    defineField({
+      name: 'neighborhood',
+      title: 'Neighborhood / area (optional)',
+      type: 'string',
+      description: 'e.g. "West Chester" or "Liberty Twp". Helps families find carpools nearby.',
+    }),
+    defineField({
+      name: 'carpoolInterest',
+      title: 'Open to carpooling',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Show a "carpool" tag so nearby families can reach out.',
+    }),
+    defineField({
+      name: 'playdateInterest',
+      title: 'Open to playdates',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Show a "playdates welcome" tag on this family.',
+    }),
   ],
   orderings: [
     { title: 'Family name', name: 'name', by: [{ field: 'familyName', direction: 'asc' }] },

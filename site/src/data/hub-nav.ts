@@ -75,6 +75,7 @@ export const hubNav: HubGroup[] = [
     accent: '#fdba74', // orange
     links: [
       { label: 'Sign-ups', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
+      { label: 'Celebrations', href: '/family-hub/celebrations', icon: 'party-popper' },
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
       {

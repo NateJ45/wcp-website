@@ -50,6 +50,9 @@ interface DirEntry {
   photo?: { asset?: unknown; alt?: string } | null;
   location?: { lat?: number; lng?: number } | null;
   notes?: string;
+  neighborhood?: string;
+  carpoolInterest?: boolean;
+  playdateInterest?: boolean;
 }
 // Independent of the entries read — start now, await later (2026-07 hub-speed
 // pass).
@@ -62,7 +65,7 @@ const hubDocPromise = sanityFetch<HubPageDoc | null>(
 let entries: DirEntry[] = [];
 try {
   entries = await sanityFetch<DirEntry[]>(
-    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, role, email, phone }, children, photo, location, notes }`,
+    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, role, email, phone }, children, photo, location, notes, neighborhood, carpoolInterest, playdateInterest }`,
   );
 } catch {
   entries = [];
@@ -211,6 +214,29 @@ const intro =
                     {/* Family info */}
                     <div class="flex flex-1 flex-col p-5">
                       <p class="font-display text-xl text-heading">The {f.familyName} Family</p>
+
+                      {(f.neighborhood || f.carpoolInterest || f.playdateInterest) && (
+                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                          {f.neighborhood && (
+                            <span class="inline-flex items-center gap-1 rounded-full bg-grey px-2.5 py-0.5 text-xs font-semibold text-ink-muted dark:bg-white/10">
+                              <Icon name="map-pin" class="h-3 w-3" />
+                              {f.neighborhood}
+                            </span>
+                          )}
+                          {f.carpoolInterest && (
+                            <span class="inline-flex items-center gap-1 rounded-full bg-sky/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
+                              <Icon name="users" class="h-3 w-3 text-sky-ink" />
+                              Open to carpool
+                            </span>
+                          )}
+                          {f.playdateInterest && (
+                            <span class="inline-flex items-center gap-1 rounded-full bg-green/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
+                              <Icon name="hand-heart" class="h-3 w-3 text-green-ink" />
+                              Playdates welcome
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       {((f.parents?.length ?? 0) > 0 || (f.children?.length ?? 0) > 0) && (
                         <ul class="mt-2 space-y-0.5 text-sm">
