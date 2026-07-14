@@ -8,7 +8,20 @@ import { settle } from './helpers';
 // The exact check that used to be run by hand after every layout change. A page
 // fails Reflow if content forces a horizontal scrollbar at a 320px viewport
 // (equivalent to 400% zoom on a 1280px screen). Runs on every route.
+//
+// A second block sweeps the tablet/laptop widths (768/1024/1440) the same way,
+// added after the 2026-07 responsive audit: 320px passing does not prove the
+// in-between breakpoints hold (multi-column grids and the rail/tab-bar shells
+// only exist there). One test per route, resizing down without reload — the
+// layouts are CSS-driven, so a resize exercises the same media queries a fresh
+// load would, at a fraction of the runtime.
 // =============================================================================
+
+const overflowOf = (page: Parameters<typeof settle>[0]) =>
+  page.evaluate(() => ({
+    docWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
 
 test.describe('Reflow — no horizontal overflow at 320px', () => {
   test.use({ viewport: { width: 320, height: 720 } });
@@ -18,14 +31,31 @@ test.describe('Reflow — no horizontal overflow at 320px', () => {
       await page.goto(route, { waitUntil: 'load' });
       // Wait for fonts + reveal all content so we measure the settled layout.
       await settle(page);
-      const { docWidth, viewportWidth } = await page.evaluate(() => ({
-        docWidth: document.documentElement.scrollWidth,
-        viewportWidth: window.innerWidth,
-      }));
+      const { docWidth, viewportWidth } = await overflowOf(page);
       expect(
         docWidth,
         `${route}: content is ${docWidth}px wide in a ${viewportWidth}px viewport`,
       ).toBeLessThanOrEqual(viewportWidth);
+    });
+  }
+});
+
+test.describe('Reflow — no horizontal overflow at tablet/laptop widths', () => {
+  const widths = [1440, 1024, 768];
+
+  for (const route of routes) {
+    test(`${route} does not overflow at ${widths.join('/')}px`, async ({ page }) => {
+      await page.setViewportSize({ width: widths[0], height: 900 });
+      await page.goto(route, { waitUntil: 'load' });
+      await settle(page);
+      for (const width of widths) {
+        await page.setViewportSize({ width, height: 900 });
+        const { docWidth, viewportWidth } = await overflowOf(page);
+        expect(
+          docWidth,
+          `${route} at ${width}px: content is ${docWidth}px wide in a ${viewportWidth}px viewport`,
+        ).toBeLessThanOrEqual(viewportWidth);
+      }
     });
   }
 });

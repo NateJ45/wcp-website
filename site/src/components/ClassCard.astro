@@ -46,6 +46,13 @@ const {
 const Tag = as;
 const Heading = headingAs;
 
+// Hyphenated name tokens ("Pre-K") get a nowrap wrapper: in the 4-column band
+// the heading shares its row with the price and would otherwise line-break
+// after the hyphen ("PRE- / K AM" — found in the 2026-07 responsive audit).
+// Wrapping per-token (not the whole name) keeps a long CMS-entered name able
+// to wrap between words instead of overflowing the card.
+const nameTokens = name.split(' ');
+
 const accent: Record<string, string> = {
   amber: 'border-t-amber',
   green: 'border-t-green',
@@ -66,8 +73,21 @@ const accent: Record<string, string> = {
   )}
   data-reveal
 >
-  <div class="flex items-baseline justify-between gap-3">
-    <Heading class="text-heading">{name}</Heading>
+  {
+    /* flex-wrap: when name + price can't share the line, the price drops below
+      the name rather than squeezing the heading into mid-word breaks. */
+  }
+  <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+    <Heading class="text-heading"
+      >{
+        nameTokens.map((token: string, i: number) => (
+          <>
+            {i > 0 && ' '}
+            {token.includes('-') ? <span class="whitespace-nowrap">{token}</span> : token}
+          </>
+        ))
+      }</Heading
+    >
     {
       price && (
         <span class="font-display text-2xl whitespace-nowrap text-heading">
