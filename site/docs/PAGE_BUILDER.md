@@ -155,15 +155,28 @@ re-render on the client the way a React app would. Instead
 [`VisualEditingOverlay.tsx`](../src/components/preview/VisualEditingOverlay.tsx) soft-
 refetches the current preview URL and swaps in the fresh `#main` — no full reload, no
 scroll jump, and click-to-edit keeps working (the swapped HTML is draft-fetched with
-stega). **What triggers it:** the comlink `refresh` handler — the preview's manual
-**Refresh** (⟳) button (`source: 'manual'`), and the `source: 'mutation'` edit event **if**
-the Studio still sends it. Note that `mutation` is **deprecated and no longer fires in
-current Studio versions** (Sanity 6.x), so in practice edits appear when you click ⟳.
-We briefly auto-refreshed by polling a `/preview/refresh-signal` timestamp every ~1.5s,
-but **removed it** (2026-07-14): a left-open preview tab burned thousands of uncached
-Sanity API requests per session. If auto-refresh is wanted back, do it cheaply — CDN read
+stega). **What triggers it:**
 
-- a slow interval, or Sanity's Live Content API — never a fast uncached poll.
+- **Auto (live events):** the overlay opens an `EventSource` to
+  [`/preview/live`](../src/pages/preview/live.ts), a server-side SSE proxy on the
+  Worker. The token can't go to the browser (draft reads need it), so the Worker holds
+  `SANITY_TOKEN`, subscribes to Sanity's **listen API** (SSE mutation events) with a
+  GROQ filter — this page's doc (draft or published id) OR any shared/non-page type,
+  since staff/classes/FAQs/settings can appear on any page — and forwards a tiny
+  `change` signal per relevant edit. Edits appear a moment after you pause typing.
+- **Manual:** the comlink `refresh` handler — the preview's **Refresh** (⟳) button
+  (`source: 'manual'`), kept as the fallback, plus the `source: 'mutation'` edit event
+  **if** the Studio ever sends it (deprecated, silent in Sanity 6.x).
+
+**Cost (why it's built this way):** a listen connection counts as ONE Sanity API
+request however long it stays open, and its events are free — so an open preview tab
+costs ~nothing and an edit costs one page refetch. This replaced (2026-07-14) a
+`/preview/refresh-signal` poll that ran an uncached GROQ query every 1.5s and was the
+site's dominant quota driver. **Never reintroduce an interval poll here.** Connection
+drops (Sanity rotates listeners, Workers recycle) are fine: the browser's `EventSource`
+auto-reconnects, and the endpoint aborts its upstream Sanity connection whenever the
+preview tab goes away. The endpoint requires the Presentation perspective cookie and
+carries no content in either direction — just "something changed".
 
 ## Navigation
 

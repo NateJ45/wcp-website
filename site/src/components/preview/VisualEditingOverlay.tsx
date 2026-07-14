@@ -1,6 +1,6 @@
 import { VisualEditing } from '@sanity/visual-editing/react';
 import type { HistoryRefresh } from '@sanity/visual-editing';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 // =============================================================================
 // VisualEditingOverlay — click-to-edit overlay + refresh for the preview
@@ -15,17 +15,20 @@ import { useCallback, useRef } from 'react';
 //     re-render it on the client the way a React app would. Instead we soft-
 //     refetch THIS preview URL and swap in the fresh <main> — no full reload, no
 //     scroll jump, and click-to-edit keeps working because the swapped-in HTML
-//     is draft-fetched with stega too. It's driven by the comlink `refresh`
-//     handler: the manual "Refresh" button (`source: 'manual'`), and the
-//     `source: 'mutation'` edit event IF the Studio still sends it.
+//     is draft-fetched with stega too. Triggers, in order of relevance:
 //
-//     NOTE (2026-07-14): we briefly polled /preview/refresh-signal every ~1.5s
-//     to auto-refresh (the `mutation` event is deprecated in Sanity 6.x, so it
-//     no longer fires on its own). That was REMOVED because an open preview tab
-//     burned thousands of uncached Sanity API requests per session. So edits
-//     appear when the board clicks the preview's Refresh (⟳) button; that path
-//     is confirmed working. If auto-refresh is wanted back, do it cheaply (CDN +
-//     a slow interval, or the Live Content API), not a fast uncached poll.
+//     a. AUTO: an EventSource on /preview/live (see src/pages/preview/live.ts).
+//        The Worker holds the Sanity token and proxies the listen API's
+//        mutation events — already filtered to docs that can affect this page —
+//        into tiny "change" signals; each one soft-refreshes. Event-driven on
+//        purpose: one long-lived request per preview session instead of the
+//        1.5s /preview/refresh-signal poll this replaced (2026-07-14, commit
+//        719650f), which burned thousands of uncached Sanity API requests per
+//        editing session. Never reintroduce an interval poll here.
+//     b. MANUAL: the comlink `refresh` handler — the preview's Refresh (⟳)
+//        button (`source: 'manual'`), kept as the fallback if the stream is
+//        down, and the `source: 'mutation'` edit event IF the Studio ever
+//        sends it again (deprecated, silent in Sanity 6.x).
 //
 // This deliberately does NOT re-render per keystroke: that would require porting
 // the whole Astro section renderer to React, recreating the two-renderers drift
@@ -69,6 +72,21 @@ export default function VisualEditingOverlay({ pageId }: Props) {
       }),
     [],
   );
+
+  // Auto-refresh: subscribe to the Worker's change stream. Relevance filtering
+  // (this page vs. some other page) already happened server-side in the GROQ
+  // listen filter, so every "change" event means "refetch now". softRefresh's
+  // 250ms debounce coalesces the burst an autosave produces. On error we do
+  // nothing: EventSource reconnects by itself, and the manual ⟳ still works.
+  useEffect(() => {
+    const es = new EventSource(`/preview/live?page=${encodeURIComponent(pageId)}`);
+    const onChange = () => void softRefresh();
+    es.addEventListener('change', onChange);
+    return () => {
+      es.removeEventListener('change', onChange);
+      es.close();
+    };
+  }, [pageId, softRefresh]);
 
   const refresh = useCallback(
     (payload: HistoryRefresh): false | Promise<void> => {

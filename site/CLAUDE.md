@@ -61,6 +61,7 @@ src/
     events.astro             # public Events page (upcoming dated events)
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
     preview/news/[slug].astro # SSR draft preview for a News post
+    preview/live.ts          # SSE proxy: Sanity listen events → preview auto-refresh (token stays server-side)
     thank-you.astro          # contact-form landing (no-JS submit target)
     enrollment-packet.astro  # print-ready enrollment packet (CMS-assembled; Save as PDF via print CSS)
     search.astro             # site search (Pagefind UI over the build-time index)
