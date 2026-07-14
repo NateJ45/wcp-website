@@ -295,45 +295,6 @@ export const guides: Guide[] = [
   },
 
   {
-    slug: 'schedule',
-    title: 'Schedule a change for later',
-    icon: '🗓️',
-    lead: 'Write something now and have it go live on its own at a future date and time.',
-    diy: 'self',
-    body: [
-      {
-        kind: 'p',
-        text: 'Handy for an announcement that should appear on a certain day, or a page you want to prepare ahead of time. Instead of clicking **Publish**, you tell the site when to publish it for you.',
-      },
-      {
-        kind: 'steps',
-        items: [
-          'Make your edits as usual (they save as a draft).',
-          'Next to the green **Publish** button, click the small arrow to open its menu and choose **Schedule**.',
-          'Pick the date and time you want it to go live, and confirm.',
-          'That is it. You can close the Studio. At that time it publishes on its own, and the website updates a couple of minutes later.',
-        ],
-      },
-      {
-        kind: 'callout',
-        tone: 'primary',
-        title: 'Changed your mind?',
-        text: 'A scheduled item shows a little clock. Open it before its time and you can edit the schedule or cancel it and publish now instead.',
-      },
-      {
-        kind: 'callout',
-        tone: 'caution',
-        title: "Don't see a Schedule option?",
-        text:
-          'Scheduling is part of a paid Sanity plan. If the Publish button has no Schedule choice, the school is on the free plan, so just Publish when you want it live. Check with ' +
-          SITE.contactName +
-          ' if you need scheduling turned on.',
-      },
-      { kind: 'seealso', items: ['Undo a change or see history'] },
-    ],
-  },
-
-  {
     slug: 'history',
     title: 'Undo a change or see history',
     icon: '⏪',
@@ -396,7 +357,7 @@ export const guides: Guide[] = [
           'Pick a **Category**, add a short **Summary** (this shows on the News list and when the post is shared), and a **Cover image** if you have one.',
           'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos.',
           'Add **Alt text** to any photo you place in the body.',
-          '**Publish**. To post it on a future day instead, use **Schedule** (see "Schedule a change for later").',
+          '**Publish** when you are ready for it to go live (usually within a minute or two).',
         ],
       },
       {
@@ -411,7 +372,7 @@ export const guides: Guide[] = [
         title: 'Preview as you write',
         text: 'Open a post and the live preview shows exactly how it will look, and refreshes as you edit. Click text in the preview to jump straight to it.',
       },
-      { kind: 'seealso', items: ['Schedule a change for later', 'Photos and images'] },
+      { kind: 'seealso', items: ['Photos and images'] },
     ],
   },
 
@@ -555,8 +516,8 @@ export const guides: Guide[] = [
       {
         kind: 'callout',
         tone: 'primary',
-        title: 'For a planned closure, schedule it',
-        text: 'You can prepare the message ahead of time and use **Schedule** so it appears on its own the morning of (see "Schedule a change for later").',
+        title: 'Planning ahead for a known closure?',
+        text: 'For something you know about in advance (not a surprise snow day), use an **announcement bar or popup** instead — those have their own start and end dates, so you can set them up early and they appear and disappear on their own.',
       },
       { kind: 'seealso', items: ['Post an announcement bar or popup'] },
     ],
@@ -598,7 +559,7 @@ export const guides: Guide[] = [
           '**Popups:** choose how often each visitor sees it (once, once per visit, or every time). Change the **Version stamp** after editing to show it again to people who already closed it.',
         ],
       },
-      { kind: 'seealso', items: ['Post a closure or alert', 'Schedule a change for later'] },
+      { kind: 'seealso', items: ['Post a closure or alert'] },
     ],
   },
 

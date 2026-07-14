@@ -199,8 +199,10 @@ in [`portable-text.ts`](../src/lib/portable-text.ts)).
 - **Homepage:** the `latestPostsSection` builder section pulls the newest posts
   automatically (bridge fetches them at build time — the editor only sets a heading and
   count).
-- **Scheduling:** posts use Sanity scheduled publishing to go live later; the index
-  query filters `publishedAt <= now()`.
+- **Publish date:** a post's `publishedAt` still gates visibility (the index query filters
+  `publishedAt <= now()`), so a post dated in the future stays hidden until then — but the
+  board publishes immediately; Sanity **scheduled publishing is off** (a paid feature, see
+  SANITY.md).
 - Slug reserves the word `page` so it can't collide with the `/news/page/<n>` routes.
 
 ## Events

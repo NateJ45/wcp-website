@@ -1,4 +1,3 @@
-import { useFormValue } from 'sanity';
 import { Card, Stack, Text, Box, Flex, Label } from '@sanity/ui';
 
 // =============================================================================
@@ -9,6 +8,15 @@ import { Card, Stack, Text, Box, Flex, Label } from '@sanity/ui';
 // and (2) a social share card, so a volunteer can see the title/description
 // before publishing. No plan gating — it's just a Studio component. Wired in
 // via `defaultDocumentNode` in sanity.config.ts.
+//
+// IMPORTANT: reads its values from the `document.displayed` PROP that Sanity
+// passes to every document-view component (draft-merged, updates live as you
+// type), NOT from the useFormValue() hook. useFormValue requires a
+// FormValueProvider that is NOT present when a view is mounted inside the
+// Presentation tool, so calling it there threw "useFormValue must be used within
+// a FormValueProvider" and the thrown error froze the whole Presentation panel
+// (and, with it, the live-preview refresh) until a manual reload. The prop has
+// no such dependency, so this works identically in Structure and Presentation.
 // =============================================================================
 
 const DOMAIN = 'westchesterpreschool.org';
@@ -23,13 +31,18 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v : '';
 }
 
-export function SeoPreviewPane() {
-  // Hooks can't be conditional — read all, then coalesce.
-  const title = str(useFormValue(['title']));
-  const seoTitle = str(useFormValue(['seoTitle']));
-  const seoDescription = str(useFormValue(['seoDescription']));
-  const excerpt = str(useFormValue(['excerpt']));
-  const slugValue = useFormValue(['slug']);
+interface SeoPreviewPaneProps {
+  document?: { displayed?: Record<string, unknown> };
+}
+
+export function SeoPreviewPane(props: SeoPreviewPaneProps) {
+  // The live, draft-merged document the editor is showing.
+  const doc = props.document?.displayed ?? {};
+  const title = str(doc.title);
+  const seoTitle = str(doc.seoTitle);
+  const seoDescription = str(doc.seoDescription);
+  const excerpt = str(doc.excerpt);
+  const slugValue = doc.slug;
 
   const slug =
     typeof slugValue === 'string' ? slugValue : str((slugValue as { current?: string })?.current);

@@ -80,17 +80,18 @@ The project runs on Sanity's **free** plan. Most of what we use is free, but a f
 "Squarespace/WordPress-parity" features are **Growth-only** ($15/editor seat/mo) and are
 either not enabled or won't function until an upgrade:
 
-| Feature                                                                                                                    | Free?         | Notes                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- |
-| Page builder, News, Events, Media library, forms, newsletter, SEO preview, "Used on", Welcome dashboard, redirects, search | ✅ Free       | Everything the board uses day to day                                                      |
-| **Editor role** (edit without member/billing access)                                                                       | ❌ Growth     | Free has only **Administrator** + **Viewer** — see [ROLES.md](ROLES.md)                   |
-| **Scheduled publishing**                                                                                                   | ❌ Growth     | Config flag is on (activates on upgrade); the Schedule option just doesn't appear on free |
-| **Comments & Tasks** (collaboration)                                                                                       | ❌ Growth     | Not enabled                                                                               |
-| **AI Assist** (in-field AI, auto alt-text)                                                                                 | ❌ Growth     | Not installed                                                                             |
-| **Custom per-field roles**                                                                                                 | ❌ Enterprise | e.g. "edit News but not tuition"                                                          |
+| Feature                                                                                                                    | Free?         | Notes                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page builder, News, Events, Media library, forms, newsletter, SEO preview, "Used on", Welcome dashboard, redirects, search | ✅ Free       | Everything the board uses day to day                                                                                                                                           |
+| **Editor role** (edit without member/billing access)                                                                       | ❌ Growth     | Free has only **Administrator** + **Viewer** — see [ROLES.md](ROLES.md)                                                                                                        |
+| **Scheduled publishing**                                                                                                   | ❌ Growth     | Config flag is **off** on purpose (`scheduledDrafts.enabled: false`) so the board never relies on a Schedule button that would vanish after the trial; publishing is immediate |
+| **Comments & Tasks** (collaboration)                                                                                       | ❌ Growth     | Not enabled                                                                                                                                                                    |
+| **AI Assist** (in-field AI, auto alt-text)                                                                                 | ❌ Growth     | Not installed                                                                                                                                                                  |
+| **Custom per-field roles**                                                                                                 | ❌ Enterprise | e.g. "edit News but not tuition"                                                                                                                                               |
 
 To upgrade: manage.sanity.io → project → **Plan**. Then AI Assist and Comments/Tasks can be
-wired up, and scheduling + the Editor role start working.
+wired up, and the Editor role starts working. (Scheduled publishing would also unlock, but we
+keep it off — see the note above.)
 
 ## The Studio
 

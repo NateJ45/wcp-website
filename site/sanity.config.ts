@@ -56,15 +56,13 @@ import { projectId, dataset } from './src/sanity/env';
 // - document.actions / newDocumentOptions: enforce singletons — one Site
 //   Settings, one Tuition & Fees, with no duplicate/delete so nobody can create
 //   a confusing second copy.
-// - scheduledDrafts.enabled: true — per-document scheduling (publish at a future
-//   date/time, like Squarespace/WordPress); Sanity fires the publish webhook on
-//   schedule and the static site rebuilds then. NOTE: scheduling is a Growth-plan
-//   feature — on the FREE plan the option won't appear, so this flag simply
-//   activates it if/when the project upgrades. Harmless on free. (Same story for
+// - scheduledDrafts.enabled: false — per-document scheduled publishing is a
+//   Growth-plan feature. We keep it OFF on purpose: it was briefly on during the
+//   trial, but a "Schedule" button that disappears when the trial ends would
+//   leave the board confused, so publishing is always immediate. (Same story for
 //   Comments/Tasks and AI Assist, which we deliberately have NOT added.)
-// - releases.enabled: false — the newer "Content Releases" bundle tool is more
-//   than the board needs (it groups many docs into one scheduled release);
-//   per-document scheduling above is the simpler fit, so we keep Releases off.
+// - releases.enabled: false — the "Content Releases" bundle tool is also a paid
+//   feature and more than the board needs, so we keep it off too.
 // =============================================================================
 
 // Extra document tabs, added by type:
@@ -136,7 +134,11 @@ function workspace(opts: {
     dataset,
     theme: wcpStudioTheme,
     releases: { enabled: false },
-    scheduledDrafts: { enabled: true },
+    // Scheduled publishing is a paid (Growth) feature. We keep it OFF so the
+    // board never builds a habit around a "Schedule" button that would vanish
+    // when the trial ends — publishing is immediate, and a future post can just
+    // be published on the day. (Was briefly enabled during the trial.)
+    scheduledDrafts: { enabled: false },
     studio: { components: { layout: StudioLayout } },
     // Append any extra tools (e.g. CSV export) after the built-in ones.
     tools: (prev) => [...prev, ...(opts.extraTools ?? [])],
