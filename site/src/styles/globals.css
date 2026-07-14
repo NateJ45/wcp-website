@@ -104,6 +104,25 @@
   }
 }
 
+/* WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum) --------------------------
+   The site has sticky/fixed top chrome (the mobile header, the desktop compact
+   bar that appears on scroll, and the hub's sticky topbar) plus a fixed bottom
+   tab bar on the phone hub. Without this, a keyboard user who tabs to an
+   element near the top or bottom of the viewport can have it scrolled fully
+   UNDER that chrome — a 2.4.11 failure. scroll-padding on the root scroller
+   makes every scroll-into-view (focus, in-page anchor, `.focus()`) stop clear
+   of the fixed chrome. Sized to comfortably clear the ~56-64px top bars; the
+   bottom padding (mobile only) clears the ~56px hub tab bar and is harmless on
+   the public site, which has no bottom-fixed content. */
+:root {
+  scroll-padding-top: 4.5rem;
+}
+@media (max-width: 47.99rem) {
+  :root {
+    scroll-padding-bottom: 4.75rem;
+  }
+}
+
 /* Persistent hub shell (2026-07-14 app-elevation Track A): the rail, both top
    bars, and the phone tab bar get their own view-transition names, so on a
    hub→hub navigation the browser snapshots them as separate groups. Their
