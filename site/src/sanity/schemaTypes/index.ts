@@ -38,6 +38,7 @@ import { schoolYearEvent } from './documents/schoolYearEvent';
 import { legalPage } from './documents/legalPage';
 import { page } from './documents/page';
 import { post } from './documents/post';
+import { newsletterIssue } from './documents/newsletterIssue';
 import { event } from './documents/event';
 import { redirect } from './documents/redirect';
 import { venue } from './documents/venue';
@@ -97,6 +98,7 @@ export const schemaTypes = [
   legalPage,
   page,
   post,
+  newsletterIssue,
   event,
   redirect,
   venue,

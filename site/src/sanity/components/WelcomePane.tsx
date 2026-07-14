@@ -29,6 +29,7 @@ interface RecentDoc {
 const TYPE_LABELS: Record<string, string> = {
   page: 'Page',
   post: 'News post',
+  newsletterIssue: 'Newsletter issue',
   event: 'Event',
   legalPage: 'Legal page',
   class: 'Class',
@@ -65,6 +66,7 @@ const TYPE_LABELS: Record<string, string> = {
 const RECENT_TYPES = [
   'page',
   'post',
+  'newsletterIssue',
   'event',
   'legalPage',
   'class',

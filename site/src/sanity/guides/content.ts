@@ -416,6 +416,37 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'newsletter',
+    title: 'Put out a newsletter',
+    icon: '🗞️',
+    lead: 'Compose an issue, give it a web page, and (optionally) email it to families.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'A **Newsletter issue** is written just like a News post, but it lives on its own newsletter pages: each published issue gets a web address at /newsletter/<its slug> and a card in the archive at /newsletter/archive. Families can read it on the web whether or not you email it.',
+      },
+      { kind: 'path', items: ['Newsletter issues', '＋ new', 'write', 'Publish'] },
+      {
+        kind: 'steps',
+        items: [
+          'Click **Newsletter issues** in the left menu, then **＋**.',
+          'Type a **Title** (e.g. "October Newsletter") and click **Generate** for its web address.',
+          'Add a short **Summary** (shown on the archive card and used as the email teaser), a **Cover image** if you have one, and write the **Body** with the toolbar.',
+          '**Publish**. The issue is now live at its web address and in the archive.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Emailing it is optional',
+        text: 'Publishing puts the issue on the web. Emailing it to families is a separate step that Nathan sets up once (it links families to the web page). Ask him if you want an issue emailed out. After it goes, you can note the date in "Date emailed to families" for your records.',
+      },
+      { kind: 'seealso', items: ['Write a news post', 'Photos and images'] },
+    ],
+  },
+
+  {
     slug: 'add-event',
     title: 'Add an event',
     icon: '📅',

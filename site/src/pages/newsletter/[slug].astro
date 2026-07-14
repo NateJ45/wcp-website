@@ -1,0 +1,96 @@
+---
+/* ============================================================================
+   /newsletter/[slug] — a single newsletter issue, statically prerendered.
+   ============================================================================
+   getStaticPaths reads every issue slug from Sanity at build time. New issues
+   go live on the next rebuild (the Sanity publish webhook triggers it), or at
+   their scheduled publish time. This is the permanent public home an emailed
+   issue links to (see /api/newsletter + docs/FORMS.md).
+   ============================================================================ */
+export const prerender = true;
+
+import type { PortableTextBlock } from '@portabletext/types';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Prose from '@/components/Prose.astro';
+import Section from '@/components/Section.astro';
+import Button from '@/components/ui/Button.astro';
+import { cmsFetch } from '@/lib/cms';
+import { ALL_NEWSLETTER_SLUGS_QUERY, NEWSLETTER_BY_SLUG_QUERY } from '@/lib/queries';
+import { renderPostBody } from '@/lib/portable-text';
+import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
+import { formatDate } from '@/lib/utils';
+import { site } from '@/data/site';
+
+interface IssueDoc {
+  title?: string;
+  slug?: string;
+  publishedAt?: string;
+  preheader?: string;
+  body?: PortableTextBlock[];
+  coverImage?: SanityImageValue | null;
+  ogImage?: SanityImageValue | null;
+  seoDescription?: string;
+}
+
+export async function getStaticPaths() {
+  const slugs = await cmsFetch<string[]>(ALL_NEWSLETTER_SLUGS_QUERY, {}, []);
+  return slugs.map((slug) => ({ params: { slug }, props: { slug } }));
+}
+
+const { slug } = Astro.props as { slug: string };
+const issue = await cmsFetch<IssueDoc | null>(NEWSLETTER_BY_SLUG_QUERY, { slug }, null);
+
+if (!issue) {
+  return new Response(`No newsletter issue found for "${slug}"`, { status: 404 });
+}
+
+const bodyHtml = renderPostBody(issue.body);
+const cover = issue.coverImage;
+const shareImg = issue.ogImage ?? issue.coverImage;
+const ogImage = shareImg?.asset ? imageUrl(shareImg as SanityImageSource, 1200) : undefined;
+const title = `${issue.title} — ${site.name}`;
+const description = issue.seoDescription ?? issue.preheader;
+const dateStr = formatDate(issue.publishedAt);
+---
+
+<BaseLayout title={title} description={description} ogImage={ogImage} ogType="article">
+  <article>
+    <Hero
+      title={issue.title ?? 'Newsletter'}
+      eyebrow={['Newsletter', dateStr].filter(Boolean).join(' · ')}
+      lead={issue.preheader}
+      height="medium"
+      sanityImage={cover?.asset ? (cover as unknown as SanityImageSource) : undefined}
+      imageAlt={cover?.alt ?? issue.title ?? ''}
+    />
+    <Section bg="white">
+      <div class="mx-auto max-w-3xl">
+        <div class="text-sm">
+          <a
+            href="/newsletter/archive"
+            class="inline-flex items-center gap-1 font-semibold text-navy hover:underline dark:text-sky"
+          >
+            <span aria-hidden="true">←</span> All issues
+          </a>
+        </div>
+        {
+          bodyHtml && (
+            <Prose class="mt-8 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-amber [&_blockquote]:pl-4 [&_blockquote]:text-ink-muted [&_blockquote]:italic [&_figcaption]:mt-2 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-ink-muted [&_figure]:my-8 [&_img]:mx-auto [&_img]:rounded-2xl [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6">
+              <Fragment set:html={bodyHtml} />
+            </Prose>
+          )
+        }
+      </div>
+    </Section>
+    <Section bg="grey">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="font-display text-2xl text-heading">Don’t miss the next one</h2>
+        <p class="mt-2 text-ink-muted">Get West Chester Preschool news and events in your inbox.</p>
+        <div class="mt-5">
+          <Button href="/newsletter" variant="primary" size="md">Subscribe</Button>
+        </div>
+      </div>
+    </Section>
+  </article>
+</BaseLayout>

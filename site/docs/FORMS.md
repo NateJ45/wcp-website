@@ -88,6 +88,27 @@ holds the mailer, the token, and the recipients.
 stays the same. (Do NOT "New deployment" — that mints a new URL and needs a new
 `FORMS_WEBHOOK_URL`.)
 
+## The newsletter (compose in the Studio, archive on the web, optional send)
+
+The board composes a **Newsletter issue** in the Studio (Everyday edits → **Newsletter
+issues**) like a News post: a title, a cover, a short summary, and a rich body.
+Publishing it gives the issue a permanent public page at `/newsletter/<slug>` and a card
+in the `/newsletter/archive` list — so every issue is readable and shareable on the web,
+whether or not it's ever emailed. (The `/newsletter` page itself stays the sign-up
+landing.)
+
+**Sending is separate and optional**, and reuses the same Apps Script mailer as the
+digest, because Workers can't send email on the free tier. The site exposes a
+token-protected feed at `/api/newsletter?token=…` (matches `FORMS_WEBHOOK_TOKEN`; 404s
+without it) that returns the latest published issue as a compact teaser — subject,
+summary, cover image, and the public URL. A `sendNewsletter()` Apps Script function
+fetches that, emails the subscriber/families list a short "new issue is up" note linking
+to the page, and the board runs it (or adds a trigger) when an issue is ready. Pass
+`&slug=<slug>` to send a specific older issue instead of the latest. After sending, the
+board can note the date in the issue's **Date emailed to families** field for their own
+records (it doesn't send anything). No issue published yet → the feed returns
+`{ issue: null }` so the mailer cleanly skips.
+
 ## Optional extras
 
 - **Resend email** (`RESEND_API_KEY`, optional `CONTACT_TO` / `CONTACT_FROM`): the older

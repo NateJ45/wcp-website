@@ -22,6 +22,7 @@ export const routes = [
   '/work-with-us',
   '/donate',
   '/newsletter',
+  '/newsletter/archive',
   '/accessibility',
   '/privacy',
   '/terms',

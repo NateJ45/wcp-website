@@ -118,6 +118,28 @@ export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0
 }`;
 
 // -----------------------------------------------------------------------------
+// Newsletter issues (public web archive at /newsletter/*)
+// -----------------------------------------------------------------------------
+
+/** Every issue slug — drives getStaticPaths for /newsletter/[slug]. */
+export const ALL_NEWSLETTER_SLUGS_QUERY = `*[_type == "newsletterIssue" && defined(slug.current)].slug.current`;
+
+/** Published issues, newest first (the /newsletter/archive list). */
+export const NEWSLETTER_LIST_QUERY = `*[_type == "newsletterIssue" && defined(slug.current) && publishedAt <= now()] | order(publishedAt desc){
+  title, "slug": slug.current, publishedAt, preheader, coverImage
+}`;
+
+/** One full issue by slug (the /newsletter/[slug] page). */
+export const NEWSLETTER_BY_SLUG_QUERY = `*[_type == "newsletterIssue" && slug.current == $slug][0]{
+  title, "slug": slug.current, publishedAt, preheader, body, coverImage, ogImage, seoDescription
+}`;
+
+/** The single most recent published issue — the /api/newsletter send feed. */
+export const NEWSLETTER_LATEST_QUERY = `*[_type == "newsletterIssue" && defined(slug.current) && publishedAt <= now()] | order(publishedAt desc)[0]{
+  title, "slug": slug.current, publishedAt, preheader, coverImage
+}`;
+
+// -----------------------------------------------------------------------------
 // Events
 // -----------------------------------------------------------------------------
 

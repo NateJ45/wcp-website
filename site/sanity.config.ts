@@ -86,7 +86,7 @@ const USED_ON_TYPES = [
 ];
 
 const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => {
-  if (['page', 'post', 'legalPage'].includes(schemaType)) {
+  if (['page', 'post', 'legalPage', 'newsletterIssue'].includes(schemaType)) {
     return S.document().views([
       S.view.form(),
       S.view

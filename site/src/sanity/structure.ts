@@ -207,6 +207,7 @@ const PLACED = new Set([
   'legalPage',
   'page',
   'post',
+  'newsletterIssue',
   'event',
   'submission',
   'subscriber',
@@ -263,6 +264,7 @@ export const structure: StructureResolver = (S, context) =>
       S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
+      S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
       pagesGroup(S),
 
@@ -415,6 +417,7 @@ export const everydayStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
       S.documentTypeListItem('post').title('News').icon(emoji('📰')),
+      S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
       pagesGroup(S),
 
