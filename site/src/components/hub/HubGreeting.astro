@@ -23,12 +23,14 @@
    stats/ring use HubStat/HubRing's navy tone (white on navy — never colored
    ink on a tint, see the CLAUDE.md dark-tint gotcha).
    ============================================================================ */
-import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubStat from '@/components/hub/HubStat.astro';
 import HubRing from '@/components/hub/HubRing.astro';
-import wcpEmblem from '@/assets/brand/wcp-emblem.png';
+// Pre-sized webp + plain <img>: SSR pages can't resize at request time on the
+// Cloudflare adapter, so <Image> served the 3.6MB original emblem here
+// (Lighthouse, 2026-07-14). See the same note in HubTopBar.
+import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
 import { getWeather } from '@/lib/hub-weather';
 import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
@@ -141,7 +143,13 @@ const weather = await getWeather();
     </div>
 
     {/* Sun-and-cloud brand emblem — the hero's one decorative accent. */}
-    <Image src={wcpEmblem} alt="" class="hidden h-24 w-auto shrink-0 sm:block lg:h-28" />
+    <img
+      src={wcpEmblem.src}
+      alt=""
+      width={wcpEmblem.width}
+      height={wcpEmblem.height}
+      class="hidden h-24 w-auto shrink-0 sm:block lg:h-28"
+    />
   </div>
 
   {/* Command-strip stats: every figure live, every stat a deep link. */}

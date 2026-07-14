@@ -220,7 +220,11 @@ const currentPath = Astro.url.pathname;
     {
       chrome === 'hub' ? (
         <div class="flex min-h-screen">
-          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 overflow-y-auto lg:block">
+          {/* overflow-hidden, not auto: HubRail's nav owns the scrolling (its
+              min-h-0 middle region), so the logo and Sign out stay pinned. An
+              auto here made the WHOLE rail the scroller with the OS-default
+              scrollbar painted over the navy (2026-07-14). */}
+          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 overflow-hidden lg:block">
             <HubRail collapsible />
           </aside>
 

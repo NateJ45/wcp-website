@@ -17,12 +17,14 @@
    light/dark control. Theme-aware via brand tokens; no hardcoded hex except the
    active-link fill (a fixed navy island — see the style note below).
    ============================================================================ */
-import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import { hubNav } from '@/data/hub-nav';
 import { site } from '@/data/site';
-import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+// Pre-sized webp + plain <img> (not astro:assets): SSR pages can't resize at
+// request time on the Cloudflare adapter, so <Image> served the 4.1MB
+// original here (Lighthouse, 2026-07-14). See the same note in HubTopBar.
+import wcpLogoWhite from '@/assets/brand/wcp-logo-white-sm.webp';
 
 interface Props {
   /** Desktop rail: render the collapse toggle. The mobile drawer omits it. */
@@ -39,7 +41,7 @@ const groups = hubNav.slice(1);
 ---
 
 <div class="flex h-full flex-col gap-1 bg-navy px-3 py-4 text-white/85">
-  <div class="mb-2 px-2 pb-3" data-rail-top>
+  <div class="mb-1 px-2 pb-2" data-rail-top>
     {
       collapsible && (
         <div class="flex justify-end" data-rail-toggle-row>
@@ -57,11 +59,28 @@ const groups = hubNav.slice(1);
     }
     {/* Full-width brand moment — the logo spans the rail (hidden when collapsed). */}
     <a href="/family-hub" class="mt-1 block" aria-label="Family Hub home" data-rail-logo>
-      <Image src={wcpLogoWhite} alt={site.name} width={480} height={320} class="h-auto w-full" />
+      <img
+        src={wcpLogoWhite.src}
+        alt={site.name}
+        width={wcpLogoWhite.width}
+        height={wcpLogoWhite.height}
+        class="h-auto w-full"
+      />
     </a>
   </div>
 
-  <nav aria-label="Family Hub" class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
+  {
+    /* min-h-0 is load-bearing: without it this flex child refuses to shrink,
+       the whole rail (logo + footer included) becomes the scroller, and the
+       browser paints its chunky default scrollbar over the navy ("ugly
+       vertical scroll", 2026-07-14). With it, the logo and Sign out stay
+       PINNED and only this middle list scrolls, behind the hairline thumb
+       styled below. */
+  }
+  <nav
+    aria-label="Family Hub"
+    class="hub-rail-scroll flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto pr-1"
+  >
     {/* Search — opens the Cmd/Ctrl+K palette (hub-search.ts). JS-only nicety. */}
     <button type="button" class="hub-rail-link" title="Search (Ctrl+K)" data-hub-search-open>
       <Icon name="search" class="h-4 w-4 shrink-0" />
@@ -83,7 +102,7 @@ const groups = hubNav.slice(1);
 
     {
       groups.map((group) => (
-        <div class="mt-3">
+        <div class="mt-2.5">
           {/* Group accent: label + link icons pick up the group's brand tint
               (per-link override for the class colors). AA note in hub-nav.ts. */}
           <p
@@ -196,5 +215,27 @@ const groups = hubNav.slice(1);
     .rail-icon-btn {
       transition: none;
     }
+  }
+
+  /* Hairline scrollbar for the nav's scroll region: a translucent white
+     thumb on a transparent track reads as part of the navy instead of the
+     OS-default grey gutter. Firefox via scrollbar-width/color, WebKit via
+     the pseudo-elements. */
+  .hub-rail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  }
+  .hub-rail-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .hub-rail-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+  }
+  .hub-rail-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+  .hub-rail-scroll::-webkit-scrollbar-track {
+    background: transparent;
   }
 </style>

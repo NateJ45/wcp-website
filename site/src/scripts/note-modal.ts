@@ -31,9 +31,34 @@ function isOpen(): boolean {
   return Boolean(el && !el.hidden);
 }
 
+// The signature script font loads HERE, when a note actually OPENS — never as
+// page CSS. A static (or even dynamic) CSS import of @fontsource/great-vibes
+// ends up as a render-blocking stylesheet on every hub-home/class visit for a
+// font only this modal uses (Lighthouse, 2026-07-14), so we register the face
+// through the FontFace API with just the hashed woff2 URL. Browsers without
+// FontFace (none we support) simply keep the cursive fallback.
+import greatVibesWoff2 from '@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff2?url';
+let signatureFontRequested = false;
+function ensureSignatureFont() {
+  if (signatureFontRequested || typeof FontFace === 'undefined') return;
+  signatureFontRequested = true;
+  const face = new FontFace('Great Vibes', `url(${greatVibesWoff2}) format('woff2')`, {
+    style: 'normal',
+    weight: '400',
+    display: 'swap',
+  });
+  face
+    .load()
+    .then((loaded) => document.fonts.add(loaded))
+    .catch(() => {
+      /* fallback font stays — the note is still fully readable */
+    });
+}
+
 function open() {
   const el = root();
   if (!el || !el.hidden) return;
+  ensureSignatureFont();
   lastFocused = document.activeElement as HTMLElement | null;
   el.hidden = false;
   document.documentElement.classList.add('overflow-hidden');

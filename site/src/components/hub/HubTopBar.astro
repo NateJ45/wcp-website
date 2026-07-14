@@ -22,13 +22,17 @@
    Menus are native <details> (keyboard + no-JS friendly); hub-menus.ts adds
    outside-click/Esc closing, hub-fresh.ts adds the unseen-count badge.
    ============================================================================ */
-import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { site } from '@/data/site';
-import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
+// Pre-sized webp, NOT the 9000x6000 original via astro:assets <Image>: hub
+// pages are SSR, and the Cloudflare adapter can't resize at request time, so
+// /_image passes the ORIGINAL through — Lighthouse caught the 4.1MB logo
+// serving a 38px slot (2026-07-14). Chrome assets on SSR surfaces use
+// committed pre-sized files and a plain <img>.
+import wcpLogoWhite from '@/assets/brand/wcp-logo-white-sm.webp';
 
 interface Props {
   title: string;
@@ -183,6 +187,12 @@ const quickActions = [
   <HubBell items={bellItems} tone="navy" />
   <ThemeToggle tone="onNavy" />
   <a href="/family-hub" class="inline-flex items-center" aria-label="Family Hub home">
-    <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-8 w-auto" />
+    <img
+      src={wcpLogoWhite.src}
+      alt={site.name}
+      width={wcpLogoWhite.width}
+      height={wcpLogoWhite.height}
+      class="h-8 w-auto"
+    />
   </a>
 </header>

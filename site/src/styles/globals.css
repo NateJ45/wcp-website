@@ -61,6 +61,14 @@
   navigation: auto;
 }
 
+/* The ::view-transition overlay hit-tests by default, which EATS every click
+   until the enter animation (460ms) finishes — on the hub that read as "the
+   page loads but I can't click yet" (Nathan, 2026-07-14). Let pointers pass
+   through to the live DOM; the snapshots are purely visual. */
+::view-transition {
+  pointer-events: none;
+}
+
 /* Graceful transition when motion is welcome: the leaving page fades out, the
    arriving page fades in while gently rising ~14px into place, on a calm curve. */
 @media (prefers-reduced-motion: no-preference) {

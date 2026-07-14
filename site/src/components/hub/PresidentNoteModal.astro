@@ -13,7 +13,9 @@
    scroll locks while open, Tab is trapped inside. Entrance is a gentle
    fade+rise, disabled under prefers-reduced-motion.
    ============================================================================ */
-import '@fontsource/great-vibes/index.css'; // signature script — loads only where this modal renders
+// Great Vibes (signature script) is lazy-loaded by note-modal.ts when the
+// modal OPENS — a static import here shipped it as render-blocking page CSS
+// for a font nothing visible-at-load uses (Lighthouse, 2026-07-14).
 import Icon from '@/components/Icon.astro';
 import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
