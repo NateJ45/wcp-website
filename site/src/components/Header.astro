@@ -183,14 +183,19 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
           <ThemeToggle tone="onNavy" class="h-9 w-9 hover:bg-white/16" />
         </div>
 
-        {/* Big centered logo — rises in gently on first paint, like a sunrise. */}
+        {
+          /* Big centered logo. Deliberately NOT animated on load: every
+           navigation is a real document load (no SPA router), so any entrance
+           animation would replay on every page + refresh and read as a jitter.
+           The logo just stays put. */
+        }
         <a href={b('/')} class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
           <Image
             src={wcpLogoWhite}
             alt={site.name}
             width={220}
             height={147}
-            class="wcp-logo-rise h-24 w-auto drop-shadow-[0_2px_10px_rgba(1,20,40,0.35)] xl:h-28"
+            class="h-24 w-auto drop-shadow-[0_2px_10px_rgba(1,20,40,0.35)] xl:h-28"
           />
         </a>
 
@@ -265,28 +270,6 @@ const hasSocial = Boolean(site.social.facebook || site.social.instagram);
     background-color: var(--color-amber);
     color: var(--color-navy);
     transform: translateY(-1px);
-  }
-
-  /* Big logo "sunrise" — a single gentle rise + fade on first paint, so the
-     header greets the visitor instead of just appearing. Plays once; disabled
-     under reduced-motion. */
-  .wcp-logo-rise {
-    animation: wcp-logo-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  @keyframes wcp-logo-rise {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .wcp-logo-rise {
-      animation: none;
-    }
   }
 
   /* Hamburger <-> X swap (mobile bar). */
