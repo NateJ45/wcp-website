@@ -1113,6 +1113,38 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. Handy at the start of each month.',
       },
+      { kind: 'seealso', items: ['Start a new school year'] },
+    ],
+  },
+
+  {
+    slug: 'start-of-year',
+    title: 'Start a new school year',
+    icon: '🍂',
+    lead: 'The once-a-year rollover checklist, in order, with a jump to each thing to change.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Start of year** tool is a guided checklist for rolling the site over to a new school year. It reads your current settings, marks what already looks set, and gives you a one-click jump to each thing to update. It never changes anything itself.',
+      },
+      { kind: 'path', items: ['Everything workspace', 'Start of year (top nav)'] },
+      {
+        kind: 'p',
+        text: 'Work top to bottom. Each card opens the right editor; make your change and **Publish** as usual, then come back to the list.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Set the year**: the school-year label, the key dates (start, end, first day), and the enrollment status.',
+          '**Money**: this year’s tuition and class prices.',
+          '**Co-op hours goal**: how many volunteer hours each family gives this year.',
+          '**Calendar**: this year’s open houses, breaks, and picture days.',
+          '**Refresh for families**: the president’s welcome note, teacher notes, and the family directory.',
+          '**Wrap up last year**: turn off old notices and record last year’s fundraising total.',
+        ],
+      },
+      { kind: 'seealso', items: ['Run a site checkup', 'Co-op hours tracking'] },
     ],
   },
 

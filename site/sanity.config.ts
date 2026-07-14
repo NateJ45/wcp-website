@@ -13,6 +13,7 @@ import { StudioLayout, WcpWorkspaceIcon } from './src/sanity/components/StudioLa
 import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { HealthTool } from './src/sanity/components/HealthTool';
+import { SetupWizard } from './src/sanity/components/SetupWizard';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
@@ -221,6 +222,15 @@ export default defineConfig([
         title: 'Checkup',
         component: HealthTool,
         icon: () => '🩺',
+      },
+      // Start-of-year — a read-only guided checklist for the annual rollover
+      // (year label, dates, tuition, hours goal, events, content refresh), each
+      // card jumping straight to the thing to update.
+      {
+        name: 'setup',
+        title: 'Start of year',
+        component: SetupWizard,
+        icon: () => '🍂',
       },
     ],
   }),
