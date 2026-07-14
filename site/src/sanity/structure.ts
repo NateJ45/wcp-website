@@ -212,6 +212,7 @@ const PLACED = new Set([
   'submission',
   'subscriber',
   'testimonialSubmission',
+  'photoSubmission',
   'coopRole',
   'hoursLog',
   'program',
@@ -429,5 +430,6 @@ export const everydayStructure: StructureResolver = (S, context) =>
 
       submissionsGroup(S, context),
       S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
+      S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
     ]);

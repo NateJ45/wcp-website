@@ -1,0 +1,188 @@
+---
+/* ============================================================================
+   Family Hub — Family Photos (GATED)
+   ============================================================================
+   A families-only gallery of moderated photos. Families upload here; each photo
+   waits in the Studio until the board approves it, and only approved photos show
+   below. These are pictures of children — gated and moderated by design, never
+   on the public site. Uploads go to /family-hub/api/photo-submit (which holds
+   the token; the browser never writes to Sanity directly).
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import Icon from '@/components/Icon.astro';
+import { sanityFetch } from '@/lib/sanity';
+import { imageUrl, type SanityImageSource } from '@/lib/image';
+
+interface Photo {
+  _id: string;
+  photo?: { asset?: unknown } | null;
+  caption?: string;
+  submittedBy?: string;
+}
+
+let photos: Photo[] = [];
+try {
+  photos = await sanityFetch<Photo[]>(
+    `*[_type == "photoSubmission" && approved == true && defined(photo.asset)] | order(submittedAt desc)[0...120]{ _id, photo, caption, submittedBy }`,
+  );
+} catch {
+  photos = [];
+}
+
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const showThanks = new URL(Astro.request.url).searchParams.has('thanks');
+
+const inputClass =
+  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+---
+
+<HubShell title="Family Photos" bare pageTitle="Family Photos — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-5xl">
+      <HubPageHeader
+        title="Family Photos"
+        subtitle="A shared album of our classrooms and events, just for our families. Share your own below."
+        icon="camera"
+      />
+
+      {
+        showThanks && (
+          <HubCard class="mb-6 border-l-4 border-l-green">
+            <p class="font-semibold text-heading">Thanks — your photo was sent for review.</p>
+            <p class="mt-1 text-sm text-ink-muted">
+              A board member will approve it, then it appears in the album below.
+            </p>
+          </HubCard>
+        )
+      }
+
+      {/* Share a photo */}
+      <HubCard class="mb-8">
+        <h2 class="font-display text-xl text-heading">Share a photo</h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          JPEG, PNG, or WebP, up to 8 MB. Photos are reviewed before they appear.
+        </p>
+        <form
+          method="POST"
+          action="/family-hub/api/photo-submit"
+          enctype="multipart/form-data"
+          class="mt-4 grid gap-3 sm:grid-cols-2"
+          data-photo-form
+        >
+          <div class="absolute -left-[9999px]" aria-hidden="true">
+            <label>
+              Company
+              <input type="text" name="company" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-heading" for="photo-by">
+              Your family name <span class="font-normal text-ink-muted">(optional)</span>
+            </label>
+            <input id="photo-by" name="submittedBy" type="text" class={inputClass} />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-heading" for="photo-caption">
+              Caption <span class="font-normal text-ink-muted">(optional)</span>
+            </label>
+            <input
+              id="photo-caption"
+              name="caption"
+              type="text"
+              placeholder="e.g. Pumpkin patch trip"
+              class={inputClass}
+            />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-semibold text-heading" for="photo-file">Photo</label>
+            <input
+              id="photo-file"
+              name="photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              required
+              class="mt-1 block w-full text-sm text-ink file:mr-3 file:rounded-full file:border-0 file:bg-navy file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-heading"
+            />
+          </div>
+
+          {
+            turnstileKey && (
+              <div class="sm:col-span-2">
+                <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="auto" />
+                <script
+                  is:inline
+                  defer
+                  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                />
+              </div>
+            )
+          }
+
+          <div class="sm:col-span-2">
+            <button
+              type="submit"
+              class="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+            >
+              <Icon name="camera" class="h-4 w-4" aria-hidden="true" />
+              Send photo
+            </button>
+            <p class="mt-2 hidden text-sm font-semibold text-green-ink" data-photo-done>
+              Uploaded — thank you! It’ll appear once approved.
+            </p>
+            <p class="mt-2 hidden text-sm text-destructive" data-photo-error role="alert"></p>
+          </div>
+        </form>
+      </HubCard>
+
+      {
+        photos.length === 0 ? (
+          <HubEmptyState icon="image" title="Approved photos will appear here">
+            <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
+              Be the first to share one using the form above.
+            </p>
+          </HubEmptyState>
+        ) : (
+          <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {photos.map((p) => {
+              const src = p.photo?.asset ? imageUrl(p.photo as SanityImageSource, 500) : null;
+              const alt =
+                p.caption || (p.submittedBy ? `Photo from ${p.submittedBy}` : 'Family photo');
+              return (
+                src && (
+                  <li>
+                    <figure class="overflow-hidden rounded-xl border border-border bg-white shadow-sm dark:bg-surface">
+                      <img
+                        src={src}
+                        alt={alt}
+                        loading="lazy"
+                        class="aspect-square w-full object-cover"
+                      />
+                      {p.caption && (
+                        <figcaption class="px-3 py-2 text-xs text-ink-muted">
+                          {p.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  </li>
+                )
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </Section>
+</HubShell>
+
+<script>
+  import '@/scripts/photo-share';
+</script>

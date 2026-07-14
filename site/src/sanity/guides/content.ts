@@ -1284,6 +1284,35 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'family-photos',
+    title: 'Review family photos',
+    icon: '📷',
+    lead: 'Families upload photos on the hub; you approve the ones that appear.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'Families can share photos on the **Family Photos** page in the Family Hub. Each one waits for your approval before it shows to anyone. These are pictures of children, so they only ever appear inside the gated hub, never on the public website.',
+      },
+      { kind: 'path', items: ['Inboxes', 'Family photos (review)', 'pick a photo'] },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Family photos (review)** — new ones show an hourglass (⏳).',
+          'Click a photo to see it full size.',
+          'If it’s good to share, turn on **Approved** and **Publish**. It then appears in the hub gallery for families.',
+          'If you don’t want it, just **delete** it.',
+        ],
+      },
+      {
+        kind: 'callout',
+        text: 'Uploads are limited to JPEG, PNG, or WebP images up to 8 MB, and the page is behind the family login — so only signed-in families can add a photo.',
+      },
+      { kind: 'seealso', items: ['Photos and images'] },
+    ],
+  },
+
+  {
     slug: 'coop-hours',
     title: 'Co-op hours tracking',
     icon: '⏱️',

@@ -217,6 +217,25 @@ Reads are `fresh` so a family's just-logged row shows on reload; the per-family 
 communal knowledge inside the gate, but the ledger is never baked into the public site.
 A page-wide line totals the whole school's logged hours.
 
+## Family Photos (moderated)
+
+`/family-hub/photos` is a families-only, moderated photo album. A family uploads a
+photo (with an optional caption) through the form; the browser **never writes to
+Sanity directly** — it posts to `/family-hub/api/photo-submit`, which holds the server
+token, and the upload lands as a `photoSubmission` with `approved: false`. Only after a
+board member reviews it in the Studio (**Inboxes → Family photos (review)**) and flips
+**Approved** (then Publishes) does it show in the gallery. These are photos of children,
+so they are **gated and moderated by design and never appear on the public site**.
+
+Abuse guardrails on the upload endpoint, in order: a honeypot (silent drop); Cloudflare
+**Turnstile** when configured (`PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`, the
+same dormant widget as the contact form); a content-type allowlist (JPEG/PNG/WebP) that
+also **sniffs the leading bytes** so a spoofed `File.type` can't smuggle a non-image
+through; and an 8 MB size cap checked before the upload. The endpoint is already behind
+the middleware gate, so only signed-in families can reach it. Uploading optionally
+forwards a "photo pending" note to the Google forms inbox (kind `photo`). No-JS uploads
+work via a native multipart POST; `src/scripts/photo-share.ts` upgrades them.
+
 A related nicety: the site is installable (a PWA manifest with maskable icon and
 hub/calendar shortcuts), so families can pin the hub to their phone's home screen —
 there is deliberately **no service worker** (the SSR hub must never serve stale).

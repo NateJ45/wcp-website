@@ -230,9 +230,10 @@ when Sanity tells it a document was published.
      every request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
      `update`, `hubDocument`, `directoryEntry`, `classNote`, or `celebration` document
      already shows up immediately with no rebuild. The submission inboxes
-     (`testimonialSubmission`, the general `submission` from form posts, and the
-     `hoursLog` co-op-hours ledger) are Studio-only or hub-only and never render on
-     the public site, so they don't need a rebuild either. Everything else
+     (`testimonialSubmission`, the general `submission` from form posts, the
+     `hoursLog` co-op-hours ledger, and `photoSubmission` family photos) are
+     Studio-only or hub-only and never render on the public site, so they don't need
+     a rebuild either. Everything else
      (`testimonial`, `siteSettings`, `page`, `schoolYearEvent`,
      `faqItem`, `class`, `legalPage`, `feeSchedule`) is baked into the static public
      pages at build time and DOES need a redeploy. (Note: **approving** a testimonial
@@ -241,7 +242,7 @@ when Sanity tells it a document was published.
      Combined filter:
 
      ```
-     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog"])
+     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog", "photoSubmission"])
      ```
 
      If a new document type is added later, decide which bucket it belongs to by

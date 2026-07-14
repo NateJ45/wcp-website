@@ -77,6 +77,7 @@ export const hubNav: HubGroup[] = [
       { label: 'Sign-ups', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
       { label: 'My Hours', href: '/family-hub/hours', icon: 'clock' },
       { label: 'Celebrations', href: '/family-hub/celebrations', icon: 'party-popper' },
+      { label: 'Photos', href: '/family-hub/photos', icon: 'camera' },
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
       {

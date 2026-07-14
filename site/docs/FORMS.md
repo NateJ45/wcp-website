@@ -65,7 +65,11 @@ RSVPs (`/family-hub/sign-ups`, kind `signup`) send a short FYI email plus their 
 row. Co-op hours a family logs on `/family-hub/hours` forward as kind `hours` (family
 name, hours, category, activity, date) — the source of truth is the `hoursLog` doc in
 Sanity, so the webhook here is just an optional FYI/backup and the tracker works without
-it. Quota is ~1,500 emails/day on Workspace; the forms will never come close.
+it. A photo a family submits on `/family-hub/photos` forwards a kind `photo` nudge
+(family name + caption, no image) so the board knows one is waiting to be reviewed; the
+photo itself is a moderated `photoSubmission` in Sanity (see
+[FAMILY_HUB.md](FAMILY_HUB.md)). Quota is ~1,500 emails/day on Workspace; the forms will
+never come close.
 
 ## The weekly family digest (optional)
 
