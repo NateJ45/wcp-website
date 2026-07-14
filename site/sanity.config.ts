@@ -15,7 +15,8 @@ import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { HealthTool } from './src/sanity/components/HealthTool';
 import { SetupWizard } from './src/sanity/components/SetupWizard';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
-import { schemaTypes, SINGLETON_TYPES } from './src/sanity/schemaTypes';
+import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
+import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { structure, everydayStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
@@ -160,20 +161,35 @@ function workspace(opts: {
     ],
     schema: { types: schemaTypes, templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES] },
     document: {
-      // Singletons keep only their editing actions (no unpublish/delete/duplicate).
-      // Review submissions get a one-click "Approve into Testimonials" action.
+      // Action wiring, in priority order:
+      //  - trashedItem: only Restore + Delete forever (no publish/duplicate/native
+      //    delete) — it's a receipt, not editable content.
+      //  - testimonialSubmission: adds the one-click "Approve into Testimonials".
+      //  - singletons: keep only editing actions (no unpublish/delete/duplicate).
+      //  - archivable content: swap the destructive Delete for Archive (soft
+      //    delete into "Recently deleted"); everything else (publish, duplicate…)
+      //    stays.
       actions: (prev, { schemaType }) => {
+        if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
         if (schemaType === 'testimonialSubmission') return [ApproveTestimonialAction, ...prev];
-        return SINGLETON_TYPES.has(schemaType)
-          ? prev.filter(
-              ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
-            )
-          : prev;
+        if (SINGLETON_TYPES.has(schemaType)) {
+          return prev.filter(
+            ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
+          );
+        }
+        if (ARCHIVABLE_TYPES.has(schemaType)) {
+          return [...prev.filter(({ action }) => action !== 'delete'), ArchiveAction];
+        }
+        return prev;
       },
-      // Remove singletons from the global "create new document" menu.
+      // Keep singletons AND trashedItem out of the global "create new" menu
+      // (you never hand-author a trash receipt).
       newDocumentOptions: (prev, { creationContext }) =>
         creationContext.type === 'global'
-          ? prev.filter((option) => !SINGLETON_TYPES.has(option.templateId))
+          ? prev.filter(
+              (option) =>
+                !SINGLETON_TYPES.has(option.templateId) && option.templateId !== 'trashedItem',
+            )
           : prev,
     },
   };

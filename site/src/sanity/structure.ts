@@ -235,6 +235,7 @@ const PLACED = new Set([
   'venue',
   'announcement',
   'celebration',
+  'trashedItem',
   // sanity-plugin-media stores its image tags as documents of this type;
   // they're managed inside the Media tool, so keep the raw list out of the
   // nav (a bare "Media Tag" item is just confusing).
@@ -380,7 +381,12 @@ export const structure: StructureResolver = (S, context) =>
 
       submissionsGroup(S, context),
       S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
+      S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
+
+      // ── Recently deleted ── soft-deleted content; restore or empty for good.
+      S.divider().title('Trash'),
+      S.documentTypeListItem('trashedItem').title('Recently deleted').icon(emoji('🗑️')),
 
       // Fallback: any type not explicitly placed above still shows up here.
       ...S.documentTypeListItems().filter((item) => !PLACED.has(item.getId() as string)),
@@ -432,4 +438,7 @@ export const everydayStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
       S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
+
+      S.divider().title('Trash'),
+      S.documentTypeListItem('trashedItem').title('Recently deleted').icon(emoji('🗑️')),
     ]);

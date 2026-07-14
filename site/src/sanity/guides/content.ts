@@ -334,6 +334,51 @@ export const guides: Guide[] = [
           SITE.contactName +
           '.',
       },
+      { kind: 'seealso', items: ['Delete something (and get it back)'] },
+    ],
+  },
+
+  {
+    slug: 'trash',
+    title: 'Delete something (and get it back)',
+    icon: '🗑️',
+    lead: 'Deleting is safe — it goes to Recently deleted, so you can undo it.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Nothing is gone for good by accident.',
+        text: 'When you delete a page, post, event, class, or other item, it moves to a Recently deleted list instead of vanishing. You can restore it any time until you choose to empty it.',
+      },
+      { kind: 'h', text: 'Delete something' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the item and click the **⋯** menu at the top, then **Delete (move to trash)**.',
+          'It disappears from its list and from the website, and a note tells you it went to Recently deleted.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: '"Still in use"?',
+        text: 'If other pages link to the thing you are deleting, it won’t let you (that would leave broken links). Open it, check the **Used on** tab to see what points to it, remove those links, then delete.',
+      },
+      { kind: 'h', text: 'Get it back, or clear it for good' },
+      {
+        kind: 'path',
+        items: ['Recently deleted', 'pick an item', '⋯', 'Restore (or Delete forever)'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Recently deleted** in the left menu (near the bottom).',
+          'Click the item you want, then **Restore** to bring it back exactly as it was.',
+          'To clear space, use **Delete forever** on an item you are sure about. That one can’t be undone.',
+        ],
+      },
+      { kind: 'seealso', items: ['Undo a change or see history', 'Clear out old records'] },
     ],
   },
 

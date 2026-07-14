@@ -47,6 +47,7 @@ import { submission } from './documents/submission';
 import { subscriber } from './documents/subscriber';
 import { testimonialSubmission } from './documents/testimonialSubmission';
 import { photoSubmission } from './documents/photoSubmission';
+import { trashedItem } from './documents/trashedItem';
 import { coopRole } from './documents/coopRole';
 import { hoursLog } from './documents/hoursLog';
 import {
@@ -108,6 +109,7 @@ export const schemaTypes = [
   subscriber,
   testimonialSubmission,
   photoSubmission,
+  trashedItem,
   coopRole,
   hoursLog,
   // Future-proofing collections (surfaced via community.ts sections)
@@ -137,4 +139,41 @@ export const SINGLETON_TYPES = new Set([
   'navigation',
   'closureAlert',
   'presidentNote',
+]);
+
+// Board-authored CONTENT types whose destructive Delete is replaced by Archive
+// (soft-delete into "Recently deleted"). Deliberately excludes singletons (you
+// don't delete those), machine/inbox types (submissions, subscribers, sign-up &
+// hours entries, moderated photos — the Clean up tool handles those in bulk),
+// and trashedItem itself. Keep this in sync when a new content type is added.
+export const ARCHIVABLE_TYPES = new Set([
+  'page',
+  'post',
+  'event',
+  'legalPage',
+  'class',
+  'staff',
+  'faqItem',
+  'testimonial',
+  'schoolYearEvent',
+  'program',
+  'boardMember',
+  'partner',
+  'credential',
+  'campaign',
+  'jobPosting',
+  'resource',
+  'photoAlbum',
+  'hubPage',
+  'update',
+  'hubDocument',
+  'teacherNote',
+  'directoryEntry',
+  'celebration',
+  'newsletterIssue',
+  'signupSheet',
+  'coopRole',
+  'venue',
+  'announcement',
+  'redirect',
 ]);
