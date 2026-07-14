@@ -1,9 +1,17 @@
 // =============================================================================
-// Family Hub — Documents & Forms (interim data, mirrors the current live hub)
+// Family Hub — Documents & Forms (fallback list)
 // =============================================================================
-// Interim source for the Documents page until this moves to Sanity (so the
-// board can update links without code). Links point to the school's shared
-// Google Drive / Canva files — gated content, not public. No PII here.
+// The Documents page reads its list from Sanity first (hubDocument docs); this
+// array is only the fallback used when Sanity is empty/unreachable.
+//
+// SECURITY (2026-07-14): the literal file URLs were REDACTED. They are "anyone
+// with the link" Google Drive / Canva files (state forms, the WCP Safety Plan,
+// bylaws, the proposed budget). This repo is PUBLIC, so hardcoding them here
+// disclosed working links to anyone reading the source. The board manages the
+// real links in the Studio (Family Hub -> Documents & Forms); never paste a
+// share-by-link URL back into a tracked file. Entries with an empty href are
+// filtered out at render time (see documents.astro), so they never appear as
+// dead links. See CLAUDE.md "Secrets never get committed".
 // =============================================================================
 
 export interface HubDoc {
@@ -22,6 +30,8 @@ export interface HubDocGroup {
   docs: HubDoc[];
 }
 
+// Titles/metas describe what the board should link in the Studio; hrefs are
+// intentionally empty here (see the security note above).
 export const documentGroups: HubDocGroup[] = [
   {
     key: 'required',
@@ -30,26 +40,10 @@ export const documentGroups: HubDocGroup[] = [
     intro:
       'Ohio state licensing requires these four on file before your child’s first day. New families, start here.',
     docs: [
-      {
-        name: 'Health & Immunization Record',
-        icon: 'heart-pulse',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Emergency Contact Form',
-        icon: 'phone',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Medical Authorization Form',
-        icon: 'file-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Photo & Media Release Form',
-        icon: 'camera',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
+      { name: 'Health & Immunization Record', icon: 'heart-pulse', href: '' },
+      { name: 'Emergency Contact Form', icon: 'phone', href: '' },
+      { name: 'Medical Authorization Form', icon: 'file-check', href: '' },
+      { name: 'Photo & Media Release Form', icon: 'camera', href: '' },
     ],
   },
   {
@@ -57,41 +51,27 @@ export const documentGroups: HubDocGroup[] = [
     label: 'Handbooks & Policies',
     action: 'Open document',
     docs: [
-      {
-        name: 'Family Handbook 2026-27',
-        icon: 'book-open',
-        href: 'https://canva.link/***REMOVED***',
-      },
-      {
-        name: 'WCP Bylaws',
-        meta: 'Governing documents',
-        icon: 'scale',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
+      { name: 'Family Handbook 2026-27', icon: 'book-open', href: '' },
+      { name: 'WCP Bylaws', meta: 'Governing documents', icon: 'scale', href: '' },
       {
         name: 'Super Helper Guide',
         meta: 'Classroom helper certification process',
         icon: 'shield-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
       {
         name: 'WCP Safety Plan',
         meta: 'Required by Ohio licensing',
         icon: 'shield-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
       {
         name: 'Co-op Structure Org Chart',
         meta: '2026-27 roles and reporting',
         icon: 'clipboard-list',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
-      {
-        name: 'Proposed Budget 2026-27',
-        meta: 'For board transparency',
-        icon: 'coins',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
+      { name: 'Proposed Budget 2026-27', meta: 'For board transparency', icon: 'coins', href: '' },
     ],
   },
   {
@@ -103,17 +83,13 @@ export const documentGroups: HubDocGroup[] = [
         name: 'May Gathering Slide Deck',
         meta: '2026-27 welcome meeting (May 11, 2026)',
         icon: 'party-popper',
-        href: 'https://docs.google.com/presentation/d/***REMOVED***/edit?usp=sharing',
+        href: '',
       },
-      {
-        name: 'Orientation Slide Deck',
-        meta: '2025-26 version (current)',
-        icon: 'graduation-cap',
-        href: 'https://canva.link/***REMOVED***',
-      },
+      { name: 'Orientation Slide Deck', meta: '2025-26 version (current)', icon: 'graduation-cap', href: '' },
     ],
   },
 ];
 
-/** The shared Google Drive folder that holds everything (linked from the page). */
-export const driveFolderUrl = '#'; // SETUP(nathan): paste the shared WCP Drive folder link
+/** The shared Google Drive folder that holds everything (linked from the page).
+ *  Board-managed in the Studio; keep '#' here so nothing is hardcoded. */
+export const driveFolderUrl = '#';

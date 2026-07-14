@@ -8,36 +8,37 @@
 //   4. A Google Apps Script that serves the school Google Calendar as JSON
 //
 // The EDITABLE sources of truth live in Sanity (class docs: `photoAlbumUrl`,
-// `helperScheduleUrl`; siteSettings: `budgetSheetId`,
-// `calendarFeedUrl`) so the Board can rotate links each year in the Studio.
-// The values below are the current, working links (carried over from the old
-// Squarespace hub, verified 2026-05-14) used per field when Sanity is blank
-// or unreachable — same fallback pattern as documents.ts / coop-roles.ts.
-// None of this is family PII; they are school-owned, share-by-link resources
-// that only render behind the hub gate.
+// `helperScheduleUrl`; siteSettings: `budgetSheetId`, `calendarFeedUrl`) so the
+// Board can rotate links each year in the Studio.
+//
+// SECURITY (2026-07-14): the literal fallback URLs were REDACTED from this file.
+// They are "anyone with the link" Google resources (per-class photo albums of
+// children, helper-schedule Sheets with parent names, the treasurer's budget
+// Sheet, the calendar feed). This repo is PUBLIC, so hardcoding them disclosed
+// working links to anyone reading the source. Set these values ONLY in the
+// Studio; never paste a share-by-link URL back into a tracked file. When Sanity
+// has no value the widget renders its designed empty state (see the consumers).
+// Same policy applies to documents.ts. See CLAUDE.md "Secrets never get committed".
 // =============================================================================
 
-/** Per-class Google Photos album (this school year). Keyed by class slug. */
+/** Per-class Google Photos album. REDACTED: set in Sanity (class `photoAlbumUrl`). */
 export const photoAlbumFallback: Record<string, string> = {
-  twos: 'https://photos.app.goo.gl/***REMOVED***',
-  threes: 'https://photos.app.goo.gl/***REMOVED***',
-  'pre-k-am': 'https://photos.app.goo.gl/***REMOVED***',
-  'pre-k-pm': 'https://photos.app.goo.gl/***REMOVED***',
+  twos: '',
+  threes: '',
+  'pre-k-am': '',
+  'pre-k-pm': '',
 };
 
-/** Per-class helper-schedule Google Sheet. Keyed by class slug. */
+/** Per-class helper-schedule Sheet. REDACTED: set in Sanity (class `helperScheduleUrl`). */
 export const helperScheduleFallback: Record<string, string> = {
-  twos: 'https://docs.google.com/spreadsheets/d/***REMOVED***/edit?usp=sharing',
-  threes:
-    'https://docs.google.com/spreadsheets/d/***REMOVED***/edit?usp=sharing',
-  'pre-k-am':
-    'https://docs.google.com/spreadsheets/d/***REMOVED***/edit?usp=sharing',
-  'pre-k-pm':
-    'https://docs.google.com/spreadsheets/d/***REMOVED***/edit?usp=sharing',
+  twos: '',
+  threes: '',
+  'pre-k-am': '',
+  'pre-k-pm': '',
 };
 
-/** The treasurer's Budget Google Sheet (tabs: "Budget", "Fundraising"). */
-export const budgetSheetIdFallback = '***REMOVED***';
+/** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (siteSettings.budgetSheetId). */
+export const budgetSheetIdFallback = '';
 
 /** The school Google Calendar's ID — the primary calendar of the school's
  *  contact account (from the old site's embed `cid`). Drives the calendar
@@ -45,10 +46,9 @@ export const budgetSheetIdFallback = '***REMOVED***';
  *  siteSettings (`googleCalendarId`). */
 export const googleCalendarIdFallback = 'contact@westchesterpreschool.org';
 
-/** Apps Script endpoint serving the school Google Calendar as JSON
- *  (rolling 12 months; deployed 2026-05-05). */
-export const calendarFeedUrlFallback =
-  'https://script.google.com/macros/s/***REMOVED***/exec';
+/** Apps Script endpoint serving the school Google Calendar as JSON.
+ *  REDACTED: set in Sanity (siteSettings.calendarFeedUrl). */
+export const calendarFeedUrlFallback = '';
 
 /** Grand totals from finished school years — the old site's "What We Have
  *  Raised Together" band, now on the hub Fundraising page. Editable on

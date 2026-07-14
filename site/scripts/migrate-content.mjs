@@ -344,69 +344,48 @@ DATA.coopRoles.forEach((r, i) => {
 });
 
 // ---- Family Hub: Documents & Forms -----------------------------------------
+// SECURITY (2026-07-14): the share-by-link file URLs were REDACTED from this
+// seed script (public repo). This migration has already run; the board manages
+// the real links in the Studio (Family Hub -> Documents & Forms). If you ever
+// re-seed, paste the current links into the Studio afterward, not here.
 const HUB_DOC_GROUPS = [
   {
     key: 'required',
     docs: [
-      {
-        name: 'Health & Immunization Record',
-        icon: 'heart-pulse',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Emergency Contact Form',
-        icon: 'phone',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Medical Authorization Form',
-        icon: 'file-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
-      {
-        name: 'Photo & Media Release Form',
-        icon: 'camera',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
+      { name: 'Health & Immunization Record', icon: 'heart-pulse', href: '' },
+      { name: 'Emergency Contact Form', icon: 'phone', href: '' },
+      { name: 'Medical Authorization Form', icon: 'file-check', href: '' },
+      { name: 'Photo & Media Release Form', icon: 'camera', href: '' },
     ],
   },
   {
     key: 'handbook',
     docs: [
-      {
-        name: 'Family Handbook 2026-27',
-        icon: 'book-open',
-        href: 'https://canva.link/***REMOVED***',
-      },
-      {
-        name: 'WCP Bylaws',
-        description: 'Governing documents',
-        icon: 'scale',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
-      },
+      { name: 'Family Handbook 2026-27', icon: 'book-open', href: '' },
+      { name: 'WCP Bylaws', description: 'Governing documents', icon: 'scale', href: '' },
       {
         name: 'Super Helper Guide',
         description: 'Classroom helper certification process',
         icon: 'shield-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
       {
         name: 'WCP Safety Plan',
         description: 'Required by Ohio licensing',
         icon: 'shield-check',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
       {
         name: 'Co-op Structure Org Chart',
         description: '2026-27 roles and reporting',
         icon: 'clipboard-list',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
       {
         name: 'Proposed Budget 2026-27',
         description: 'For board transparency',
         icon: 'coins',
-        href: 'https://drive.google.com/file/d/***REMOVED***/view',
+        href: '',
       },
     ],
   },
@@ -417,13 +396,13 @@ const HUB_DOC_GROUPS = [
         name: 'May Gathering Slide Deck',
         description: '2026-27 welcome meeting (May 11, 2026)',
         icon: 'party-popper',
-        href: 'https://docs.google.com/presentation/d/***REMOVED***/edit?usp=sharing',
+        href: '',
       },
       {
         name: 'Orientation Slide Deck',
         description: '2025-26 version (current)',
         icon: 'graduation-cap',
-        href: 'https://canva.link/***REMOVED***',
+        href: '',
       },
     ],
   },
