@@ -15,6 +15,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Icon from '@/components/Icon.astro';
 import SanityImage from '@/components/SanityImage.astro';
+import HubPill from '@/components/hub/HubPill.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { classLabel } from '@/lib/class-colors';
 
@@ -25,6 +26,7 @@ interface Update {
   publishedAt: string;
   pinned?: boolean;
   audience?: string;
+  category?: string;
   excerpt?: string;
   image?: { asset?: unknown; alt?: string } | null;
 }
@@ -32,7 +34,7 @@ interface Update {
 let updates: Update[] = [];
 try {
   const raw = await sanityFetch<(Update & { showUntil?: string })[]>(
-    `*[_type == "update"] | order(publishedAt desc){ _id, title, "slug": slug.current, publishedAt, pinned, showUntil, audience, excerpt, image }`,
+    `*[_type == "update"] | order(publishedAt desc){ _id, title, "slug": slug.current, publishedAt, pinned, showUntil, audience, category, excerpt, image }`,
   );
   // A pin past its `showUntil` no longer counts as pinned (it stays in the list,
   // just un-pinned), so an expired snow-day notice sinks into date order.
@@ -93,6 +95,10 @@ const intro =
                         </span>
                       )}
                       <span class="text-sm text-ink-muted">{fmtDate(u.publishedAt)}</span>
+                      {/* Category pill (shared vocabulary): minutes are the
+                          exception worth marking; announcements are the
+                          default and stay unpilled. */}
+                      {u.category === 'minutes' && <HubPill kind="past">Meeting minutes</HubPill>}
                       {u.audience && u.audience !== 'all' && (
                         <span class="rounded-full bg-sky/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
                           {classLabel(u.audience)}

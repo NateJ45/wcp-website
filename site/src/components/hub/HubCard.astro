@@ -64,8 +64,10 @@ const Tag = isLink ? 'a' : as;
 const hasHeader = Boolean(icon) || Boolean(title);
 
 const base = 'rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface';
+// Pressed state (Track E micro-feedback): a subtle scale-down on press, still
+// exempt under reduced motion like the hover lift.
 const interactiveClasses = isInteractive
-  ? 'no-underline transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0'
+  ? 'no-underline transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md active:scale-[0.985] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100'
   : '';
 ---
 

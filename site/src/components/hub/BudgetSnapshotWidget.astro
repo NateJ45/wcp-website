@@ -16,6 +16,7 @@
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
+import HubStat from '@/components/hub/HubStat.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { getBudgetSnapshot, type BudgetSnapshot } from '@/lib/gsheets';
 import { budgetSheetIdFallback } from '@/data/hub/live-links';
@@ -55,18 +56,16 @@ const health = !snap
   {
     snap && health && (
       <div>
-        <div class="flex items-baseline justify-between gap-3">
-          <div>
-            <p class="text-[0.68rem] font-bold tracking-wide text-ink-muted uppercase">
-              School account balance
-            </p>
-            <p class="font-display text-3xl text-heading">{money(snap.cash)}</p>
-          </div>
+        <div class="flex items-start justify-between gap-3">
+          <HubStat
+            value={money(snap.cash)}
+            label="School account balance"
+            footnote={`As of ${snap.monthLabel}`}
+          />
           <span class={`rounded-full px-2.5 py-0.5 text-xs font-bold text-white ${health.fill}`}>
             {health.label}
           </span>
         </div>
-        <p class="mt-1 text-xs text-ink-muted">As of {snap.monthLabel}</p>
 
         <div class="mt-4 space-y-3">
           <div>

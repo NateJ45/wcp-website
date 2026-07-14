@@ -71,6 +71,20 @@ try {
   entries = [];
 }
 
+// Alpha jump rail (2026-07-14 app-elevation): the letters that actually have
+// families, each linking to that letter's first card. Pure anchors — works
+// with no JS. `firstOfLetter` marks which card carries each letter's id.
+const lettersPresent = [...new Set(entries.map((f) => f.familyName.charAt(0).toUpperCase()))];
+const firstOfLetter = new Map<string, string>(); // letter -> entry _id
+for (const f of entries) {
+  const l = f.familyName.charAt(0).toUpperCase();
+  if (!firstOfLetter.has(l)) firstOfLetter.set(l, f._id);
+}
+const letterFor = (f: DirEntry) => {
+  const l = f.familyName.charAt(0).toUpperCase();
+  return firstOfLetter.get(l) === f._id ? l : null;
+};
+
 // Families with a geocoded pin, for the map.
 const mapFamilies = entries
   .filter(
@@ -170,14 +184,37 @@ const intro =
                 Map
               </button>
             </div>
+            {/* Alpha jump rail: plain anchors to each letter's first card
+                (scroll-mt clears the sticky desktop topbar). Only letters
+                with families render, so it never dead-ends. */}
+            {lettersPresent.length > 2 && (
+              <nav aria-label="Jump to families by letter" class="mb-5">
+                <ul class="flex flex-wrap gap-1">
+                  {lettersPresent.map((l) => (
+                    <li>
+                      <a
+                        href={`#dir-${l}`}
+                        class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-heading no-underline hover:bg-navy/10 dark:hover:bg-white/10"
+                      >
+                        {l}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
             <ul id="dir-list" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {entries.map((f) => {
                 const kidClasses = [
                   ...new Set((f.children ?? []).map((c) => c.class).filter(Boolean)),
                 ] as string[];
                 const contacts = (f.parents ?? []).filter((p) => p.email || p.phone);
+                const letter = letterFor(f);
                 return (
-                  <li class="wcp-lift group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-lg dark:bg-surface">
+                  <li
+                    id={letter ? `dir-${letter}` : undefined}
+                    class="wcp-lift group flex scroll-mt-20 flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-lg dark:bg-surface"
+                  >
                     {/* Large portrait family photo with class overlay */}
                     <div class="relative aspect-[3/4] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
                       {f.photo?.asset ? (
@@ -189,12 +226,24 @@ const intro =
                           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (
+                        /* No-photo fallback (2026-07-14 app-elevation): a
+                           class-color RINGED initial avatar on the soft tint —
+                           the panel keeps the photo slot's 3:4 rhythm, but the
+                           avatar reads as a deliberate profile mark instead of
+                           an empty tile. Ring = classStyles border (AA-safe
+                           theme-stable class shade). */
                         <div
                           class={`flex h-full w-full items-center justify-center ${classStyles(kidClasses[0]).softBg}`}
                           aria-hidden="true"
                         >
-                          <span class={`font-display text-6xl ${classStyles(kidClasses[0]).text}`}>
-                            {f.familyName.charAt(0)}
+                          <span
+                            class={`flex h-24 w-24 items-center justify-center rounded-full border-4 bg-white shadow-sm dark:bg-surface ${classStyles(kidClasses[0]).border}`}
+                          >
+                            <span
+                              class={`font-display text-4xl ${classStyles(kidClasses[0]).text}`}
+                            >
+                              {f.familyName.charAt(0)}
+                            </span>
                           </span>
                         </div>
                       )}
@@ -270,7 +319,11 @@ const intro =
                         <div class="mt-4 space-y-2">
                           {contacts.map((p) => (
                             <div class="flex flex-wrap items-center gap-2">
-                              <span class="w-14 shrink-0 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                              {/* min-w (not w): a fixed 56px box wrapped long names
+                                  mid-word ("PARAMIT / A" — 2026-07 responsive audit).
+                                  Short names keep the aligned column; long ones take
+                                  the room they need and the buttons wrap below. */}
+                              <span class="min-w-14 text-xs font-semibold tracking-wide whitespace-nowrap text-ink-muted uppercase">
                                 {p.name?.split(' ')[0]}
                               </span>
                               {p.email && (

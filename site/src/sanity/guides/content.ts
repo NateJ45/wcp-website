@@ -231,6 +231,10 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
+      {
+        kind: 'p',
+        text: 'For something every family must notice (a closure, a deadline), also turn on **Highlight in the bell menu** on that Update. It sits at the top of the hub’s bell menu with an "Important" tag until you turn it off — so do turn it off once it has run its course.',
+      },
       { kind: 'h', text: 'Sign-up sheets and RSVPs' },
       {
         kind: 'p',

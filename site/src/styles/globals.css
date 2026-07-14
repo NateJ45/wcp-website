@@ -96,6 +96,31 @@
   }
 }
 
+/* Persistent hub shell (2026-07-14 app-elevation Track A): the rail, both top
+   bars, and the phone tab bar get their own view-transition names, so on a
+   hub→hub navigation the browser snapshots them as separate groups. Their
+   geometry is identical on every hub page, so they hold perfectly STILL while
+   only the content (the root snapshot) fades/rises — the app shell reads as
+   persistent without any client routing. Names must be unique per page: the
+   desktop bar and phone strip both exist in the DOM but only one is ever
+   displayed (display:none elements are not captured), and they carry distinct
+   names anyway. Scoped to motion-welcome visitors; under reduced motion the
+   elements stay unnamed and ride the (animation-less) instant root swap. */
+@media (prefers-reduced-motion: no-preference) {
+  .hub-rail-aside {
+    view-transition-name: hub-rail;
+  }
+  [data-hub-topbar] {
+    view-transition-name: hub-topbar;
+  }
+  [data-hub-topstrip] {
+    view-transition-name: hub-topstrip;
+  }
+  [data-hub-tabbar] {
+    view-transition-name: hub-tabbar;
+  }
+}
+
 /* 2. Fonts -------------------------------------------------------------------
    Quicksand (body) is a variable font from Fontsource; Vite bundles + hashes
    its woff2 automatically. Captain Comic (headings) is licensed to WCP and
@@ -464,6 +489,11 @@
   }
   .wcp-lift:hover {
     transform: translateY(-0.375rem);
+  }
+  /* Pressed state (2026-07-14 Track E): the lift settles into a subtle press,
+     so taps read as physical. Inside this no-preference block on purpose. */
+  .wcp-lift:active {
+    transform: translateY(0) scale(0.985);
   }
 
   /* Idle float — the sun/cloud emblem and other decorative marks drift gently. */

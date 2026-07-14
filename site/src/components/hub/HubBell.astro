@@ -1,0 +1,117 @@
+---
+/* ============================================================================
+   HubBell — the hub's "what's new" bell + panel
+   ============================================================================
+   A native <details> menu (keyboard accessible, works with NO JS: opening it
+   always shows the server-rendered recent list; only the count badge and the
+   mark-seen behavior are script-added). Two layers of "new":
+
+   1. Board highlights — updates with `highlight: true` (schema field added
+      2026-07-14) pin to the top with an "Important" pill, independent of
+      whether this device has seen them. The Board turns them off manually.
+   2. Device freshness — rows carry data-published, so hub-fresh.ts pills the
+      ones newer than this device's last look and puts a count badge on the
+      bell ([data-bell-badge]). Opening the panel marks everything seen.
+
+   Data is fetched ONCE by HubTopBar (which renders a bell for both the
+   desktop bar and the phone strip) and passed in, so the two instances never
+   double-fetch. `tone` matches the surface: 'bar' (white desktop bar) or
+   'navy' (the phone strip). hub-menus.ts closes the panel on outside
+   click/Esc.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import HubPill from '@/components/hub/HubPill.astro';
+import { cn } from '@/lib/utils';
+
+export interface BellItem {
+  title: string;
+  href: string;
+  /** ISO datetime driving the device-freshness check. */
+  publishedAt: string;
+  /** Board-flagged important (pins to top with the amber pill). */
+  highlight?: boolean;
+  /** Small meta line, e.g. "Announcement" or "Document". */
+  meta?: string;
+}
+
+interface Props {
+  items: BellItem[];
+  tone?: 'bar' | 'navy';
+}
+const { items, tone = 'bar' } = Astro.props;
+
+const highlights = items.filter((i) => i.highlight);
+const rest = items.filter((i) => !i.highlight);
+
+const fmtDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isFinite(d.getTime())
+    ? d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'America/New_York',
+      })
+    : '';
+};
+const metaLine = (item: BellItem) =>
+  [item.meta, fmtDate(item.publishedAt)].filter(Boolean).join(' · ');
+---
+
+<details class="relative" data-hub-bell data-hub-menu>
+  <summary
+    class={cn(
+      'inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-md transition-colors [&::-webkit-details-marker]:hidden',
+      tone === 'navy'
+        ? 'text-white hover:bg-white/10'
+        : 'text-ink hover:bg-navy/5 dark:hover:bg-white/10',
+    )}
+    aria-label="What's new"
+  >
+    <span class="relative inline-flex">
+      <Icon name="bell" class="h-5 w-5" />
+      {/* hub-fresh.ts drops the unseen-count badge in here. */}
+      <span data-bell-badge class="absolute -top-1.5 -right-1.5"></span>
+    </span>
+  </summary>
+
+  <div
+    class="absolute right-0 z-40 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+    data-bell-panel
+  >
+    <p class="px-3 pt-2 pb-1 text-xs font-bold tracking-wide text-ink-muted uppercase">
+      What's new
+    </p>
+    {
+      items.length === 0 ? (
+        <p class="px-3 py-3 text-sm text-ink-muted">
+          All caught up. New announcements and documents will show up here.
+        </p>
+      ) : (
+        <ul class="max-h-80 overflow-y-auto">
+          {[...highlights, ...rest].map((item) => (
+            <li data-published={item.publishedAt}>
+              <a
+                href={item.href}
+                class="block rounded-lg px-3 py-2 no-underline hover:bg-grey dark:hover:bg-white/5"
+              >
+                <span class="flex items-center gap-2">
+                  <span class="min-w-0 flex-1 truncate text-sm font-bold text-heading">
+                    {item.title}
+                  </span>
+                  {item.highlight && <HubPill kind="important">Important</HubPill>}
+                </span>
+                <span class="mt-0.5 block text-xs text-ink-muted">{metaLine(item)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <a
+      href="/family-hub/updates"
+      class="mt-1 block rounded-lg border-t border-border px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
+    >
+      All updates
+    </a>
+  </div>
+</details>

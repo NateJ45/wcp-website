@@ -1,0 +1,125 @@
+---
+/* ============================================================================
+   HubRing — SVG progress ring (attainment at a glance)
+   ============================================================================
+   The geometric sibling of HubProgress (2026-07-14 app-elevation kit): rings
+   for goal attainment (co-op hours, fundraising), bars for linear spans (the
+   school year). Same ARIA contract as HubProgress: value/max are raw numbers,
+   the exposed aria-valuenow is the clamped 0-100 percent, and max<=0 renders 0
+   instead of NaN.
+
+   Colors: pass a text-* class; the ring strokes with currentColor. Defaults to
+   sky-ink. Rings are informative graphics (3:1 minimum), so use the measured
+   `-ink` shades on light surfaces — bright brand tints fail. `tone="navy"`
+   swaps the track for the command strip and strokes white.
+
+   The fill is server-rendered at its final value; Track E may add a dash
+   transition later (behind prefers-reduced-motion), so no client JS here.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  value: number;
+  max?: number;
+  /** Accessible label, e.g. "Co-op hours this year". */
+  label: string;
+  /** Optional spoken value, e.g. "12 of 20 hours". */
+  valueText?: string;
+  /** Center text; defaults to the percentage. */
+  centerText?: string;
+  /** Small line under the center text (keep to ~6 chars). */
+  centerSub?: string;
+  size?: 'sm' | 'md';
+  /** text-* color class for the fill stroke (AA: use -ink shades on white). */
+  color?: string;
+  tone?: 'card' | 'navy';
+  class?: string;
+}
+const {
+  value,
+  max = 100,
+  label,
+  valueText,
+  centerText,
+  centerSub,
+  size = 'md',
+  color = 'text-sky-ink dark:text-sky',
+  tone = 'card',
+  class: className,
+} = Astro.props;
+
+const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((value / max) * 100))) : 0;
+// r chosen so circumference = 100 (2πr = 100): dasharray maps 1:1 to percent.
+const R = 15.9155;
+const dims = size === 'sm' ? 'h-14 w-14' : 'h-20 w-20';
+const center = centerText ?? `${pct}%`;
+const onNavy = tone === 'navy';
+---
+
+<div
+  class={cn('relative inline-flex items-center justify-center', dims, className)}
+  role="progressbar"
+  aria-label={label}
+  aria-valuenow={pct}
+  aria-valuemin={0}
+  aria-valuemax={100}
+  aria-valuetext={valueText}
+>
+  <svg
+    viewBox="0 0 36 36"
+    class={cn('h-full w-full -rotate-90', onNavy ? 'text-white' : color)}
+    aria-hidden="true"
+  >
+    <circle
+      cx="18"
+      cy="18"
+      r={R}
+      fill="none"
+      stroke-width="3.5"
+      class={onNavy ? 'stroke-white/20' : 'stroke-navy/10 dark:stroke-white/15'}></circle>
+    <circle
+      class="wcp-ring-fill"
+      cx="18"
+      cy="18"
+      r={R}
+      fill="none"
+      stroke-width="3.5"
+      stroke-linecap="round"
+      stroke="currentColor"
+      stroke-dasharray={`${pct} 100`}></circle>
+  </svg>
+  <span class="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
+    <span
+      class={cn(
+        'font-display tabular-nums',
+        size === 'sm' ? 'text-xs' : 'text-sm',
+        onNavy ? 'text-white' : 'text-heading',
+      )}>{center}</span
+    >
+    {
+      centerSub && (
+        <span
+          class={cn('text-[0.6rem] font-semibold', onNavy ? 'text-white/85' : 'text-ink-muted')}
+        >
+          {centerSub}
+        </span>
+      )
+    }
+  </span>
+</div>
+
+<style>
+  /* Track E micro-feedback: the fill sweeps from 0 to its value on load.
+     CSS-only (dasharray keyframe), and reduced-motion users see the ring
+     already filled — the server renders the final dasharray. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-ring-fill {
+      animation: wcp-ring-fill 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes wcp-ring-fill {
+      from {
+        stroke-dasharray: 0 100;
+      }
+    }
+  }
+</style>

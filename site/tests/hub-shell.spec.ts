@@ -87,4 +87,49 @@ test.describe('Family Hub shell', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-rail-collapsed', '');
     expect((await aside.boundingBox())!.width).toBeGreaterThan(collapsedWidth + 60);
   });
+
+  // The desktop topbar + bell + quick actions (2026-07-14 app-elevation
+  // Track A). Menus are native <details>; hub-menus.ts adds Esc/outside-close.
+  test('topbar: bell and quick-action menus open, close on Esc, pass axe open', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/family-hub/documents', { waitUntil: 'load' });
+    await settle(page);
+
+    const topbar = page.locator('[data-hub-topbar]');
+    await expect(topbar).toBeVisible();
+
+    // Bell: opens its server-rendered panel; Esc closes it again.
+    const bell = topbar.locator('details[data-hub-bell]');
+    await bell.locator('summary').click();
+    await expect(bell.locator('[data-bell-panel]')).toBeVisible();
+    await expect(bell.locator('a[href="/family-hub/updates"]')).toBeVisible();
+
+    // Axe with the panel open (both themes) — pill/panel contrast gate.
+    for (const theme of ['light', 'dark'] as const) {
+      await page.evaluate((t) => {
+        document.documentElement.classList.toggle('dark', t === 'dark');
+      }, theme);
+      const results = await new AxeBuilder({ page }).analyze();
+      expect(
+        results.violations,
+        `[${theme}] ` + results.violations.map((v) => v.id).join(', '),
+      ).toEqual([]);
+    }
+
+    await page.keyboard.press('Escape');
+    await expect(bell.locator('[data-bell-panel]')).not.toBeVisible();
+
+    // Quick actions: three links; outside click closes the menu.
+    const quick = topbar.locator('details[data-hub-menu]:not([data-hub-bell])');
+    await quick.locator('summary').click();
+    await expect(quick.locator('a')).toHaveCount(3);
+    await page.mouse.click(500, 500);
+    await expect(quick.locator('a').first()).not.toBeVisible();
+
+    // The search affordance opens the palette.
+    await topbar.locator('[data-hub-search-open]').click();
+    await expect(page.locator('dialog[open], [role="dialog"]').first()).toBeVisible();
+  });
 });

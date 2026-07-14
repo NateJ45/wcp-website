@@ -102,6 +102,16 @@ the Home dashboard rather than a marketing page stacked in the shell. The patter
 - **Empty states** everywhere via `HubEmptyState`. **Icon-chip convention:** neutral is
   `bg-sky/15 text-sky-ink`; class-specific is `classStyles(slug).iconChip`; semantic
   (money/health/celebration) only where it carries meaning.
+- **The data expression kit** (2026-07-14 app-elevation Track C, all in
+  `src/components/hub/`, all server-rendered, zero client libraries): **`HubStat`** (big
+  tabular-numeral KPI + label + optional delta chip; `tone="navy"` variant reserved for the
+  Home command strip), **`HubRing`** (SVG progress ring, same clamped-percent ARIA contract as
+  `HubProgress`), **`HubSpark`** (tiny `aria-hidden` sparkline — honest series only, real
+  numbers always adjacent in text), **`HubPill`** (the ONE status-pill vocabulary: `new` /
+  `open` / `waitlist` / `important` / `due` / `past`; extend the set in the component, never
+  improvise a pill on a page), and **`HubTable`** (styled table shell whose rows stack into
+  cards below `md` via `data-th` cell labels). See
+  [the elevation plan](superpowers/specs/2026-07-14-family-hub-app-elevation-plan.md).
 
 **Accessibility landmines this layout hit (all now guarded by `npm run test:hub`):**
 
@@ -247,7 +257,24 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   `main` so content clears it.
 - **Search (Cmd/Ctrl+K)** — `HubSearch` dialog + `hub-search.ts`, fed by the gated
   `/family-hub/api/search-index` (hub pages from `hub-nav.ts`, updates, documents,
-  open sign-up sheets). Triggers: the rail's Search row + the top bar's icon.
+  open sign-up sheets). Triggers: the rail's Search row, the phone strip's icon, and
+  the desktop topbar's search field.
+- **Desktop topbar** (2026-07-14 app-elevation Track A, in `HubTopBar.astro` alongside
+  the phone strip): a sticky `h-14` bar over the content column with the page title, a
+  visible search-field affordance for the palette, the what's-new **bell**, and a "New"
+  quick-action menu (Sign up to help / Pay tuition / Contact the board). The menus are
+  native `<details data-hub-menu>` — usable with no JS — and `hub-menus.ts` adds
+  outside-click/Escape closing. `HubTable`'s sticky column headers offset by `lg:top-14`
+  to slide under this bar; keep the two heights in sync.
+- **The bell** (`HubBell.astro`): server-renders the recent feed (updates + newest
+  documents, one `BOARD_CONTENT_CACHE`-tier query fetched once in `HubTopBar` and shared
+  by both bell instances). Updates with the Board's **`highlight`** checkbox pin to the
+  top with an amber "Important" pill until the Board unchecks them. `hub-fresh.ts` adds
+  the unseen-count badge and marks everything seen when a panel is opened.
+- **Persistent-shell view transitions**: the rail, both top bars, and the tab bar carry
+  `view-transition-name`s (globals.css), so hub→hub navigations hold the shell still
+  while only the content cross-fades — the app feel without client routing. Motion-only
+  (named under `prefers-reduced-motion: no-preference`).
 - **My classes** (`my-class.ts`, localStorage `wcp-my-classes`, no accounts):
   MULTI-select toggle chips on the home dashboard (plenty of families have kids in
   more than one class); each picked class's helper tile moves to the front with a
@@ -256,7 +283,19 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **"New since your last visit"** (`hub-fresh.ts`, localStorage `wcp-updates-seen`):
   home announcement/minutes items newer than your last Updates visit get a "New"
   pill and the Updates links (rail/drawer/tab bar) a count badge; opening Updates
-  clears it. Widgets carry `data-published` for this.
+  (or a bell panel) clears it. Widgets carry `data-published` for this; bell-panel
+  rows are excluded from the page tally (they duplicate page content) and drive the
+  bell's own badge instead.
+- **The Home command strip** (2026-07-14 app-elevation Track B): `HubGreeting` is the
+  hub's one hero-tier DATA surface — greeting + date/weather chips, then a row of live
+  deep-linking stats (days 'til school, next event from the cached calendar feed,
+  families count, the fundraising-year `HubRing`) over the school-year bar. Every
+  figure is real and SWR-cache-deduped with the widgets below; empty sources omit
+  their stat. The Fundraising widget pairs a ring with its `HubStat` + status
+  `HubPill`s, and Budget Snapshot's balance is a `HubStat`. Layout note: the class-tile
+  grid fills its bento row with `lg:flex-1` (wrapper is `lg:flex-col`), NOT `h-full` —
+  a percentage height there resolves after intrinsic row sizing and overflows the cell
+  into Announcements whenever the hero grows (bit twice on 2026-07-14).
 - **Texture & flair**: the canvas is construction paper (grain + hand-drawn doodle
   tile, light/dark variants — globals.css "Hub canvas texture"; direct grey Sections
   render transparent over it), a warm glow sits behind the greeting and a
@@ -273,7 +312,9 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 
 The **Updates** section is the meeting blog, migrated in full from the old Squarespace
 `/blog` ("School Updates"). Each post is a Sanity `update` doc with `title`, `slug`,
-`excerpt`, optional `image` (a flyer/graphic), `publishedAt`, `audience`, and a full
+`excerpt`, optional `image` (a flyer/graphic), `publishedAt`, `audience`, a
+**`highlight`** boolean ("Highlight in the bell menu" — pins the post to the top of the
+hub's what's-new bell with an "Important" tag until unchecked), and a full
 `blockContent` `body` (rich text preserved as Portable Text). The index
 (`/family-hub/updates`) lists posts as cards; each links to its own gated page
 (`/family-hub/updates/[slug].astro`, SSR) that renders the body in full via
@@ -346,18 +387,18 @@ code, FAQs, and the class-pet band) — seeded from Mrs. Lisa's 2026-27 PDF by
 edits happen in the Studio). Its fixed widget is the pair of AM/PM fact cards (facts, pay
 button, helper sheet, photo album per class).
 
-| Hub page    | Fixed widget (locked)                              | Already editable elsewhere                         |
-| ----------- | -------------------------------------------------- | -------------------------------------------------- |
-| Landing     | Quick-link nav grids                               | —                                                  |
-| Calendar    | Click-to-load Google Calendar embed + event legend | `googleCalendarId` in Site Settings                |
-| Co-op Jobs  | Role descriptions + tiered org chart               | `coopRole` docs (holders: `org-holders.ts`)        |
-| Documents   | Document library + required-forms callout          | `hubDocument` docs                                 |
-| Tuition     | Pay-card + fee-card layout, payment FAQ            | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
-| Updates     | Meeting-blog post list                             | `update` docs                                      |
-| Fundraising | Live campaign progress bars                        | `campaign` docs                                    |
-| Health      | Illness policy cards + closures band               | —                                                  |
-| Directory   | Opt-in family cards + map + privacy framing        | `directoryEntry` docs                              |
-| Class pages | Fact-card + pay-button layout, teacher modal       | `class` docs (facts, button) + `teacherNote` docs  |
+| Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Landing                           | Quick-link nav grids                                                                         | —                                                  |
+| Calendar (month-separated agenda) | Click-to-load Google Calendar embed + event legend                                           | `googleCalendarId` in Site Settings                |
+| Co-op Jobs                        | Role descriptions + tiered org chart                                                         | `coopRole` docs (holders: `org-holders.ts`)        |
+| Documents                         | Document library + required-forms callout                                                    | `hubDocument` docs                                 |
+| Tuition                           | Pay-card + fee-card layout, payment FAQ                                                      | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
+| Updates                           | Meeting-blog post list (minutes rows get a category pill)                                    | `update` docs                                      |
+| Fundraising                       | Year ring + stat, per-fundraiser status pills                                                | `campaign` docs                                    |
+| Health                            | Illness policy cards + closures band                                                         | —                                                  |
+| Directory                         | Opt-in family cards + map, alpha jump rail, class-ring initial avatars for no-photo families | `directoryEntry` docs                              |
+| Class pages                       | Fact-card + pay-button layout, teacher modal                                                 | `class` docs (facts, button) + `teacherNote` docs  |
 
 Only the widget **layout** stays in code. All of its content is Board-editable through its own
 doc type: class facts, tuition rates, and PayPal button ids live in the `class` docs and the

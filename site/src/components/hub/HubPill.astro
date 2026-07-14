@@ -1,0 +1,60 @@
+---
+/* ============================================================================
+   HubPill — the hub's ONE status-pill vocabulary
+   ============================================================================
+   Every status/state label in the hub renders through this so the whole app
+   speaks one color language (part of the 2026-07-14 app-elevation kit, see
+   docs/superpowers/specs/2026-07-14-family-hub-app-elevation-plan.md).
+
+   Anatomy: soft tint + small colored dot + NEUTRAL bold text. The dot carries
+   the color, the text stays text-heading, because colored `-ink` text on a
+   colored tint is the dark-mode AA trap (see CLAUDE.md). The dot is decorative
+   (the label text carries the meaning), so it has no contrast requirement.
+
+   Kinds (fixed set — extend HERE, never improvise a pill on a page):
+     new        sky     something added since the family last looked
+     open       green   spots open / active / confirmed / paid
+     waitlist   amber   waitlist / pending / almost full
+     important  amber   Board-highlighted (the bell menu's pinned items)
+     due        orange  action needed / due soon / expiring
+     past       neutral closed / archived / past event
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+type Kind = 'new' | 'open' | 'waitlist' | 'important' | 'due' | 'past';
+
+interface Props {
+  kind?: Kind;
+  class?: string;
+}
+const { kind = 'past', class: className } = Astro.props;
+
+// Full literals so Tailwind's JIT sees them (never build `bg-${x}`).
+const TINT: Record<Kind, string> = {
+  new: 'bg-sky/15 dark:bg-sky/20',
+  open: 'bg-green/15 dark:bg-green/20',
+  waitlist: 'bg-amber/25 dark:bg-amber/20',
+  important: 'bg-amber/25 dark:bg-amber/20',
+  due: 'bg-orange/15 dark:bg-orange/20',
+  past: 'bg-navy/10 dark:bg-white/10',
+};
+const DOT: Record<Kind, string> = {
+  new: 'bg-sky-ink dark:bg-sky',
+  open: 'bg-green-ink dark:bg-green',
+  waitlist: 'bg-orange-ink dark:bg-amber',
+  important: 'bg-orange-ink dark:bg-amber',
+  due: 'bg-orange-ink dark:bg-orange',
+  past: 'bg-ink-muted',
+};
+---
+
+<span
+  class={cn(
+    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold text-heading',
+    TINT[kind],
+    className,
+  )}
+>
+  <span class={cn('h-1.5 w-1.5 shrink-0 rounded-full', DOT[kind])} aria-hidden="true"></span>
+  <slot />
+</span>

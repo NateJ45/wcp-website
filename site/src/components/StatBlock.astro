@@ -21,12 +21,21 @@ const { value, prefix = '', suffix = '', label, class: className } = Astro.props
 
 <div
   class:list={[
-    'rounded-[var(--radius)] border border-white/10 bg-white/[0.06] p-8 text-center',
+    '@container rounded-[var(--radius)] border border-white/10 bg-white/[0.06] p-8 text-center',
     className,
   ]}
   data-reveal
 >
-  <span class="block font-display text-5xl leading-none text-amber">
+  {
+    /* nowrap + container-fluid size: a comma-formatted value ("$67,266") is a
+       legal line-break point and once wrapped mid-number in a narrow tile
+       (caught 2026-07-14 on the fundraising page's Board-added stats band).
+       cqi tracks THIS tile's width (the root is a @container), and the clamp
+       ceiling is 3rem = the old text-5xl, so wide layouts look identical. */
+  }
+  <span
+    class="block font-display text-[clamp(1.5rem,16cqi,3rem)] leading-none whitespace-nowrap text-amber tabular-nums"
+  >
     {prefix}<span data-countup data-count={value}>{value}</span>{suffix}
   </span>
   <span class="mt-3 block text-sm font-bold tracking-wide text-white uppercase">{label}</span>

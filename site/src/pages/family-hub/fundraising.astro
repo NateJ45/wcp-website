@@ -16,6 +16,9 @@ import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
+import HubRing from '@/components/hub/HubRing.astro';
+import HubStat from '@/components/hub/HubStat.astro';
+import HubPill from '@/components/hub/HubPill.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
@@ -80,12 +83,15 @@ const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
 const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
 const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
 
-// Status chips: neutral label text + a colored dot (the dark-mode tint rule).
-const STATUS_META: Record<FundraiserStatus, { label: string; dot: string }> = {
-  active: { label: 'Active', dot: 'bg-sky' },
-  upcoming: { label: 'Soon', dot: 'bg-amber' },
-  complete: { label: 'Done', dot: 'bg-green' },
-};
+// Status pills from the hub's shared vocabulary (HubPill) — same mapping the
+// home Fundraising widget uses: live → open, coming → waitlist, finished →
+// past. One color language across the whole hub.
+const STATUS_META: Record<FundraiserStatus, { label: string; kind: 'open' | 'waitlist' | 'past' }> =
+  {
+    active: { label: 'Active', kind: 'open' },
+    upcoming: { label: 'Soon', kind: 'waitlist' },
+    complete: { label: 'Done', kind: 'past' },
+  };
 const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
 const title = doc?.heading || 'Fundraising';
 const intro =
@@ -180,19 +186,26 @@ const fmtDeadline = (iso: string) =>
             )
           ) : (
             <>
+              {/* Year total: ring + stat (the 2026-07-14 kit) — the same pairing
+                  as the home widget and the command strip, at page scale. */}
               <HubCard class="mt-6">
-                <div class="flex items-end justify-between gap-4">
-                  <p class="font-display text-3xl text-heading">
-                    {money(totalRaised)}
-                    <span class="font-sans text-sm font-normal text-ink-muted">
-                      {' '}
-                      of {money(totalGoal)} annual goal
-                    </span>
-                  </p>
-                  <p class="text-lg font-bold text-heading">{totalPct}%</p>
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+                  <HubRing
+                    value={totalRaised}
+                    max={totalGoal}
+                    color="text-orange-ink dark:text-amber"
+                    label="Fundraising progress this year"
+                    valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
+                  />
+                  <HubStat
+                    size="lg"
+                    value={money(totalRaised)}
+                    label="raised this year"
+                    footnote={`${money(totalGoal)} annual goal · ${totalPct}%`}
+                  />
                 </div>
                 <HubProgress
-                  class="mt-2"
+                  class="mt-4"
                   height="h-4"
                   value={totalRaised}
                   max={totalGoal}
@@ -211,13 +224,9 @@ const fmtDeadline = (iso: string) =>
                       <p class="min-w-0 truncate font-bold text-heading" title={f.name}>
                         {f.name}
                       </p>
-                      <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-grey px-2.5 py-0.5 text-xs font-semibold text-heading">
-                        <span
-                          class={`h-1.5 w-1.5 rounded-full ${STATUS_META[f.status].dot}`}
-                          aria-hidden="true"
-                        />
+                      <HubPill kind={STATUS_META[f.status].kind} class="shrink-0">
                         {STATUS_META[f.status].label}
-                      </span>
+                      </HubPill>
                     </div>
                     <div class="mt-2 flex items-center justify-between text-sm">
                       <span class="font-semibold text-heading">

@@ -1,0 +1,64 @@
+---
+/* ============================================================================
+   HubSpark — tiny inline sparkline (decorative, honest data only)
+   ============================================================================
+   A 64x24 SVG mini bar/line chart for the few real series the hub has
+   (updates per month via _createdAt, events per month from the calendar feed,
+   per-campaign totals). ALWAYS aria-hidden with the real numbers adjacent in
+   text: the spark is texture, never the only carrier of the information.
+   Never feed it invented data (2026-07-14 app-elevation kit, "data is
+   honest"). Color rides currentColor: set a text-* class on it or a parent.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  data: number[];
+  type?: 'bar' | 'line';
+  class?: string;
+}
+const { data, type = 'bar', class: className } = Astro.props;
+
+const W = 64;
+const H = 24;
+const peak = Math.max(...data, 1);
+const n = Math.max(data.length, 1);
+
+// Bars: even slots with a 2px gutter, 2px minimum height so zero months
+// still show a baseline tick instead of vanishing.
+const slot = W / n;
+const bars = data.map((v, i) => {
+  const h = Math.max(2, Math.round((Math.max(0, v) / peak) * (H - 2)));
+  return { x: +(i * slot + 1).toFixed(1), y: H - h, w: +Math.max(1, slot - 2).toFixed(1), h };
+});
+
+const points = data
+  .map((v, i) => {
+    const x = n === 1 ? W / 2 : (i / (n - 1)) * (W - 2) + 1;
+    const y = H - 2 - (Math.max(0, v) / peak) * (H - 4);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  })
+  .join(' ');
+---
+
+<svg
+  viewBox={`0 0 ${W} ${H}`}
+  class={cn('inline-block h-6 w-16 shrink-0', className)}
+  aria-hidden="true"
+>
+  {
+    type === 'bar' ? (
+      bars.map((b) => (
+        <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1" class="fill-current opacity-70" />
+      ))
+    ) : (
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    )
+  }
+</svg>

@@ -61,6 +61,15 @@ export const update = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'highlight',
+      title: 'Highlight in the bell menu',
+      description:
+        'Marks this update "Important" in the hub\'s bell menu (top of the list, amber tag) so every family notices it even after they have caught up on what is new. Turn it off once it has run its course.',
+      type: 'boolean',
+      group: 'audience',
+      initialValue: false,
+    }),
+    defineField({
       name: 'showUntil',
       title: 'Hide from the hub home after (optional)',
       type: 'datetime',

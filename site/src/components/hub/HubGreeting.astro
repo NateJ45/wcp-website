@@ -1,31 +1,40 @@
 ---
 /* ============================================================================
-   HubGreeting — Family Hub home hero: greeting, chips, school-year bar
+   HubGreeting — the Home command strip: greeting, live stats, school-year bar
    ============================================================================
-   The dashboard's HERO TILE: a navy→sky gradient card with the sun-and-cloud
-   emblem, the time-of-day greeting in the display font, community chips, and
-   the school-year progress bar. The bento layout's dominant-color anchor —
-   every other tile stays a white card, so this is the one saturated moment
-   (restrained-color principle: one dominant color, sharp accents).
+   The dashboard's HERO TILE and (since the 2026-07-14 app-elevation Track B)
+   the hub's ONE hero-tier DATA surface: time-of-day greeting, ambient chips
+   (date, weather), then a row of live, deep-linking stats — next school event,
+   days 'til school, families, and the fundraising-year ring — over the
+   school-year progress bar. Every number is real (Sanity, the treasurer's
+   sheet, the calendar feed) and every stat links to its page. A stat whose
+   source is empty simply omits itself ("designed absence, not a broken zero").
 
-   Server-rendered only (no client JS, no ticking countdown). Greeting uses
-   America/New_York wall-clock time via Intl (NOT Date#getHours, which is UTC
-   in the Workers runtime with no local TZ data). Chips and the progress bar
-   each read optional siteSettings fields and simply omit themselves when
-   unset ("designed absence, not a broken zero").
+   Server-rendered only. The calendar + fundraising reads ride the same
+   SWR-cached helpers the widgets below already call, so within a request the
+   in-isolate cache dedupes them — no new blocking reads on first paint.
+   Greeting uses America/New_York wall-clock time via Intl (NOT Date#getHours,
+   which is UTC in the Workers runtime).
 
    THEME-STABLE ISLAND: like the hub rail, this navy tile looks identical in
    light and dark mode, so the gradient's sky end hardcodes the light-mode
    sky-ink hex (#166fa8, white text 5.4:1 AA) — the token flips to bright sky
-   in dark mode, where white text would fail. Chips are white-on-white/15
-   (never colored ink on a tint — see the CLAUDE.md dark-tint gotcha).
+   in dark mode, where white text would fail. Chips are white-on-white/15;
+   stats/ring use HubStat/HubRing's navy tone (white on navy — never colored
+   ink on a tint, see the CLAUDE.md dark-tint gotcha).
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
+import HubStat from '@/components/hub/HubStat.astro';
+import HubRing from '@/components/hub/HubRing.astro';
 import wcpEmblem from '@/assets/brand/wcp-emblem.png';
 import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
 import { getWeather } from '@/lib/hub-weather';
+import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
+import { getFundraisers } from '@/lib/gsheets';
+import { sanityFetch } from '@/lib/sanity';
+import { budgetSheetIdFallback, calendarFeedUrlFallback } from '@/data/hub/live-links';
 
 interface Props {
   tagline: string;
@@ -50,28 +59,44 @@ const todayLabel = now.toLocaleDateString('en-US', {
 const daysToFirstDay = daysUntil(firstDay, now);
 const daysToYearEnd = daysUntil(yearEnd, now);
 
-// Third chip: "N days 'til school" before the first day, a gentle end-of-year
-// note once the year has ended, otherwise nothing (mid-year has no single
-// glanceable number worth showing here — the progress bar covers that).
-let statusChip: { icon: string; text: string } | null = null;
-if (daysToFirstDay !== null && daysToFirstDay > 0) {
-  statusChip = {
-    icon: 'party-popper',
-    text: `${daysToFirstDay} day${daysToFirstDay === 1 ? '' : 's'} 'til school`,
-  };
-} else if (daysToYearEnd !== null && daysToYearEnd <= 0) {
-  statusChip = { icon: 'sun', text: 'Enjoy your summer!' };
-}
+// Post-year: a gentle chip — unless the countdown stat to the NEXT first day
+// is already showing (both true in summer once next year's dates are set).
+const countingDown = daysToFirstDay !== null && daysToFirstDay > 0;
+const summerChip = daysToYearEnd !== null && daysToYearEnd <= 0 && !countingDown;
 
-// Progress bar: only when both bounds are set AND form a real span (yearEnd
-// strictly after yearStart) — an equal or inverted pair would divide by zero
-// (or a negative span), so yearProgressPercent guards the denominator before
-// dividing, matching fundraising.astro's `pctOf` guard pattern. Clamps
-// outside the range so a stale date never produces a negative width either.
+// Progress bar: only when both bounds form a real span (yearProgressPercent
+// guards the divide-by-zero/inverted cases and clamps stale dates).
 const yearPct = yearProgressPercent(yearStart, yearEnd, now);
 
-const familiesLabel =
-  familyCount && familyCount > 0 ? `${familyCount} famil${familyCount === 1 ? 'y' : 'ies'}` : null;
+// --- Live stats (same settings-fallback pattern as the widgets below) ------
+const settings = await (async () => {
+  try {
+    return await sanityFetch<{ calendarFeedUrl?: string; budgetSheetId?: string } | null>(
+      `*[_type == "siteSettings"][0]{ calendarFeedUrl, budgetSheetId }`,
+    );
+  } catch {
+    return null;
+  }
+})();
+
+// Next school event (SWR-cached feed; the Upcoming Events widget re-uses it).
+const events: HubEvent[] = await getUpcomingEvents(
+  settings?.calendarFeedUrl || calendarFeedUrlFallback,
+);
+const nextEvent = events[0] ?? null;
+const nextEventDate = nextEvent
+  ? eventDate(nextEvent.start).toLocaleDateString('en-US', {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+    })
+  : null;
+
+// Fundraising year total (SWR-cached sheet; the Fundraising widget re-uses it).
+const fundraisers = await getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback);
+const raised = fundraisers.reduce((s, f) => s + f.raised, 0);
+const goal = fundraisers.reduce((s, f) => s + f.goal, 0);
+const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 
 // Current weather at the school (SWR-cached; null = chip simply absent).
 const weather = await getWeather();
@@ -97,18 +122,10 @@ const weather = await getWeather();
           {todayLabel}
         </li>
         {
-          familiesLabel && (
+          summerChip && (
             <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
-              <Icon name="users" class="h-4 w-4" />
-              {familiesLabel}
-            </li>
-          )
-        }
-        {
-          statusChip && (
-            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
-              <Icon name={statusChip.icon} class="h-4 w-4 text-amber" />
-              {statusChip.text}
+              <Icon name="sun" class="h-4 w-4 text-amber" />
+              Enjoy your summer!
             </li>
           )
         }
@@ -125,6 +142,58 @@ const weather = await getWeather();
 
     {/* Sun-and-cloud brand emblem — the hero's one decorative accent. */}
     <Image src={wcpEmblem} alt="" class="hidden h-24 w-auto shrink-0 sm:block lg:h-28" />
+  </div>
+
+  {/* Command-strip stats: every figure live, every stat a deep link. */}
+  <div class="mt-6 flex flex-wrap items-center gap-x-10 gap-y-5">
+    {
+      daysToFirstDay !== null && daysToFirstDay > 0 && (
+        <a href="/family-hub/calendar" class="wcp-strip-stat">
+          <HubStat
+            tone="navy"
+            value={String(daysToFirstDay)}
+            label={`day${daysToFirstDay === 1 ? '' : 's'} 'til school`}
+          />
+        </a>
+      )
+    }
+    {
+      nextEvent && nextEventDate && (
+        <a href="/family-hub/calendar" class="wcp-strip-stat max-w-56">
+          <HubStat tone="navy" value={nextEventDate} label="next up" />
+          <p class="mt-0.5 truncate text-xs text-white/85">{nextEvent.title}</p>
+        </a>
+      )
+    }
+    {
+      familyCount && familyCount > 0 ? (
+        <a href="/family-hub/directory" class="wcp-strip-stat">
+          <HubStat
+            tone="navy"
+            value={String(familyCount)}
+            label={`famil${familyCount === 1 ? 'y' : 'ies'}`}
+          />
+        </a>
+      ) : null
+    }
+    {
+      goal > 0 && (
+        <a href="/family-hub/fundraising" class="wcp-strip-stat flex items-center gap-3">
+          <HubRing
+            tone="navy"
+            size="sm"
+            value={raised}
+            max={goal}
+            label="Fundraising progress this year"
+            valueText={`${money(raised)} of ${money(goal)} raised`}
+          />
+          <span class="text-sm leading-tight">
+            <span class="block font-bold">{money(raised)} raised</span>
+            <span class="block text-white/85">of {money(goal)} goal</span>
+          </span>
+        </a>
+      )
+    }
   </div>
 
   {
@@ -145,3 +214,26 @@ const weather = await getWeather();
     )
   }
 </div>
+
+<style>
+  /* Stat links: quiet at rest, obvious on interaction, keyboard-visible. */
+  .wcp-strip-stat {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+    transition: opacity 0.15s ease;
+  }
+  .wcp-strip-stat:hover {
+    opacity: 0.85;
+  }
+  .wcp-strip-stat:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wcp-strip-stat {
+      transition: none;
+    }
+  }
+</style>

@@ -47,13 +47,15 @@ const tiles = CLASSES.map((c) => {
 
 {
   /* 2x2 in the bento's 8-col cell (chunkier tiles than a thin 4-up strip).
-    `lg:h-full` fills the grid row beside the tall events tile — but ONLY at lg:
-    at the single-column (mobile/tablet) breakpoint the cell is content-sized, so
-    a plain `h-full` there resolves SHORT and the tiles overflow their cell into
-    the announcements widget below (measured 2026-07-14). Natural height at base
-    keeps each row's space. */
+    `lg:flex-1` (the wrapper is lg:flex-col) fills the grid row beside the tall
+    events tile. NOT h-full: a percentage height is ignored during the row's
+    intrinsic sizing and then resolved against the finished row, so the ul
+    overflowed its cell by the picker strip's height whenever the hero row grew
+    (bit twice, 2026-07-14 — first at tablet widths, then at lg when the
+    command strip made the hero taller). flex-1 both contributes its content
+    height AND stretches, so it can never overflow the cell. */
 }
-<ul class="grid gap-4 sm:grid-cols-2 lg:h-full">
+<ul class="grid gap-4 sm:grid-cols-2 lg:flex-1">
   {
     tiles.map((c) => {
       const styles = classStyles(c.slug);

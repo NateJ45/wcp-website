@@ -1,0 +1,104 @@
+---
+/* ============================================================================
+   HubStat — a KPI figure with its label (and optional delta context)
+   ============================================================================
+   The hub's numbers-are-the-interface primitive (2026-07-14 app-elevation
+   kit): big tabular-numeral value, small uppercase label, optional delta chip
+   ("+3 this month") and footnote. Purely server-rendered.
+
+   Tones:
+     card (default)  ink-on-white, lives inside a HubCard
+     navy            white-on-navy, for the Home command strip ONLY (the one
+                     hero-tier surface — never use on a standard card)
+
+   Honest-data rule: a delta renders only when the underlying comparison is
+   real (a stored prior value, a dated series). Never fabricate a trend.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  value: string;
+  label: string;
+  /** Optional delta chip text, e.g. "+3 this month". */
+  delta?: string;
+  /** Direction of the delta; drives icon + tint. Neutral = no icon. */
+  deltaTone?: 'up' | 'down' | 'neutral';
+  /** Small muted line under the label, e.g. "as of May 2026". */
+  footnote?: string;
+  tone?: 'card' | 'navy';
+  size?: 'md' | 'lg';
+  class?: string;
+}
+const {
+  value,
+  label,
+  delta,
+  deltaTone = 'neutral',
+  footnote,
+  tone = 'card',
+  size = 'md',
+  class: className,
+} = Astro.props;
+
+const onNavy = tone === 'navy';
+
+// Delta chip: tint + aria-hidden colored icon + NEUTRAL text (the dark-mode
+// tint rule — colored text on tint fails AA in dark). On navy the chip sits
+// on white/10 so plain white text is fine.
+const deltaChip = onNavy
+  ? 'bg-white/10 text-white'
+  : deltaTone === 'up'
+    ? 'bg-green/15 text-heading dark:bg-green/20'
+    : deltaTone === 'down'
+      ? 'bg-orange/15 text-heading dark:bg-orange/20'
+      : 'bg-navy/10 text-heading dark:bg-white/10';
+const deltaIconColor = onNavy
+  ? ''
+  : deltaTone === 'up'
+    ? 'text-green-ink dark:text-green'
+    : 'text-orange-ink dark:text-orange';
+---
+
+<div class={cn('min-w-0', className)}>
+  <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+    <span
+      class={cn(
+        'font-display tabular-nums',
+        size === 'lg' ? 'text-4xl' : 'text-3xl',
+        onNavy ? 'text-white' : 'text-heading',
+      )}>{value}</span
+    >
+    {
+      delta && (
+        <span
+          class={cn(
+            'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold',
+            deltaChip,
+          )}
+        >
+          {deltaTone !== 'neutral' && (
+            <Icon
+              name={deltaTone === 'up' ? 'trending-up' : 'trending-down'}
+              class={cn('h-3 w-3', deltaIconColor)}
+            />
+          )}
+          {delta}
+        </span>
+      )
+    }
+  </div>
+  <p
+    class={cn(
+      'mt-0.5 text-xs font-semibold tracking-wide uppercase',
+      onNavy ? 'text-white/85' : 'text-ink-muted',
+    )}
+  >
+    {label}
+  </p>
+  {
+    footnote && (
+      <p class={cn('mt-0.5 text-xs', onNavy ? 'text-white/85' : 'text-ink-muted')}>{footnote}</p>
+    )
+  }
+</div>

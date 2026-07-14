@@ -46,11 +46,14 @@ onPageLoad(() => {
   const seenTime = Date.parse(seen);
   if (!Number.isFinite(seenTime)) return;
 
+  // PAGE items drive the rail/tab "Updates" badge as before; rows inside a
+  // bell panel ([data-bell-panel], added 2026-07-14) are excluded here — they
+  // duplicate page content on purpose and get their own per-bell count below.
   let fresh = 0;
   for (const item of document.querySelectorAll<HTMLElement>('[data-published]')) {
     const at = Date.parse(item.dataset.published ?? '');
     if (!Number.isFinite(at) || at <= seenTime) continue;
-    fresh++;
+    if (!item.closest('[data-bell-panel]')) fresh++;
     if (!item.querySelector('[data-fresh-pill]')) {
       const pill = document.createElement('span');
       pill.setAttribute('data-fresh-pill', '');
@@ -60,6 +63,43 @@ onPageLoad(() => {
       (item.querySelector('a, p') ?? item).appendChild(pill);
     }
   }
+
+  // Bell badge: each bell (desktop bar + phone strip both render one) is
+  // badged with its OWN panel's unseen count, so the duplicate panels never
+  // inflate each other.
+  for (const bell of document.querySelectorAll<HTMLElement>('[data-hub-bell]')) {
+    const count = [
+      ...bell.querySelectorAll<HTMLElement>('[data-bell-panel] [data-published]'),
+    ].filter((el) => {
+      const at = Date.parse(el.dataset.published ?? '');
+      return Number.isFinite(at) && at > seenTime;
+    }).length;
+    const slot = bell.querySelector<HTMLElement>('[data-bell-badge]');
+    if (!slot || count === 0 || slot.childElementCount > 0) continue;
+    const badge = document.createElement('span');
+    badge.className =
+      'inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber px-1 text-[0.6rem] font-bold text-navy';
+    badge.textContent = String(count);
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = ` (${count} new)`;
+    badge.appendChild(sr);
+    slot.appendChild(badge);
+  }
+
+  // Opening a bell marks everything seen: badges and pills clear on the next
+  // page rather than mid-look (yanking rows a reader is scanning is worse).
+  for (const bell of document.querySelectorAll<HTMLDetailsElement>('details[data-hub-bell]')) {
+    bell.addEventListener('toggle', () => {
+      if (!bell.open) return;
+      try {
+        localStorage.setItem(KEY, new Date().toISOString());
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
   if (fresh === 0) return;
 
   // Count badge on every Updates link: rail + drawer (aside) and the bottom

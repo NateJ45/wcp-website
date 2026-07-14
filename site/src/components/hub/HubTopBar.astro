@@ -1,14 +1,32 @@
 ---
 /* ============================================================================
-   HubTopBar — mobile-only top bar for the Family Hub (< lg).
+   HubTopBar — the Family Hub's top chrome (both breakpoints)
    ============================================================================
-   Menu button opens the off-canvas drawer (hub-drawer.ts wires the toggle via
-   [data-hub-drawer-toggle]); the current page title sits between it and a
-   ThemeToggle + logo. Desktop uses HubRail directly and never sees this bar.
+   Two bars, one component (2026-07-14 app-elevation Track A):
+
+   - Desktop (lg+): a slim sticky bar over the content column. Page context on
+     the left; on the right a search "field" (really a button — the visible
+     affordance for the Cmd/Ctrl+K palette that used to hide in the rail), the
+     what's-new bell, and the "New" quick-action menu (Sign up / Pay tuition /
+     Contact the board — the three things families actually initiate). The
+     rail keeps "where am I"; this bar owns "what can I do right now".
+     Sticky height is h-14 — HubTable's sticky column headers offset by
+     lg:top-14 to slide under it, keep them in sync.
+   - Phone (< lg): the existing navy strip (menu, title, search, bell, theme,
+     logo). Not sticky; the tab bar owns persistent nav on phones.
+
+   The bell's data is fetched HERE once (cached, BOARD_CONTENT_CACHE tier) and
+   passed to both HubBell instances so the two never double-fetch. Any failure
+   degrades to an empty bell, never a broken bar.
+
+   Menus are native <details> (keyboard + no-JS friendly); hub-menus.ts adds
+   outside-click/Esc closing, hub-fresh.ts adds the unseen-count badge.
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
+import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { site } from '@/data/site';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 
@@ -16,10 +34,132 @@ interface Props {
   title: string;
 }
 const { title } = Astro.props;
+
+// What's-new feed: recent updates (with the Board's highlight flag) + the
+// latest documents. Board highlights are fetched separately so an important
+// notice stays in the bell even after newer posts push it out of the recents.
+interface UpdateRow {
+  title?: string;
+  slug?: string;
+  publishedAt?: string;
+  highlight?: boolean;
+  category?: string;
+}
+interface DocRow {
+  title?: string;
+  publishedAt?: string;
+}
+let bellItems: BellItem[] = [];
+try {
+  const feed = await sanityFetch<{
+    updates: UpdateRow[];
+    highlights: UpdateRow[];
+    documents: DocRow[];
+  }>(
+    `{
+      "updates": *[_type == "update" && defined(publishedAt) && publishedAt < now()] | order(publishedAt desc)[0...6]{ title, "slug": slug.current, publishedAt, highlight, category },
+      "highlights": *[_type == "update" && highlight == true && defined(publishedAt)] | order(publishedAt desc)[0...3]{ title, "slug": slug.current, publishedAt, highlight, category },
+      "documents": *[_type == "hubDocument"] | order(_createdAt desc)[0...3]{ title, "publishedAt": _createdAt }
+    }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+  const toItem = (u: UpdateRow): BellItem => ({
+    title: u.title ?? 'Update',
+    href: u.slug ? `/family-hub/updates/${u.slug}` : '/family-hub/updates',
+    publishedAt: u.publishedAt ?? '',
+    highlight: u.highlight === true,
+    meta: u.category === 'minutes' ? 'Meeting minutes' : 'Announcement',
+  });
+  const seen = new Set<string>();
+  const merged: BellItem[] = [];
+  for (const u of [...(feed.highlights ?? []), ...(feed.updates ?? [])]) {
+    const item = toItem(u);
+    if (seen.has(item.href + item.title)) continue;
+    seen.add(item.href + item.title);
+    merged.push(item);
+  }
+  for (const d of feed.documents ?? []) {
+    merged.push({
+      title: d.title ?? 'Document',
+      href: '/family-hub/documents',
+      publishedAt: d.publishedAt ?? '',
+      meta: 'Document',
+    });
+  }
+  // Highlights pin inside HubBell; the rest reads newest-first.
+  bellItems = merged
+    .sort((a, b) => Number(b.highlight ?? false) - Number(a.highlight ?? false))
+    .slice(0, 9);
+} catch {
+  bellItems = []; // bell still renders; the panel shows its caught-up state
+}
+
+const quickActions = [
+  { label: 'Sign up to help', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
+  { label: 'Pay tuition', href: '/family-hub/tuition', icon: 'circle-dollar-sign' },
+  { label: 'Contact the board', href: '/contact', icon: 'mail' },
+];
 ---
 
+{/* ---- Desktop bar (lg+) ---- */}
+{
+  /* A <header> so its content lives in a landmark (axe `region`). The phone
+    strip below is a <header> too, but only one is ever displayed, so the
+    duplicate-banner rule never sees both. */
+}
 <header
-  class="flex items-center gap-3 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden"
+  data-hub-topbar
+  class="sticky top-0 z-30 hidden h-14 items-center gap-4 border-b border-border bg-white/85 px-6 backdrop-blur lg:flex dark:bg-surface/85"
+>
+  <span class="truncate text-sm font-extrabold text-heading">{title}</span>
+
+  <div class="ml-auto flex items-center gap-2">
+    <button
+      type="button"
+      class="flex h-9 w-56 cursor-pointer items-center gap-2 rounded-full border border-border bg-grey/60 px-3 text-sm text-ink-muted transition-colors hover:border-navy/30 dark:bg-white/5 dark:hover:border-white/30"
+      data-hub-search-open
+    >
+      <Icon name="search" class="h-4 w-4 shrink-0" />
+      <span>Search the hub</span>
+      <kbd
+        class="ml-auto rounded border border-border px-1 text-[0.65rem] font-semibold text-ink-muted"
+        >⌘K</kbd
+      >
+    </button>
+
+    <HubBell items={bellItems} tone="bar" />
+
+    <details class="relative" data-hub-menu>
+      <summary
+        class="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-navy px-3.5 text-sm font-bold text-white transition hover:brightness-110 [&::-webkit-details-marker]:hidden"
+      >
+        <Icon name="plus" class="h-4 w-4" />
+        New
+      </summary>
+      <div
+        class="absolute right-0 z-40 mt-2 w-56 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+      >
+        {
+          quickActions.map((a) => (
+            <a
+              href={a.href}
+              class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
+            >
+              <Icon name={a.icon} class="h-4 w-4 shrink-0 text-sky-ink" />
+              {a.label}
+            </a>
+          ))
+        }
+      </div>
+    </details>
+  </div>
+</header>
+
+{/* ---- Phone strip (< lg) ---- */}
+<header
+  data-hub-topstrip
+  class="flex items-center gap-1.5 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden"
 >
   <button
     type="button"
@@ -40,6 +180,7 @@ const { title } = Astro.props;
   >
     <Icon name="search" class="h-5 w-5" />
   </button>
+  <HubBell items={bellItems} tone="navy" />
   <ThemeToggle tone="onNavy" />
   <a href="/family-hub" class="inline-flex items-center" aria-label="Family Hub home">
     <Image src={wcpLogoWhite} alt={site.name} width={240} height={160} class="h-8 w-auto" />

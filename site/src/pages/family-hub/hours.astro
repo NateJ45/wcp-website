@@ -17,7 +17,8 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
-import HubProgress from '@/components/hub/HubProgress.astro';
+import HubRing from '@/components/hub/HubRing.astro';
+import HubStat from '@/components/hub/HubStat.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -147,22 +148,26 @@ const inputClass =
                     </p>
                   </div>
 
-                  <p class="mt-3 font-display text-4xl text-heading">
-                    {summary.logged}
-                    <span class="font-sans text-base font-normal text-ink-muted">
-                      {' '}
-                      of {goal} hours logged
-                    </span>
-                  </p>
-
-                  <HubProgress
-                    class="mt-3"
-                    value={summary.logged}
-                    max={goal}
-                    fill={summary.met ? 'bg-green' : 'bg-sky-ink'}
-                    label={`${family} family co-op hours`}
-                    valueText={`${summary.logged} of ${goal} hours logged`}
-                  />
+                  {/* Ring + stat (2026-07-14 kit): the family's attainment at
+                      a glance — green once the goal is met. */}
+                  <div class="mt-4 flex flex-wrap items-center gap-4">
+                    <HubRing
+                      value={summary.logged}
+                      max={goal}
+                      color={
+                        summary.met
+                          ? 'text-green-ink dark:text-green'
+                          : 'text-sky-ink dark:text-sky'
+                      }
+                      label={`${family} family co-op hours`}
+                      valueText={`${summary.logged} of ${goal} hours logged`}
+                    />
+                    <HubStat
+                      size="lg"
+                      value={String(summary.logged)}
+                      label={`of ${goal} hours logged`}
+                    />
+                  </div>
 
                   <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-muted">
                     <span>

@@ -119,7 +119,15 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         </UpcomingEventsWidget>
       </div>
 
-      <div class="lg:col-span-8" style="--reveal-delay: 120ms">
+      {
+        /* lg:flex-col so ClassHelperRow can fill the leftover row height with
+          flex-1 (intrinsic-safe) instead of h-full — a percentage height here
+          resolves against the row AFTER intrinsic sizing ignored it, so the ul
+          overflowed its cell by exactly the picker strip's height whenever the
+          hero row got taller (bit 2026-07-14 when the command strip grew the
+          hero; same family as the f2425bf mobile overflow). */
+      }
+      <div class="lg:col-span-8 lg:flex lg:flex-col" style="--reveal-delay: 120ms">
         {
           /* My-classes picker (JS-only nicety; hidden without JS). Stored on
             the device — no accounts. MULTI-select: plenty of families have

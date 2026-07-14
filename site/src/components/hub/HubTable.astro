@@ -1,0 +1,121 @@
+---
+/* ============================================================================
+   HubTable — the hub's list-as-table treatment
+   ============================================================================
+   A real <table> shell (2026-07-14 app-elevation kit) for Documents, Sign-ups,
+   Directory and friends: styled sticky header, zebra-free hover rows, and a
+   phone layout that stacks each row into a card WITHOUT a second markup tree.
+
+   The caller owns the <tbody> rows via the slot and follows two conventions:
+     1. every <td> carries data-th="Column label" (feeds the stacked layout's
+        per-cell labels below md via CSS `attr()`)
+     2. the first cell of a row is its title cell: give it data-th-title so it
+        renders as the card heading when stacked.
+   Filters stay no-JS-fine: render them as links above the table, never JS
+   state. Below md the header row is display:none (the data-th labels replace
+   it), which is why every column label must be repeated on its cells.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  /** Accessible table description, e.g. "Board documents". */
+  label: string;
+  columns: string[];
+  class?: string;
+}
+const { label, columns, class: className } = Astro.props;
+---
+
+<div
+  class={cn(
+    'wcp-hub-table overflow-hidden rounded-[var(--radius)] md:border md:border-border md:bg-white md:shadow-sm md:dark:bg-surface',
+    className,
+  )}
+>
+  <table class="w-full border-collapse text-left text-sm" aria-label={label}>
+    <thead class="hidden md:table-header-group">
+      <tr>
+        {
+          columns.map((c) => (
+            <th
+              scope="col"
+              class="sticky top-0 z-10 border-b border-border bg-grey/95 px-4 py-2.5 text-xs font-bold tracking-wide text-ink-muted uppercase backdrop-blur-sm lg:top-14 dark:bg-surface/95"
+            >
+              {c}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      <slot />
+    </tbody>
+  </table>
+</div>
+
+{
+  /* Global (slot content is outside Astro's scoped-style reach), namespaced by
+    .wcp-hub-table so nothing leaks. Below md the table linearizes into cards:
+    the header row is hidden, each row becomes a bordered card, and each cell
+    prints its data-th label. display changes remove table semantics on phones,
+    which is fine: the stacked layout IS a list, and the aria-label stays. */
+}
+<style is:global>
+  .wcp-hub-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-ink);
+  }
+  .wcp-hub-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  @media (min-width: 48rem) {
+    .wcp-hub-table tbody tr {
+      transition: background-color 150ms;
+    }
+    .wcp-hub-table tbody tr:hover {
+      background-color: color-mix(in oklab, var(--color-grey) 60%, transparent);
+    }
+  }
+  @media (max-width: 47.99rem) {
+    .wcp-hub-table table,
+    .wcp-hub-table tbody,
+    .wcp-hub-table tr,
+    .wcp-hub-table td {
+      display: block;
+    }
+    .wcp-hub-table tbody tr {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+      padding: 0.5rem 0;
+      margin-bottom: 1rem;
+    }
+    .dark .wcp-hub-table tbody tr {
+      background: var(--color-surface);
+    }
+    .wcp-hub-table td {
+      border-bottom: none;
+      padding: 0.375rem 1.25rem;
+    }
+    .wcp-hub-table td[data-th]::before {
+      content: attr(data-th);
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      margin-bottom: 0.125rem;
+    }
+    .wcp-hub-table td[data-th-title] {
+      padding-top: 0.625rem;
+      font-weight: 800;
+      color: var(--color-heading);
+    }
+    .wcp-hub-table td[data-th-title]::before {
+      display: none;
+    }
+  }
+</style>

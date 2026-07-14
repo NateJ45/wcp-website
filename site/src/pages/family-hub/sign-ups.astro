@@ -18,6 +18,7 @@ import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
+import HubPill from '@/components/hub/HubPill.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch } from '@/lib/sanity';
@@ -196,11 +197,29 @@ const showThanks = new URL(Astro.request.url).searchParams.has('thanks');
                                 <p class="font-semibold text-heading">{slot.label}</p>
                                 {slot.detail && <p class="text-sm text-ink-muted">{slot.detail}</p>}
                               </div>
-                              <p class="shrink-0 text-sm font-semibold text-ink-muted">
-                                {cap > 0
-                                  ? `${taken.length} of ${cap} filled`
-                                  : `${taken.length} signed up`}
-                              </p>
+                              {/* Spots-left pill (shared vocabulary): the
+                                  actionable glance; the bar + names below
+                                  carry the detail. Uncapped slots keep the
+                                  plain count. */}
+                              {cap > 0 ? (
+                                <span class="flex shrink-0 items-center gap-2">
+                                  <span class="text-sm font-semibold text-ink-muted">
+                                    {taken.length} of {cap} filled
+                                  </span>
+                                  {full ? (
+                                    <HubPill kind="past">Full</HubPill>
+                                  ) : (
+                                    <HubPill kind="open">
+                                      {cap - taken.length} spot{cap - taken.length === 1 ? '' : 's'}{' '}
+                                      left
+                                    </HubPill>
+                                  )}
+                                </span>
+                              ) : (
+                                <p class="shrink-0 text-sm font-semibold text-ink-muted">
+                                  {taken.length} signed up
+                                </p>
+                              )}
                             </div>
                             {cap > 0 && (
                               <HubProgress
