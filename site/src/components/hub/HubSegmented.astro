@@ -1,0 +1,54 @@
+---
+/* ============================================================================
+   HubSegmented — link-based segmented control (views, not scroll positions)
+   ============================================================================
+   The premium-screens primitive (2026-07-14 plan) for 2-5 parallel views of
+   ONE page: each segment is a real link (?view=…), so views are shareable,
+   back-button friendly, and fully working with no JS — the SSR page decides
+   what to render. Styled to match the Directory's List/Map pill toggle so the
+   hub keeps one switcher look.
+
+   NOT for cross-page navigation (that's the rail) and not a JS tablist: the
+   Directory's List/Map toggle stays a true tablist because both views are in
+   the DOM at once; use HubSegmented when the SERVER picks the view.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Segment {
+  label: string;
+  href: string;
+  current?: boolean;
+  /** Optional small count shown after the label, e.g. document totals. */
+  count?: number;
+}
+interface Props {
+  /** Accessible name for the group, e.g. "Document sections". */
+  label: string;
+  segments: Segment[];
+  class?: string;
+}
+const { label, segments, class: className } = Astro.props;
+---
+
+<nav
+  aria-label={label}
+  class={cn(
+    'inline-flex max-w-full flex-wrap gap-0.5 rounded-full border border-border bg-white/80 p-1 dark:bg-surface/80',
+    className,
+  )}
+>
+  {
+    segments.map((s) => (
+      <a
+        href={s.href}
+        aria-current={s.current ? 'true' : undefined}
+        class="rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap text-ink-muted no-underline transition-colors hover:text-heading aria-[current=true]:bg-navy aria-[current=true]:text-white"
+      >
+        {s.label}
+        {typeof s.count === 'number' && (
+          <span class="ml-1 text-xs font-normal opacity-80">{s.count}</span>
+        )}
+      </a>
+    ))
+  }
+</nav>

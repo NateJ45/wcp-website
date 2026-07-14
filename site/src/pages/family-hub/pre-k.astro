@@ -21,6 +21,7 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
 import { payUrl } from '@/data/classes';
@@ -199,6 +200,7 @@ const classCards = [
   </Section>
 
   {/* The handbook — Board/teacher-editable page-builder sections. */}
+  <HubSectionIndex sections={doc?.sections} label="Handbook sections" />
   <SectionRenderer sections={doc?.sections} site={site} />
 
   {/* Mrs. Lisa's welcome letter — first-visit modal. */}

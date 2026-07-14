@@ -1,0 +1,80 @@
+---
+/* ============================================================================
+   HubDisclosure — the hub's ONE accordion primitive (progressive disclosure)
+   ============================================================================
+   Premium-screens primitive (2026-07-14 plan): long prose moves out of the
+   scroll and behind a native <details> the family opens when they need it —
+   "show the minimum for the next decision, reveal more on demand." Native
+   element: keyboard, find-in-page (browsers auto-expand on match), and no-JS
+   all work for free. The summary row reuses HubCard's header anatomy (icon
+   chip + bold title + optional one-line hint) with a chevron that rotates
+   while open.
+
+   Use INSIDE a HubCard (borderless) or standalone (`card` prop wraps it in
+   the card surface). Never nest a disclosure in a disclosure.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  title: string;
+  /** One-line summary shown next to/under the title while CLOSED. */
+  hint?: string;
+  icon?: string;
+  /** Chip color classes (HubCard's icon-chip convention). */
+  iconChip?: string;
+  /** Render its own card surface (standalone use). */
+  card?: boolean;
+  open?: boolean;
+  class?: string;
+}
+const {
+  title,
+  hint,
+  icon,
+  iconChip = 'bg-sky/15 text-sky-ink',
+  card = false,
+  open = false,
+  class: className,
+} = Astro.props;
+---
+
+<details
+  open={open}
+  class={cn(
+    'group',
+    card && 'rounded-[var(--radius)] border border-border bg-white shadow-sm dark:bg-surface',
+    className,
+  )}
+>
+  <summary
+    class={cn(
+      'flex cursor-pointer list-none items-center gap-3 rounded-[var(--radius)] [&::-webkit-details-marker]:hidden',
+      card ? 'p-5' : 'py-3',
+    )}
+  >
+    {
+      icon && (
+        <span
+          class={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', iconChip)}
+          aria-hidden="true"
+        >
+          <Icon name={icon} class="h-5 w-5" />
+        </span>
+      )
+    }
+    <span class="min-w-0 flex-1">
+      <span class="block font-bold text-heading">{title}</span>
+      {hint && <span class="block truncate text-sm text-ink-muted group-open:hidden">{hint}</span>}
+    </span>
+    <Icon
+      name="chevron-down"
+      class="h-5 w-5 shrink-0 text-ink-muted transition-transform group-open:rotate-180 motion-reduce:transition-none"
+    />
+  </summary>
+  <div
+    class={cn('text-ink', card ? 'px-5 pb-5' : 'pb-3', icon && (card ? 'sm:pl-18' : 'sm:pl-13'))}
+  >
+    <slot />
+  </div>
+</details>

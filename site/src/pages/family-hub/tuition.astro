@@ -13,6 +13,7 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
+import HubDisclosure from '@/components/hub/HubDisclosure.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
@@ -319,21 +320,19 @@ const intro =
         <p class="mt-1 max-w-2xl text-ink-muted">
           The common questions, answered. For anything else, the Treasurer is one email away.
         </p>
-        <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+        {
+          /* Progressive disclosure (premium-screens phase 2): each answer opens
+             on demand instead of stacking two columns of prose — questions
+             scan in one glance, find-in-page still auto-expands matches. */
+        }
+        <ul class="mt-6 grid gap-3">
           {
             faqs.map((f) => (
-              <HubCard as="li" class="flex gap-4">
-                <span
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name={f.icon} class="h-5 w-5" />
-                </span>
-                <div>
-                  <p class="font-bold text-heading">{f.q}</p>
-                  <p class="mt-1 text-sm leading-relaxed text-ink-muted">{f.a}</p>
-                </div>
-              </HubCard>
+              <li>
+                <HubDisclosure card icon={f.icon} title={f.q ?? 'Question'}>
+                  <p class="text-sm leading-relaxed text-ink">{f.a}</p>
+                </HubDisclosure>
+              </li>
             ))
           }
         </ul>

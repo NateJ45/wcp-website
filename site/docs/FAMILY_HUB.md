@@ -112,6 +112,14 @@ the Home dashboard rather than a marketing page stacked in the shell. The patter
   improvise a pill on a page), and **`HubTable`** (styled table shell whose rows stack into
   cards below `md` via `data-th` cell labels). See
   [the elevation plan](superpowers/specs/2026-07-14-family-hub-app-elevation-plan.md).
+- **Premium-screens primitives** (2026-07-14, see
+  [that plan](superpowers/specs/2026-07-14-hub-premium-screens-plan.md)): **`HubSegmented`**
+  (link-based segmented control, `?view=` links the SERVER resolves — for 2-5 parallel
+  views of one page, first consumer: Documents) and **`HubDisclosure`** (the ONE styled
+  `<details>` accordion — progressive disclosure for long prose; native element, so
+  keyboard/find-in-page/no-JS all work). Page-level filters follow the Directory pattern:
+  real links (`?class=…`), never JS state. The **answer-first rule**: a hub page's first
+  viewport carries state and actions; framing prose moves below or behind a disclosure.
 
 **Accessibility landmines this layout hit (all now guarded by `npm run test:hub`):**
 

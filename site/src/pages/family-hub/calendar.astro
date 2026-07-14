@@ -67,7 +67,18 @@ try {
 }
 
 // The upcoming list — the live Google Calendar feed (Sanity events fallback).
-const events: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 12);
+const allEvents: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 12);
+
+// Event-type filter (?type=meeting|volunteer|milestone|event): page-global
+// link-chips, same SSR mechanics as the Directory's class filter. Chips only
+// render for types that exist in the current window; unknown param → all.
+const typesPresent = [...new Set(allEvents.map((e) => eventType(e.title)))];
+const requestedType = Astro.url.searchParams.get('type');
+const typeFilter =
+  requestedType && (typesPresent as string[]).includes(requestedType)
+    ? (requestedType as (typeof typesPresent)[number])
+    : null;
+const events = typeFilter ? allEvents.filter((e) => eventType(e.title) === typeFilter) : allEvents;
 
 const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'School Calendar';
@@ -126,6 +137,34 @@ const icalUrl = calId
         <p class="mt-1 max-w-2xl text-ink-muted">
           Straight from the school calendar. Updates made there show up here automatically.
         </p>
+
+        {/* Type filter chips — real links, page-global (premium-screens plan). */}
+        {
+          typesPresent.length > 1 && (
+            <nav aria-label="Filter events by type" class="mt-4 flex flex-wrap gap-2">
+              <a
+                href={Astro.url.pathname}
+                aria-current={!typeFilter ? 'true' : undefined}
+                class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
+              >
+                Everything
+              </a>
+              {typesPresent.map((t) => (
+                <a
+                  href={`${Astro.url.pathname}?type=${t}`}
+                  aria-current={typeFilter === t ? 'true' : undefined}
+                  class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
+                >
+                  <Icon
+                    name={EVENT_TYPE_META[t].icon}
+                    class={`h-3.5 w-3.5 ${EVENT_TYPE_META[t].iconColor}`}
+                  />
+                  {EVENT_TYPE_META[t].label}s
+                </a>
+              ))}
+            </nav>
+          )
+        }
 
         {
           events.length > 0 ? (

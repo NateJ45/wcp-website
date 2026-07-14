@@ -85,7 +85,12 @@ export const documentGroups: HubDocGroup[] = [
         icon: 'party-popper',
         href: '',
       },
-      { name: 'Orientation Slide Deck', meta: '2025-26 version (current)', icon: 'graduation-cap', href: '' },
+      {
+        name: 'Orientation Slide Deck',
+        meta: '2025-26 version (current)',
+        icon: 'graduation-cap',
+        href: '',
+      },
     ],
   },
 ];

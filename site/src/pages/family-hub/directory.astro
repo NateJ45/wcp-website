@@ -12,6 +12,7 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
+import HubDisclosure from '@/components/hub/HubDisclosure.astro';
 import Icon from '@/components/Icon.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
@@ -71,12 +72,32 @@ try {
   entries = [];
 }
 
+// Class filter (?class=twos): find families by the class their kids are in.
+// SSR link-chips, not JS state — the filter is shareable, works with no JS,
+// and the persistent-shell view transitions keep the reload feeling app-like.
+// Chips only render for classes that actually have opted-in families, and an
+// unknown/absent param falls back to everyone.
+const CLASS_ORDER = ['twos', 'threes', 'pre-k-am', 'pre-k-pm'];
+const classesPresent = [
+  ...new Set(entries.flatMap((f) => (f.children ?? []).map((c) => c.class).filter(Boolean))),
+].sort(
+  (a, b) =>
+    (CLASS_ORDER.indexOf(a as string) + 1 || 99) - (CLASS_ORDER.indexOf(b as string) + 1 || 99),
+) as string[];
+const requestedClass = Astro.url.searchParams.get('class');
+const classFilter =
+  requestedClass && classesPresent.includes(requestedClass) ? requestedClass : null;
+const shown = classFilter
+  ? entries.filter((f) => (f.children ?? []).some((c) => c.class === classFilter))
+  : entries;
+
 // Alpha jump rail (2026-07-14 app-elevation): the letters that actually have
-// families, each linking to that letter's first card. Pure anchors — works
-// with no JS. `firstOfLetter` marks which card carries each letter's id.
-const lettersPresent = [...new Set(entries.map((f) => f.familyName.charAt(0).toUpperCase()))];
+// families IN THE CURRENT FILTER, each linking to that letter's first card.
+// Pure anchors — works with no JS. `firstOfLetter` marks which card carries
+// each letter's id.
+const lettersPresent = [...new Set(shown.map((f) => f.familyName.charAt(0).toUpperCase()))];
 const firstOfLetter = new Map<string, string>(); // letter -> entry _id
-for (const f of entries) {
+for (const f of shown) {
   const l = f.familyName.charAt(0).toUpperCase();
   if (!firstOfLetter.has(l)) firstOfLetter.set(l, f._id);
 }
@@ -85,8 +106,8 @@ const letterFor = (f: DirEntry) => {
   return firstOfLetter.get(l) === f._id ? l : null;
 };
 
-// Families with a geocoded pin, for the map.
-const mapFamilies = entries
+// Families with a geocoded pin, for the map (filter applies here too).
+const mapFamilies = shown
   .filter(
     (f) => f.location && typeof f.location.lat === 'number' && typeof f.location.lng === 'number',
   )
@@ -131,22 +152,30 @@ const intro =
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="contact" />
 
-      <ul class="mt-8 grid gap-4 sm:grid-cols-3">
-        {
-          points.map((p) => (
-            <HubCard as="li" class="text-center">
-              <span
-                class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-                aria-hidden="true"
-              >
-                <Icon name={p.icon} class="h-5 w-5" />
-              </span>
-              <p class="font-bold text-heading">{p.title}</p>
-              <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
-            </HubCard>
-          ))
-        }
-      </ul>
+      {
+        /* Privacy framing, compacted (premium-screens phase 2): answer-first
+           means families open the page on the DIRECTORY, not on three cards
+           of policy. The same three assurances live one line tall in a
+           disclosure a family can open when they want the detail. */
+      }
+      <HubDisclosure
+        card
+        icon="lock"
+        title="How the directory protects your family"
+        hint="Families only · opt-in · built for connecting"
+        class="mt-8"
+      >
+        <ul class="grid gap-3 sm:grid-cols-3">
+          {
+            points.map((p) => (
+              <li>
+                <p class="font-bold text-heading">{p.title}</p>
+                <p class="mt-1 text-sm leading-relaxed text-ink">{p.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </HubDisclosure>
 
       {
         entries.length === 0 ? (
@@ -184,6 +213,33 @@ const intro =
                 Map
               </button>
             </div>
+            {/* Class filter chips: find the families in your child's class.
+                Real links (?class=…), so the filter is shareable and JS-free;
+                chips carry the class dot, active chip goes solid navy. */}
+            {classesPresent.length > 1 && (
+              <nav aria-label="Filter families by class" class="mb-4 flex flex-wrap gap-2">
+                <a
+                  href={Astro.url.pathname}
+                  aria-current={!classFilter ? 'true' : undefined}
+                  class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
+                >
+                  All families
+                </a>
+                {classesPresent.map((slug) => (
+                  <a
+                    href={`${Astro.url.pathname}?class=${slug}`}
+                    aria-current={classFilter === slug ? 'true' : undefined}
+                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
+                  >
+                    <span
+                      class={`h-2 w-2 rounded-full ${classStyles(slug).dot}`}
+                      aria-hidden="true"
+                    />
+                    {classLabel(slug)}
+                  </a>
+                ))}
+              </nav>
+            )}
             {/* Alpha jump rail: plain anchors to each letter's first card
                 (scroll-mt clears the sticky desktop topbar). Only letters
                 with families render, so it never dead-ends. */}
@@ -204,7 +260,7 @@ const intro =
               </nav>
             )}
             <ul id="dir-list" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {entries.map((f) => {
+              {shown.map((f) => {
                 const kidClasses = [
                   ...new Set((f.children ?? []).map((c) => c.class).filter(Boolean)),
                 ] as string[];

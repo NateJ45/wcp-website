@@ -13,6 +13,7 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
+import HubSegmented from '@/components/hub/HubSegmented.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
@@ -58,7 +59,14 @@ const hubDocPromise = sanityFetch<HubPageDoc | null>(
   { cache: BOARD_CONTENT_CACHE },
 ).catch(() => null);
 
-let documentGroups = fallbackGroups;
+// The built-in fallback now ships with empty hrefs (share links were redacted
+// from src/data/hub/documents.ts — public repo). Drop any doc without a link so
+// the fallback path never renders a dead <a href="">.
+const usableFallback = fallbackGroups
+  .map((g) => ({ ...g, docs: g.docs.filter((d) => d.href) }))
+  .filter((g) => g.docs.length > 0);
+
+let documentGroups = usableFallback;
 try {
   // Both link-type docs and uploaded files (file.asset dereferenced to its URL).
   const docs = await sanityFetch<HubDocDoc[]>(
@@ -85,8 +93,22 @@ try {
     }));
   }
 } catch {
-  documentGroups = fallbackGroups;
+  documentGroups = usableFallback;
 }
+
+// Segmented views (premium-screens plan, 2026-07-14): one section on screen
+// at a time (?view=required|handbook|orient|minutes), a real link per segment
+// so views are shareable and no-JS-safe. Unknown/absent param → the first
+// group that has documents.
+const requestedView = Astro.url.searchParams.get('view');
+const activeGroup =
+  documentGroups.find((g) => g.key === requestedView) ?? documentGroups[0] ?? null;
+const segments = documentGroups.map((g) => ({
+  label: g.label,
+  href: `${Astro.url.pathname}?view=${g.key}`,
+  current: g.key === activeGroup?.key,
+  count: g.docs.length,
+}));
 
 // Editable heading/intro + closing section(s), from the hubPage doc (falls back
 // to the built-in strings + Drive card if no doc exists yet).
@@ -119,59 +141,65 @@ const intro =
       </HubPageHeader>
 
       {
-        documentGroups.length === 0 ? (
+        documentGroups.length === 0 || !activeGroup ? (
           <HubEmptyState icon="folder-open" title="Documents will appear here" source="sanity" />
         ) : (
           <>
-            {/* New-families notice — required forms must be on file (semantic amber). */}
-            <HubCard class="flex items-start gap-4 p-4">
-              <span
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
-                aria-hidden="true"
-              >
-                <Icon name="file-check" class="h-5 w-5" />
-              </span>
-              <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
-                <strong class="font-bold text-heading">New families:</strong> the four Required
-                Forms below must be on file before your child’s first day — Ohio state licensing
-                requires them.
-              </p>
-            </HubCard>
+            {/* One section on screen at a time (premium-screens plan) — the
+                segments are links, so every view is shareable and no-JS-safe. */}
+            <HubSegmented label="Document sections" segments={segments} class="mb-6" />
 
-            {documentGroups.map((group) => (
-              <div class="mt-12" data-reveal>
-                <h2 class="text-xl font-extrabold text-heading">{group.label}</h2>
-                {group.intro && <p class="mt-1 max-w-2xl text-ink-muted">{group.intro}</p>}
-                <ul class="mt-4 grid gap-3">
-                  {group.docs.map((doc) => (
-                    <li>
-                      <HubCard
-                        as="a"
-                        href={doc.href}
-                        target="_blank"
-                        rel="noopener"
-                        class="flex items-center gap-4 p-4"
+            {/* New-families notice — belongs to the Required view only. */}
+            {activeGroup.key === 'required' && (
+              <HubCard class="flex items-start gap-4 p-4">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber/25 text-orange-ink"
+                  aria-hidden="true"
+                >
+                  <Icon name="file-check" class="h-5 w-5" />
+                </span>
+                <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
+                  <strong class="font-bold text-heading">New families:</strong> the four Required
+                  Forms below must be on file before your child’s first day — Ohio state licensing
+                  requires them.
+                </p>
+              </HubCard>
+            )}
+
+            <div class="mt-6" data-reveal>
+              <h2 class="text-xl font-extrabold text-heading">{activeGroup.label}</h2>
+              {activeGroup.intro && (
+                <p class="mt-1 max-w-2xl text-ink-muted">{activeGroup.intro}</p>
+              )}
+              <ul class="mt-4 grid gap-3">
+                {activeGroup.docs.map((doc) => (
+                  <li>
+                    <HubCard
+                      as="a"
+                      href={doc.href}
+                      target="_blank"
+                      rel="noopener"
+                      class="flex items-center gap-4 p-4"
+                    >
+                      <span
+                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+                        aria-hidden="true"
                       >
-                        <span
-                          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-                          aria-hidden="true"
-                        >
-                          <Icon name={doc.icon} class="h-5 w-5" />
-                        </span>
-                        <span class="min-w-0 flex-1">
-                          <span class="block font-bold text-heading">{doc.name}</span>
-                          {doc.meta && <span class="block text-sm text-ink-muted">{doc.meta}</span>}
-                        </span>
-                        <span class="hidden shrink-0 items-center gap-1 text-sm font-semibold text-sky-ink sm:inline-flex">
-                          {group.action}
-                          <Icon name="external-link" class="h-4 w-4" />
-                        </span>
-                      </HubCard>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                        <Icon name={doc.icon} class="h-5 w-5" />
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block font-bold text-heading">{doc.name}</span>
+                        {doc.meta && <span class="block text-sm text-ink-muted">{doc.meta}</span>}
+                      </span>
+                      <span class="hidden shrink-0 items-center gap-1 text-sm font-semibold text-sky-ink sm:inline-flex">
+                        {activeGroup.action}
+                        <Icon name="external-link" class="h-4 w-4" />
+                      </span>
+                    </HubCard>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </>
         )
       }
