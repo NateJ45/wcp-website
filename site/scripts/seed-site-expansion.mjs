@@ -55,6 +55,25 @@ const trustBand = () =>
     ],
   });
 
+// --- the named co-op signature: "Front-Row Learning" -----------------------
+// A consistent framing band (2026-07-14, Nathan approved the name): eyebrow
+// names the approach, the display-font title is the tagline, the body explains
+// it in the brand voice. Placed on the two "approach" pages (why-wcp,
+// co-op-life). Same _key on each doc so re-runs are idempotent per page.
+const signatureBand = (k) => ({
+  ...B.proseSection({
+    bg: 'cream',
+    narrow: true,
+    header: B.sh('Front-Row Learning', 'Where play is the plan.', null, 'center'),
+    body: [
+      B.p(
+        'Play is the curriculum here, not a break from it. And because we are a co-op, you are in the room to watch it happen: children learning by doing, and you with a front-row seat to who they are becoming.',
+      ),
+    ],
+  }),
+  _key: k,
+});
+
 // ============================================================================
 // 1. Home hero headline
 // ============================================================================
@@ -351,6 +370,33 @@ async function patchNav() {
 }
 
 // ============================================================================
+// 7. The "Front-Row Learning" signature on the two approach pages (idempotent)
+// ============================================================================
+async function patchSignature() {
+  for (const [slug, after] of [
+    ['why-wcp', 'sections[1]'], // after the rating line
+    ['co-op-life', 'sections[0]'], // after the opening "what is a co-op" prose
+  ]) {
+    const page = await c.fetch('*[_id==$id][0]{ _id, "keys": sections[]._key }', {
+      id: B.pageId(slug),
+    });
+    if (!page) {
+      console.log(`  /${slug} not found, skipped`);
+      continue;
+    }
+    if ((page.keys || []).includes('seed-signature')) {
+      console.log(`  /${slug} signature already present`);
+      continue;
+    }
+    await c
+      .patch(page._id)
+      .insert('after', after, [signatureBand('seed-signature')])
+      .commit();
+    console.log(`  /${slug} signature band inserted`);
+  }
+}
+
+// ============================================================================
 (async () => {
   console.log('Seeding public-site expansion...');
   await patchHeroHeadline();
@@ -358,6 +404,7 @@ async function patchNav() {
   await reviewsPage();
   await patchWhyWcp();
   await patchEnroll();
+  await patchSignature();
   await patchNav();
   console.log('Done.');
 })().catch((e) => {
