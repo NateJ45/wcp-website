@@ -28,12 +28,15 @@ import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { estimateReadMinutes } from '@/lib/hub-reading-time';
+import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
 
 interface HubPageDoc {
   heading?: string;
   intro?: string;
   handbookUrl?: string;
+  _updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -53,6 +56,8 @@ const intro =
   doc?.intro && doc.intro !== 'A gentle first taste of school, in a small group.'
     ? doc.intro
     : 'Ms. Erin’s Twos and Threes, everything about the year in one place. Both classes share the same happy 9:30 to noon rhythm.';
+const readMinutes = estimateReadMinutes(doc?.sections);
+const updated = formatMonthYear(doc?._updatedAt);
 
 // Both classes' facts + their Board-editable helper-schedule + album links.
 const SLUGS = ['twos', 'threes'] as const;
@@ -101,6 +106,8 @@ const classCards = [
         subtitle={intro}
         icon="blocks"
         iconChip={classStyles('twos').iconChip}
+        readMinutes={readMinutes}
+        updated={updated}
       >
         <div slot="action" class="flex flex-wrap gap-2">
           {

@@ -491,6 +491,32 @@
 .hub-doc-block + .hub-doc-block {
   margin-top: 1.25rem;
 }
+/* A chapter (flow) heading that follows another block gets a touch more air,
+   so a new section of the handbook reads as a fresh start, not another row. */
+.hub-doc-block + .hub-doc-block[data-treatment='flow'] {
+  margin-top: 2.25rem;
+}
+
+/* Type hierarchy: a flow section title reads as a CHAPTER heading; a card
+   title reads as a PANEL label (matching HubCard's compact bold h3). The base
+   `.hub-prose .wcp-section-header` clamp still covers bleed sections. */
+.hub-doc-block[data-treatment='flow'] .wcp-section-header :is(h2, h3) {
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 1.85rem);
+  line-height: 1.15;
+}
+.hub-doc-block[data-treatment='card'] .wcp-section-header :is(h2, h3) {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+/* Flow prose reads on the app surface: left-align the measure to the column
+   rail (Prose ships `mx-auto` for public policy pages — inside the doc column
+   that would float the body right of its own heading and the cards) and hold a
+   comfortable ~68ch line length. */
+.hub-prose .wcp-prose {
+  margin-inline: 0;
+  max-width: 44rem;
+}
 
 /* flow + card sections shed their band chrome: the wrapper owns spacing (flow)
    or padding (card), so the section fills the block flush and unpadded. */

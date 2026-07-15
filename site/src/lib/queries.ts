@@ -79,7 +79,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 // (content) sections are offered, so the projection just needs actions + the
 // faqSection dereference — no build-time "pull" sections here.
 export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
-  heading, intro,
+  heading, intro, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   sections[]{
     ...,

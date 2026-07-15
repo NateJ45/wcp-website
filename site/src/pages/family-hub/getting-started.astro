@@ -17,10 +17,13 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { estimateReadMinutes } from '@/lib/hub-reading-time';
+import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 
 interface HubPageDoc {
   heading?: string;
   intro?: string;
+  _updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -38,6 +41,8 @@ const title = doc?.heading || 'Getting Started at WCP';
 const intro =
   doc?.intro ||
   'New to the co-op, or need a refresher? Everything between “we’re in!” and the first day of school lives here.';
+const readMinutes = estimateReadMinutes(doc?.sections);
+const updated = formatMonthYear(doc?._updatedAt);
 ---
 
 <HubShell
@@ -48,7 +53,13 @@ const intro =
 >
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
-      <HubPageHeader title={title} subtitle={intro} icon="rocket" />
+      <HubPageHeader
+        title={title}
+        subtitle={intro}
+        icon="rocket"
+        readMinutes={readMinutes}
+        updated={updated}
+      />
 
       {
         /* Board-editable page-builder content, in the SAME container as the

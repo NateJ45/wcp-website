@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   daysUntil,
+  formatMonthYear,
   formatShortDate,
   greetingForHour,
   nyHour,
@@ -110,5 +111,21 @@ describe('formatShortDate', () => {
 
   it('renders a plain morning date the same in both zones', () => {
     expect(formatShortDate('2026-01-15T15:00:00Z', 'America/New_York')).toBe('Jan 15');
+  });
+});
+
+describe('formatMonthYear', () => {
+  it('renders "Month YYYY" in Eastern time', () => {
+    expect(formatMonthYear('2026-07-15T12:00:00Z')).toBe('July 2026');
+  });
+
+  it('uses the Eastern day at a UTC month boundary', () => {
+    // 2026-08-01T02:00:00Z is still 2026-07-31 21:00 in Eastern → July, not August.
+    expect(formatMonthYear('2026-08-01T02:00:00Z')).toBe('July 2026');
+  });
+
+  it('returns "" for missing or invalid input', () => {
+    expect(formatMonthYear(undefined)).toBe('');
+    expect(formatMonthYear('not-a-date')).toBe('');
   });
 });

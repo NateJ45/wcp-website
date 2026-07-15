@@ -63,3 +63,14 @@ export function formatShortDate(iso: string, timeZone: string): string {
     timeZone,
   });
 }
+
+/** "Month YYYY" (e.g. "July 2026"), rendered in `timeZone`. Used for the
+ *  handbook "Updated …" freshness line. Returns '' for a missing/invalid date
+ *  so callers can just skip the line. Eastern by default (Workers Date is UTC,
+ *  and the month can flip at the boundary — go through toLocaleDateString). */
+export function formatMonthYear(iso: string | undefined, timeZone = 'America/New_York'): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone });
+}

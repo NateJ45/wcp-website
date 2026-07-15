@@ -30,12 +30,15 @@ import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { estimateReadMinutes } from '@/lib/hub-reading-time';
+import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
 
 interface HubPageDoc {
   heading?: string;
   intro?: string;
   handbookUrl?: string;
+  _updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -53,6 +56,8 @@ const title = doc?.heading || 'Pre-K Classroom';
 const intro =
   doc?.intro ||
   'Kindergarten readiness with Mrs. Lisa — everything about the Pre-K year in one place, for both the morning and afternoon classes.';
+const readMinutes = estimateReadMinutes(doc?.sections);
+const updated = formatMonthYear(doc?._updatedAt);
 
 // Both classes' facts (Sanity `class` docs, data-file fallback per field) and
 // their Board-editable helper-schedule + photo-album links.
@@ -92,6 +97,8 @@ const classCards = [
         subtitle={intro}
         icon="sun"
         iconChip={classStyles('pre-k').iconChip}
+        readMinutes={readMinutes}
+        updated={updated}
       >
         <div slot="action" class="flex flex-wrap gap-2">
           {

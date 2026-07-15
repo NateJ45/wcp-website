@@ -17,6 +17,10 @@ const { class: className } = Astro.props;
 
 <div
   class={cn(
+    // `wcp-prose` is a stable hook (no styles of its own here) so the hub's
+    // document column can left-align the measure to its rail — see
+    // `.hub-prose .wcp-prose` in globals.css. Public pages keep mx-auto below.
+    'wcp-prose',
     // break-words so long unbreakable strings (email addresses, URLs) wrap
     // instead of forcing horizontal scroll at narrow widths (WCAG 1.4.10).
     'mx-auto max-w-3xl leading-relaxed break-words text-ink',

@@ -29,6 +29,7 @@
    ============================================================================ */
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import { site } from '@/data/site';
 
 interface Props {
@@ -74,21 +75,29 @@ const treatmentFor = (type: string): 'flow' | 'card' | 'bleed' =>
   FLOW.has(type) ? 'flow' : BLEED.has(type) ? 'bleed' : 'card';
 ---
 
-<div class:list={['hub-doc', tocCount > 1 && 'hub-doc-grid', className]}>
-  {
-    /* Content column FIRST (natural reading order, content-first for screen
-       readers) — the TOC follows and is placed in the right grid column. Inside
-       `.hub-prose` the shared marketing sections are re-skinned as app content
-       (left-aligned, denser, no marketing eyebrow); see globals.css. */
-  }
-  <div class="hub-prose min-w-0">
-    {
-      items.map((section) => (
-        <div class="hub-doc-block" data-treatment={treatmentFor(section?._type)}>
-          <SectionRenderer sections={[section]} site={site} />
-        </div>
-      ))
-    }
-  </div>
-  <HubSectionIndex sections={sections} label={label} />
-</div>
+{
+  items.length === 0 ? (
+    /* No sections yet: a designed "this is being written" panel beats a blank
+       column — the handbook body is entirely Board-editable, so an unseeded
+       page shouldn't read as broken. */
+    <div class:list={['hub-doc', className]}>
+      <HubEmptyState icon="book-open" title="This handbook is being written." source="sanity" />
+    </div>
+  ) : (
+    <div class:list={['hub-doc', tocCount > 1 && 'hub-doc-grid', className]}>
+      {/* Content column FIRST (natural reading order, content-first for screen
+           readers) — the TOC follows and is placed in the right grid column.
+           Inside `.hub-prose` the shared marketing sections are re-skinned as
+           app content (left-aligned, denser, no marketing eyebrow); see
+           globals.css. */}
+      <div class="hub-prose min-w-0">
+        {items.map((section) => (
+          <div class="hub-doc-block" data-treatment={treatmentFor(section?._type)}>
+            <SectionRenderer sections={[section]} site={site} />
+          </div>
+        ))}
+      </div>
+      <HubSectionIndex sections={sections} label={label} />
+    </div>
+  )
+}

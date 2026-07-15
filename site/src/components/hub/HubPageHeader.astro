@@ -25,6 +25,10 @@ interface Props {
   backLabel?: string;
   /** id for the <h1>, so the wrapping <Section> can aria-labelledby it. */
   titleId?: string;
+  /** Reading-time estimate in minutes (0/undefined hides it). */
+  readMinutes?: number;
+  /** Pre-formatted "Updated …" value, e.g. "July 2026" (empty/undefined hides it). */
+  updated?: string;
   class?: string;
 }
 const {
@@ -35,8 +39,14 @@ const {
   backHref,
   backLabel = 'Back',
   titleId = 'hub-page-title',
+  readMinutes,
+  updated,
   class: className,
 } = Astro.props;
+
+// A quiet meta row under the subtitle: reading time + freshness. Only rendered
+// when there's something to show — a page header with neither stays clean.
+const hasMeta = Boolean(readMinutes && readMinutes > 0) || Boolean(updated);
 ---
 
 <div class={cn('mb-8', className)} data-reveal>
@@ -68,6 +78,29 @@ const {
           {title}
         </h1>
         {subtitle && <p class="mt-1 max-w-2xl leading-relaxed text-ink-muted">{subtitle}</p>}
+        {
+          hasMeta && (
+            <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
+              {readMinutes && readMinutes > 0 && (
+                <span class="inline-flex items-center gap-1.5">
+                  <Icon name="clock" class="h-4 w-4" aria-hidden="true" />
+                  {readMinutes} min read
+                </span>
+              )}
+              {readMinutes && readMinutes > 0 && updated && (
+                <span aria-hidden="true" class="text-border">
+                  •
+                </span>
+              )}
+              {updated && (
+                <span class="inline-flex items-center gap-1.5">
+                  <Icon name="file-pen" class="h-4 w-4" aria-hidden="true" />
+                  Updated {updated}
+                </span>
+              )}
+            </p>
+          )
+        }
       </div>
     </div>
     {

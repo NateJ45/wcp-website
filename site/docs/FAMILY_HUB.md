@@ -430,10 +430,21 @@ Each section is wrapped in a `.hub-doc-block[data-treatment]` whose treatment (c
 schedule, table, quick facts, quote, form: white card chrome matching `HubCard`, via the shared
 `--color-surface` token so it tracks light/dark), and `bleed` (sections that carry their OWN
 cards or a full color band — card grids, class cards, CTAs, galleries: no outer card, so a card
-never nests in a card; a navy band becomes a self-contained rounded card). The skin hangs off
-stable hooks (`wcp-section` / `wcp-section-header` / `wcp-eyebrow` / `wcp-seam`) the shared
-components always emit; nothing targets them on the public site, so it stays untouched.
-Volunteers edit the sections exactly as before — only the hub rendering changes.
+never nests in a card; a navy band becomes a self-contained rounded card). A `flow` section title
+reads at CHAPTER scale and a `card` title as a compact PANEL label, so the page has real type
+hierarchy. Flow prose left-aligns to the column rail (`Prose` carries a `wcp-prose` hook; it keeps
+`mx-auto` for public policy pages) at a ~68ch measure. The skin hangs off stable hooks
+(`wcp-section` / `wcp-section-header` / `wcp-eyebrow` / `wcp-seam` / `wcp-prose`) the shared
+components always emit; nothing targets them on the public site, so it stays untouched. An unseeded
+page (no sections) renders a `HubEmptyState` instead of a blank column. Volunteers edit the
+sections exactly as before — only the hub rendering changes.
+
+The page header carries a quiet **meta line** — an estimated reading time and an "Updated <Month
+YYYY>" freshness stamp — so a handbook reads as maintained reference content. Reading time comes
+from `src/lib/hub-reading-time.ts` (`estimateReadMinutes`, ~200 wpm over headings + prose + FAQ
+text only — scannable blocks like schedules/tables are deliberately not counted); the stamp is
+`formatMonthYear(doc._updatedAt)` from `src/lib/hub-dashboard-dates.ts` (Eastern-safe, per the
+Workers-UTC gotcha). `HUB_PAGE_QUERY` projects `_updatedAt`. Both helpers are Vitest-covered.
 
 Each class page can also carry the teacher's **original handbook PDF** for download: the
 `hubPage.handbookFile` field (a Sanity file) drives a "Download the handbook (PDF)" button in
