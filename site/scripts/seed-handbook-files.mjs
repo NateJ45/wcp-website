@@ -1,17 +1,17 @@
 // =============================================================================
 // seed-handbook-files.mjs — attach the teachers' handbook PDFs for download
 // =============================================================================
-// Uploads Ms. Erin's 2026-27 parent-handbook PDF as a Sanity file asset and
-// sets it on `handbookFile` for BOTH hubPage-twos and hubPage-threes (they
-// share one handbook), so the "Download the handbook (PDF)" button shows at the
-// top of those class hub pages. The Pre-K page's button turns on the same way
-// once Mrs. Lisa's PDF is uploaded to hubPage-pre-k's "Handbook PDF" field in
-// the Studio (Family Hub -> Pre-K classroom).
+// Uploads each teacher's 2026-27 parent-handbook PDF as a Sanity file asset and
+// sets it on `handbookFile` for their class hub page(s), so the "Download the
+// handbook (PDF)" button shows at the top: Ms. Erin's on hubPage-twos AND
+// hubPage-threes (they share one handbook / one combined page), Mrs. Lisa's on
+// hubPage-pre-k.
 //
 // Idempotent: it finds an already-uploaded asset by filename and reuses it, so
 // re-running never creates duplicate assets. Only the initial upload needs the
 // source PDF present locally (it lives outside the repo — PDFs are gitignored).
-// Run: node scripts/seed-handbook-files.mjs
+// Missing source + no existing asset for one handbook just skips it (the others
+// still run). Run: node scripts/seed-handbook-files.mjs
 // =============================================================================
 import { createClient } from '@sanity/client';
 import { readFileSync, existsSync, createReadStream } from 'node:fs';
@@ -30,38 +30,49 @@ const client = createClient({
   useCdn: false,
 });
 
-// The clean name families see when they download, and the local source (only
-// needed the first time — after upload the asset is reused by this name).
-const FILENAME = 'WCP-Twos-Threes-Parent-Handbook-2026-27.pdf';
-const SOURCE = 'C:/Users/natha/Downloads/parent handbook.pdf';
+// Each handbook: the clean download name, its local source (only needed the
+// first time — after upload the asset is reused by name), and the hub page(s)
+// it attaches to.
+const HANDBOOKS = [
+  {
+    filename: 'WCP-Twos-Threes-Parent-Handbook-2026-27.pdf',
+    source: 'C:/Users/natha/Downloads/parent handbook.pdf',
+    docs: ['hubPage-twos', 'hubPage-threes'],
+  },
+  {
+    filename: 'WCP-Pre-K-Parent-Handbook-2026-27.pdf',
+    source: 'C:/Users/natha/Downloads/PreK parent handbook for nathan 2627.pdf',
+    docs: ['hubPage-pre-k'],
+  },
+];
 
-async function assetId() {
+async function assetId(filename, source) {
   const existing = await client.fetch(
     `*[_type == "sanity.fileAsset" && originalFilename == $n][0]._id`,
-    { n: FILENAME },
+    { n: filename },
   );
   if (existing) {
-    console.log(`↺ reusing existing asset ${existing} (${FILENAME})`);
+    console.log(`↺ reusing existing asset ${existing} (${filename})`);
     return existing;
   }
-  if (!existsSync(SOURCE)) {
-    throw new Error(
-      `Handbook PDF not found at ${SOURCE} and no matching asset in Sanity yet.\n` +
-        `Put the PDF there (or edit SOURCE) and re-run, or upload it in the Studio.`,
-    );
+  if (!existsSync(source)) {
+    console.log(`⚠ ${filename}: not found at ${source} and no asset yet — skipping.`);
+    return null;
   }
-  const asset = await client.assets.upload('file', createReadStream(SOURCE), {
-    filename: FILENAME,
+  const asset = await client.assets.upload('file', createReadStream(source), {
+    filename,
     contentType: 'application/pdf',
   });
-  console.log(`✓ uploaded ${FILENAME} → ${asset._id}`);
+  console.log(`✓ uploaded ${filename} → ${asset._id}`);
   return asset._id;
 }
 
-const id = await assetId();
-const handbookFile = { _type: 'file', asset: { _type: 'reference', _ref: id } };
-
-for (const docId of ['hubPage-twos', 'hubPage-threes']) {
-  await client.patch(docId).set({ handbookFile }).commit();
-  console.log(`✓ ${docId}.handbookFile set`);
+for (const h of HANDBOOKS) {
+  const id = await assetId(h.filename, h.source);
+  if (!id) continue;
+  const handbookFile = { _type: 'file', asset: { _type: 'reference', _ref: id } };
+  for (const docId of h.docs) {
+    await client.patch(docId).set({ handbookFile }).commit();
+    console.log(`✓ ${docId}.handbookFile set`);
+  }
 }

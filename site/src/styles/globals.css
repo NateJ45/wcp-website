@@ -801,11 +801,12 @@
    `title` tooltips on each link), group headers hide, icons center.
    ============================================================================ */
 .hub-rail-aside {
-  width: 14rem; /* w-56 expanded */
+  /* 14rem rail + 1rem for the p-2 floating gutter (0.5rem each side). */
+  width: 15rem;
   transition: width 0.2s ease;
 }
 html[data-rail-collapsed] .hub-rail-aside {
-  width: 4.5rem;
+  width: 5.5rem; /* 4.5rem rail + the 1rem gutter */
 }
 html[data-rail-collapsed] .hub-rail-aside [data-rail-label] {
   position: absolute;

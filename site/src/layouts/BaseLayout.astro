@@ -224,13 +224,18 @@ const currentPath = Astro.url.pathname;
          rail on desktop, a top bar + off-canvas drawer on mobile. -->
     {
       chrome === 'hub' ? (
-        <div class="flex min-h-screen">
-          {/* overflow-hidden, not auto: HubRail's nav owns the scrolling (its
-              min-h-0 middle region), so the logo and Sign out stay pinned. An
-              auto here made the WHOLE rail the scroller with the OS-default
-              scrollbar painted over the navy (2026-07-14). */}
-          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 overflow-hidden lg:block">
-            <HubRail collapsible />
+        <div class="flex min-h-screen bg-grey">
+          {/* The rail floats as a lifted panel: the aside carries a small
+              gutter (p-2) on the grey canvas, and the inner wrapper rounds +
+              shadows the navy so it reads as separated from the content (and no
+              navy bleeds below it on tall pages — the container is bg-grey).
+              overflow-hidden on the wrapper (not auto): HubRail's nav owns the
+              scrolling (its min-h-0 middle), so the logo and Sign out stay
+              pinned. The collapse widths in globals.css include this gutter. */}
+          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 p-2 lg:block">
+            <div class="h-full overflow-hidden rounded-2xl shadow-xl">
+              <HubRail collapsible />
+            </div>
           </aside>
 
           {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
