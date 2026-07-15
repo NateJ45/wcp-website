@@ -209,7 +209,12 @@ const sized = (u?: string): string | undefined =>
                           rel="noopener"
                           class="wcp-store-tile group block overflow-hidden rounded-2xl bg-white text-navy shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0"
                         >
-                          <span class="block aspect-square overflow-hidden bg-grey">
+                          {/* Fixed light grey (not theme-reactive bg-grey): the
+                              tile is a theme-stable white card, and Fourthwall
+                              product images are transparent — a flipping grey
+                              would make them float against a dark square in dark
+                              mode. Pinned so both themes match. */}
+                          <span class="block aspect-square overflow-hidden bg-[#eff0f1]">
                             <img
                               src={sized(p.image)}
                               data-img-full={p.image}
