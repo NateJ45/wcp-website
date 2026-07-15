@@ -4,14 +4,15 @@
    ============================================================================
    Two bars, one component (2026-07-14 app-elevation Track A):
 
-   - Desktop (lg+): a slim sticky bar over the content column. Page context on
-     the left; on the right a search "field" (really a button — the visible
-     affordance for the Cmd/Ctrl+K palette that used to hide in the rail), the
-     what's-new bell, and the "New" quick-action menu (Sign up / Pay tuition /
-     Contact the board — the three things families actually initiate). The
-     rail keeps "where am I"; this bar owns "what can I do right now".
-     Sticky height is h-14 — HubTable's sticky column headers offset by
-     lg:top-14 to slide under it, keep them in sync.
+   - Desktop (lg+): a FLOATING sticky bar (m-2 gutter + rounded + shadow, to
+     match the lifted rail) over the content column. On the left, quick links
+     to the things a parent wants on any page (helper schedule — personalized
+     to the device's class by hub-quicklinks.ts; class photos; the next event;
+     the latest update). On the right a search "field" (really a button — the
+     Cmd/Ctrl+K palette affordance), the what's-new bell, and the "New"
+     quick-action menu. The rail keeps "where am I"; this bar owns "what can I
+     do / get to right now". Total sticky height stays ~56px (h-10 + gutter) so
+     HubTable's lg:top-14 sticky column headers still slide under it.
    - Phone (< lg): the existing navy strip (menu, title, search, bell, theme,
      logo). Not sticky; the tab bar owns persistent nav on phones.
 
@@ -26,6 +27,8 @@ import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
+import { calendarFeedUrlFallback, helperScheduleFallback } from '@/data/hub/live-links';
 import { site } from '@/data/site';
 // Pre-sized webp, NOT the 9000x6000 original via astro:assets <Image>: hub
 // pages are SSR, and the Cloudflare adapter can't resize at request time, so
@@ -54,6 +57,7 @@ interface DocRow {
   publishedAt?: string;
 }
 let bellItems: BellItem[] = [];
+let latestUpdate: { title: string; href: string } | null = null;
 try {
   const feed = await sanityFetch<{
     updates: UpdateRow[];
@@ -95,9 +99,52 @@ try {
   bellItems = merged
     .sort((a, b) => Number(b.highlight ?? false) - Number(a.highlight ?? false))
     .slice(0, 9);
+  // The single most recent announcement / meeting minute, for the quick link.
+  const u0 = feed.updates?.[0];
+  if (u0?.title) {
+    latestUpdate = {
+      title: u0.title,
+      href: u0.slug ? `/family-hub/updates/${u0.slug}` : '/family-hub/updates',
+    };
+  }
 } catch {
   bellItems = []; // bell still renders; the panel shows its caught-up state
 }
+
+// Next upcoming event, for the quick link. Cached feed (shared with the home
+// widget), so this is a cache hit on every page after the first; degrades to no
+// event (the chip just points at the calendar) on any failure.
+let nextEvent: HubEvent | null = null;
+try {
+  const feedUrl =
+    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].calendarFeedUrl`)) ||
+    calendarFeedUrlFallback;
+  nextEvent = (await getUpcomingEvents(feedUrl))[0] ?? null;
+} catch {
+  nextEvent = null;
+}
+
+// Per-class helper-schedule URLs, so the "Helper schedule" quick link can
+// personalize to the device's class (hub-quicklinks.ts, reading wcp-my-classes).
+let helperMap: Record<string, string> = {};
+try {
+  const rows = await sanityFetch<{ slug?: string; helperScheduleUrl?: string }[]>(
+    `*[_type == "class"]{ "slug": slug.current, helperScheduleUrl }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+  for (const r of rows ?? []) {
+    const url = r.slug ? r.helperScheduleUrl || helperScheduleFallback[r.slug] : '';
+    if (r.slug && url) helperMap[r.slug] = url;
+  }
+} catch {
+  helperMap = {};
+}
+
+const nextEventLabel = nextEvent
+  ? `Next: ${fmtEventMonth(nextEvent)} ${fmtEventDay(nextEvent)}`
+  : 'Calendar';
+const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming events';
 
 const quickActions = [
   { label: 'Sign up to help', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
@@ -112,53 +159,97 @@ const quickActions = [
     strip below is a <header> too, but only one is ever displayed, so the
     duplicate-banner rule never sees both. */
 }
-<header
-  data-hub-topbar
-  class="sticky top-0 z-30 hidden h-14 items-center gap-4 border-b border-border bg-white/85 px-6 backdrop-blur lg:flex dark:bg-surface/85"
->
-  <span class="truncate text-sm font-extrabold text-heading">{title}</span>
-
-  <div class="ml-auto flex items-center gap-2">
-    <button
-      type="button"
-      class="flex h-9 w-56 cursor-pointer items-center gap-2 rounded-full border border-border bg-grey/60 px-3 text-sm text-ink-muted transition-colors hover:border-navy/30 dark:bg-white/5 dark:hover:border-white/30"
-      data-hub-search-open
-    >
-      <Icon name="search" class="h-4 w-4 shrink-0" />
-      <span>Search the hub</span>
-      <kbd
-        class="ml-auto rounded border border-border px-1 text-[0.65rem] font-semibold text-ink-muted"
-        >⌘K</kbd
+<header data-hub-topbar class="sticky top-0 z-30 hidden lg:block">
+  {
+    /* Floating bar (m-2 gutter + rounded + shadow) to match the lifted rail.
+      Total sticky height stays ~56px (h-10 + the gutter), so HubTable's
+      lg:top-14 sticky headers still slide under it. */
+  }
+  <div
+    class="m-2 flex h-10 items-center gap-1.5 rounded-2xl border border-border bg-white/85 px-2.5 shadow-md backdrop-blur dark:border-white/10 dark:bg-surface/85"
+  >
+    {
+      /* Quick links — the things a parent wants on any page. Icon-only on lg,
+        icon + label on xl. hub-quicklinks.ts personalizes the helper link to
+        the device's class. */
+    }
+    <nav aria-label="Quick links" class="flex items-center gap-0.5">
+      <a
+        data-quick-helper
+        data-helper-map={JSON.stringify(helperMap)}
+        href="/family-hub/coop-jobs"
+        class="hub-quick"
+        title="Your helper schedule"
       >
-    </button>
-
-    <HubBell items={bellItems} tone="bar" />
-
-    <details class="relative" data-hub-menu>
-      <summary
-        class="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-navy px-3.5 text-sm font-bold text-white transition hover:brightness-110 [&::-webkit-details-marker]:hidden"
+        <Icon name="clipboard-list" class="h-4 w-4 shrink-0" />
+        <span class="sr-only xl:not-sr-only xl:inline">Helper schedule</span>
+      </a>
+      <a href="/family-hub/photos" class="hub-quick" title="Class photo albums">
+        <Icon name="camera" class="h-4 w-4 shrink-0" />
+        <span class="sr-only xl:not-sr-only xl:inline">Photos</span>
+      </a>
+      <a href="/family-hub/calendar" class="hub-quick" title={nextEventTitle}>
+        <Icon name="calendar-days" class="h-4 w-4 shrink-0" />
+        <span class="sr-only xl:not-sr-only xl:inline">{nextEventLabel}</span>
+      </a>
+      <a
+        href={latestUpdate?.href ?? '/family-hub/updates'}
+        class="hub-quick"
+        title={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
       >
-        <Icon name="plus" class="h-4 w-4" />
-        New
-      </summary>
-      <div
-        class="absolute right-0 z-40 mt-2 w-56 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+        <Icon name="newspaper" class="h-4 w-4 shrink-0" />
+        <span class="sr-only max-w-[10rem] truncate xl:not-sr-only xl:inline">
+          {latestUpdate ? latestUpdate.title : 'Updates'}
+        </span>
+      </a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <button
+        type="button"
+        class="flex h-9 w-40 cursor-pointer items-center gap-2 rounded-full border border-border bg-grey/60 px-3 text-sm text-ink-muted transition-colors hover:border-navy/30 xl:w-56 dark:bg-white/5 dark:hover:border-white/30"
+        data-hub-search-open
       >
-        {
-          quickActions.map((a) => (
-            <a
-              href={a.href}
-              class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
-            >
-              <Icon name={a.icon} class="h-4 w-4 shrink-0 text-sky-ink" />
-              {a.label}
-            </a>
-          ))
-        }
-      </div>
-    </details>
+        <Icon name="search" class="h-4 w-4 shrink-0" />
+        <span>Search the hub</span>
+        <kbd
+          class="ml-auto rounded border border-border px-1 text-[0.65rem] font-semibold text-ink-muted"
+          >⌘K</kbd
+        >
+      </button>
+
+      <HubBell items={bellItems} tone="bar" />
+
+      <details class="relative" data-hub-menu>
+        <summary
+          class="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-navy px-3.5 text-sm font-bold text-white transition hover:brightness-110 [&::-webkit-details-marker]:hidden"
+        >
+          <Icon name="plus" class="h-4 w-4" />
+          New
+        </summary>
+        <div
+          class="absolute right-0 z-40 mt-2 w-56 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+        >
+          {
+            quickActions.map((a) => (
+              <a
+                href={a.href}
+                class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
+              >
+                <Icon name={a.icon} class="h-4 w-4 shrink-0 text-sky-ink" />
+                {a.label}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+    </div>
   </div>
 </header>
+
+<script>
+  import '@/scripts/hub-quicklinks';
+</script>
 
 {/* ---- Phone strip (< lg) ---- */}
 <header

@@ -1,17 +1,18 @@
 ---
 /* ============================================================================
-   UpcomingEventsWidget — the next 5 events, live from the school Google
-   Calendar (Apps Script feed; Board-editable URL on siteSettings, working
-   fallback in live-links.ts), with Sanity `event` docs as the fallback
-   source — see src/lib/hub-calendar.ts. Five, not three: this widget fills
-   the bento's tall side tile (row-span-2) and a tall tile with only three
-   rows reads sparse. "See all" points at the hub's Calendar page, which
-   lists the same feed above its embed.
+   UpcomingEventsWidget — the next ~3 months of events, live from the school
+   Google Calendar (Apps Script feed; Board-editable URL on siteSettings,
+   working fallback in live-links.ts), with Sanity `event` docs as the fallback
+   source — see src/lib/hub-calendar.ts. It fills the bento's tall side tile
+   (row-span-2), so we show everything within a rolling 3-month horizon (capped
+   at 12 so a busy season can't run away) rather than a fixed few — a short list
+   left a big empty gap under it. "See all" points at the hub's Calendar page.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import { sanityFetch } from '@/lib/sanity';
 import {
   getUpcomingEvents,
+  eventDate,
   fmtEventMonth,
   fmtEventDay,
   fmtEventWeekday,
@@ -29,7 +30,12 @@ try {
   feedUrl = calendarFeedUrlFallback;
 }
 
-const events: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 5);
+// Everything in the next ~3 months (92 days), capped at 12. getUpcomingEvents
+// already returns future events sorted ascending; we just trim the far tail.
+const HORIZON = Date.now() + 92 * 24 * 60 * 60 * 1000;
+const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
+  .filter((e) => eventDate(e.start).getTime() <= HORIZON)
+  .slice(0, 12);
 ---
 
 <HomeWidgetCard

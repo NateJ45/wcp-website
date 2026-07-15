@@ -892,3 +892,29 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
   background-color: color-mix(in oklab, var(--color-heading) 7%, transparent);
   font-weight: 700;
 }
+
+/* Topbar quick-link chips (HubTopBar): icon-only on lg, icon + label on xl. */
+.hub-quick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.hub-quick:hover {
+  color: var(--color-heading);
+  background-color: color-mix(in oklab, var(--color-heading) 6%, transparent);
+}
+@media (min-width: 80rem) {
+  .hub-quick {
+    padding-inline: 0.75rem;
+  }
+}
