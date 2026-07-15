@@ -90,9 +90,7 @@ test.describe('Family Hub shell', () => {
 
   // The desktop topbar + bell + quick actions (2026-07-14 app-elevation
   // Track A). Menus are native <details>; hub-menus.ts adds Esc/outside-close.
-  test('topbar: bell and quick-action menus open, close on Esc, pass axe open', async ({
-    page,
-  }) => {
+  test('topbar: bell opens, closes on Esc, passes axe open; search opens', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/family-hub/documents', { waitUntil: 'load' });
     await settle(page);
@@ -120,13 +118,6 @@ test.describe('Family Hub shell', () => {
 
     await page.keyboard.press('Escape');
     await expect(bell.locator('[data-bell-panel]')).not.toBeVisible();
-
-    // Quick actions: three links; outside click closes the menu.
-    const quick = topbar.locator('details[data-hub-menu]:not([data-hub-bell])');
-    await quick.locator('summary').click();
-    await expect(quick.locator('a')).toHaveCount(3);
-    await page.mouse.click(500, 500);
-    await expect(quick.locator('a').first()).not.toBeVisible();
 
     // The search affordance opens the palette.
     await topbar.locator('[data-hub-search-open]').click();

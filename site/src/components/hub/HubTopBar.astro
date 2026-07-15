@@ -6,13 +6,13 @@
 
    - Desktop (lg+): a FLOATING sticky bar (m-2 gutter + rounded + shadow, to
      match the lifted rail) over the content column. On the left, quick links
-     to the things a parent wants on any page (helper schedule — personalized
-     to the device's class by hub-quicklinks.ts; class photos; the next event;
-     the latest update). On the right a search "field" (really a button — the
-     Cmd/Ctrl+K palette affordance), the what's-new bell, and the "New"
-     quick-action menu. The rail keeps "where am I"; this bar owns "what can I
-     do / get to right now". Total sticky height stays ~56px (h-10 + gutter) so
-     HubTable's lg:top-14 sticky column headers still slide under it.
+     to the things a parent wants on any page: helper schedule (personalized to
+     the device's class by hub-quicklinks.ts), pay tuition, the next event, and
+     the latest update. On the right a search "field" (really a button — the
+     Cmd/Ctrl+K palette affordance) and the what's-new bell. The rail keeps
+     "where am I"; this bar owns "what can I do / get to right now". Total sticky
+     height stays ~56px (h-10 + gutter) so HubTable's lg:top-14 sticky column
+     headers still slide under it.
    - Phone (< lg): the existing navy strip (menu, title, search, bell, theme,
      logo). Not sticky; the tab bar owns persistent nav on phones.
 
@@ -145,12 +145,6 @@ const nextEventLabel = nextEvent
   ? `Next: ${fmtEventMonth(nextEvent)} ${fmtEventDay(nextEvent)}`
   : 'Calendar';
 const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming events';
-
-const quickActions = [
-  { label: 'Sign up to help', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
-  { label: 'Pay tuition', href: '/family-hub/tuition', icon: 'circle-dollar-sign' },
-  { label: 'Contact the board', href: '/contact', icon: 'mail' },
-];
 ---
 
 {/* ---- Desktop bar (lg+) ---- */}
@@ -184,9 +178,9 @@ const quickActions = [
         <Icon name="clipboard-list" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">Helper schedule</span>
       </a>
-      <a href="/family-hub/photos" class="hub-quick" title="Class photo albums">
-        <Icon name="camera" class="h-4 w-4 shrink-0" />
-        <span class="sr-only xl:not-sr-only xl:inline">Photos</span>
+      <a href="/family-hub/tuition" class="hub-quick" title="Pay tuition">
+        <Icon name="circle-dollar-sign" class="h-4 w-4 shrink-0" />
+        <span class="sr-only xl:not-sr-only xl:inline">Pay tuition</span>
       </a>
       <a href="/family-hub/calendar" class="hub-quick" title={nextEventTitle}>
         <Icon name="calendar-days" class="h-4 w-4 shrink-0" />
@@ -195,10 +189,12 @@ const quickActions = [
       <a
         href={latestUpdate?.href ?? '/family-hub/updates'}
         class="hub-quick"
+        aria-label={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
         title={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
       >
         <Icon name="newspaper" class="h-4 w-4 shrink-0" />
-        <span class="sr-only max-w-[10rem] truncate xl:not-sr-only xl:inline">
+        {/* inline-block (not inline) so max-width + truncate hold it to one line */}
+        <span class="hidden max-w-[10rem] truncate align-middle xl:inline-block" aria-hidden="true">
           {latestUpdate ? latestUpdate.title : 'Updates'}
         </span>
       </a>
@@ -219,30 +215,6 @@ const quickActions = [
       </button>
 
       <HubBell items={bellItems} tone="bar" />
-
-      <details class="relative" data-hub-menu>
-        <summary
-          class="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-navy px-3.5 text-sm font-bold text-white transition hover:brightness-110 [&::-webkit-details-marker]:hidden"
-        >
-          <Icon name="plus" class="h-4 w-4" />
-          New
-        </summary>
-        <div
-          class="absolute right-0 z-40 mt-2 w-56 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
-        >
-          {
-            quickActions.map((a) => (
-              <a
-                href={a.href}
-                class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
-              >
-                <Icon name={a.icon} class="h-4 w-4 shrink-0 text-sky-ink" />
-                {a.label}
-              </a>
-            ))
-          }
-        </div>
-      </details>
     </div>
   </div>
 </header>

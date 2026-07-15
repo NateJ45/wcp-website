@@ -225,6 +225,15 @@ const currentPath = Astro.url.pathname;
     {
       chrome === 'hub' ? (
         <div class="flex min-h-screen bg-grey">
+          {/* Disable cross-document view transitions on the HUB only. A VT
+              freezes the outgoing page as a non-interactive snapshot for the
+              whole SSR load (~1s), so clicks don't register until the next page
+              arrives. Plain navigation keeps the current page live + clickable
+              during the load, so families can click through as fast as they
+              like. This inline rule is later in the cascade than globals.css's
+              `@view-transition { navigation: auto }`, so `none` wins here;
+              public pages (no override) keep their cross-fade. */}
+          <style is:inline set:html="@view-transition { navigation: none; }" />
           {/* The rail floats as a lifted panel: the aside carries a small
               gutter (p-2) on the grey canvas, and the inner wrapper rounds +
               shadows the navy so it reads as separated from the content (and no

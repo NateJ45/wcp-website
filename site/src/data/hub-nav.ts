@@ -46,6 +46,27 @@ export const hubNav: HubGroup[] = [
     links: [{ label: 'Home', href: '/family-hub', icon: 'house' }],
   },
   {
+    label: 'Classes',
+    accent: '#7dd3fc', // sky label; each class link carries its own class color
+    links: [
+      // One page for both Twos and Threes — same teacher (Ms. Erin), same
+      // handbook; each class's facts live side by side on the page itself.
+      {
+        label: 'Twos & Threes',
+        href: '/family-hub/twos-threes',
+        icon: 'blocks',
+        iconColor: CLASS_ACCENT.twos,
+      },
+      // One page for both Pre-K classes — same teacher, same handbook.
+      {
+        label: 'Pre-K',
+        href: '/family-hub/pre-k',
+        icon: 'sun',
+        iconColor: CLASS_ACCENT['pre-k-am'],
+      },
+    ],
+  },
+  {
     label: 'News & Events',
     accent: '#7dd3fc', // sky
     links: [
@@ -74,10 +95,6 @@ export const hubNav: HubGroup[] = [
     label: 'Community',
     accent: '#fdba74', // orange
     links: [
-      { label: 'Sign-ups', href: '/family-hub/sign-ups', icon: 'clipboard-list' },
-      { label: 'My Hours', href: '/family-hub/hours', icon: 'clock' },
-      { label: 'Celebrations', href: '/family-hub/celebrations', icon: 'party-popper' },
-      { label: 'Photos', href: '/family-hub/photos', icon: 'camera' },
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
       {
@@ -85,28 +102,6 @@ export const hubNav: HubGroup[] = [
         href: 'https://store.westchesterpreschool.org/',
         icon: 'shopping-bag',
         external: true,
-      },
-    ],
-  },
-  {
-    label: 'Classes',
-    accent: '#7dd3fc', // sky label; each class link carries its own class color
-    links: [
-      // One page for both Twos and Threes — same teacher (Ms. Erin), same
-      // handbook; each class's facts live side by side on the page itself.
-      {
-        label: 'Twos & Threes',
-        href: '/family-hub/twos-threes',
-        icon: 'blocks',
-        iconColor: CLASS_ACCENT.twos,
-      },
-      // One page for both Pre-K classes — same teacher, same handbook; the AM/PM
-      // facts live side by side on the page itself.
-      {
-        label: 'Pre-K',
-        href: '/family-hub/pre-k',
-        icon: 'sun',
-        iconColor: CLASS_ACCENT['pre-k-am'],
       },
     ],
   },
