@@ -86,7 +86,17 @@ const isNavy = tone === 'navy';
       <slot name="actions" />
     </div>
     {
-      Astro.slots.has('note') && (
+      /* Optional teacher signature — a headshot + Email / Call-or-text pills
+        that turn the closing CTA into a signed sign-off card (class hub pages).
+        When present it stands in for the plain-text note. */
+      Astro.slots.has('signature') && (
+        <div class="mt-8" data-reveal style="--reveal-delay: 300ms">
+          <slot name="signature" />
+        </div>
+      )
+    }
+    {
+      !Astro.slots.has('signature') && Astro.slots.has('note') && (
         <p
           class={cn(
             'mt-5 text-sm [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-2',

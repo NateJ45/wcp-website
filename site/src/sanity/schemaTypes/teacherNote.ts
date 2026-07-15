@@ -100,7 +100,15 @@ export const teacherNote = defineType({
       title: 'Contact email (optional)',
       type: 'string',
       group: 'letter',
-      description: 'Shown under the signature, e.g. erin@westchesterpreschool.org.',
+      description: 'Shown as a button on the class page, e.g. erin@westchesterpreschool.org.',
+    }),
+    defineField({
+      name: 'phone',
+      title: 'Contact phone (optional)',
+      type: 'string',
+      group: 'letter',
+      description:
+        'Shown as a "Call or text" button beside the email, e.g. 513-543-4824. Digits, spaces, or dashes are all fine.',
     }),
     defineField({
       name: 'photo',

@@ -315,11 +315,21 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   class-colored one behind each class page header, the greeting carries a live
   weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
   sign-up success fires a reduced-motion-safe confetti burst.
-- **Class pages** open with a `TeacherCard` (photo/name/role/email straight from the
-  class's `teacherNote` doc — the same fields that power the welcome modal) beside
-  the facts grid, then a photo "How our day flows" `storyTimelineSection` seeded from
-  each class's own schedule (`scripts/seed-class-stories.mjs`; the board swaps in
-  real class photos in the Studio).
+- **Class pages** open with a `TeacherCard` (photo/name/role/**email + phone** straight
+  from the class's `teacherNote` doc — the same fields that power the welcome modal; the
+  card shows a **Say hi** (email) and a **Call or text** (phone) link), beside the facts
+  grid, then a photo "How our day flows" `storyTimelineSection` seeded from each class's
+  own schedule (`scripts/seed-class-stories.mjs`; the board swaps in real class photos in
+  the Studio).
+- **Signed sign-off CTA.** The handbook's **closing** CTA on a class page becomes a signed
+  sign-off card: the teacher's headshot in a class-colour ring + **Email** / **Call or
+  text** pill buttons (`TeacherSignoff.astro`), which stand in for the CTA's plain-text
+  note. `HubSectionedBody` takes a `signoff` slug (`twos` / `pre-k`) and renders that
+  page's LAST `ctaSection` through `CtaSection` with a `teacherSlug`, so a mid-handbook CTA
+  never gets a signature. Contact comes from the same `teacherNote` (email + the
+  2026-07-15 `phone` field); phone falls back to `teacherPhoneFallback` (`live-links.ts`)
+  until the Studio field is filled — the numbers were already public in each handbook's
+  closing note. Erin signs Twos & Threes; Mrs. Lisa signs Pre-K.
 
 ## Updates / meeting blog
 
@@ -511,6 +521,18 @@ unavailable the tiles fall back to the Board-curated `storeProducts[]` on Site S
 Social & store (`storeHeadline` / `storeTagline` / `storeUrl` / each product `title`/`price`/
 `url`/`image`; seeded once by `node scripts/seed-store-feature.mjs`); if the Open API is
 unavailable the stat hides. The card hides entirely without a `storeUrl`.
+
+**The community wall** (`SocialWallWidget.astro`) sits directly **below the store card** and closes
+the hub home on a human note — a navy bulletin board of pinned snapshots (white polaroid frames,
+brand-colour pushpins, a gentle random tilt, hover-straighten; a dot grid + doodle texture behind),
+the hub-home twin of the public "Life inside WCP." section and the old Squarespace bulletin board.
+It reads the **same Board-curated album the public section falls back to** — `album-life-inside-wcp`
+(Studio → **Photo albums** → "Life inside WCP"; seeded by `node scripts/add-instagram-home.mjs`), at
+request time through the cached authenticated client (`BOARD_CONTENT_CACHE`), so editing that one
+album updates **both** the public home and the hub home. No Instagram token is needed. Images are
+requested at 400px (2x for the ~190px tiles, no over-fetch); the widget renders nothing when the
+album is empty. Motion is reduced-motion-safe. It's rendered **inline** (not a `server:defer`
+island) — the single album read rides the CDN cache, below the cost of an extra island round-trip.
 
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |

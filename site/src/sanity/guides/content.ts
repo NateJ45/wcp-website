@@ -221,7 +221,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **Teacher welcome notes** work exactly the same way, one per class — each pops up the first time a family visits that class’s hub page. Same rules: rewrite freely, bump the version stamp for a new year, toggle it off to retire it. The note’s **photo, name, role, and email** also fill the "Your teacher" card at the top of that class page, so keeping them current does double duty. Each class page also opens with a photo **"How our day flows"** story — swap its starter photos for real shots of your class right on the page’s Story timeline section.',
+        text: 'The **Teacher welcome notes** work exactly the same way, one per class — each pops up the first time a family visits that class’s hub page. Same rules: rewrite freely, bump the version stamp for a new year, toggle it off to retire it. The note’s **photo, name, role, email, and phone** do triple duty: they fill the "Your teacher" card at the top of the class page (a **Say hi** and a **Call or text** link), and they sign off the handbook’s closing section as a little signature card — the teacher’s headshot with **Email** and **Call or text** buttons. So keep them current in one place. Each class page also opens with a photo **"How our day flows"** story — swap its starter photos for real shots of your class right on the page’s Story timeline section.',
       },
       {
         kind: 'p',

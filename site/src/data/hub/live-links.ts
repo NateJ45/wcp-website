@@ -37,6 +37,19 @@ export const helperScheduleFallback: Record<string, string> = {
   'pre-k-pm': '',
 };
 
+/** Per-teacher "call or text" number, keyed by teacherNote class (twos/threes/
+ *  pre-k). This is the teacher's OWN published contact — already shown in each
+ *  handbook's closing note (patch-contact-notes.mjs, committed) and on the live
+ *  hub — NOT a share-by-link secret, so unlike the Google links above it's a
+ *  real fallback value, not redacted. It backs `teacherNote.phone` so the class
+ *  sign-off card + teacher card "Call or text" pills work before the Studio
+ *  field is filled in; the Studio value wins once set. */
+export const teacherPhoneFallback: Record<string, string> = {
+  twos: '513-543-4824',
+  threes: '513-543-4824',
+  'pre-k': '503-201-4775',
+};
+
 /** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (siteSettings.budgetSheetId). */
 export const budgetSheetIdFallback = '';
 

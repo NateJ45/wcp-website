@@ -1,16 +1,21 @@
 ---
 import CtaBanner from '@/components/CtaBanner.astro';
 import ActionButtons from './ActionButtons.astro';
+import TeacherSignoff from '@/components/hub/TeacherSignoff.astro';
 import { renderPortableText } from '@/lib/portable-text';
 import type { SectionData, ActionData } from './section-helpers';
 
 interface Props {
   section: SectionData;
   linkBase?: string;
+  /** When set (class hub pages), the closing CTA becomes a signed sign-off
+      card: the teacher's headshot + Email / Call-or-text pills stand in for the
+      plain-text note. Omitted everywhere else, so the CTA is unchanged. */
+  teacherSlug?: string;
 }
-const { section, linkBase = '' } = Astro.props;
+const { section, linkBase = '', teacherSlug } = Astro.props;
 const actions = (section.actions as ActionData[] | undefined) ?? [];
-const noteHtml = renderPortableText(section.note as never, linkBase);
+const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, linkBase);
 ---
 
 <CtaBanner
@@ -23,6 +28,13 @@ const noteHtml = renderPortableText(section.note as never, linkBase);
   <Fragment slot="actions">
     <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
   </Fragment>
+  {
+    teacherSlug && (
+      <Fragment slot="signature">
+        <TeacherSignoff slug={teacherSlug} />
+      </Fragment>
+    )
+  }
   {
     noteHtml && (
       <Fragment slot="note">

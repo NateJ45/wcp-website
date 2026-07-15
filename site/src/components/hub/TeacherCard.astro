@@ -12,6 +12,7 @@ import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { classStyles } from '@/lib/class-colors';
+import { teacherPhoneFallback } from '@/data/hub/live-links';
 
 interface Props {
   /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
@@ -24,12 +25,13 @@ interface TeacherDoc {
   signName?: string;
   signRole?: string;
   email?: string;
+  phone?: string;
   photo?: { asset?: unknown; alt?: string } | null;
 }
 let teacher: TeacherDoc | null = null;
 try {
   teacher = await sanityFetch<TeacherDoc | null>(
-    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, photo }`,
+    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, phone, photo }`,
     { cls: noteClass },
     { cache: BOARD_CONTENT_CACHE },
   );
@@ -46,6 +48,12 @@ const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
       .width(160)
       .url()
+  : null;
+// Studio value wins; fall back to the committed number until the field is set.
+const phone = teacher?.phone || teacherPhoneFallback[noteClass];
+// A tel: href from any human-typed phone (keep a leading +, drop other symbols).
+const telHref = phone
+  ? `tel:${phone.trim().startsWith('+') ? '+' : ''}${phone.replace(/[^\d]/g, '')}`
   : null;
 ---
 
@@ -73,14 +81,27 @@ const photoUrl = teacher?.photo?.asset
         <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Your teacher</p>
         <p class="font-display text-xl text-heading">{teacher.signName}</p>
         {teacher.signRole && <p class="text-sm text-ink-muted">{teacher.signRole}</p>}
-        {teacher.email && (
-          <a
-            href={`mailto:${teacher.email}`}
-            class="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
-          >
-            <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
-            Say hi
-          </a>
+        {(teacher.email || telHref) && (
+          <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            {teacher.email && (
+              <a
+                href={`mailto:${teacher.email}`}
+                class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
+              >
+                <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
+                Say hi
+              </a>
+            )}
+            {telHref && (
+              <a
+                href={telHref}
+                class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
+              >
+                <Icon name="phone" class="h-3.5 w-3.5" aria-hidden="true" />
+                Call or text
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

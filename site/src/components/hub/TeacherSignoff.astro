@@ -1,0 +1,112 @@
+---
+/* ============================================================================
+   TeacherSignoff — the teacher's "signature" for a class hub closing CTA
+   ============================================================================
+   Turns the handbook's closing CTA into a signed sign-off card: the teacher's
+   headshot in a class-colour ring, their name + role, and Email / Call-or-text
+   PILL BUTTONS. Reads the same `teacherNote` doc as the top TeacherCard and the
+   welcome-letter modal (name, role, email, phone, photo — all Board-editable in
+   the Studio), so there's no new source of truth. Designed to sit inside the
+   navy CtaBanner (white text, translucent pills); renders nothing when the note
+   has no name.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { urlForImage, type SanityImageSource } from '@/lib/image';
+import { classStyles } from '@/lib/class-colors';
+import { teacherPhoneFallback } from '@/data/hub/live-links';
+
+interface Props {
+  /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
+  slug: string;
+}
+const { slug } = Astro.props;
+const noteClass = slug.startsWith('pre-k') ? 'pre-k' : slug;
+
+interface TeacherDoc {
+  signName?: string;
+  signRole?: string;
+  email?: string;
+  phone?: string;
+  photo?: { asset?: unknown; alt?: string } | null;
+}
+let teacher: TeacherDoc | null = null;
+try {
+  teacher = await sanityFetch<TeacherDoc | null>(
+    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, phone, photo }`,
+    { cls: noteClass },
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  teacher = null;
+}
+
+const cc = classStyles(slug);
+// 160px covers the 80px (h-20 w-20) circle at 2x; portrait-preserving crop.
+const photoUrl = teacher?.photo?.asset
+  ? urlForImage(teacher.photo as SanityImageSource)
+      .width(160)
+      .url()
+  : null;
+// Studio value wins; fall back to the committed number until the field is set.
+const phone = teacher?.phone || teacherPhoneFallback[noteClass];
+// A tel: href from any human-typed phone (keep a leading +, drop other symbols).
+const telHref = phone
+  ? `tel:${phone.trim().startsWith('+') ? '+' : ''}${phone.replace(/[^\d]/g, '')}`
+  : null;
+---
+
+{
+  teacher?.signName && (
+    <div class="mx-auto flex max-w-2xl flex-col items-center gap-5 border-t border-white/15 pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-6">
+      <div class="flex items-center gap-4">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+            width="80"
+            height="80"
+            loading="lazy"
+            decoding="async"
+            class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
+          />
+        ) : (
+          <span
+            class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-white/10 ${cc.border}`}
+            aria-hidden="true"
+          >
+            <Icon name="heart" class="h-8 w-8 text-white" />
+          </span>
+        )}
+        <div class="text-left">
+          <p class="text-xs font-semibold tracking-wide text-white/70 uppercase">Your teacher</p>
+          <p class="font-display text-xl text-white">{teacher.signName}</p>
+          {teacher.signRole && <p class="text-sm text-white/70">{teacher.signRole}</p>}
+        </div>
+      </div>
+
+      {(teacher.email || telHref) && (
+        <div class="flex flex-wrap justify-center gap-2">
+          {teacher.email && (
+            <a
+              href={`mailto:${teacher.email}`}
+              class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            >
+              <Icon name="mail" class="h-4 w-4" aria-hidden="true" />
+              Email
+            </a>
+          )}
+          {telHref && (
+            <a
+              href={telHref}
+              class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            >
+              <Icon name="phone" class="h-4 w-4" aria-hidden="true" />
+              Call or text
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

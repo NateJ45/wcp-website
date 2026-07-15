@@ -37,6 +37,7 @@
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import CtaSection from '@/components/sections/CtaSection.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import { classColor, classStyles } from '@/lib/class-colors';
@@ -50,10 +51,13 @@ interface Props {
   label: string;
   /** Class slug to tint the column (card icons + active TOC accent). */
   tint?: string;
+  /** Class slug whose teacher signs off the closing CTA (headshot + contact
+      pills). Set on the class handbooks; omitted on Getting Started. */
+  signoff?: string;
   /** Extra classes on the grid root (e.g. top margin from the page). */
   class?: string;
 }
-const { sections, label, tint, class: className } = Astro.props;
+const { sections, label, tint, signoff, class: className } = Astro.props;
 
 const items = sections ?? [];
 
@@ -110,6 +114,12 @@ const CARD_ICON: Record<string, string> = {
   schoolYearSection: 'calendar-days',
 };
 
+// The teacher signs off only the CLOSING CTA (the LAST ctaSection), so a
+// mid-handbook ctaSection the Board might add never gets a teacher signature.
+const lastCtaKey = signoff
+  ? [...items].reverse().find((s) => s?._type === 'ctaSection')?._key
+  : undefined;
+
 // Tint: class iconChip for the card icons, and a CSS accent color for the TOC
 // active state. Neutral sky when there's no class (Getting Started).
 const iconChip = tint ? classStyles(tint).iconChip : 'bg-sky/15 text-sky-ink';
@@ -139,6 +149,12 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
         {items.map((section) => {
           const treatment = treatmentFor(section?._type);
           const icon = treatment === 'card' ? CARD_ICON[section?._type] : undefined;
+          // The closing CTA on a class handbook becomes a signed sign-off card
+          // (teacher headshot + contact pills). Rendered via CtaSection directly
+          // so it can take the extra teacherSlug prop SectionRenderer doesn't
+          // forward; every other section goes through SectionRenderer as before.
+          const isSignoffCta =
+            Boolean(signoff) && section?._type === 'ctaSection' && section?._key === lastCtaKey;
           return (
             <div class="hub-doc-block" data-treatment={treatment}>
               {icon && (
@@ -146,7 +162,11 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
                   <Icon name={icon} class="h-5 w-5" />
                 </span>
               )}
-              <SectionRenderer sections={[section]} site={site} />
+              {isSignoffCta ? (
+                <CtaSection section={section} teacherSlug={signoff} />
+              ) : (
+                <SectionRenderer sections={[section]} site={site} />
+              )}
             </div>
           );
         })}
