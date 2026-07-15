@@ -212,11 +212,17 @@ when Sanity tells it a document was published.
    - **HTTP Headers:** add two —
      - `Authorization` → `Bearer <the GitHub token from step 2>`
      - `Accept` → `application/vnd.github+json`
-   - **Projection** (this becomes the request body Sanity sends — it's GROQ, but a
-     plain object literal works fine as a static payload):
+   - **Projection** (this becomes the request body Sanity sends — it's GROQ, so it
+     can pull fields off the changed document):
      ```
-     {"event_type": "sanity-publish"}
+     {"event_type": "sanity-publish", "client_payload": {"type": _type}}
      ```
+     The `_type` is what the Deploy workflow's `if:` guard reads to skip a build
+     for a hub-only / inbox type even if one slips past the Filter below — the
+     same exclusion list, kept in version control as a second line of defense (see
+     `.github/workflows/deploy.yml`). The older `{"event_type": "sanity-publish"}`
+     projection still works; it just loses that second layer (the guard sees no
+     type and always builds), so update it to the form above.
    - **Filter** — two exclusions, both required:
 
      **Exclude drafts.** With "Trigger on: Create, Update, Delete" and no draft

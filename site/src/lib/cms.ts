@@ -46,6 +46,18 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 // cmsFetch always takes a fallback and never throws: if Sanity is unreachable or
 // the query returns nothing, the page keeps its built-in content. That means a
 // build can never be broken by the CMS, and empty fields fall back gracefully.
+//
+// useCdn: true — read published content through Sanity's CDN (apicdn.sanity.io).
+// A full site build fires ~30-50 of these reads (one or more per page/section),
+// and every deploy runs a full build, so a busy Studio day or a burst of publish
+// webhooks can rack up thousands of reads. The non-CDN Query API is metered on
+// the small free-plan "API Requests" quota (exhausting it blocks ALL Sanity
+// access until reset — this is the July 2026 outage); the CDN sits on a far
+// larger allotment. We only ever read the PUBLISHED perspective here, which the
+// CDN serves fine, and the ~60s CDN edge staleness is a non-issue because the
+// publish webhook takes 1-2 min to build anyway, so the CDN is fresh by the time
+// this runs. This keeps nearly all build reads off the quota that took the site
+// down. (Mutation clients and the draft preview stay useCdn:false on purpose.)
 // =============================================================================
 const token = import.meta.env.SANITY_TOKEN as string | undefined;
 
@@ -53,7 +65,7 @@ export const cms = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false,
+  useCdn: true,
   token,
   perspective: 'published',
 });

@@ -88,9 +88,17 @@ export const GET: APIRoute = async ({ cookies, url }) => {
         }
       };
 
-      // Fast client-side reconnect when this stream ends (upstream rotation,
-      // Worker recycle) — EventSource handles the retry loop for us.
-      send('retry: 2000\n\n');
+      // Client-side reconnect delay when this stream ends (upstream rotation,
+      // Worker recycle, or Cloudflare cutting an idle streaming response) —
+      // EventSource handles the retry loop for us. Each reconnect opens a fresh
+      // non-CDN Sanity listen request (metered on the small free-plan API quota),
+      // so this is deliberately unhurried: a 15s gap before reconnecting turns a
+      // dropped connection into an occasional request instead of a ~2s reconnect
+      // storm. The manual ⟳ button still works during the gap, and the overlay
+      // does a catch-up refetch on reconnect, so no edit is lost — see
+      // VisualEditingOverlay. (This connection also only stays open while the
+      // preview tab is visible; the overlay closes it when the tab is hidden.)
+      send('retry: 15000\n\n');
       // Comment heartbeat so proxies/Cloudflare never see an idle connection
       // long enough to cut it. Comments are invisible to EventSource.
       heartbeat = setInterval(() => send(': hb\n\n'), 25_000);

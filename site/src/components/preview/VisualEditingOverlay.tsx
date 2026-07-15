@@ -73,18 +73,56 @@ export default function VisualEditingOverlay({ pageId }: Props) {
     [],
   );
 
-  // Auto-refresh: subscribe to the Worker's change stream. Relevance filtering
-  // (this page vs. some other page) already happened server-side in the GROQ
-  // listen filter, so every "change" event means "refetch now". softRefresh's
-  // 250ms debounce coalesces the burst an autosave produces. On error we do
-  // nothing: EventSource reconnects by itself, and the manual ⟳ still works.
+  // Auto-refresh: subscribe to the Worker's change stream WHILE THIS PREVIEW TAB
+  // IS VISIBLE. Relevance filtering (this page vs. some other page) already
+  // happened server-side in the GROQ listen filter, so every "change" event means
+  // "refetch now". softRefresh's 250ms debounce coalesces the burst an autosave
+  // produces. On error we do nothing: EventSource reconnects by itself, and the
+  // manual ⟳ still works.
+  //
+  // The Page Visibility gate matters for cost, not correctness: a Studio tab left
+  // open in the background would otherwise hold this listen connection open and,
+  // because Cloudflare rotates streaming responses, keep reconnecting — and each
+  // reconnect is a fresh non-CDN Sanity listen request on the small free-plan API
+  // quota (a real contributor to the July 2026 quota exhaustion). Hidden → close
+  // the connection so a forgotten tab costs nothing; visible again → reopen and
+  // do ONE catch-up refetch for anything that changed while we were disconnected.
   useEffect(() => {
-    const es = new EventSource(`/preview/live?page=${encodeURIComponent(pageId)}`);
+    let es: EventSource | null = null;
+    let wasHidden = false;
     const onChange = () => void softRefresh();
-    es.addEventListener('change', onChange);
-    return () => {
+
+    const open = () => {
+      if (es) return;
+      es = new EventSource(`/preview/live?page=${encodeURIComponent(pageId)}`);
+      es.addEventListener('change', onChange);
+    };
+    const close = () => {
+      if (!es) return;
       es.removeEventListener('change', onChange);
       es.close();
+      es = null;
+    };
+
+    const sync = () => {
+      if (document.visibilityState === 'hidden') {
+        wasHidden = true;
+        close();
+        return;
+      }
+      // Becoming visible: reopen, and catch up on edits missed while hidden.
+      // Skip the catch-up on the very first mount (the page was just SSR'd, so a
+      // refetch would only spend another draft read for identical HTML).
+      const reopening = !es && wasHidden;
+      open();
+      if (reopening) void softRefresh();
+    };
+
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      document.removeEventListener('visibilitychange', sync);
+      close();
     };
   }, [pageId, softRefresh]);
 

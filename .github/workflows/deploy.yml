@@ -33,6 +33,20 @@ defaults:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Skip a rebuild fired by a Sanity webhook for a document type that only feeds
+    # the SSR Family Hub (prerender=false, read live per request) or a Studio-only
+    # inbox — those never appear in the static output, so a publish shows up with
+    # no build. Every full build fires dozens of Sanity reads, so a needless one
+    # burns real quota (see site/docs/SANITY.md, the July 2026 exhaustion).
+    #
+    # This mirrors the Sanity webhook's own filter, but lives here in version
+    # control too: a dashboard filter is invisible and can silently drift, so this
+    # is the belt-and-suspenders enforcement point. It reads client_payload.type,
+    # which the webhook projection must send (see docs/SANITY.md). Backward-safe:
+    # push / workflow_dispatch (and the old typeless projection) have no
+    # client_payload.type, so the list never matches and the job runs as before.
+    if: >-
+      ${{ !contains(fromJSON('["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"]'), github.event.client_payload.type) }}
     steps:
       - uses: actions/checkout@v4
 
