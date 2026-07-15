@@ -45,8 +45,6 @@ const entries = (sections ?? [])
   )
 }
 
-{entries.length > 1 && <script>import '@/scripts/hub-toc';</script>}
-
 {
   /* Anchor targets clear the sticky topbar when jumped to. The root scroller
     already sets scroll-padding-top: 4.5rem (globals.css) to clear the chrome,

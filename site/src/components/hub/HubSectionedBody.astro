@@ -14,8 +14,12 @@
      - Each Board section is wrapped in a `.hub-doc-block` with a TREATMENT that
        decides its chrome (see below), so block-like sections get a white card
        and long-form prose flows on the surface — the "hybrid" look.
+     - A `card` section gets a small type-derived icon chip so it reads as a
+       labelled panel and ties into the hub's icon-chip vocabulary.
      - On xl+ the column is paired with a sticky vertical TOC on the RIGHT
        (HubSectionIndex); below xl the TOC hides and the cards run full-width.
+     - hub-doc.ts adds copy-link anchors on headings, a two-level TOC when a
+       section has subheads, and scrollspy.
 
    Treatments (hybrid card model):
      - flow  — prose/long-form: no card, text flows on the app surface.
@@ -26,10 +30,17 @@
                card, so we never nest a card in a card.
    The actual card/flow/bleed styling lives in globals.css, keyed off
    `data-treatment` — see the "Handbook document column" block there.
+
+   `tint` (a class slug) tints the doc column to that class's brand color — the
+   card icon chips and the active TOC accent — so a class handbook feels like
+   its class. Omitted on Getting Started, which stays neutral sky.
    ============================================================================ */
+import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import { classColor, classStyles } from '@/lib/class-colors';
+import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
 
 interface Props {
@@ -37,10 +48,12 @@ interface Props {
   sections?: any[];
   /** Accessible name for the TOC, e.g. "Handbook sections". */
   label: string;
+  /** Class slug to tint the column (card icons + active TOC accent). */
+  tint?: string;
   /** Extra classes on the grid root (e.g. top margin from the page). */
   class?: string;
 }
-const { sections, label, class: className } = Astro.props;
+const { sections, label, tint, class: className } = Astro.props;
 
 const items = sections ?? [];
 
@@ -73,6 +86,34 @@ const FLOW = new Set(['proseSection', 'storyTimelineSection']);
 // Everything else is a discrete block that reads well as a white card.
 const treatmentFor = (type: string): 'flow' | 'card' | 'bleed' =>
   FLOW.has(type) ? 'flow' : BLEED.has(type) ? 'bleed' : 'card';
+
+// A card section's label icon, derived from its _type (no Sanity field — stays
+// brand-locked). Undefined = no chip (a plain titled card, still fine).
+const CARD_ICON: Record<string, string> = {
+  faqSection: 'message-circle',
+  scheduleSection: 'clock',
+  countdownSection: 'clock',
+  stepListSection: 'list-checks',
+  quickFactsSection: 'list',
+  accordionSection: 'list',
+  tabsSection: 'folder',
+  compareSection: 'scale',
+  tuitionTableSection: 'circle-dollar-sign',
+  tuitionCalculatorSection: 'calculator',
+  mapSection: 'map-pin',
+  downloadsSection: 'file-text',
+  formSection: 'file-pen',
+  reviewFormSection: 'file-pen',
+  newsletterSignupSection: 'mail',
+  contactDetailsSection: 'contact',
+  noticeBarSection: 'megaphone',
+  schoolYearSection: 'calendar-days',
+};
+
+// Tint: class iconChip for the card icons, and a CSS accent color for the TOC
+// active state. Neutral sky when there's no class (Getting Started).
+const iconChip = tint ? classStyles(tint).iconChip : 'bg-sky/15 text-sky-ink';
+const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` : undefined;
 ---
 
 {
@@ -84,20 +125,37 @@ const treatmentFor = (type: string): 'flow' | 'card' | 'bleed' =>
       <HubEmptyState icon="book-open" title="This handbook is being written." source="sanity" />
     </div>
   ) : (
-    <div class:list={['hub-doc', tocCount > 1 && 'hub-doc-grid', className]}>
+    <div
+      class:list={['hub-doc', tocCount > 1 && 'hub-doc-grid', className]}
+      style={accentStyle}
+      data-hub-doc
+    >
       {/* Content column FIRST (natural reading order, content-first for screen
            readers) — the TOC follows and is placed in the right grid column.
            Inside `.hub-prose` the shared marketing sections are re-skinned as
            app content (left-aligned, denser, no marketing eyebrow); see
            globals.css. */}
       <div class="hub-prose min-w-0">
-        {items.map((section) => (
-          <div class="hub-doc-block" data-treatment={treatmentFor(section?._type)}>
-            <SectionRenderer sections={[section]} site={site} />
-          </div>
-        ))}
+        {items.map((section) => {
+          const treatment = treatmentFor(section?._type);
+          const icon = treatment === 'card' ? CARD_ICON[section?._type] : undefined;
+          return (
+            <div class="hub-doc-block" data-treatment={treatment}>
+              {icon && (
+                <span class={cn('hub-doc-card-icon', iconChip)} aria-hidden="true">
+                  <Icon name={icon} class="h-5 w-5" />
+                </span>
+              )}
+              <SectionRenderer sections={[section]} site={site} />
+            </div>
+          );
+        })}
       </div>
       <HubSectionIndex sections={sections} label={label} />
     </div>
   )
 }
+
+<script>
+  import '@/scripts/hub-doc';
+</script>

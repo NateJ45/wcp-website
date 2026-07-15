@@ -446,6 +446,22 @@ text only — scannable blocks like schedules/tables are deliberately not counte
 `formatMonthYear(doc._updatedAt)` from `src/lib/hub-dashboard-dates.ts` (Eastern-safe, per the
 Workers-UTC gotcha). `HUB_PAGE_QUERY` projects `_updatedAt`. Both helpers are Vitest-covered.
 
+A `card` section shows a small **type-derived icon chip** above its title (map in
+`HubSectionedBody`; no Sanity field, so it stays brand-locked), and the whole column can be
+**tinted to a class color** via `HubSectionedBody`'s `tint` prop (a class slug — the pre-k and
+twos-threes handbooks pass theirs): the card chips use that class's `iconChip` and the active TOC
+entry picks up the class color through `--hub-doc-accent`. Getting Started stays neutral sky.
+
+`src/scripts/hub-doc.ts` (one client script, superseding the old `hub-toc.ts`, imported once from
+`HubSectionedBody`) adds the document-column behaviors: a hover/focus-revealed **copy-link anchor**
+on every heading (jumps AND copies the deep link — the `.hub-anchor`), a **two-level TOC** (prose
+subheads get stable ids and are injected under their section in the "On this page" nav — dormant
+until a board adds subheads, since the seeds are section-level only), and **scrollspy** over the
+full set. It is progressive enhancement: no-JS keeps a working section-level TOC and linkable
+headings. A `@media print` block (globals.css) drops the app chrome (rail, top/tab bars, search,
+TOC, anchors), collapses the grid to one column, and keeps cards whole across page breaks, so the
+live handbook prints clean (independent of the downloadable PDF).
+
 Each class page can also carry the teacher's **original handbook PDF** for download: the
 `hubPage.handbookFile` field (a Sanity file) drives a "Download the handbook (PDF)" button in
 the page header (`HUB_PAGE_QUERY` projects it as `handbookUrl`; the button href appends `?dl=`
