@@ -1,26 +1,25 @@
 ---
 /* ============================================================================
-   HubSectionIndex — sticky "on this page" jump bar for long editorial pages
+   HubSectionIndex — "on this page" jump nav for long editorial pages
    ============================================================================
-   Premium-screens primitive (2026-07-14 plan): persistent in-page context for
-   pages whose body is a long run of Board-edited page-builder sections (the
-   Pre-K handbook, Getting Started). Derives one chip per section that has a
-   heading, using the SAME id scheme SectionRenderer's bridges emit
-   (titleIdFor → `sec-<_key>`), so the anchors always match without touching
-   the Board's editing surface. Pure links — no JS, shareable, find-your-place
-   on phones where the rail is hidden. Sticks under the desktop topbar
-   (lg:top-14, keep in sync with HubTopBar's h-14).
-   ============================================================================ */
-import { cn } from '@/lib/utils';
+   Premium-screens primitive: persistent in-page context for pages whose body
+   is a long run of Board-edited page-builder sections (the class handbooks,
+   Getting Started). Derives one entry per section that has a heading, using the
+   SAME id scheme SectionRenderer's bridges emit (titleIdFor → `sec-<_key>`), so
+   the anchors always match without touching the Board's editing surface.
 
+   Rendered as a VERTICAL sticky sidebar in the left column of HubSectionedBody's
+   two-column grid on wide screens (xl+), with the current section highlighted
+   (scrollspy, hub-toc.ts). Hidden below xl — no cramped horizontal scroller on
+   phones; the page just scrolls. Pure links otherwise (shareable, no-JS-safe).
+   ============================================================================ */
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
   /** Accessible name, e.g. "Handbook sections". */
   label: string;
-  class?: string;
 }
-const { sections, label, class: className } = Astro.props;
+const { sections, label } = Astro.props;
 
 const entries = (sections ?? [])
   .filter((s) => s?.header?.title && s?._key)
@@ -29,20 +28,12 @@ const entries = (sections ?? [])
 
 {
   entries.length > 1 && (
-    <nav
-      aria-label={label}
-      class={cn(
-        'sticky top-0 z-20 overflow-x-auto border-b border-border bg-grey/95 px-4 py-2 backdrop-blur-sm lg:top-14 dark:bg-surface/95',
-        className,
-      )}
-    >
-      <ul class="mx-auto flex max-w-6xl gap-1 whitespace-nowrap">
+    <nav aria-label={label} class="hub-toc hidden xl:block" data-hub-toc>
+      <p class="mb-2 px-3 text-xs font-bold tracking-wide text-ink-muted uppercase">On this page</p>
+      <ul>
         {entries.map((e) => (
           <li>
-            <a
-              href={`#${e.id}`}
-              class="rounded-full px-3 py-1 text-sm font-semibold text-ink-muted no-underline transition-colors hover:bg-navy/10 hover:text-heading dark:hover:bg-white/10"
-            >
+            <a href={`#${e.id}`} data-toc-link={e.id} class="hub-toc-link">
               {e.title}
             </a>
           </li>
@@ -52,9 +43,11 @@ const entries = (sections ?? [])
   )
 }
 
-{/* Anchor targets clear the sticky chrome (topbar + this bar) when jumped to. */}
+{entries.length > 1 && <script>import '@/scripts/hub-toc';</script>}
+
+{/* Anchor targets clear the sticky topbar when jumped to. */}
 <style is:global>
   [id^='sec-'] {
-    scroll-margin-top: 7rem;
+    scroll-margin-top: 6rem;
   }
 </style>

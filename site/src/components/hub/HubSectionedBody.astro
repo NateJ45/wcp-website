@@ -1,0 +1,32 @@
+---
+/* ============================================================================
+   HubSectionedBody — handbook body with a sticky left "on this page" TOC
+   ============================================================================
+   Wraps the Board-edited section run in a two-column grid on wide screens:
+   the vertical HubSectionIndex on the left, the SectionRenderer bands on the
+   right. Below xl the TOC hides and the bands run full-width — one clean column
+   on phones, no horizontal scroller. Used by the class handbook pages + Getting
+   Started, replacing the old `<HubSectionIndex/> + <SectionRenderer/>` pair.
+   ============================================================================ */
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
+import { site } from '@/data/site';
+
+interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+  /** Accessible name for the TOC, e.g. "Handbook sections". */
+  label: string;
+}
+const { sections, label } = Astro.props;
+
+// Only lay out the TOC column when there's a TOC worth showing (>1 heading).
+const tocCount = (sections ?? []).filter((s) => s?.header?.title && s?._key).length;
+---
+
+<div class:list={[tocCount > 1 && 'hub-toc-grid']}>
+  <HubSectionIndex sections={sections} label={label} />
+  <div class="min-w-0">
+    <SectionRenderer sections={sections} site={site} />
+  </div>
+</div>

@@ -19,8 +19,7 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherCard from '@/components/hub/TeacherCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
-import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
 import { payUrl } from '@/data/classes';
@@ -30,7 +29,6 @@ import { cn } from '@/lib/utils';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
-import { site } from '@/data/site';
 
 interface HubPageDoc {
   heading?: string;
@@ -225,8 +223,7 @@ const classCards = [
   </Section>
 
   {/* The handbook — Board/teacher-editable page-builder sections. */}
-  <HubSectionIndex sections={doc?.sections} label="Handbook sections" />
-  <SectionRenderer sections={doc?.sections} site={site} />
+  <HubSectionedBody sections={doc?.sections} label="Handbook sections" />
 
   {/* Ms. Erin's welcome letter — first-visit modal (shared Twos/Threes note). */}
   <TeacherNoteModal slug="twos" />

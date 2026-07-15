@@ -14,11 +14,9 @@ export const prerender = false;
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
-import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
-import { site } from '@/data/site';
 
 interface HubPageDoc {
   heading?: string;
@@ -55,6 +53,5 @@ const intro =
   </Section>
 
   {/* Everything below the header is Board-editable page-builder content. */}
-  <HubSectionIndex sections={doc?.sections} label="Getting Started sections" />
-  <SectionRenderer sections={doc?.sections} site={site} />
+  <HubSectionedBody sections={doc?.sections} label="Getting Started sections" />
 </HubShell>
