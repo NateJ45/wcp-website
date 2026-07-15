@@ -22,13 +22,17 @@ import { cached } from '@/lib/hub-cache';
 
 /**
  * Cache tuning for BOARD-EDITED content (hubPage docs, Site Settings): fresh
- * for a minute, then up to 10 minutes of serve-stale-instantly-and-refresh-
- * behind-the-response. A publish is wide within ~a minute of the next visit.
+ * for 5 minutes, then up to 30 minutes of serve-stale-instantly-and-refresh-
+ * behind-the-response. Each refresh writes through to the CACHE KV namespace,
+ * and this key set is large (a hubPage doc per page, plus settings), so a short
+ * TTL under real traffic burns the free KV WRITE budget (1k/day) fast — 5 min
+ * keeps it well clear while staying plenty fresh, since a publish also fires
+ * the deploy webhook (fresh isolates) so edits never wait on this cache.
  * NEVER use for PII queries (directory entries, health details) — this path
- * writes through to the CACHE KV namespace, and family data doesn't belong
- * in a second store. And never for read-after-write surfaces (sign-ups).
+ * writes through to KV, and family data doesn't belong in a second store. And
+ * never for read-after-write surfaces (sign-ups).
  */
-export const BOARD_CONTENT_CACHE = { ttlMs: 60_000, swrMs: 600_000 };
+export const BOARD_CONTENT_CACHE = { ttlMs: 300_000, swrMs: 1_800_000 };
 
 export function getSanityClient(opts: { fresh?: boolean } = {}): SanityClient {
   return createClient({

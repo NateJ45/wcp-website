@@ -75,7 +75,7 @@ export async function getStoreProducts(collection = 'all', max = 8): Promise<Sto
   try {
     return await cached(
       `fw:products:${collection}`,
-      900_000, // 15 min fresh
+      21_600_000, // 6h fresh — the store changes rarely; keeps KV writes low
       async () => {
         const res = await fetch(
           `${STOREFRONT}/collections/${encodeURIComponent(collection)}/products?storefront_token=${token}`,
@@ -90,7 +90,7 @@ export async function getStoreProducts(collection = 'all', max = 8): Promise<Sto
           .filter((p): p is StoreProduct => p !== null)
           .slice(0, max);
       },
-      { swrMs: 3_600_000 }, // serve stale up to 1h while refreshing
+      { swrMs: 86_400_000 }, // serve stale up to 24h while refreshing
     );
   } catch {
     return [];
@@ -110,7 +110,7 @@ export async function getStoreCollections(max = 4): Promise<StoreCollection[]> {
   try {
     return await cached(
       'fw:collections',
-      900_000, // 15 min fresh
+      21_600_000, // 6h fresh — the store changes rarely; keeps KV writes low
       async () => {
         const res = await fetch(`${STOREFRONT}/collections?storefront_token=${token}`, {
           signal: AbortSignal.timeout(8000),
@@ -124,7 +124,7 @@ export async function getStoreCollections(max = 4): Promise<StoreCollection[]> {
           .filter((c) => c.slug && c.title)
           .slice(0, max);
       },
-      { swrMs: 3_600_000 }, // serve stale up to 1h while refreshing
+      { swrMs: 86_400_000 }, // serve stale up to 24h while refreshing
     );
   } catch {
     return [];
@@ -147,7 +147,7 @@ export async function getMerchStats(): Promise<MerchStats | null> {
   try {
     return await cached(
       'fw:merch-stats',
-      1_800_000, // 30 min fresh
+      21_600_000, // 6h fresh — aggregate totals, keeps KV writes low
       async () => {
         const auth = `Basic ${btoa(`${user}:${pw}`)}`;
         let page = 0;
@@ -185,7 +185,7 @@ export async function getMerchStats(): Promise<MerchStats | null> {
           currency,
         };
       },
-      { swrMs: 7_200_000 }, // 2h stale window
+      { swrMs: 86_400_000 }, // 24h stale window
     );
   } catch {
     return null;

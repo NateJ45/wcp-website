@@ -27,7 +27,7 @@ interface GvizCell {
 export async function fetchSheetRows(sheetId: string, tab: string): Promise<GvizCell[][]> {
   return cached(
     `gviz:${sheetId}:${tab}`,
-    300_000,
+    900_000, // 15 min fresh — sheets change a few times/week; keeps KV writes low
     async () => {
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
