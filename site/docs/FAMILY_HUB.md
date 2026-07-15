@@ -410,12 +410,22 @@ the Studio. No button shows when the field is empty.
 
 **The store card** (`StoreCard.astro`) sits at the bottom of the hub home: a navy, doodle-dusted
 banner (shine sweep + floating shapes, all reduced-motion-safe) linking to the merch store, with
-a row of clickable product tiles. Content is Board-curated on Site Settings → Social & store:
-`storeHeadline`, `storeTagline`, `storeUrl`, and `storeProducts[]` (each `title` / `price` /
-`url` / `image`). Tiles are curated rather than live-pulled because the Fourthwall store is
-JS-rendered with no clean token-free catalog feed; `node scripts/seed-store-feature.mjs` seeds a
-starter set of real products (image URLs are the store's signed imgproxy links). Clear
-`storeProducts` to show just the banner; the card hides entirely without a `storeUrl`.
+a row of clickable product tiles and a "supporting our co-op" sales stat. It's a **server island**
+so its external fetches never block the dashboard. Product tiles + the stat come **live from
+Fourthwall** via `src/lib/fourthwall.ts` (cached, SWR):
+
+- `getStoreProducts()` — the Storefront API (`FOURTHWALL_STOREFRONT_TOKEN`, read-only): the live
+  catalog (name, price, image, product link), so new/changed products appear automatically.
+- `getMerchStats()` — the Open API (`FOURTHWALL_API_USER` / `_PASSWORD`, basic auth, SUPER-ADMIN):
+  AGGREGATE order totals only (gross sales + order count; no customer PII ever read out). Note
+  Fourthwall's API exposes no profit figure, so this is gross **sales**, not a "raised" number.
+
+All three are Worker secrets (`.dev.vars` locally, `wrangler secret put` in prod — see
+`.dev.vars.example`), never committed. Everything degrades gracefully: if the Storefront API is
+unavailable the tiles fall back to the Board-curated `storeProducts[]` on Site Settings →
+Social & store (`storeHeadline` / `storeTagline` / `storeUrl` / each product `title`/`price`/
+`url`/`image`; seeded once by `node scripts/seed-store-feature.mjs`); if the Open API is
+unavailable the stat hides. The card hides entirely without a `storeUrl`.
 
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |

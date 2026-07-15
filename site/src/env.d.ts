@@ -52,6 +52,14 @@ declare namespace Cloudflare {
     FAMILY_HUB_PASSWORD: string;
     /** Sanity Editor token — server-only reads of the private (PII) dataset. */
     SANITY_TOKEN: string;
+    /** Fourthwall Storefront API token (read-only catalog). Optional — the
+     *  store card falls back to its Board-curated tiles when unset. */
+    FOURTHWALL_STOREFRONT_TOKEN?: string;
+    /** Fourthwall Open API basic-auth credentials (SUPER-ADMIN — server-only,
+     *  never client). Optional — the "supporting our co-op" sales stat hides
+     *  when unset. Only aggregate totals are ever read; no customer PII. */
+    FOURTHWALL_API_USER?: string;
+    FOURTHWALL_API_PASSWORD?: string;
     /** Resend API key for contact-form email. Optional — forms still store
      *  submissions in Sanity when unset. See docs/FORMS.md. */
     RESEND_API_KEY?: string;

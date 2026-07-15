@@ -7,6 +7,9 @@
 # In PRODUCTION, set them as Cloudflare secrets (not in wrangler.jsonc):
 #   npx wrangler secret put FAMILY_HUB_PASSWORD
 #   npx wrangler secret put SANITY_TOKEN
+#   npx wrangler secret put FOURTHWALL_STOREFRONT_TOKEN
+#   npx wrangler secret put FOURTHWALL_API_USER
+#   npx wrangler secret put FOURTHWALL_API_PASSWORD
 # =============================================================================
 
 # The single shared password families enter to reach the gated Family Hub.

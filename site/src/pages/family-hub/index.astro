@@ -209,13 +209,25 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
       </div>
     </div>
 
-    {/* The official store — flair-forward banner + Board-curated merch tiles. */}
+    {
+      /* The official store — live Fourthwall catalog + a "supporting our co-op"
+        sales stat. A server island so its external fetches never block the
+        dashboard paint (it sits at the bottom); streams in behind a skeleton. */
+    }
     <StoreCard
+      server:defer
       url={settings?.storeUrl}
       headline={settings?.storeHeadline}
       tagline={settings?.storeTagline}
       products={settings?.storeProducts}
-    />
+    >
+      <div
+        slot="fallback"
+        class="mt-4 h-64 animate-pulse rounded-[var(--radius)] bg-navy/90"
+        aria-hidden="true"
+      >
+      </div>
+    </StoreCard>
   </Section>
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}
