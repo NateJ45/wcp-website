@@ -255,17 +255,33 @@ const salesLine =
   .wcp-store-tabrow::-webkit-scrollbar {
     display: none;
   }
-  /* Flickable product rail: snap points, thin scrollbar, gentle edge fade so
-     the last tile hints "there's more" without a hard cut. */
+  /* Flickable product rail: snap points, gentle edge fade so the last tile
+     hints "there's more" without a hard cut, and an on-brand slim scrollbar
+     (translucent white on the navy card) in place of the chunky OS default. */
   .wcp-store-rail {
     scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.12);
     -webkit-mask-image: linear-gradient(to right, #000 94%, transparent);
     mask-image: linear-gradient(to right, #000 94%, transparent);
   }
   .wcp-store-rail > li {
     scroll-snap-align: start;
+  }
+  .wcp-store-rail::-webkit-scrollbar {
+    height: 6px;
+  }
+  .wcp-store-rail::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+  }
+  .wcp-store-rail::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+  }
+  .wcp-store-rail::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.65);
   }
 
   /* Slow diagonal shine sweeping across the panel. */

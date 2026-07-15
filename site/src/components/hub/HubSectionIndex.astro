@@ -45,9 +45,16 @@ const entries = (sections ?? [])
 
 {entries.length > 1 && <script>import '@/scripts/hub-toc';</script>}
 
-{/* Anchor targets clear the sticky topbar when jumped to. */}
+{
+  /* Anchor targets clear the sticky topbar when jumped to. The root scroller
+    already sets scroll-padding-top: 4.5rem (globals.css) to clear the chrome,
+    and the two ADD — 6rem here landed a jumped heading ~168px down, past the
+    scrollspy's 140px line, so at rest it highlighted the section ABOVE. Keep
+    this small: 4.5rem padding + 1.5rem margin = ~6rem, comfortably above the
+    line. (Change hub-toc.ts's OFFSET too if this ever grows past it.) */
+}
 <style is:global>
   [id^='sec-'] {
-    scroll-margin-top: 6rem;
+    scroll-margin-top: 1.5rem;
   }
 </style>
