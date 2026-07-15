@@ -95,7 +95,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
                   alt={note!.photo!.alt ?? note!.signName ?? 'Teacher'}
                   widths={[160, 320]}
                   sizes="10rem"
-                  class={`h-20 w-20 rounded-full border-4 object-cover sm:h-32 sm:w-32 ${cc.border}`}
+                  class={`h-20 w-20 rounded-full border-4 object-cover object-top sm:h-32 sm:w-32 ${cc.border}`}
                 />
               ) : (
                 <span

@@ -464,6 +464,12 @@
   border-radius: 9999px;
   filter: blur(64px);
   opacity: 0.55;
+  /* Feather to fully transparent at the glow's own edges. Without this, a
+     glow that bleeds past a clipped container (e.g. the class page's
+     overflow-x-clip) gets sliced mid-blur, leaving a hard line. The radial
+     mask means the edge is already ~0 opacity by the time it meets the clip. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
 }
 .dark .wcp-glow {
   opacity: 0.16;

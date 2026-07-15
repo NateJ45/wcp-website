@@ -24,6 +24,8 @@ import {
   proseSection,
   faqSection,
   bullet,
+  p,
+  link,
 } from './pagebuilder-lib.mjs';
 
 const SITE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -429,7 +431,15 @@ const sections = [
     title: 'Meet Pickles, our class pet',
     lead: 'The AM class pet is Pickles, a stuffed dog — and the PM class will name a pup of their own. Starting in October, each child gets a weekend with the class pet: take them everywhere, snap photos or draw pictures of the adventures (Pickles at the ballpark! Pickles at the dinner table!), and bring the backpack and story binder back Monday to share with the class.',
     tone: 'navy',
-    note: 'Questions about anything in this handbook? Email lisa@westchesterpreschool.org or call/text 503-201-4775 — Mrs. Lisa is always happy to hear from you.',
+    note: [
+      p(
+        'Questions about anything in this handbook? Email ',
+        link('lisa@westchesterpreschool.org', 'mailto:lisa@westchesterpreschool.org'),
+        ' or call or text ',
+        link('503-201-4775', 'tel:+15032014775'),
+        '. Mrs. Lisa is always happy to hear from you.',
+      ),
+    ],
   }),
 ];
 

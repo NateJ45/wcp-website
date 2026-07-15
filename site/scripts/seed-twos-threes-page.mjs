@@ -30,6 +30,8 @@ import {
   stepList,
   proseSection,
   bullet,
+  p,
+  link,
 } from './pagebuilder-lib.mjs';
 
 const SITE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -436,7 +438,15 @@ const handbook = () => [
     title: 'Questions about anything here?',
     lead: 'This handbook is your guide to our year, but it is not the last word. If anything is unclear, or you just want to say hello, reach out anytime.',
     tone: 'navy',
-    note: 'Email erin@westchesterpreschool.org or call or text 513-543-4824. Ms. Erin is always happy to hear from you.',
+    note: [
+      p(
+        'Email ',
+        link('erin@westchesterpreschool.org', 'mailto:erin@westchesterpreschool.org'),
+        ' or call or text ',
+        link('513-543-4824', 'tel:+15135434824'),
+        '. Ms. Erin is always happy to hear from you.',
+      ),
+    ],
   }),
 ];
 

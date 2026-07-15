@@ -200,7 +200,9 @@ export const cta = (o) => ({
   tone: o.tone ?? 'navy',
   seam: o.seam !== false,
   ...(o.actions ? { actions: o.actions } : {}),
-  ...(o.note ? { note: toPT(o.note) } : {}),
+  // note accepts a plain string (→ toPT) or a ready Portable Text array (so a
+  // note can carry mailto:/tel: links built with p()/link()).
+  ...(o.note ? { note: Array.isArray(o.note) ? o.note : toPT(o.note) } : {}),
 });
 
 export const testimonials = (o) => ({

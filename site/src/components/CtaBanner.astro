@@ -66,7 +66,12 @@ const isNavy = tone === 'navy';
     </div>
     {
       Astro.slots.has('note') && (
-        <p class={cn('mt-5 text-sm', isNavy ? 'text-white/70' : 'text-ink-muted')}>
+        <p
+          class={cn(
+            'mt-5 text-sm [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-2',
+            isNavy ? 'text-white/70 [&_a]:text-white' : 'text-ink-muted [&_a]:text-navy',
+          )}
+        >
           <slot name="note" />
         </p>
       )

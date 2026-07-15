@@ -37,10 +37,11 @@ try {
 }
 
 const cc = classStyles(slug);
+// Portrait-preserving (no forced square crop): the browser crops the circle
+// with `object-top`, so a head sitting high in the frame is never sliced off.
 const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
-      .width(160)
-      .height(160)
+      .width(200)
       .url()
   : null;
 ---
@@ -55,7 +56,7 @@ const photoUrl = teacher?.photo?.asset
           width="80"
           height="80"
           loading="lazy"
-          class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover ${cc.border}`}
+          class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
         />
       ) : (
         <span
