@@ -21,12 +21,11 @@ import HubStat from '@/components/hub/HubStat.astro';
 import HubPill from '@/components/hub/HubPill.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Button from '@/components/ui/Button.astro';
-import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
 import { budgetSheetIdFallback, pastFundraisingTotalsFallback } from '@/data/hub/live-links';
-import { site } from '@/data/site';
 
 interface Campaign {
   title?: string;
@@ -285,9 +284,15 @@ const fmtDeadline = (iso: string) =>
           </HubCard>
         )
       }
+      {
+        /* Board-editable handbook sections (The Budget, and anything the Board
+         adds) as an aligned card doc column with an "On this page" TOC. */
+      }
+      {
+        hasSections && (
+          <HubSectionedBody sections={doc!.sections} label="Fundraising sections" class="mt-12" />
+        )
+      }
     </div>
   </Section>
-
-  {/* Editable extra section(s) the Board can add to the fundraising page. */}
-  {hasSections && <SectionRenderer sections={doc!.sections} site={site} />}
 </HubShell>

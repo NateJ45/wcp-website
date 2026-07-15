@@ -645,24 +645,24 @@ const coopJobs = {
         'The co-op runs on real bylaws — here’s the plain-English digest.',
       ),
       body: [
-        bullet(
-          strong('Who we are: '),
+        h3('Who we are'),
+        p(
           'Legally the West Chester Cooperative Nursery School (founded 1969); “West Chester Preschool” became our trade name in 2025. Our purpose: a safe, engaging environment for each child’s growth — and for parents to enjoy early childhood right alongside them.',
         ),
-        bullet(
-          strong('Membership: '),
+        h3('Membership'),
+        p(
           'Enrolling a child makes you a member, with duties (the Co-op Commitment) and a voice. Total enrollment is 43 children across the four classes.',
         ),
-        bullet(
-          strong('The Board: '),
+        h3('The Board'),
+        p(
           'President, Vice President, Treasurer, and Secretary, elected at the end of each school year (the President may be elected in January for a smoother handoff), plus class reps as appointed voting members. The Board meets monthly and every member may attend.',
         ),
-        bullet(
-          strong('Money: '),
+        h3('Money'),
+        p(
           'The Treasurer is bonded, the books are audited each year-end, the school carries liability insurance, and the annual budget is presented to members for a vote at the May Gathering.',
         ),
-        bullet(
-          strong('Changes: '),
+        h3('Changes'),
+        p(
           'Bylaws are amended by member vote at meetings; Standing Rules can be adopted by Board majority and are recorded by the Secretary. Suspected child abuse or neglect is always reported per Ohio law (ORC 2151.421).',
         ),
         p(
@@ -750,16 +750,16 @@ const fundraisingSections = [
       'The member-approved 2026-27 operating budget, in plain English.',
     ),
     body: [
-      bullet(
-        strong('Revenue: '),
+      h3('Revenue'),
+      p(
         'Tuition $54,810 · registration $3,800 · student fees $1,855 · participation deposits $1,000 · fundraising $5,700 (mums, spring flowers, DoubleGood popcorn, Mike’s Car Wash, shirt sales, Kroger rewards).',
       ),
-      bullet(
-        strong('Expenses: '),
+      h3('Expenses'),
+      p(
         'Teacher and staff wages $39,500 · rent $10,125 · insurance $4,000 · legal & professional $4,000 · class supplies $2,200 · publicity $1,566 · family outings $1,092 · playground upkeep, events, teacher education, and Board stipends round it out.',
       ),
-      bullet(
-        strong('The bottom line: '),
+      h3('The bottom line'),
+      p(
         'A $101 planning shortfall at 39 students — with room for 43, every summer enrollment pushes us into surplus. Fundraising targets are conservative, several line items are down thanks to operational changes (Google Voice, DocuSign), and wages reflect the bigger projected enrollment.',
       ),
       p(

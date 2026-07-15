@@ -415,6 +415,17 @@ register (centered eyebrow headers, hero-scale type, alternating full-bleed band
 skin in `globals.css` re-skins them as app content: headers left-align, the eyebrow kicker drops,
 and type shrinks to app scale.
 
+The content-heavy hub pages — **Co-op Jobs, Health & Safety, Tuition, Fundraising** — also run
+their Board-editable sections through `HubSectionedBody` (they used to render them as plain
+full-width `SectionRenderer` bands at the page tail). On Co-op Jobs / Tuition / Fundraising the
+fixed dashboard content stays full-width and the handbook sections follow as a card doc column
+with its own TOC ("dashboard above, handbook below"); Health swaps its fixed fallback for the doc
+column when the Board manages the page. This is what makes the two-level TOC pay off: the seed
+gives the long "Everything Else" (jobs / cleanings / meetings / safety), "Governance" (who we are
+/ membership / the Board / money / changes), and "The Budget" (revenue / expenses / bottom line)
+sections real `h3` subheads, which `hub-doc.ts` promotes into nested TOC entries. When a section
+run has `h3`s inside a prose body, they show as level-2 entries under their section.
+
 The body is laid out as a **document column** (SaaS-dashboard / Confluence-page look). Every page
 mounts `HubSectionedBody` INSIDE the same `<Section bg="grey"> → max-w-6xl` container as the
 `HubPageHeader`, so the header, the fixed class cards, the handbook, and the TOC all share one

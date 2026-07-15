@@ -16,7 +16,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import HubDisclosure from '@/components/hub/HubDisclosure.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
-import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { payUrl } from '@/data/classes';
 import { getHubClasses } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
@@ -337,9 +337,12 @@ const intro =
           }
         </ul>
       </div>
+
+      {
+        /* Board-editable handbook sections (The Payment Year, The Fine Print) as
+          an aligned card doc column with an "On this page" TOC. */
+      }
+      <HubSectionedBody sections={doc?.sections} label="Tuition handbook sections" class="mt-12" />
     </div>
   </Section>
-
-  {/* Editable extra section(s) the Board can add to the tuition page. */}
-  <SectionRenderer sections={doc?.sections} site={site} />
 </HubShell>

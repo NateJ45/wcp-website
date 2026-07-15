@@ -15,7 +15,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import OrgChart from '@/components/hub/OrgChart.astro';
-import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { site } from '@/data/site';
 import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -203,9 +203,13 @@ const intro =
           </Button>
         </div>
       </HubCard>
+
+      {
+        /* Board-editable handbook sections (Scheduling, Super Helpers, Everything
+          Else, Governance) as an aligned card doc column with an "On this page"
+          TOC — the same treatment as the class handbooks. */
+      }
+      <HubSectionedBody sections={doc?.sections} label="Co-op handbook sections" class="mt-12" />
     </div>
   </Section>
-
-  {/* Editable extra section(s) the Board can add to the co-op page. */}
-  <SectionRenderer sections={doc?.sections} site={site} />
 </HubShell>
