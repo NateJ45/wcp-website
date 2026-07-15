@@ -44,11 +44,16 @@ const photoFor = (staffId) => {
   return assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined;
 };
 
-const ERIN_LETTER = (who) => [
-  'Welcome back - and for those of you joining us for the first time, welcome home. There is no place quite like WCP, and that is entirely because of families like yours.',
-  'We are a school built on trust, shared effort, and genuine community. When you chose WCP, you did not just enroll your child in a preschool - you joined a co-op where every family plays a real part in making this place special. That is something we are proud of every single day.',
-  `This Family Hub is your go-to resource for everything you need throughout the year - from your co-op job details and helper schedule, to school news, important documents, and information about your child's ${who} class. Please bookmark it and check back often.`,
-  'My inbox is always open. If you ever have a question, a concern, or just want to say hello, please reach out. This is your school too.',
+// Ms. Erin's own 2026-27 welcome letter (verbatim, one letter for both her
+// Twos and Threes families). Bump the version stamp on the notes below if this
+// text is ever rewritten, so families who dismissed the old one see the new.
+const ERIN_LETTER = [
+  `Welcome to "The Happiest Classroom on Earth!" I've loved meeting your family and little ones and I can't wait to get to know everyone better this school year!`,
+  `I am an alumni parent who fell in love with West Chester Preschool when my own daughter (Adela) was enrolled in Ms. Lisa's pre-k class. The sense of community in this school is really special and I'm honored to be a part of it.`,
+  `Throughout my life, I've worked in numerous children's programs and schools. I've worked with infants to teens and everything in between! I have always loved working with children and cherish all the different experiences I have had. But most of all, West Chester Preschool has a special place in my heart.`,
+  `I would describe my class as a place of joy and creativity. We learn about the world around us, but most importantly, we start to work on our social skills and how a classroom works. This is often your child's first ever experience with school. I strive to make it a place that your child will remember as a place of warmth, fun, and growth.`,
+  `Every child is important to me and I will do everything I can to make each student feel like Ms. Erin really knows them and what matters to them.`,
+  `Thank you for the opportunity to teach your child this school year. I am truly grateful for the opportunity!`,
 ];
 
 const LISA_LETTER = [
@@ -65,22 +70,25 @@ const NOTES = [
     class: 'twos',
     heading: 'Welcome to Twos!',
     salutation: 'Dear Twos Families,',
-    body: ERIN_LETTER('Twos').map(para),
+    body: ERIN_LETTER.map(para),
     signName: 'Erin Schmerr',
     signRole: 'Twos Teacher, 2026-27',
     email: 'erin@westchesterpreschool.org',
     photo: photoFor('staff-erin'),
+    // Bumped from '2026-27-welcome' (placeholder letter) so families re-see it.
+    version: '2026-27-welcome-2',
   },
   {
     _id: 'teacherNote-threes',
     class: 'threes',
     heading: 'Welcome to Threes!',
     salutation: 'Dear Threes Families,',
-    body: ERIN_LETTER('Threes').map(para),
+    body: ERIN_LETTER.map(para),
     signName: 'Erin Schmerr',
     signRole: 'Threes Teacher, 2026-27',
     email: 'erin@westchesterpreschool.org',
     photo: photoFor('staff-erin'),
+    version: '2026-27-welcome-2',
   },
   // One note for the merged Pre-K page (AM + PM share the page and teacher).
   {
@@ -104,5 +112,5 @@ for (const n of NOTES) {
     dateLabel: 'May 2026',
     ...n,
   });
-  console.log(`✓ ${n._id} seeded (active, version 2026-27-welcome)`);
+  console.log(`✓ ${n._id} seeded (active, version ${n.version ?? '2026-27-welcome'})`);
 }

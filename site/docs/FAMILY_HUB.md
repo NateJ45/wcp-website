@@ -388,12 +388,16 @@ coop-jobs / tuition / fundraising / calendar / twos / threes by
 The source PDFs are uploaded as gated `hubDocument` files on the Documents page — the
 PDFs themselves are gitignored (they contain the hub password and phone numbers).
 
-**The Pre-K page carries the entire parent handbook** as editable sections (daily schedules,
-drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom, communication, dress
-code, FAQs, and the class-pet band) — seeded from Mrs. Lisa's 2026-27 PDF by
-`node scripts/seed-pre-k-page.mjs` (re-running RESETS the page to that baseline; day-to-day
-edits happen in the Studio). Its fixed widget is the pair of AM/PM fact cards (facts, pay
-button, helper sheet, photo album per class).
+**Each class page carries that teacher's entire parent handbook** as editable sections. Pre-K
+(daily schedules, drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom,
+communication, dress code, FAQs, and the class-pet band) is seeded from Mrs. Lisa's 2026-27 PDF
+by `node scripts/seed-pre-k-page.mjs`; its fixed widget is the pair of AM/PM fact cards (facts,
+pay button, helper sheet, photo album per class). **Twos + Threes** share Ms. Erin's one 2026-27
+handbook (same 9:30-noon rhythm, plus her month-by-month enrichment outings and curriculum), so
+both `hubPage-twos` and `hubPage-threes` get the SAME sections from
+`node scripts/seed-twos-threes-page.mjs` (it preserves each page's existing intro-timeline
+section and rebuilds the handbook below it). Re-running any of these RESETS that page to its
+baseline; day-to-day edits happen in the Studio.
 
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
