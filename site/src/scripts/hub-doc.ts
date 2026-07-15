@@ -4,9 +4,9 @@
 // Progressive enhancement over the server-rendered handbook (HubSectionedBody).
 // One script owns three things so they can't race each other:
 //
-//   1. Heading anchors — a hover/focus-revealed "#" on every doc heading that
-//      links to it AND copies the full deep link to the clipboard (Confluence /
-//      GitHub-docs behavior). No-JS still linkable via the TOC.
+//   1. Heading anchors — a hover/focus-revealed link/chain icon on every doc
+//      heading that links to it AND copies the full deep link to the clipboard
+//      (Confluence / GitHub-docs behavior). No-JS still linkable via the TOC.
 //   2. Two-level TOC — prose subheadings (h3) get stable ids and are injected
 //      under their section in the "On this page" nav, so a board that adds
 //      subheads to a long section gets a nested TOC for free. Section-only pages
@@ -82,13 +82,43 @@ function enhance(prose: HTMLElement, nav: HTMLElement | null): void {
   });
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+/** A small link/chain icon (lucide "link-2"), built with DOM APIs. */
+function linkIcon(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '15');
+  svg.setAttribute('height', '15');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  for (const d of ['M9 17H7A5 5 0 0 1 7 7h2', 'M15 7h2a5 5 0 1 1 0 10h-2']) {
+    const p = document.createElementNS(SVG_NS, 'path');
+    p.setAttribute('d', d);
+    svg.appendChild(p);
+  }
+  const line = document.createElementNS(SVG_NS, 'line');
+  line.setAttribute('x1', '8');
+  line.setAttribute('x2', '16');
+  line.setAttribute('y1', '12');
+  line.setAttribute('y2', '12');
+  svg.appendChild(line);
+  return svg;
+}
+
 function addAnchor(heading: HTMLElement, label: string): void {
   if (heading.querySelector('.hub-anchor')) return;
   const a = document.createElement('a');
   a.className = 'hub-anchor';
   a.href = `#${heading.id}`;
   a.setAttribute('aria-label', `Copy link to “${label}”`);
-  a.textContent = '#';
+  // A small link/chain glyph (lucide "link-2") reads as "copy link" — a bare
+  // "#" looked like stray punctuation beside the title. Built via DOM from a
+  // static shape (no user content), so there's no injection surface.
+  a.appendChild(linkIcon());
   a.addEventListener('click', () => {
     // Let the default jump update the hash; also copy the absolute deep link.
     const url = `${location.origin}${location.pathname}#${heading.id}`;

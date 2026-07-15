@@ -537,18 +537,30 @@
 .hub-doc-block[data-treatment='card'] .wcp-container {
   max-width: none;
   margin-inline: 0;
-  padding-inline: 0;
+  /* The wrapper owns all spacing here (flow gap / card padding), so the
+     container sheds BOTH its inline padding AND its marketing `py-2xl`
+     vertical padding — otherwise that ~72-112px top pad leaks in as a big
+     blank gap between a card's icon/title and its body. */
+  padding: 0;
   width: 100%;
 }
 
 /* card: white panel chrome. --color-surface is #fff (light) / dark card (dark),
-   so this tracks HubCard's `bg-white dark:bg-surface` in both themes. */
+   so this tracks HubCard's `bg-white dark:bg-surface` in both themes.
+   The faint construction-paper GRAIN + hand-drawn DOODLES (the same tile the
+   hub canvas uses) sit on the surface so each card reads a little handmade —
+   "kids drew on it" — instead of flat SaaS white. Both layers are ~5% below
+   text, so contrast is unchanged (Lighthouse AA holds). */
 .hub-doc-block[data-treatment='card'] {
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
+  background-image: var(--wcp-grain), var(--wcp-doodles);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   padding: clamp(1.25rem, 1rem + 1vw, 1.5rem);
+}
+.dark .hub-doc-block[data-treatment='card'] {
+  background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
 /* bleed: no outer card. The section fills the column (container un-capped, but
@@ -568,9 +580,18 @@
 .hub-doc-block[data-treatment='bleed'] .wcp-section.bg-grey {
   background-color: transparent;
 }
-.hub-doc-block[data-treatment='bleed'] .wcp-section.bg-navy {
-  border-radius: var(--radius);
+/* A navy band in the doc column is almost always the closing CTA. Lift it off
+   the page as a self-contained CTA card: a rounder corner + a soft, navy-tinted
+   drop shadow, so it reads as a deliberate call to action rather than a flat
+   full-bleed strip. `section.bg-navy` (not `.wcp-section.bg-navy`) so it also
+   catches CtaBanner, which renders its OWN <section> without the wcp-section
+   class — the closing CTA is exactly this case. */
+.hub-doc-block[data-treatment='bleed'] section.bg-navy {
+  border-radius: 1.25rem;
   overflow: hidden;
+  box-shadow:
+    0 18px 40px -22px rgb(1 69 126 / 0.55),
+    0 4px 12px -6px rgb(0 0 0 / 0.16);
 }
 
 /* Card label icon — a type-derived chip above a card section's title, so the
@@ -582,24 +603,45 @@
   display: inline-flex;
   height: 2.5rem;
   width: 2.5rem;
+  flex: none;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
   margin-bottom: 0.75rem;
+}
+/* Icon + title on ONE row: a card that has a label icon lays out as an
+   icon rail (col 1) beside the section (col 2), so the chip sits next to the
+   title instead of floating above it with a gap. Cards without an icon keep
+   the plain block flow. `:has()` is baseline in all evergreen browsers. */
+.hub-doc-block[data-treatment='card']:has(> .hub-doc-card-icon) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.85rem;
+  align-items: start;
+}
+.hub-doc-block[data-treatment='card']:has(> .hub-doc-card-icon) > .hub-doc-card-icon {
+  margin-bottom: 0;
+  /* Optically center the chip against the first title line. */
+  margin-top: -0.125rem;
 }
 
 /* Copy-link anchor — appended to every doc heading by hub-doc.ts. Revealed on
    heading hover / anchor focus; clicking jumps AND copies the deep link. */
 .hub-anchor {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
   margin-inline-start: 0.4em;
-  font-weight: 600;
   color: var(--color-ink-muted);
   text-decoration: none;
   opacity: 0;
   transition:
     opacity 0.15s ease,
     color 0.15s ease;
+}
+.hub-anchor svg {
+  display: block;
 }
 :is(h1, h2, h3, h4):hover > .hub-anchor,
 .hub-anchor:focus-visible {

@@ -40,9 +40,11 @@ try {
 const cc = classStyles(slug);
 // Portrait-preserving (no forced square crop): the browser crops the circle
 // with `object-top`, so a head sitting high in the frame is never sliced off.
+// The card renders an 80px (h-20 w-20) circle, so 160px covers 2x/retina.
+// Portrait-preserving (width only), then object-cover crops it to the circle.
 const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
-      .width(200)
+      .width(160)
       .url()
   : null;
 ---

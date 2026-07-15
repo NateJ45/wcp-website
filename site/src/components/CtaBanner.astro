@@ -5,8 +5,10 @@
    Two AA-safe tones: `navy` (dark, confident solid) or `cream` (warm light
    with navy text). Put buttons in the `actions` slot; an optional `note` line
    sits below (e.g. a phone number).
-   NOTE: no bright-orange tone (white text on it fails contrast) and no
-   decorative glow — a clean solid block reads more intentional.
+   NOTE: no bright-orange tone (white text on it fails contrast). A single
+   soft, feathered brand glow sits behind the content to give the block the
+   depth of a lifted CTA card; it stays low-opacity and mostly off-canvas so
+   the text contrast is unchanged.
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
@@ -38,7 +40,26 @@ const isNavy = tone === 'navy';
   aria-labelledby={titleId}
 >
   {seam && <Seam color={tone} />}
-  <div class="wcp-container py-[var(--wcp-space-xl)] text-center">
+  {
+    /* Warm brand glow — gives the closing CTA depth so it reads as a lifted
+      card, not a flat block. Decorative + aria-hidden; feathered and mostly
+      off-canvas so it never fights the centered text (AA unchanged). Amber on
+      navy, orange on cream. `wcp-glow-drift` is transform-only, reduced-motion
+      safe. The glow lives in its OWN clip layer (inset-0, overflow-hidden) so
+      it's contained to the band without clipping the cloud Seam, which sits
+      ABOVE the section on the public site. */
+  }
+  <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div
+      class={cn(
+        'wcp-glow wcp-glow-drift -top-24 -right-20 h-72 w-[30rem]',
+        isNavy ? 'wcp-glow-amber' : 'wcp-glow-orange',
+      )}
+      style="opacity: 0.35"
+    >
+    </div>
+  </div>
+  <div class="wcp-container relative py-[var(--wcp-space-xl)] text-center">
     <h2
       id={titleId}
       class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')}
