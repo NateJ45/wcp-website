@@ -10,19 +10,25 @@
 //   1 class   → point the direct <a> straight at that class's sheet / pay link
 //   2+ classes→ hide the <a>, reveal the dropdown, and show a link per class so
 //               a family with kids in two classes can reach both.
-// Progressive enhancement: no pick / no JS just keeps the fallback link. Runs
-// once per document (onPageLoad).
+// Re-applies on load AND whenever the my-class picker changes (it dispatches
+// `wcp:my-classes`), so picking classes on the home page updates the topbar
+// immediately instead of only after the next navigation. Idempotent: every run
+// resets each link to its default first, so going 2→1→0 works too. Progressive
+// enhancement: no pick / no JS just keeps the fallback link.
 // =============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
 
-onPageLoad(() => {
-  let picks: string[] = [];
+function readPicks(): string[] {
   try {
     const raw = JSON.parse(localStorage.getItem('wcp-my-classes') || '[]');
-    if (Array.isArray(raw)) picks = raw;
+    return Array.isArray(raw) ? raw : [];
   } catch {
-    picks = [];
+    return [];
   }
+}
+
+function applyQuickLinks(): void {
+  const picks = readPicks();
 
   document.querySelectorAll<HTMLAnchorElement>('[data-quick-multi]').forEach((link) => {
     const kind = link.getAttribute('data-quick-multi');
@@ -34,8 +40,21 @@ onPageLoad(() => {
     } catch {
       map = {};
     }
-
     const mine = picks.filter((slug) => map[slug]);
+
+    // Capture the markup default once, then reset to it every run so switching
+    // DOWN (2 classes → 1 → 0) restores the plain fallback link cleanly.
+    if (link.dataset.defaultHref === undefined) {
+      link.dataset.defaultHref = link.getAttribute('href') ?? '';
+    }
+    link.hidden = false;
+    link.href = link.dataset.defaultHref;
+    link.removeAttribute('target');
+    link.removeAttribute('rel');
+    if (menu) {
+      menu.hidden = true;
+      menu.open = false;
+    }
 
     if (mine.length >= 2 && menu) {
       // Two+ classes: swap the direct link for the dropdown, show each one.
@@ -50,6 +69,12 @@ onPageLoad(() => {
       link.target = '_blank';
       link.rel = 'noopener';
     }
-    // Zero classes: leave the default fallback href untouched.
+    // Zero classes: the default fallback (reset above) stands.
   });
+}
+
+onPageLoad(() => {
+  applyQuickLinks();
+  // The home picker (my-class.ts) fires this when the selection changes.
+  document.addEventListener('wcp:my-classes', applyQuickLinks);
 });

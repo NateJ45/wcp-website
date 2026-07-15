@@ -123,6 +123,9 @@ onPageLoad(() => {
       setPicks(picks);
       syncStrips(picks, true); // stay in edit mode while toggling
       apply(picks);
+      // Notify the topbar quick links (hub-quicklinks.ts) so the Helper
+      // schedule / Pay tuition links repersonalize without a reload.
+      document.dispatchEvent(new CustomEvent('wcp:my-classes', { detail: picks }));
     });
   }
   document
