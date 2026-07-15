@@ -17,15 +17,19 @@ const { title, lines = 3 } = Astro.props;
 ---
 
 <div
-  class="h-full rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+  class="wcp-shimmer h-full rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
   role="status"
   aria-label={`${title} is loading`}
 >
-  <div class="h-5 w-32 rounded bg-grey motion-safe:animate-pulse dark:bg-white/10"></div>
+  {
+    /* Static placeholder bars; the single light sweep (.wcp-shimmer) carries the
+      "loading" motion. Reduced-motion users see a calm, still skeleton. */
+  }
+  <div class="h-5 w-32 rounded bg-grey dark:bg-white/10"></div>
   <div class="mt-5 space-y-3">
     {
       Array.from({ length: lines }).map(() => (
-        <div class="h-4 w-full rounded bg-grey/70 motion-safe:animate-pulse dark:bg-white/5" />
+        <div class="h-4 w-full rounded bg-grey/70 dark:bg-white/5" />
       ))
     }
   </div>

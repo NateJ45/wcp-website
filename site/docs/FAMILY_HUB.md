@@ -98,7 +98,9 @@ the Home dashboard rather than a marketing page stacked in the shell. The patter
   `<h1 id="hub-page-title">`. Home is `bare` too — its `HubGreeting` card owns the `h1`.
 - Content lives in one card vocabulary: **`HubCard`** (`src/components/hub/HubCard.astro`) —
   a plain panel, a titled panel (`icon`/`title` + `slot="action"`), an interactive link
-  (`as="a"`), or a list item (`as="li"`). Progress bars go through **`HubProgress`**.
+  (`as="a"`, whose header icon pops on hover), or a list item (`as="li"`). Progress bars go
+  through **`HubProgress`** (the fill grows in from the left on load). The `server:defer` widgets'
+  `HubWidgetSkeleton` fallback carries one `wcp-shimmer` light sweep while it loads.
 - **Empty states** everywhere via `HubEmptyState`. **Icon-chip convention:** neutral is
   `bg-sky/15 text-sky-ink`; class-specific is `classStyles(slug).iconChip`; semantic
   (money/health/celebration) only where it carries meaning.

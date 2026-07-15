@@ -641,6 +641,70 @@
   }
 }
 
+/* Progress bar fill grows in from the left on first paint — the linear sibling
+   of HubRing's dash sweep, so every hub meter (fundraising, school-year) settles
+   into place the same way. transform-only (scaleX), so it never fights the
+   inline width that is the real value; reduced-motion users get the bar already
+   filled. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-progress-fill {
+    transform-origin: left center;
+    animation: wcp-progress-grow 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes wcp-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+}
+
+/* Ambient breathing for a decorative .wcp-glow: a slow positional drift + scale,
+   TRANSFORM ONLY so the per-theme glow opacity (0.55 light / 0.16 dark) is left
+   untouched and contrast never shifts. aria-hidden decorative use only. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-glow-drift {
+    animation: wcp-glow-drift 16s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes wcp-glow-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(4%, 5%, 0) scale(1.1);
+    }
+  }
+}
+
+/* Premium loading shimmer: one soft light sweep across a skeleton surface.
+   Put it on the placeholder CONTAINER (which must clip); the moving highlight
+   reads as "loading" without the whole card pulsing. Dark mode dims the sweep
+   so it stays subtle on the dark surface. Reduced-motion → a still placeholder. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .wcp-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.5), transparent);
+    animation: wcp-shimmer 1.7s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .dark .wcp-shimmer::after {
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent);
+  }
+  @keyframes wcp-shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
 /* Content-width container with side padding that clears a phone notch when the
    page runs edge-to-edge (env() resolves to 0 on non-notched devices). */
 .wcp-container {

@@ -90,7 +90,11 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
     }
     <div class="relative grid grid-cols-1 gap-4 overflow-x-clip lg:grid-cols-12">
       {/* Warm wash behind the greeting — tints the paper canvas, never text. */}
-      <div class="wcp-glow wcp-glow-cream -top-24 -left-24 h-96 w-[36rem]" aria-hidden="true"></div>
+      <div
+        class="wcp-glow wcp-glow-cream wcp-glow-drift -top-24 -left-24 h-96 w-[36rem]"
+        aria-hidden="true"
+      >
+      </div>
       {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
       <div class="relative lg:col-span-8">
         <HubGreeting
