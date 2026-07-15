@@ -413,10 +413,26 @@ The handbook body (and Getting Started) renders through `HubSectionedBody` → t
 register (centered eyebrow headers, hero-scale type, alternating full-bleed bands) would read as
 "a web page dropped into the app," so `HubSectionedBody` wraps them in `.hub-prose` and a scoped
 skin in `globals.css` re-skins them as app content: headers left-align, the eyebrow kicker drops,
-type shrinks to app scale, padding tightens, and the page-surface bands go transparent so the
-whole handbook reads as one continuous surface (a navy band survives as a rounded card). The skin
-hangs off stable hooks (`wcp-section` / `wcp-section-header` / `wcp-eyebrow` / `wcp-seam`) the
-shared components always emit; nothing targets them on the public site, so it stays untouched.
+and type shrinks to app scale.
+
+The body is laid out as a **document column** (SaaS-dashboard / Confluence-page look). Every page
+mounts `HubSectionedBody` INSIDE the same `<Section bg="grey"> → max-w-6xl` container as the
+`HubPageHeader`, so the header, the fixed class cards, the handbook, and the TOC all share one
+left/right rail (previously the body was a full-width sibling and floated at a different width —
+the "TOC far to the left, nothing aligned" bug). On xl+ the column is paired with a sticky "On
+this page" TOC (`HubSectionIndex`) on the **right** (GitBook/Notion-style, off the hub rail's
+side); below xl the TOC hides and the cards run full-width. Grid + card CSS lives in the
+"Handbook document column" block of `globals.css`, keyed off `.hub-doc-grid` / `.hub-doc-block`.
+
+Each section is wrapped in a `.hub-doc-block[data-treatment]` whose treatment (chosen in
+`HubSectionedBody` from the section `_type`) decides its chrome — the **hybrid card** model:
+`flow` (long-form prose: text flows on the surface, no card), `card` (a discrete block — FAQ,
+schedule, table, quick facts, quote, form: white card chrome matching `HubCard`, via the shared
+`--color-surface` token so it tracks light/dark), and `bleed` (sections that carry their OWN
+cards or a full color band — card grids, class cards, CTAs, galleries: no outer card, so a card
+never nests in a card; a navy band becomes a self-contained rounded card). The skin hangs off
+stable hooks (`wcp-section` / `wcp-section-header` / `wcp-eyebrow` / `wcp-seam`) the shared
+components always emit; nothing targets them on the public site, so it stays untouched.
 Volunteers edit the sections exactly as before — only the hub rendering changes.
 
 Each class page can also carry the teacher's **original handbook PDF** for download: the

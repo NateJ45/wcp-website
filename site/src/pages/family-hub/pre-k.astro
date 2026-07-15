@@ -215,11 +215,15 @@ const classCards = [
           })
         }
       </div>
+
+      {
+        /* The handbook — Board/teacher-editable page-builder sections. Rendered
+          in the SAME container as the header/facts so the whole page shares one
+          width, with a sticky "on this page" TOC on the right. */
+      }
+      <HubSectionedBody sections={doc?.sections} label="Handbook sections" class="mt-8" />
     </div>
   </Section>
-
-  {/* The handbook — Board/teacher-editable page-builder sections. */}
-  <HubSectionedBody sections={doc?.sections} label="Handbook sections" />
 
   {/* Mrs. Lisa's welcome letter — first-visit modal. */}
   <TeacherNoteModal slug="pre-k" />

@@ -445,28 +445,19 @@
    register — centered eyebrow headers, hero-scale display type, alternating
    full-bleed color bands, 2xl padding — reads as "a web page dropped into the
    app". Inside .hub-prose (set by HubSectionedBody) we re-skin them so the
-   handbook reads as one continuous app surface: headers left-align, the
-   marketing eyebrow drops, type shrinks to app scale, padding tightens, and
-   the page-surface bands go transparent (only a navy band survives, contained
-   as a rounded card). Scoped to .hub-prose, so the public site is untouched.
-   These rules are intentionally unlayered so they win over Tailwind's utility
-   layer without !important. */
-.hub-prose .wcp-section {
-  padding-block: clamp(1.75rem, 1rem + 3vw, 2.75rem);
-}
-.hub-prose .wcp-section.bg-white,
-.hub-prose .wcp-section.bg-cream,
-.hub-prose .wcp-section.bg-grey {
-  background-color: transparent;
-}
-.hub-prose .wcp-section.bg-navy {
-  border-radius: var(--radius);
-}
+   handbook reads as one continuous document column: headers left-align, the
+   marketing eyebrow drops, type shrinks to app scale, and every band sheds its
+   own container/padding so the `.hub-doc-block` wrapper can own the layout —
+   giving prose a flush surface and discrete blocks a white card (see the
+   "Handbook document column" block below). Scoped to .hub-prose, so the public
+   site is untouched. These rules are intentionally unlayered so they win over
+   Tailwind's utility layer without !important. */
 .hub-prose .wcp-seam {
   display: none;
 }
 .hub-prose .wcp-section-header {
   margin-inline: 0;
+  margin-block-end: 1.25rem;
   max-width: 46rem;
   text-align: left;
 }
@@ -482,6 +473,70 @@
   margin-top: 0.5rem;
   font-size: 1rem;
   line-height: 1.6;
+}
+
+/* ----------------------------------------------------------------------------
+   Handbook document column — the hybrid card model (HubSectionedBody)
+   ----------------------------------------------------------------------------
+   Each Board section is wrapped in a `.hub-doc-block[data-treatment=…]`. The
+   treatment (set in HubSectionedBody from the section _type) decides its chrome:
+     - flow  → long-form prose: text flows on the app surface, no card.
+     - card  → a discrete block (FAQ, schedule, table, quick facts, quote, form,
+               step list): white card chrome, matching HubCard.
+     - bleed → sections that carry their OWN cards or a full color band (card
+               grids, class cards, CTAs, galleries): no outer card, so we never
+               nest a card in a card.
+   Blocks stack with a consistent gap, so the whole run reads as one continuous
+   column of equal-width info — the SaaS-dashboard / Confluence-page look. */
+.hub-doc-block + .hub-doc-block {
+  margin-top: 1.25rem;
+}
+
+/* flow + card sections shed their band chrome: the wrapper owns spacing (flow)
+   or padding (card), so the section fills the block flush and unpadded. */
+.hub-doc-block[data-treatment='flow'] .wcp-section,
+.hub-doc-block[data-treatment='card'] .wcp-section {
+  padding-block: 0;
+  background-color: transparent;
+}
+.hub-doc-block[data-treatment='flow'] .wcp-container,
+.hub-doc-block[data-treatment='card'] .wcp-container {
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+  width: 100%;
+}
+
+/* card: white panel chrome. --color-surface is #fff (light) / dark card (dark),
+   so this tracks HubCard's `bg-white dark:bg-surface` in both themes. */
+.hub-doc-block[data-treatment='card'] {
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  padding: clamp(1.25rem, 1rem + 1vw, 1.5rem);
+}
+
+/* bleed: no outer card. The section fills the column (container un-capped, but
+   keeps its inline padding so a colored band stays padded), page-surface bands
+   go transparent so only the section's own cards show, and a navy band becomes
+   a self-contained rounded card. Padding trimmed from marketing 2xl to app
+   scale so grids don't leave a huge gap. */
+.hub-doc-block[data-treatment='bleed'] .wcp-container {
+  max-width: none;
+  margin-inline: 0;
+}
+.hub-doc-block[data-treatment='bleed'] .wcp-section {
+  padding-block: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+}
+.hub-doc-block[data-treatment='bleed'] .wcp-section.bg-white,
+.hub-doc-block[data-treatment='bleed'] .wcp-section.bg-cream,
+.hub-doc-block[data-treatment='bleed'] .wcp-section.bg-grey {
+  background-color: transparent;
+}
+.hub-doc-block[data-treatment='bleed'] .wcp-section.bg-navy {
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 /* Public paper texture (2026-07-14 site-elevation) ----------------------------
@@ -969,14 +1024,17 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
 /* ============================================================================
    Handbook "on this page" TOC — HubSectionedBody + HubSectionIndex
    ============================================================================
-   Two-column grid on xl+: a sticky vertical TOC on the left, the section bands
-   on the right. Below xl the nav is display:none (`hidden xl:block`) and the
-   grid is a plain block, so the bands run full-width on phones. */
+   Two-column grid on xl+: the document column (cards) on the LEFT, a sticky
+   vertical TOC on the RIGHT (GitBook/Notion-style — off the hub rail's side).
+   Content is first in the DOM (content-first for screen readers); the grid
+   column order places the TOC on the right. Below xl the nav is display:none
+   (`hidden xl:block`) and the grid is a plain block, so the cards run
+   full-width on phones. */
 @media (min-width: 80rem) {
-  .hub-toc-grid {
+  .hub-doc-grid {
     display: grid;
-    grid-template-columns: 13.5rem minmax(0, 1fr);
-    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr) 13.5rem;
+    gap: 2.5rem;
     align-items: start;
   }
 }

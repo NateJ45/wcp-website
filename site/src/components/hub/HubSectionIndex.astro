@@ -8,10 +8,12 @@
    SAME id scheme SectionRenderer's bridges emit (titleIdFor → `sec-<_key>`), so
    the anchors always match without touching the Board's editing surface.
 
-   Rendered as a VERTICAL sticky sidebar in the left column of HubSectionedBody's
+   Rendered as a VERTICAL sticky sidebar in the RIGHT column of HubSectionedBody's
    two-column grid on wide screens (xl+), with the current section highlighted
-   (scrollspy, hub-toc.ts). Hidden below xl — no cramped horizontal scroller on
-   phones; the page just scrolls. Pure links otherwise (shareable, no-JS-safe).
+   (scrollspy, hub-toc.ts). Right side (GitBook/Notion-style) so it doesn't sit
+   next to the hub rail as a second left-hand nav column. Hidden below xl — no
+   cramped scroller on phones; the page just scrolls. Pure links otherwise
+   (shareable, no-JS-safe).
    ============================================================================ */
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

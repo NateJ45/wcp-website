@@ -49,9 +49,12 @@ const intro =
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="rocket" />
+
+      {
+        /* Board-editable page-builder content, in the SAME container as the
+          header so the header, cards, and TOC all share one width. */
+      }
+      <HubSectionedBody sections={doc?.sections} label="Getting Started sections" class="mt-8" />
     </div>
   </Section>
-
-  {/* Everything below the header is Board-editable page-builder content. */}
-  <HubSectionedBody sections={doc?.sections} label="Getting Started sections" />
 </HubShell>

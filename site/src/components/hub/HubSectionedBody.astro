@@ -1,12 +1,31 @@
 ---
 /* ============================================================================
-   HubSectionedBody — handbook body with a sticky left "on this page" TOC
+   HubSectionedBody — handbook body as a stack of cards + a right "on this page" TOC
    ============================================================================
-   Wraps the Board-edited section run in a two-column grid on wide screens:
-   the vertical HubSectionIndex on the left, the SectionRenderer bands on the
-   right. Below xl the TOC hides and the bands run full-width — one clean column
-   on phones, no horizontal scroller. Used by the class handbook pages + Getting
-   Started, replacing the old `<HubSectionIndex/> + <SectionRenderer/>` pair.
+   The class handbooks + Getting Started render their body through the SAME
+   marketing sections the public site uses (Section + SectionHeader). Left as-is
+   they read as "a web page dropped into the app": full-bleed color bands, each
+   re-centering in its own container at a different width from the page header.
+
+   Here we re-frame that run as one dashboard/Confluence-style document column:
+     - Everything sits inside the page's shared max-w-6xl container (the pages
+       render this component INSIDE the same <Section>/container as the header),
+       so the header, body, and TOC all share one left/right rail.
+     - Each Board section is wrapped in a `.hub-doc-block` with a TREATMENT that
+       decides its chrome (see below), so block-like sections get a white card
+       and long-form prose flows on the surface — the "hybrid" look.
+     - On xl+ the column is paired with a sticky vertical TOC on the RIGHT
+       (HubSectionIndex); below xl the TOC hides and the cards run full-width.
+
+   Treatments (hybrid card model):
+     - flow  — prose/long-form: no card, text flows on the app surface.
+     - card  — a discrete block (FAQ, schedule, table, quick facts, quote, form,
+               step list, …): white card chrome, matching HubCard.
+     - bleed — sections that already carry their own cards or a full color band
+               (card grids, class cards, CTAs, galleries, stat bands): no outer
+               card, so we never nest a card in a card.
+   The actual card/flow/bleed styling lives in globals.css, keyed off
+   `data-treatment` — see the "Handbook document column" block there.
    ============================================================================ */
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
@@ -17,20 +36,59 @@ interface Props {
   sections?: any[];
   /** Accessible name for the TOC, e.g. "Handbook sections". */
   label: string;
+  /** Extra classes on the grid root (e.g. top margin from the page). */
+  class?: string;
 }
-const { sections, label } = Astro.props;
+const { sections, label, class: className } = Astro.props;
+
+const items = sections ?? [];
 
 // Only lay out the TOC column when there's a TOC worth showing (>1 heading).
-const tocCount = (sections ?? []).filter((s) => s?.header?.title && s?._key).length;
+const tocCount = items.filter((s) => s?.header?.title && s?._key).length;
+
+// Section types that already render their OWN cards or a full color band —
+// wrapping these in another card would nest a card in a card, so they bleed.
+const BLEED = new Set([
+  'cardGridSection',
+  'classCardsSection',
+  'ctaSection',
+  'enrollmentCtaSection',
+  'statBandSection',
+  'gallerySection',
+  'albumSection',
+  'programCardsSection',
+  'boardMembersSection',
+  'latestPostsSection',
+  'upcomingEventsSection',
+  'logoStripSection',
+  'campaignSection',
+  'jobsSection',
+  'splitMediaSection',
+  'instagramSection',
+  'teacherSection',
+]);
+// Long-form / prose-like sections: text flows on the surface, no card chrome.
+const FLOW = new Set(['proseSection', 'storyTimelineSection']);
+// Everything else is a discrete block that reads well as a white card.
+const treatmentFor = (type: string): 'flow' | 'card' | 'bleed' =>
+  FLOW.has(type) ? 'flow' : BLEED.has(type) ? 'bleed' : 'card';
 ---
 
-<div class:list={[tocCount > 1 && 'hub-toc-grid']}>
-  <HubSectionIndex sections={sections} label={label} />
+<div class:list={['hub-doc', tocCount > 1 && 'hub-doc-grid', className]}>
   {
-    /* `hub-prose` re-skins the shared marketing sections as app content:
-      left-aligned, denser, on one surface (see globals.css). */
+    /* Content column FIRST (natural reading order, content-first for screen
+       readers) — the TOC follows and is placed in the right grid column. Inside
+       `.hub-prose` the shared marketing sections are re-skinned as app content
+       (left-aligned, denser, no marketing eyebrow); see globals.css. */
   }
   <div class="hub-prose min-w-0">
-    <SectionRenderer sections={sections} site={site} />
+    {
+      items.map((section) => (
+        <div class="hub-doc-block" data-treatment={treatmentFor(section?._type)}>
+          <SectionRenderer sections={[section]} site={site} />
+        </div>
+      ))
+    }
   </div>
+  <HubSectionIndex sections={sections} label={label} />
 </div>
