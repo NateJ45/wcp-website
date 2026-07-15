@@ -399,6 +399,14 @@ both `hubPage-twos` and `hubPage-threes` get the SAME sections from
 section and rebuilds the handbook below it). Re-running any of these RESETS that page to its
 baseline; day-to-day edits happen in the Studio.
 
+Each class page can also carry the teacher's **original handbook PDF** for download: the
+`hubPage.handbookFile` field (a Sanity file) drives a "Download the handbook (PDF)" button in
+the page header (`HUB_PAGE_QUERY` projects it as `handbookUrl`; the button href appends `?dl=`
+so the Sanity CDN serves it as an attachment with a clean filename). Twos + Threes share Ms.
+Erin's PDF, uploaded and wired by `node scripts/seed-handbook-files.mjs` (idempotent, reuses the
+asset by filename); Pre-K's button turns on once Mrs. Lisa's PDF is uploaded to that field in
+the Studio. No button shows when the field is empty.
+
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Landing                           | Quick-link nav grids                                                                         | —                                                  |

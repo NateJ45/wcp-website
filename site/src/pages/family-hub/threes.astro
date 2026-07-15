@@ -17,6 +17,7 @@ import { HUB_PAGE_QUERY } from '@/lib/queries';
 interface HubPageDoc {
   heading?: string;
   intro?: string;
+  handbookUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -40,5 +41,11 @@ const intro = doc?.intro || 'A joyful first real school experience.';
   current="/family-hub/threes"
   pageTitle="Threes Classroom — WCP Family Hub"
 >
-  <ClassHubBody slug="threes" title={title} intro={intro} sections={doc?.sections} />
+  <ClassHubBody
+    slug="threes"
+    title={title}
+    intro={intro}
+    sections={doc?.sections}
+    handbookUrl={doc?.handbookUrl}
+  />
 </HubShell>

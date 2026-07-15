@@ -80,6 +80,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 // faqSection dereference — no build-time "pull" sections here.
 export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
   heading, intro,
+  "handbookUrl": handbookFile.asset->url,
   sections[]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },

@@ -36,6 +36,7 @@ import { site } from '@/data/site';
 interface HubPageDoc {
   heading?: string;
   intro?: string;
+  handbookUrl?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -93,9 +94,23 @@ const classCards = [
         icon="sun"
         iconChip={classStyles('pre-k').iconChip}
       >
-        <Button slot="action" href="/classes/pre-k" variant="outline" size="sm">
-          See the full program
-        </Button>
+        <div slot="action" class="flex flex-wrap gap-2">
+          {
+            doc?.handbookUrl && (
+              <Button
+                href={`${doc.handbookUrl}?dl=`}
+                target="_blank"
+                rel="noopener"
+                variant="outline"
+                size="sm"
+              >
+                <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+                Download the handbook (PDF)
+              </Button>
+            )
+          }
+          <Button href="/classes/pre-k" variant="outline" size="sm">See the full program</Button>
+        </div>
       </HubPageHeader>
 
       {/* FIXED: the two classes side by side, each in its own color. */}

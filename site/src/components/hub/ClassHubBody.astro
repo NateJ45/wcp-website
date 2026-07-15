@@ -15,6 +15,7 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherCard from '@/components/hub/TeacherCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
+import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { payUrl, type WcpClass } from '@/data/classes';
 import { getHubClass } from '@/lib/hub-classes';
@@ -33,8 +34,11 @@ interface Props {
   // fixed facts + notes). Undefined/empty renders nothing.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
+  // Optional Sanity file URL for the teacher's downloadable handbook PDF.
+  // When present, a download button shows in the header.
+  handbookUrl?: string;
 }
-const { slug, title, intro, sections } = Astro.props;
+const { slug, title, intro, sections, handbookUrl } = Astro.props;
 // Class facts + PayPal tuition button id from Sanity (data-file fallback).
 const c = await getHubClass(slug);
 // This class's brand color, used for the accents on its own page.
@@ -79,6 +83,20 @@ const glow = GLOW[slug] ?? 'wcp-glow-sky';
         <Button href={payUrl(c.payId)} target="_blank" rel="noopener" variant="primary" size="sm">
           Pay tuition
         </Button>
+        {
+          handbookUrl && (
+            <Button
+              href={`${handbookUrl}?dl=`}
+              target="_blank"
+              rel="noopener"
+              variant="outline"
+              size="sm"
+            >
+              <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+              Download the handbook (PDF)
+            </Button>
+          )
+        }
         <Button href={publicHref} variant="outline" size="sm">See the full program</Button>
       </div>
     </HubPageHeader>

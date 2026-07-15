@@ -71,6 +71,15 @@ export const hubPage = defineType({
       description: 'The sentence under the heading.',
     }),
     defineField({
+      name: 'handbookFile',
+      title: 'Handbook PDF (optional)',
+      type: 'file',
+      group: 'content',
+      options: { accept: 'application/pdf' },
+      description:
+        'The teacher’s own handbook, as a PDF. When set, a “Download the handbook (PDF)” button appears at the top of this class page. Class pages only.',
+    }),
+    defineField({
       name: 'sections',
       title: 'Sections',
       type: 'array',

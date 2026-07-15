@@ -225,7 +225,11 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **Pre-K page** (one page for both AM and PM) carries the entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more. When the teacher changes a routine, edit the matching section right here so the page stays the source of truth.',
+        text: 'Every **class page** carries that teacher’s entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more (Pre-K shares one page for both AM and PM). When the teacher changes a routine, edit the matching section right here so the page stays the source of truth.',
+      },
+      {
+        kind: 'p',
+        text: 'Want families to be able to download the teacher’s **original handbook PDF** too? Open that class’s hub page and upload it to the **Handbook PDF** field. A "Download the handbook (PDF)" button then appears at the top of the class page. Leave it empty and no button shows.',
       },
       {
         kind: 'p',
