@@ -345,8 +345,11 @@ alphabetically by `familyName` (the surname). Every family is **fully editable i
 Family Hub → Directory**: family name, each parent (name + their own email + phone), each
 child (name + class), a family photo, the home address, the map pin, notes, and a "Show in
 directory" toggle. Adding a new family = create a `directoryEntry` and turn on "Show in
-directory". It has a **List / Map toggle**: the map is Leaflet + OpenStreetMap (no API key,
-no third-party tracker), plotting each family's home pin relative to the school (the ★). The
+directory". The **Map** is a Board on/off switch — **Site Settings → Connected services → "Show
+the family directory map"** (`showDirectoryMap`, **off by default**). When off, the page shows
+just the List (no Map tab, and Leaflet never loads); when on, a **List / Map toggle** appears and
+the map is Leaflet + OpenStreetMap (no API key, no third-party tracker), plotting each family's
+home pin relative to the school (the ★). The
 whole map is behind the gate, so plotting home locations is fine here — it never touches the
 public site.
 
@@ -428,8 +431,12 @@ the Studio. No button shows when the field is empty.
 banner (gradient fill, brand glows, a dot grid, doodles, a shine sweep + floating shapes, all
 reduced-motion-safe) linking to the merch store, with a **category tab row** (flick between
 collections, "Featured" open by default) over a **product carousel** with prev/next arrows
-(`hub-store.ts`; the native scrollbar is hidden, the next tile peeks) and a
-"supporting our co-op" sales stat. The tabs are pure CSS (radio inputs + `:has()`) so they work
+(`hub-store.ts`; the native scrollbar is hidden, the next tile peeks), a **free-shipping line**,
+and a "supporting our co-op" sales stat. Fourthwall serves every product image at a signed 1920px
+URL (~140KB) that can't be rewritten and workers.dev has no image resizing, so the tiles route the
+image through **wsrv.nl** (a free resizing proxy) to ~400px webp (~17KB) — `hub-store.ts` falls
+back to the full Fourthwall image if the proxy ever errors. The tabs are pure CSS (radio inputs +
+`:has()`) so they work
 with **no JS inside the server island** — the card is a `server:defer` island so its external
 fetches never block the dashboard. Categories, products, and the stat come **live from Fourthwall**
 via `src/lib/fourthwall.ts` (cached, SWR):

@@ -17,6 +17,22 @@ function init(): boolean {
   const rails = Array.from(document.querySelectorAll<HTMLElement>('.wcp-store-rail'));
   if (!rails.length) return false;
 
+  // Product images load through a resizing proxy (wsrv.nl, see StoreCard). If it
+  // ever fails, fall back to the full-size Fourthwall image so a tile is never
+  // blank.
+  document
+    .querySelectorAll<HTMLImageElement>('.wcp-store-tile img[data-img-full]')
+    .forEach((img) => {
+      if (img.dataset.imgFallbackWired) return;
+      img.dataset.imgFallbackWired = '1';
+      const swap = () => {
+        const full = img.getAttribute('data-img-full');
+        if (full && img.src !== full) img.src = full;
+      };
+      if (img.complete && img.naturalWidth === 0) swap(); // already errored
+      img.addEventListener('error', swap, { once: true });
+    });
+
   const updaters: Array<() => void> = [];
   for (const rail of rails) {
     if (rail.dataset.arrowsWired) continue;

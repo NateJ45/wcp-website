@@ -248,6 +248,15 @@ export const siteSettings = defineType({
         'The special Google link that feeds the Upcoming Events list on the Family Hub. Set up once by Nathan — check with him before changing it.',
     }),
     defineField({
+      name: 'showDirectoryMap',
+      title: 'Show the family directory map',
+      type: 'boolean',
+      group: 'services',
+      initialValue: false,
+      description:
+        'When on, the Family Hub Directory adds a Map tab that plots each family who shared a home address (on OpenStreetMap). Off (the default) shows just the List.',
+    }),
+    defineField({
       name: 'pastFundraisingTotals',
       title: 'Past fundraising totals',
       type: 'array',

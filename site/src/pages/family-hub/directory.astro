@@ -72,6 +72,20 @@ try {
   entries = [];
 }
 
+// Map tab is a Board on/off switch (Site Settings → Connected services). Off by
+// default: no Map tab, and the Leaflet map never loads.
+let showMap = false;
+try {
+  const s = await sanityFetch<{ showDirectoryMap?: boolean } | null>(
+    `*[_type == "siteSettings"][0]{ showDirectoryMap }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+  showMap = s?.showDirectoryMap === true;
+} catch {
+  showMap = false;
+}
+
 // Class filter (?class=twos): find families by the class their kids are in.
 // SSR link-chips, not JS state — the filter is shareable, works with no JS,
 // and the persistent-shell view transitions keep the reload feeling app-like.
@@ -187,32 +201,35 @@ const intro =
           />
         ) : (
           <div class="mt-10">
-            <div
-              class="mb-6 inline-flex rounded-full border border-border p-1"
-              role="tablist"
-              aria-label="Directory view"
-            >
-              <button
-                id="dir-tab-list"
-                type="button"
-                role="tab"
-                aria-controls="dir-list"
-                class="rounded-full px-5 py-1.5 text-sm font-semibold text-ink-muted aria-selected:bg-navy aria-selected:text-white"
-                aria-selected="true"
+            {/* List/Map view toggle — only when the Board turns the map on. */}
+            {showMap && (
+              <div
+                class="mb-6 inline-flex rounded-full border border-border p-1"
+                role="tablist"
+                aria-label="Directory view"
               >
-                List
-              </button>
-              <button
-                id="dir-tab-map"
-                type="button"
-                role="tab"
-                aria-controls="dir-map-view"
-                class="rounded-full px-5 py-1.5 text-sm font-semibold text-ink-muted aria-selected:bg-navy aria-selected:text-white"
-                aria-selected="false"
-              >
-                Map
-              </button>
-            </div>
+                <button
+                  id="dir-tab-list"
+                  type="button"
+                  role="tab"
+                  aria-controls="dir-list"
+                  class="rounded-full px-5 py-1.5 text-sm font-semibold text-ink-muted aria-selected:bg-navy aria-selected:text-white"
+                  aria-selected="true"
+                >
+                  List
+                </button>
+                <button
+                  id="dir-tab-map"
+                  type="button"
+                  role="tab"
+                  aria-controls="dir-map-view"
+                  class="rounded-full px-5 py-1.5 text-sm font-semibold text-ink-muted aria-selected:bg-navy aria-selected:text-white"
+                  aria-selected="false"
+                >
+                  Map
+                </button>
+              </div>
+            )}
             {/* Class filter chips: find the families in your child's class.
                 Real links (?class=…), so the filter is shareable and JS-free;
                 chips carry the class dot, active chip goes solid navy. */}
@@ -413,12 +430,14 @@ const intro =
                 );
               })}
             </ul>
-            <div id="dir-map-view" hidden>
-              <DirectoryMap families={mapFamilies} preschool={PRESCHOOL} />
-              <p class="mt-3 text-sm text-ink-muted">
-                The star marks the preschool; each pin is a family who added a home address.
-              </p>
-            </div>
+            {showMap && (
+              <div id="dir-map-view" hidden>
+                <DirectoryMap families={mapFamilies} preschool={PRESCHOOL} />
+                <p class="mt-3 text-sm text-ink-muted">
+                  The star marks the preschool; each pin is a family who added a home address.
+                </p>
+              </div>
+            )}
           </div>
         )
       }

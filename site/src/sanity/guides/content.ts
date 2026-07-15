@@ -237,6 +237,10 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
+        text: 'The **family directory map** (a Map tab that plots each family who shared a home address) is off by default. To turn it on, flip **Site Settings → Connected services → "Show the family directory map"**. With it off, the Directory shows just the List.',
+      },
+      {
+        kind: 'p',
         text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
       {
