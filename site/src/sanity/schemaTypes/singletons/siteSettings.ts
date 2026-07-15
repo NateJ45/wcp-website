@@ -1,4 +1,4 @@
-import { defineType, defineField } from 'sanity';
+import { defineType, defineField, defineArrayMember } from 'sanity';
 
 // =============================================================================
 // Site Settings (SINGLETON) — the school's facts, in one place
@@ -304,6 +304,51 @@ export const siteSettings = defineType({
       type: 'url',
       group: 'social',
       description: 'The online store link (opens in a new tab).',
+    }),
+    defineField({
+      name: 'storeHeadline',
+      title: 'Store card headline',
+      type: 'string',
+      group: 'social',
+      description: 'The big line on the store card at the bottom of the Family Hub home.',
+    }),
+    defineField({
+      name: 'storeTagline',
+      title: 'Store card blurb',
+      type: 'text',
+      rows: 2,
+      group: 'social',
+      description: 'The supporting sentence under the headline.',
+    }),
+    defineField({
+      name: 'storeProducts',
+      title: 'Featured merch',
+      type: 'array',
+      group: 'social',
+      description:
+        'A few items to show as clickable tiles on the Family Hub store card. Add, remove, and drag to reorder. Leave empty to show just the card.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'title', title: 'Name', type: 'string' }),
+            defineField({
+              name: 'price',
+              title: 'Price',
+              type: 'string',
+              description: 'e.g. "$24.99".',
+            }),
+            defineField({ name: 'url', title: 'Product link', type: 'url' }),
+            defineField({
+              name: 'image',
+              title: 'Image URL',
+              type: 'url',
+              description: 'A direct link to the product photo (from the store).',
+            }),
+          ],
+          preview: { select: { title: 'title', subtitle: 'price', imageUrl: 'image' } },
+        }),
+      ],
     }),
 
     // Legal

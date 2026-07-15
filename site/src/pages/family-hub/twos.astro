@@ -1,46 +1,6 @@
 ---
-/* ============================================================================
-   Family Hub — Twos Classroom (GATED, page-builder)
-   ============================================================================
-   Fixed widget: class facts + pay button + class-notes (class notes are their
-   own editable docs), via <ClassHubBody>. Editable heading/intro + any extra
-   sections come from the class's hubPage doc (hubKey "twos"); falls back to the
-   built-in strings if no doc exists yet.
-   ============================================================================ */
+/* Twos + Threes now share one hub page. Keep this URL working (bookmarks,
+   the home class cards) by redirecting to the combined page. */
 export const prerender = false;
-
-import HubShell from '@/layouts/HubShell.astro';
-import ClassHubBody from '@/components/hub/ClassHubBody.astro';
-import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
-
-interface HubPageDoc {
-  heading?: string;
-  intro?: string;
-  handbookUrl?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sections?: any[];
-}
-let doc: HubPageDoc | null = null;
-try {
-  doc = await sanityFetch<HubPageDoc | null>(
-    HUB_PAGE_QUERY,
-    { key: 'twos' },
-    { cache: BOARD_CONTENT_CACHE },
-  );
-} catch {
-  doc = null;
-}
-const title = doc?.heading || 'Twos Classroom';
-const intro = doc?.intro || 'A gentle first taste of school, in a small group.';
+return Astro.redirect('/family-hub/twos-threes', 301);
 ---
-
-<HubShell title={title} bare current="/family-hub/twos" pageTitle="Twos Classroom — WCP Family Hub">
-  <ClassHubBody
-    slug="twos"
-    title={title}
-    intro={intro}
-    sections={doc?.sections}
-    handbookUrl={doc?.handbookUrl}
-  />
-</HubShell>

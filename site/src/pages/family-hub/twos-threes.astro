@@ -1,0 +1,233 @@
+---
+/* ============================================================================
+   Family Hub — Twos & Threes Classroom (GATED, page-builder)
+   ============================================================================
+   Twos and Threes share one teacher (Ms. Erin), one handbook, and one 9:30-noon
+   rhythm, so they share one hub page (mirroring the merged Pre-K page). FIXED
+   widgets: Erin's teacher card + a fact card per class (Twos and Threes side by
+   side in their own class colors, each with its pay button, helper-schedule
+   sheet, and photo album). The handbook below lives in the `hubPage-twos` doc
+   as page-builder sections. Erin's welcome letter is the first-visit
+   TeacherNoteModal (`teacherNote`, class "twos"). /family-hub/twos and /threes
+   redirect here.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import TeacherCard from '@/components/hub/TeacherCard.astro';
+import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/Icon.astro';
+import { payUrl } from '@/data/classes';
+import { getHubClass } from '@/lib/hub-classes';
+import { classStyles } from '@/lib/class-colors';
+import { cn } from '@/lib/utils';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
+import { site } from '@/data/site';
+
+interface HubPageDoc {
+  heading?: string;
+  intro?: string;
+  handbookUrl?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+let doc: HubPageDoc | null = null;
+try {
+  // Both classes carry the identical handbook; read the Twos doc as the source.
+  doc = await sanityFetch<HubPageDoc | null>(
+    HUB_PAGE_QUERY,
+    { key: 'twos' },
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  doc = null;
+}
+const title = 'Twos & Threes Classroom';
+const intro =
+  doc?.intro && doc.intro !== 'A gentle first taste of school, in a small group.'
+    ? doc.intro
+    : 'Ms. Erin’s Twos and Threes, everything about the year in one place. Both classes share the same happy 9:30 to noon rhythm.';
+
+// Both classes' facts + their Board-editable helper-schedule + album links.
+const SLUGS = ['twos', 'threes'] as const;
+const [twos, threes] = await Promise.all(SLUGS.map((s) => getHubClass(s)));
+interface ClassLinksRow {
+  slug?: string;
+  helperScheduleUrl?: string;
+  photoAlbumUrl?: string;
+}
+let links: Record<string, ClassLinksRow> = {};
+try {
+  const rows = await sanityFetch<ClassLinksRow[]>(
+    `*[_type == "class" && slug.current in ["twos", "threes"]]{ "slug": slug.current, helperScheduleUrl, photoAlbumUrl }`,
+  );
+  for (const r of rows ?? []) if (r.slug) links[r.slug] = r;
+} catch {
+  links = {};
+}
+const classCards = [
+  { slug: 'twos', badge: 'Ages 2 by Sept 30', c: twos },
+  { slug: 'threes', badge: 'Ages 3 by Sept 30', c: threes },
+].map(({ slug, badge, c }) => ({
+  slug,
+  badge,
+  c,
+  helperHref: links[slug]?.helperScheduleUrl ?? helperScheduleFallback[slug],
+  albumHref: links[slug]?.photoAlbumUrl ?? photoAlbumFallback[slug],
+}));
+---
+
+<HubShell
+  title={title}
+  bare
+  current="/family-hub/twos-threes"
+  pageTitle="Twos & Threes — WCP Family Hub"
+>
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="relative mx-auto max-w-6xl overflow-x-clip">
+      <div class="wcp-glow wcp-glow-amber -top-20 -left-20 h-72 w-[30rem]" aria-hidden="true"></div>
+      <HubPageHeader
+        title={title}
+        subtitle={intro}
+        icon="blocks"
+        iconChip={classStyles('twos').iconChip}
+      >
+        <div slot="action" class="flex flex-wrap gap-2">
+          {
+            doc?.handbookUrl && (
+              <Button
+                href={`${doc.handbookUrl}?dl=`}
+                target="_blank"
+                rel="noopener"
+                variant="outline"
+                size="sm"
+              >
+                <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+                Download the handbook (PDF)
+              </Button>
+            )
+          }
+        </div>
+      </HubPageHeader>
+
+      {/* Ms. Erin's teacher card. */}
+      <div class="mb-4">
+        <TeacherCard slug="twos" />
+      </div>
+
+      {/* FIXED: the two classes side by side, each in its own color. */}
+      <div class="grid gap-4 lg:grid-cols-2">
+        {
+          classCards.map(({ slug, badge, c, helperHref, albumHref }) => {
+            const cc = classStyles(slug);
+            return (
+              <HubCard class="flex flex-col">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class={cn(
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                        cc.iconChip,
+                      )}
+                      aria-hidden="true"
+                    >
+                      <Icon name={c.icon} class="h-5 w-5" />
+                    </span>
+                    <div class="min-w-0">
+                      <span
+                        class={cn(
+                          'inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold tracking-wide uppercase',
+                          cc.badge,
+                        )}
+                      >
+                        {c.name}
+                      </span>
+                      <p class="mt-1 text-sm text-ink-muted">{badge}</p>
+                    </div>
+                  </div>
+                  <dl class="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 text-sm">
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Days
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.days}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Time
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.time}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Monthly
+                      </dt>
+                      <dd class={cn('mt-0.5 font-bold', cc.text)}>{c.monthly}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                        Student fee
+                      </dt>
+                      <dd class="mt-0.5 font-bold text-heading">{c.studentFee}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div class="mt-5 flex flex-wrap gap-2">
+                  <Button
+                    href={payUrl(c.payId)}
+                    target="_blank"
+                    rel="noopener"
+                    variant="primary"
+                    size="sm"
+                    class={cn('flex-1', cc.button)}
+                  >
+                    Pay tuition
+                  </Button>
+                  {helperHref && (
+                    <Button
+                      href={helperHref}
+                      target="_blank"
+                      rel="noopener"
+                      variant="outline"
+                      size="sm"
+                      class="flex-1"
+                    >
+                      Helper schedule
+                    </Button>
+                  )}
+                  {albumHref && (
+                    <Button
+                      href={albumHref}
+                      target="_blank"
+                      rel="noopener"
+                      variant="outline"
+                      size="sm"
+                      class="flex-1"
+                    >
+                      Photo album
+                    </Button>
+                  )}
+                </div>
+              </HubCard>
+            );
+          })
+        }
+      </div>
+    </div>
+  </Section>
+
+  {/* The handbook — Board/teacher-editable page-builder sections. */}
+  <HubSectionIndex sections={doc?.sections} label="Handbook sections" />
+  <SectionRenderer sections={doc?.sections} site={site} />
+
+  {/* Ms. Erin's welcome letter — first-visit modal (shared Twos/Threes note). */}
+  <TeacherNoteModal slug="twos" />
+</HubShell>

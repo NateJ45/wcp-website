@@ -92,12 +92,13 @@ export const hubNav: HubGroup[] = [
     label: 'Classes',
     accent: '#7dd3fc', // sky label; each class link carries its own class color
     links: [
-      { label: 'Twos', href: '/family-hub/twos', icon: 'blocks', iconColor: CLASS_ACCENT.twos },
+      // One page for both Twos and Threes — same teacher (Ms. Erin), same
+      // handbook; each class's facts live side by side on the page itself.
       {
-        label: 'Threes',
-        href: '/family-hub/threes',
-        icon: 'crayon',
-        iconColor: CLASS_ACCENT.threes,
+        label: 'Twos & Threes',
+        href: '/family-hub/twos-threes',
+        icon: 'blocks',
+        iconColor: CLASS_ACCENT.twos,
       },
       // One page for both Pre-K classes — same teacher, same handbook; the AM/PM
       // facts live side by side on the page itself.

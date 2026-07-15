@@ -12,8 +12,8 @@ test.describe('Family Hub home dashboard', () => {
     // Greeting hero.
     await expect(page.getByText(/^Good (morning|afternoon|evening), WCP family!$/)).toBeVisible();
 
-    // Class links in the rail (Pre-K AM + PM share one merged page).
-    for (const href of ['/family-hub/twos', '/family-hub/threes', '/family-hub/pre-k']) {
+    // Class links in the rail (Twos + Threes share one page; Pre-K AM + PM too).
+    for (const href of ['/family-hub/twos-threes', '/family-hub/pre-k']) {
       await expect(page.locator(`a[href="${href}"]`).first()).toBeVisible();
     }
 

@@ -392,12 +392,13 @@ PDFs themselves are gitignored (they contain the hub password and phone numbers)
 (daily schedules, drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom,
 communication, dress code, FAQs, and the class-pet band) is seeded from Mrs. Lisa's 2026-27 PDF
 by `node scripts/seed-pre-k-page.mjs`; its fixed widget is the pair of AM/PM fact cards (facts,
-pay button, helper sheet, photo album per class). **Twos + Threes** share Ms. Erin's one 2026-27
-handbook (same 9:30-noon rhythm, plus her month-by-month enrichment outings and curriculum), so
-both `hubPage-twos` and `hubPage-threes` get the SAME sections from
-`node scripts/seed-twos-threes-page.mjs` (it preserves each page's existing intro-timeline
-section and rebuilds the handbook below it). Re-running any of these RESETS that page to its
-baseline; day-to-day edits happen in the Studio.
+pay button, helper sheet, photo album per class). **Twos + Threes** likewise share ONE page,
+`/family-hub/twos-threes` (same teacher Ms. Erin, same 9:30-noon rhythm, same handbook): the
+combined page shows Erin's teacher card + a Twos and a Threes fact card side by side, and reads
+the handbook from `hubPage-twos` (seeded by `node scripts/seed-twos-threes-page.mjs`, which
+writes the identical sections to both `hubPage-twos` and `hubPage-threes`). `/family-hub/twos`
+and `/family-hub/threes` 301-redirect to the combined page; the nav + home class cards point
+there. Re-running a seed RESETS that page to its baseline; day-to-day edits happen in the Studio.
 
 Each class page can also carry the teacher's **original handbook PDF** for download: the
 `hubPage.handbookFile` field (a Sanity file) drives a "Download the handbook (PDF)" button in
@@ -406,6 +407,15 @@ so the Sanity CDN serves it as an attachment with a clean filename). Twos + Thre
 Erin's PDF, uploaded and wired by `node scripts/seed-handbook-files.mjs` (idempotent, reuses the
 asset by filename); Pre-K's button turns on once Mrs. Lisa's PDF is uploaded to that field in
 the Studio. No button shows when the field is empty.
+
+**The store card** (`StoreCard.astro`) sits at the bottom of the hub home: a navy, doodle-dusted
+banner (shine sweep + floating shapes, all reduced-motion-safe) linking to the merch store, with
+a row of clickable product tiles. Content is Board-curated on Site Settings → Social & store:
+`storeHeadline`, `storeTagline`, `storeUrl`, and `storeProducts[]` (each `title` / `price` /
+`url` / `image`). Tiles are curated rather than live-pulled because the Fourthwall store is
+JS-rendered with no clean token-free catalog feed; `node scripts/seed-store-feature.mjs` seeds a
+starter set of real products (image URLs are the store's signed imgproxy links). Clear
+`storeProducts` to show just the banner; the card hides entirely without a `storeUrl`.
 
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |

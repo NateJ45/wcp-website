@@ -24,6 +24,7 @@ import MeetingMinutesWidget from '@/components/hub/MeetingMinutesWidget.astro';
 import BudgetSnapshotWidget from '@/components/hub/BudgetSnapshotWidget.astro';
 import FundraisingWidget from '@/components/hub/FundraisingWidget.astro';
 import HubWidgetSkeleton from '@/components/hub/HubWidgetSkeleton.astro';
+import StoreCard from '@/components/hub/StoreCard.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
@@ -40,6 +41,10 @@ interface SettingsDoc {
   yearEnd?: string;
   firstDay?: string;
   familyCount?: number;
+  storeUrl?: string;
+  storeHeadline?: string;
+  storeTagline?: string;
+  storeProducts?: { title?: string; price?: string; url?: string; image?: string }[];
 }
 
 // The three page-level fetches are fully independent — run them concurrently
@@ -203,6 +208,14 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         </BudgetSnapshotWidget>
       </div>
     </div>
+
+    {/* The official store — flair-forward banner + Board-curated merch tiles. */}
+    <StoreCard
+      url={settings?.storeUrl}
+      headline={settings?.storeHeadline}
+      tagline={settings?.storeTagline}
+      products={settings?.storeProducts}
+    />
   </Section>
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}

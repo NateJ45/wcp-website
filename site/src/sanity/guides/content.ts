@@ -233,6 +233,10 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
+        text: 'The **store card** at the bottom of the Family Hub home is set in **Site Settings → Social & store**: a headline, a blurb, the store link, and **Featured merch** (add a few items with a name, price, product link, and image URL to show them as clickable tiles). Clear the featured items to show just the banner.',
+      },
+      {
+        kind: 'p',
         text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
       {

@@ -17,8 +17,8 @@ import { onPageLoad } from '@/scripts/_page-load';
 
 const KEY = 'wcp-my-classes';
 const CLASSES: Record<string, { label: string; page: string }> = {
-  twos: { label: 'Twos', page: '/family-hub/twos' },
-  threes: { label: 'Threes', page: '/family-hub/threes' },
+  twos: { label: 'Twos', page: '/family-hub/twos-threes' },
+  threes: { label: 'Threes', page: '/family-hub/twos-threes' },
   'pre-k-am': { label: 'Pre-K AM', page: '/family-hub/pre-k' },
   'pre-k-pm': { label: 'Pre-K PM', page: '/family-hub/pre-k' },
 };
