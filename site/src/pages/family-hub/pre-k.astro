@@ -20,6 +20,7 @@ import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
+import TeacherCard from '@/components/hub/TeacherCard.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
@@ -110,6 +111,11 @@ const classCards = [
           <Button href="/classes/pre-k" variant="outline" size="sm">See the full program</Button>
         </div>
       </HubPageHeader>
+
+      {/* Mrs. Lisa's teacher card (mirrors Ms. Erin's on the Twos & Threes page). */}
+      <div class="mb-4">
+        <TeacherCard slug="pre-k" />
+      </div>
 
       {/* FIXED: the two classes side by side, each in its own color. */}
       <div class="grid gap-4 lg:grid-cols-2">

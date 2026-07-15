@@ -416,14 +416,16 @@ the Studio. No button shows when the field is empty.
 **The store card** (`StoreCard.astro`) sits at the bottom of the hub home: a deep, textured navy
 banner (gradient fill, brand glows, a dot grid, doodles, a shine sweep + floating shapes, all
 reduced-motion-safe) linking to the merch store, with a **category tab row** (flick between
-collections) over a **flickable product carousel** (scroll-snap, the next tile peeks) and a
+collections, "Featured" open by default) over a **product carousel** with prev/next arrows
+(`hub-store.ts`; the native scrollbar is hidden, the next tile peeks) and a
 "supporting our co-op" sales stat. The tabs are pure CSS (radio inputs + `:has()`) so they work
 with **no JS inside the server island** — the card is a `server:defer` island so its external
 fetches never block the dashboard. Categories, products, and the stat come **live from Fourthwall**
 via `src/lib/fourthwall.ts` (cached, SWR):
 
-- `getStoreCollections()` — the Storefront API: the store's categories, one tab each (plus an
-  "Everything" tab). Empty categories are dropped; if none come back the card shows a single rail.
+- `getStoreCollections()` — the Storefront API: the store's real categories, one tab each
+  ("Featured" leads and opens by default). Empty categories are dropped; if none come back the
+  card shows the whole catalog as a single rail.
 - `getStoreProducts(slug)` — the Storefront API (`FOURTHWALL_STOREFRONT_TOKEN`, read-only): up to
   12 products per category (name, price, image, product link), so new/changed products appear
   automatically.

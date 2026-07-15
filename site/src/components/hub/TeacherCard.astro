@@ -5,7 +5,8 @@
    Reads the class's teacherNote doc (same source as the first-visit welcome
    modal — photo, name, role, email are already board-editable there, so this
    card costs the Studio nothing new). Renders nothing when no note exists or
-   it has no name — designed absence. The photo ring rides the class color.
+   it has no name — designed absence. The photo ring rides the class color; when
+   the note has no headshot the card shows a class-colored icon instead.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';

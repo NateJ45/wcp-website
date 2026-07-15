@@ -8,14 +8,14 @@
      - getStoreCollections() → the store's categories, shown as a CSS-only tab
        row (radio inputs + :has() — no JS, so it works inside the server
        island). Pick a category and its products swap in.
-     - getStoreProducts(slug) → up to 12 products per category, in a flickable
-       scroll-snap carousel (swipe / drag through them; the next tile peeks to
-       signal there's more).
-   Falls back to the Board-curated Site Settings tiles (storeProducts) as a
-   single "Everything" tab if the API is unavailable, and shows a "supporting
-   our co-op" sales stat (aggregate order totals, no PII). Rendered as a server
-   island (see index.astro) so its fetches never block the dashboard. Renders
-   nothing without a store URL. Motion is reduced-motion-safe.
+     - getStoreProducts(slug) → up to 12 products per category, in a carousel
+       with prev/next arrows (hub-store.ts; the native scrollbar is hidden, the
+       next tile peeks). "Featured" leads and is the default-open tab.
+   Falls back to the whole catalog, or the Board-curated Site Settings tiles, as
+   a single rail if no collections come back, and shows a "supporting our co-op"
+   sales stat (aggregate order totals, no PII). Rendered as a server island (see
+   index.astro) so its fetches never block the dashboard. Renders nothing
+   without a store URL. Motion is reduced-motion-safe.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { getStoreProducts, getStoreCollections, getMerchStats } from '@/lib/fourthwall';
@@ -41,21 +41,26 @@ const blurb =
 
 // Categories + their products + the sales stat, all fetched CONCURRENTLY (every
 // call cached with its own timeout + graceful fallback, so none stalls the card).
-const collections = await getStoreCollections(4);
-const catDefs = [{ slug: 'all', title: 'Everything' }, ...collections];
+// Real store collections only (no synthetic "Everything"); "Featured" leads and
+// is the default-open tab.
+const collections = await getStoreCollections(5);
+const catDefs = [...collections].sort(
+  (a, b) => (/featured/i.test(a.title) ? 0 : 1) - (/featured/i.test(b.title) ? 0 : 1),
+);
 const [productsByCat, stats] = await Promise.all([
   Promise.all(catDefs.map((c) => getStoreProducts(c.slug, 12))),
   getMerchStats(),
 ]);
 
-// One tab per category that actually has products. If the live catalog is
-// unavailable, fall back to the Board-curated tiles as a single "Everything" tab.
+// One tab per category that actually has products. If no live collections come
+// back, fall back to the whole catalog (or the Board-curated tiles) as one rail.
 let tabs: { slug: string; title: string; products: Product[] }[] = catDefs
   .map((c, i) => ({ slug: c.slug, title: c.title, products: productsByCat[i] as Product[] }))
   .filter((t) => t.products.length > 0);
 if (!tabs.length) {
-  const curated = (products ?? []).filter((p) => p?.url && p?.image).slice(0, 12);
-  if (curated.length) tabs = [{ slug: 'all', title: 'Everything', products: curated }];
+  const live = await getStoreProducts('all', 12);
+  const base = live.length ? live : (products ?? []).filter((p) => p?.url && p?.image).slice(0, 12);
+  if (base.length) tabs = [{ slug: 'all', title: 'Shop', products: base }];
 }
 const hasTabs = tabs.length > 1;
 
@@ -64,9 +69,11 @@ const hasTabs = tabs.length > 1;
 const panelCss = hasTabs
   ? '.wcp-store-panel{display:none}\n' +
     tabs
-      .map((_, i) => `.wcp-store-tabs:has(#wcp-cat-${i}:checked) [data-panel="${i}"]{display:flex}`)
+      .map(
+        (_, i) => `.wcp-store-tabs:has(#wcp-cat-${i}:checked) [data-panel="${i}"]{display:block}`,
+      )
       .join('\n')
-  : '.wcp-store-panel{display:flex}';
+  : '.wcp-store-panel{display:block}';
 
 const salesLine =
   stats && stats.orderCount > 0
@@ -174,40 +181,59 @@ const salesLine =
 
             <div class="wcp-store-panels relative">
               {tabs.map((t, i) => (
-                <ul
-                  class="wcp-store-panel wcp-store-rail -mx-1 gap-3 overflow-x-auto px-1 pb-2"
-                  data-panel={i}
-                >
-                  {t.products.map((p) => (
-                    <li class="w-36 shrink-0 sm:w-40">
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noopener"
-                        class="wcp-store-tile group block overflow-hidden rounded-2xl bg-white text-navy shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0"
-                      >
-                        <span class="block aspect-square overflow-hidden bg-grey">
-                          <img
-                            src={p.image}
-                            alt={p.title ?? 'Store product'}
-                            loading="lazy"
-                            width="200"
-                            height="200"
-                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100"
-                          />
-                        </span>
-                        <span class="flex items-center justify-between gap-2 px-3 py-2">
-                          <span class="truncate text-xs font-bold">{p.title}</span>
-                          {p.price && (
-                            <span class="shrink-0 text-xs font-extrabold text-sky-ink">
-                              {p.price}
-                            </span>
-                          )}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <div class="wcp-store-panel relative" data-panel={i}>
+                  <ul class="wcp-store-rail -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+                    {t.products.map((p) => (
+                      <li class="w-36 shrink-0 sm:w-40">
+                        <a
+                          href={p.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="wcp-store-tile group block overflow-hidden rounded-2xl bg-white text-navy shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0"
+                        >
+                          <span class="block aspect-square overflow-hidden bg-grey">
+                            <img
+                              src={p.image}
+                              alt={p.title ?? 'Store product'}
+                              loading="lazy"
+                              width="200"
+                              height="200"
+                              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100"
+                            />
+                          </span>
+                          <span class="flex items-center justify-between gap-2 px-3 py-2">
+                            <span class="truncate text-xs font-bold">{p.title}</span>
+                            {p.price && (
+                              <span class="shrink-0 text-xs font-extrabold text-sky-ink">
+                                {p.price}
+                              </span>
+                            )}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  {/* Prev/next arrows (JS-wired, desktop only — touch users swipe).
+                      hub-store.ts hides the native scrollbar and toggles these. */}
+                  <button
+                    type="button"
+                    data-store-arrow="-1"
+                    aria-label="Scroll to previous products"
+                    class="wcp-store-arrow wcp-store-arrow--prev"
+                    hidden
+                  >
+                    <Icon name="arrow-right" class="h-4 w-4 rotate-180" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    data-store-arrow="1"
+                    aria-label="Scroll to more products"
+                    class="wcp-store-arrow wcp-store-arrow--next"
+                    hidden
+                  >
+                    <Icon name="arrow-right" class="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -255,16 +281,14 @@ const salesLine =
   .wcp-store-tabrow::-webkit-scrollbar {
     display: none;
   }
-  /* Flickable product rail: snap points, gentle edge fade so the last tile
-     hints "there's more" without a hard cut, and an on-brand slim scrollbar
-     (translucent white on the navy card) in place of the chunky OS default. */
+  /* Flickable product rail: snap points. Without JS it keeps an on-brand slim
+     scrollbar (translucent white on the navy card); hub-store.ts adds
+     `wcp-rail-js` to hide it and drive the prev/next arrows instead. */
   .wcp-store-rail {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.12);
-    -webkit-mask-image: linear-gradient(to right, #000 94%, transparent);
-    mask-image: linear-gradient(to right, #000 94%, transparent);
   }
   .wcp-store-rail > li {
     scroll-snap-align: start;
@@ -282,6 +306,48 @@ const salesLine =
   }
   .wcp-store-rail::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.65);
+  }
+  .wcp-store-rail.wcp-rail-js {
+    scrollbar-width: none;
+  }
+  .wcp-store-rail.wcp-rail-js::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Prev/next carousel arrows — white pills, navy chevron, amber on hover.
+     Desktop only (touch users swipe); JS toggles [hidden] at each end. */
+  .wcp-store-arrow {
+    position: absolute;
+    top: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 9999px;
+    background: #fff;
+    color: var(--color-navy);
+    box-shadow: 0 6px 16px rgba(11, 58, 90, 0.35);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+    z-index: 2;
+  }
+  .wcp-store-arrow--prev {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  .wcp-store-arrow--next {
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+  .wcp-store-arrow:hover {
+    background: var(--color-amber);
+  }
+  @media (min-width: 640px) {
+    .wcp-store-arrow:not([hidden]) {
+      display: flex;
+    }
   }
 
   /* Slow diagonal shine sweeping across the panel. */
