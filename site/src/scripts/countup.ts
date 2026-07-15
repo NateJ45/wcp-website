@@ -10,15 +10,16 @@
 // the top of each page-load) and rebuilt for the newly swapped-in page.
 //
 // Formatting rides optional data- attributes so a value can count up while
-// keeping its shape — data-prefix ("$"), data-suffix ("%"), data-decimals, and
-// data-group (thousands separators). All optional: with none set (StatBlock),
-// the behavior is the plain integer/one-decimal count-up it always was.
+// keeping its shape — data-prefix ("$"), data-suffix ("%"), data-decimals,
+// data-group (thousands separators), and data-duration (ms, to sync with a
+// paired animation like HubRing's fill). All optional: with none set
+// (StatBlock), the behavior is the plain 1600ms integer/one-decimal count-up it
+// always was.
 // ============================================================================
 import { onPageLoad, onBeforeSwap } from './_page-load';
 import { formatCount, type CountFormat } from '@/lib/count-format';
 
-function animateTo(el: HTMLElement, target: number, fmt: CountFormat) {
-  const duration = 1600;
+function animateTo(el: HTMLElement, target: number, fmt: CountFormat, duration: number) {
   let startTime: number | null = null;
 
   function step(now: number) {
@@ -66,8 +67,9 @@ function init() {
             decimals,
             group: el.dataset.group !== undefined,
           };
+          const duration = el.dataset.duration !== undefined ? Number(el.dataset.duration) : 1600;
           el.textContent = formatCount(0, fmt);
-          animateTo(el, target, fmt);
+          animateTo(el, target, fmt, duration > 0 ? duration : 1600);
         }
         io?.unobserve(el);
       }

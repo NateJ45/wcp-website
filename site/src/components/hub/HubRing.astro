@@ -33,6 +33,13 @@ interface Props {
   /** text-* color class for the fill stroke (AA: use -ink shades on white). */
   color?: string;
   tone?: 'card' | 'navy';
+  /**
+   * Count the center percentage up from 0 in step with the fill sweep. On by
+   * default, but ONLY applied to the auto "NN%" center — a custom `centerText`
+   * (which may not be a plain number) is always rendered as-is. Reduced-motion
+   * users see the final percentage, no motion.
+   */
+  countUp?: boolean;
   class?: string;
 }
 const {
@@ -45,10 +52,14 @@ const {
   size = 'md',
   color = 'text-sky-ink dark:text-sky',
   tone = 'card',
+  countUp = true,
   class: className,
 } = Astro.props;
 
 const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((value / max) * 100))) : 0;
+// Only the auto percentage is safe to count up (a custom centerText may be
+// non-numeric); duration matches the 900ms wcp-ring-fill sweep below.
+const animateCenter = countUp && centerText === undefined;
 // r chosen so circumference = 100 (2πr = 100): dasharray maps 1:1 to percent.
 const R = 15.9155;
 const dims = size === 'sm' ? 'h-14 w-14' : 'h-20 w-20';
@@ -94,7 +105,10 @@ const onNavy = tone === 'navy';
         'font-display tabular-nums',
         size === 'sm' ? 'text-xs' : 'text-sm',
         onNavy ? 'text-white' : 'text-heading',
-      )}>{center}</span
+      )}
+      {...animateCenter
+        ? { 'data-countup': '', 'data-count': pct, 'data-suffix': '%', 'data-duration': '900' }
+        : {}}>{center}</span
     >
     {
       centerSub && (
@@ -123,3 +137,11 @@ const onNavy = tone === 'navy';
     }
   }
 </style>
+
+{
+  /* Colocated like StatBlock/HubStat: ships the count-up module only on pages
+     with a ring, and self-noops when the center isn't a counted percentage. */
+}
+<script>
+  import '@/scripts/countup';
+</script>
