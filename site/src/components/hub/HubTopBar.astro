@@ -29,6 +29,7 @@ import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback, helperScheduleFallback } from '@/data/hub/live-links';
+import { payUrl } from '@/data/classes';
 import { site } from '@/data/site';
 // Pre-sized webp, NOT the 9000x6000 original via astro:assets <Image>: hub
 // pages are SSR, and the Cloudflare adapter can't resize at request time, so
@@ -124,22 +125,40 @@ try {
   nextEvent = null;
 }
 
-// Per-class helper-schedule URLs, so the "Helper schedule" quick link can
-// personalize to the device's class (hub-quicklinks.ts, reading wcp-my-classes).
-let helperMap: Record<string, string> = {};
+// Per-class helper-schedule + pay-tuition URLs, so the "Helper schedule" and
+// "Pay tuition" quick links personalize to the device's class(es)
+// (hub-quicklinks.ts, reading wcp-my-classes): one class → a direct link, two
+// classes → a small dropdown with a link per class.
+const helperMap: Record<string, string> = {};
+const payMap: Record<string, string> = {};
 try {
-  const rows = await sanityFetch<{ slug?: string; helperScheduleUrl?: string }[]>(
-    `*[_type == "class"]{ "slug": slug.current, helperScheduleUrl }`,
+  const rows = await sanityFetch<{ slug?: string; helperScheduleUrl?: string; payId?: string }[]>(
+    `*[_type == "class"]{ "slug": slug.current, helperScheduleUrl, payId }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
   );
   for (const r of rows ?? []) {
-    const url = r.slug ? r.helperScheduleUrl || helperScheduleFallback[r.slug] : '';
-    if (r.slug && url) helperMap[r.slug] = url;
+    if (!r.slug) continue;
+    const helper = r.helperScheduleUrl || helperScheduleFallback[r.slug];
+    if (helper) helperMap[r.slug] = helper;
+    if (r.payId) payMap[r.slug] = payUrl(r.payId);
   }
 } catch {
-  helperMap = {};
+  /* leave both maps empty — the quick links fall back to their default hrefs */
 }
+// Ordered class labels for the multi-class dropdowns.
+const CLASS_LABELS: Record<string, string> = {
+  twos: 'Twos',
+  threes: 'Threes',
+  'pre-k-am': 'Pre-K AM',
+  'pre-k-pm': 'Pre-K PM',
+};
+const linksFor = (map: Record<string, string>) =>
+  Object.keys(CLASS_LABELS)
+    .filter((s) => map[s])
+    .map((s) => ({ slug: s, label: CLASS_LABELS[s], url: map[s] }));
+const helperLinks = linksFor(helperMap);
+const payLinks = linksFor(payMap);
 
 const nextEventLabel = nextEvent
   ? `Next: ${fmtEventMonth(nextEvent)} ${fmtEventDay(nextEvent)}`
@@ -168,9 +187,13 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         the device's class. */
     }
     <nav aria-label="Quick links" class="flex items-center gap-0.5">
+      {
+        /* Helper schedule — direct link for 0-1 classes, dropdown for 2+
+          (hub-quicklinks.ts swaps them from wcp-my-classes). */
+      }
       <a
-        data-quick-helper
-        data-helper-map={JSON.stringify(helperMap)}
+        data-quick-multi="helper"
+        data-map={JSON.stringify(helperMap)}
         href="/family-hub/coop-jobs"
         class="hub-quick"
         title="Your helper schedule"
@@ -178,10 +201,74 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         <Icon name="clipboard-list" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">Helper schedule</span>
       </a>
-      <a href="/family-hub/tuition" class="hub-quick" title="Pay tuition">
+      <details class="relative" data-quick-multi-menu="helper" data-hub-menu hidden>
+        <summary
+          class="hub-quick cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+          title="Your helper schedules"
+        >
+          <Icon name="clipboard-list" class="h-4 w-4 shrink-0" />
+          <span class="sr-only xl:not-sr-only xl:inline">Helper schedules</span>
+        </summary>
+        <div
+          class="absolute top-full left-0 z-40 mt-1 w-60 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+        >
+          {
+            helperLinks.map((l) => (
+              <a
+                data-multi-class={l.slug}
+                href={l.url}
+                target="_blank"
+                rel="noopener"
+                hidden
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
+              >
+                <Icon name="clipboard-list" class="h-4 w-4 shrink-0 text-sky-ink" />
+                {l.label} helper schedule
+              </a>
+            ))
+          }
+        </div>
+      </details>
+
+      {/* Pay tuition — same pattern: one class → direct pay link, two → dropdown. */}
+      <a
+        data-quick-multi="tuition"
+        data-map={JSON.stringify(payMap)}
+        href="/family-hub/tuition"
+        class="hub-quick"
+        title="Pay tuition"
+      >
         <Icon name="circle-dollar-sign" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">Pay tuition</span>
       </a>
+      <details class="relative" data-quick-multi-menu="tuition" data-hub-menu hidden>
+        <summary
+          class="hub-quick cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+          title="Pay tuition"
+        >
+          <Icon name="circle-dollar-sign" class="h-4 w-4 shrink-0" />
+          <span class="sr-only xl:not-sr-only xl:inline">Pay tuition</span>
+        </summary>
+        <div
+          class="absolute top-full left-0 z-40 mt-1 w-60 rounded-[var(--radius)] border border-border bg-white p-2 shadow-lg dark:bg-surface"
+        >
+          {
+            payLinks.map((l) => (
+              <a
+                data-multi-class={l.slug}
+                href={l.url}
+                target="_blank"
+                rel="noopener"
+                hidden
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-heading no-underline hover:bg-grey dark:hover:bg-white/5"
+              >
+                <Icon name="circle-dollar-sign" class="h-4 w-4 shrink-0 text-sky-ink" />
+                Pay {l.label} tuition
+              </a>
+            ))
+          }
+        </div>
+      </details>
       <a href="/family-hub/calendar" class="hub-quick" title={nextEventTitle}>
         <Icon name="calendar-days" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">{nextEventLabel}</span>
