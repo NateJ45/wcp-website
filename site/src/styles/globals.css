@@ -437,6 +437,53 @@
   background-color: transparent;
 }
 
+/* ----------------------------------------------------------------------------
+   Hub "prose" skin — Board-edited page-builder sections rendered as APP content
+   ----------------------------------------------------------------------------
+   The class handbooks / Getting Started render their body through the SAME
+   marketing sections the public site uses (Section + SectionHeader). That
+   register — centered eyebrow headers, hero-scale display type, alternating
+   full-bleed color bands, 2xl padding — reads as "a web page dropped into the
+   app". Inside .hub-prose (set by HubSectionedBody) we re-skin them so the
+   handbook reads as one continuous app surface: headers left-align, the
+   marketing eyebrow drops, type shrinks to app scale, padding tightens, and
+   the page-surface bands go transparent (only a navy band survives, contained
+   as a rounded card). Scoped to .hub-prose, so the public site is untouched.
+   These rules are intentionally unlayered so they win over Tailwind's utility
+   layer without !important. */
+.hub-prose .wcp-section {
+  padding-block: clamp(1.75rem, 1rem + 3vw, 2.75rem);
+}
+.hub-prose .wcp-section.bg-white,
+.hub-prose .wcp-section.bg-cream,
+.hub-prose .wcp-section.bg-grey {
+  background-color: transparent;
+}
+.hub-prose .wcp-section.bg-navy {
+  border-radius: var(--radius);
+}
+.hub-prose .wcp-seam {
+  display: none;
+}
+.hub-prose .wcp-section-header {
+  margin-inline: 0;
+  max-width: 46rem;
+  text-align: left;
+}
+.hub-prose .wcp-section-header .wcp-eyebrow {
+  display: none;
+}
+.hub-prose .wcp-section-header :is(h1, h2, h3) {
+  font-size: clamp(1.35rem, 1rem + 1.3vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.hub-prose .wcp-section-header > p {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
 /* Public paper texture (2026-07-14 site-elevation) ----------------------------
    The same construction-paper GRAIN + hand-drawn DOODLES the hub uses, brought
    to the marketing site's warm bands for the tactile, handmade feel that

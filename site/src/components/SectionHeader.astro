@@ -36,7 +36,11 @@ const Heading = as;
 ---
 
 <div
-  class={cn('max-w-2xl', align === 'center' ? 'mx-auto text-center' : 'text-left', className)}
+  class={cn(
+    'wcp-section-header max-w-2xl',
+    align === 'center' ? 'mx-auto text-center' : 'text-left',
+    className,
+  )}
   data-reveal
 >
   {eyebrow && <Eyebrow tone={eyebrowTone}>{eyebrow}</Eyebrow>}

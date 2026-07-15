@@ -24,6 +24,12 @@ const toneClass: Record<string, string> = {
 };
 ---
 
-<p class={cn('mb-2 text-sm font-bold tracking-[0.14em] uppercase', toneClass[tone], className)}>
+<p
+  class={cn(
+    'wcp-eyebrow mb-2 text-sm font-bold tracking-[0.14em] uppercase',
+    toneClass[tone],
+    className,
+  )}
+>
   <slot />
 </p>

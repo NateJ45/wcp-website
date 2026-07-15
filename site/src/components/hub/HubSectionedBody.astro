@@ -26,7 +26,11 @@ const tocCount = (sections ?? []).filter((s) => s?.header?.title && s?._key).len
 
 <div class:list={[tocCount > 1 && 'hub-toc-grid']}>
   <HubSectionIndex sections={sections} label={label} />
-  <div class="min-w-0">
+  {
+    /* `hub-prose` re-skins the shared marketing sections as app content:
+      left-aligned, denser, on one surface (see globals.css). */
+  }
+  <div class="hub-prose min-w-0">
     <SectionRenderer sections={sections} site={site} />
   </div>
 </div>

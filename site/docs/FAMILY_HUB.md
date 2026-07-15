@@ -405,6 +405,17 @@ writes the identical sections to both `hubPage-twos` and `hubPage-threes`). `/fa
 and `/family-hub/threes` 301-redirect to the combined page; the nav + home class cards point
 there. Re-running a seed RESETS that page to its baseline; day-to-day edits happen in the Studio.
 
+The handbook body (and Getting Started) renders through `HubSectionedBody` → the shared
+`SectionRenderer`, i.e. the SAME page-builder sections the public site uses. Their marketing
+register (centered eyebrow headers, hero-scale type, alternating full-bleed bands) would read as
+"a web page dropped into the app," so `HubSectionedBody` wraps them in `.hub-prose` and a scoped
+skin in `globals.css` re-skins them as app content: headers left-align, the eyebrow kicker drops,
+type shrinks to app scale, padding tightens, and the page-surface bands go transparent so the
+whole handbook reads as one continuous surface (a navy band survives as a rounded card). The skin
+hangs off stable hooks (`wcp-section` / `wcp-section-header` / `wcp-eyebrow` / `wcp-seam`) the
+shared components always emit; nothing targets them on the public site, so it stays untouched.
+Volunteers edit the sections exactly as before — only the hub rendering changes.
+
 Each class page can also carry the teacher's **original handbook PDF** for download: the
 `hubPage.handbookFile` field (a Sanity file) drives a "Download the handbook (PDF)" button in
 the page header (`HUB_PAGE_QUERY` projects it as `handbookUrl`; the button href appends `?dl=`
