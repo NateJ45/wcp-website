@@ -97,6 +97,40 @@ export async function getStoreProducts(collection = 'all', max = 8): Promise<Sto
   }
 }
 
+export interface StoreCollection {
+  slug: string;
+  title: string;
+}
+
+/** The store's collections (categories), for the hub store card's tab row.
+ *  Empty on any failure/missing token — the card then shows a single rail. */
+export async function getStoreCollections(max = 4): Promise<StoreCollection[]> {
+  const token = env.FOURTHWALL_STOREFRONT_TOKEN;
+  if (!token) return [];
+  try {
+    return await cached(
+      'fw:collections',
+      900_000, // 15 min fresh
+      async () => {
+        const res = await fetch(`${STOREFRONT}/collections?storefront_token=${token}`, {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) throw new Error(`fw collections ${res.status}`);
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const items: any[] = Array.isArray(data?.results) ? data.results : [];
+        return items
+          .map((c) => ({ slug: String(c?.slug ?? ''), title: decodeEntities(c?.name ?? '') }))
+          .filter((c) => c.slug && c.title)
+          .slice(0, max);
+      },
+      { swrMs: 3_600_000 }, // serve stale up to 1h while refreshing
+    );
+  } catch {
+    return [];
+  }
+}
+
 export interface MerchStats {
   grossSales: number;
   donations: number;

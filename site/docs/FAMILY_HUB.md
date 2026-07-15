@@ -188,17 +188,17 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------- |
-| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; click-to-load)     |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)          |
-| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes) |
-| Documents                     | `hubDocument` docs                                                           |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)          |
-| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)   |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton           |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only              |
-| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)   |
+| Section                       | Live data source                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; auto-loads on idle) |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)           |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)  |
+| Documents                     | `hubDocument` docs                                                            |
+| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)           |
+| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)    |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton            |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only               |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)    |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -413,14 +413,20 @@ Erin's PDF, uploaded and wired by `node scripts/seed-handbook-files.mjs` (idempo
 asset by filename); Pre-K's button turns on once Mrs. Lisa's PDF is uploaded to that field in
 the Studio. No button shows when the field is empty.
 
-**The store card** (`StoreCard.astro`) sits at the bottom of the hub home: a navy, doodle-dusted
-banner (shine sweep + floating shapes, all reduced-motion-safe) linking to the merch store, with
-a row of clickable product tiles and a "supporting our co-op" sales stat. It's a **server island**
-so its external fetches never block the dashboard. Product tiles + the stat come **live from
-Fourthwall** via `src/lib/fourthwall.ts` (cached, SWR):
+**The store card** (`StoreCard.astro`) sits at the bottom of the hub home: a deep, textured navy
+banner (gradient fill, brand glows, a dot grid, doodles, a shine sweep + floating shapes, all
+reduced-motion-safe) linking to the merch store, with a **category tab row** (flick between
+collections) over a **flickable product carousel** (scroll-snap, the next tile peeks) and a
+"supporting our co-op" sales stat. The tabs are pure CSS (radio inputs + `:has()`) so they work
+with **no JS inside the server island** — the card is a `server:defer` island so its external
+fetches never block the dashboard. Categories, products, and the stat come **live from Fourthwall**
+via `src/lib/fourthwall.ts` (cached, SWR):
 
-- `getStoreProducts()` — the Storefront API (`FOURTHWALL_STOREFRONT_TOKEN`, read-only): the live
-  catalog (name, price, image, product link), so new/changed products appear automatically.
+- `getStoreCollections()` — the Storefront API: the store's categories, one tab each (plus an
+  "Everything" tab). Empty categories are dropped; if none come back the card shows a single rail.
+- `getStoreProducts(slug)` — the Storefront API (`FOURTHWALL_STOREFRONT_TOKEN`, read-only): up to
+  12 products per category (name, price, image, product link), so new/changed products appear
+  automatically.
 - `getMerchStats()` — the Open API (`FOURTHWALL_API_USER` / `_PASSWORD`, basic auth, SUPER-ADMIN):
   AGGREGATE order totals only (gross sales + order count; no customer PII ever read out). Note
   Fourthwall's API exposes no profit figure, so this is gross **sales**, not a "raised" number.
@@ -435,7 +441,7 @@ unavailable the stat hides. The card hides entirely without a `storeUrl`.
 | Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Landing                           | Quick-link nav grids                                                                         | —                                                  |
-| Calendar (month-separated agenda) | Click-to-load Google Calendar embed + event legend                                           | `googleCalendarId` in Site Settings                |
+| Calendar (month-separated agenda) | Google Calendar embed (auto-loads on idle, non-blocking) + event legend                      | `googleCalendarId` in Site Settings                |
 | Co-op Jobs                        | Role descriptions + tiered org chart                                                         | `coopRole` docs (holders: `org-holders.ts`)        |
 | Documents                         | Document library + required-forms callout                                                    | `hubDocument` docs                                 |
 | Tuition                           | Pay-card + fee-card layout, payment FAQ                                                      | `class` docs + `feeSchedule` (rates, buttons, FAQ) |

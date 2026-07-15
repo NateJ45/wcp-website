@@ -323,6 +323,14 @@
     color: var(--color-heading);
     line-height: 1.12;
     text-wrap: balance;
+    /* A long single word in a narrow card (e.g. "ENRICHMENT" in a page-builder
+       card column) would otherwise hard-break mid-character via the inherited
+       body `overflow-wrap: break-word`. Hyphenation gives the browser a clean
+       break point to prefer first (html lang="en"), so headings break at a
+       hyphen, not "ENRICHMEN / T". break-word stays the last-resort safety net
+       for truly unbreakable tokens, keeping 320px reflow safe. */
+    -webkit-hyphens: auto;
+    hyphens: auto;
   }
   h1 {
     font-size: var(--text-h1);

@@ -2,16 +2,23 @@
 /* ============================================================================
    StoreCard — the flair-forward "official store" panel on the hub home
    ============================================================================
-   A navy, doodle-dusted banner at the bottom of the Family Hub dashboard that
-   links out to the merch store, with a row of clickable product tiles pulled
-   LIVE from Fourthwall (src/lib/fourthwall.ts) — falling back to the
-   Board-curated Site Settings tiles (storeProducts) if the API is unavailable —
-   plus a "supporting our co-op" sales stat (aggregate order totals, no PII).
-   Rendered as a server island (see index.astro) so its fetches never block the
-   dashboard. Renders nothing without a store URL. Motion is reduced-motion-safe.
+   A deep, textured navy banner at the bottom of the Family Hub dashboard that
+   links out to the merch store. It pulls the catalog LIVE from Fourthwall
+   (src/lib/fourthwall.ts):
+     - getStoreCollections() → the store's categories, shown as a CSS-only tab
+       row (radio inputs + :has() — no JS, so it works inside the server
+       island). Pick a category and its products swap in.
+     - getStoreProducts(slug) → up to 12 products per category, in a flickable
+       scroll-snap carousel (swipe / drag through them; the next tile peeks to
+       signal there's more).
+   Falls back to the Board-curated Site Settings tiles (storeProducts) as a
+   single "Everything" tab if the API is unavailable, and shows a "supporting
+   our co-op" sales stat (aggregate order totals, no PII). Rendered as a server
+   island (see index.astro) so its fetches never block the dashboard. Renders
+   nothing without a store URL. Motion is reduced-motion-safe.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { getStoreProducts, getMerchStats } from '@/lib/fourthwall';
+import { getStoreProducts, getStoreCollections, getMerchStats } from '@/lib/fourthwall';
 
 interface Product {
   title?: string;
@@ -32,13 +39,35 @@ const blurb =
   tagline ||
   'Every purchase supports our co-op. Tees, hoodies, hats, and more, all in West Chester Preschool colors.';
 
-// Live catalog + the sales stat, fetched CONCURRENTLY (both cached, each with
-// its own timeout + graceful fallback so neither stalls the card).
-const [live, stats] = await Promise.all([getStoreProducts('all', 8), getMerchStats()]);
+// Categories + their products + the sales stat, all fetched CONCURRENTLY (every
+// call cached with its own timeout + graceful fallback, so none stalls the card).
+const collections = await getStoreCollections(4);
+const catDefs = [{ slug: 'all', title: 'Everything' }, ...collections];
+const [productsByCat, stats] = await Promise.all([
+  Promise.all(catDefs.map((c) => getStoreProducts(c.slug, 12))),
+  getMerchStats(),
+]);
 
-// Prefer the LIVE Fourthwall catalog; fall back to the Board-curated tiles
-// (Site Settings → storeProducts) if the API is unavailable or returns nothing.
-const tiles = (live.length ? live : (products ?? []).filter((p) => p?.url && p?.image)).slice(0, 8);
+// One tab per category that actually has products. If the live catalog is
+// unavailable, fall back to the Board-curated tiles as a single "Everything" tab.
+let tabs: { slug: string; title: string; products: Product[] }[] = catDefs
+  .map((c, i) => ({ slug: c.slug, title: c.title, products: productsByCat[i] as Product[] }))
+  .filter((t) => t.products.length > 0);
+if (!tabs.length) {
+  const curated = (products ?? []).filter((p) => p?.url && p?.image).slice(0, 12);
+  if (curated.length) tabs = [{ slug: 'all', title: 'Everything', products: curated }];
+}
+const hasTabs = tabs.length > 1;
+
+// CSS-only category switching: hide every panel, show the one whose radio is
+// checked (:has on the wrapper). One tab → always show the single panel.
+const panelCss = hasTabs
+  ? '.wcp-store-panel{display:none}\n' +
+    tabs
+      .map((_, i) => `.wcp-store-tabs:has(#wcp-cat-${i}:checked) [data-panel="${i}"]{display:flex}`)
+      .join('\n')
+  : '.wcp-store-panel{display:flex}';
+
 const salesLine =
   stats && stats.orderCount > 0
     ? `${stats.orderCount} order${stats.orderCount === 1 ? '' : 's'} · $${stats.grossSales.toLocaleString()} in WCP gear so far`
@@ -46,27 +75,32 @@ const salesLine =
 ---
 
 {
-  url && (
+  url && tabs.length > 0 && (
     <section
       aria-labelledby="hub-store-heading"
       class="mt-4"
       data-reveal
       style="--reveal-delay: 60ms"
     >
-      <div class="wcp-store relative overflow-hidden rounded-[var(--radius)] bg-navy text-white shadow-sm">
-        {/* Decorative: brand glows + a slow shine sweep + floating doodles. */}
+      <div class="wcp-store relative overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-navy via-navy to-[#0d4d78] text-white shadow-[0_24px_60px_-24px_rgba(11,58,90,0.65)] ring-1 ring-white/10">
+        {/* Decorative depth stack (all aria-hidden): brand glows, a lit-from-
+            above highlight, a dot grid, the hand-drawn doodle tile, a slow
+            shine sweep, and a couple of floating brand shapes. */}
         <div
-          class="wcp-glow wcp-glow-amber -top-24 -right-10 h-72 w-96 opacity-40"
+          class="wcp-glow wcp-glow-amber -top-24 -right-10 h-72 w-96 opacity-50"
           aria-hidden="true"
         />
         <div
-          class="wcp-glow wcp-glow-sky -bottom-28 -left-10 h-72 w-96 opacity-40"
+          class="wcp-glow wcp-glow-sky -bottom-28 -left-10 h-72 w-96 opacity-50"
           aria-hidden="true"
         />
-        <span class="wcp-store-shine" aria-hidden="true" />
-        {/* Hand-drawn doodle texture (same tile as the hub canvas, light-on-dark). */}
+        <span
+          class="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/10"
+          aria-hidden="true"
+        />
+        <span class="wcp-store-dots pointer-events-none absolute inset-0" aria-hidden="true" />
         <span class="wcp-store-doodles pointer-events-none absolute inset-0" aria-hidden="true" />
-        {/* A couple of floating brand shapes for life. */}
+        <span class="wcp-store-shine pointer-events-none" aria-hidden="true" />
         <Icon
           name="star"
           class="wcp-store-float absolute top-5 right-6 h-6 w-6 text-amber/50"
@@ -78,7 +112,7 @@ const salesLine =
           aria-hidden="true"
         />
 
-        <div class="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-center">
+        <div class="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:items-center">
           {/* Pitch + CTA */}
           <div>
             <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-extrabold tracking-wide uppercase">
@@ -113,45 +147,127 @@ const salesLine =
             </a>
           </div>
 
-          {/* Product tiles */}
-          {tiles.length > 0 && (
-            <ul class="wcp-store-rail -mx-1 flex gap-3 overflow-x-auto px-1 pb-1 lg:grid lg:grid-cols-4 lg:overflow-visible">
-              {tiles.map((p) => (
-                <li class="w-36 shrink-0 lg:w-auto">
-                  <a
-                    href={p.url}
-                    target="_blank"
-                    rel="noopener"
-                    class="wcp-store-tile group block overflow-hidden rounded-2xl bg-white text-navy shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg motion-reduce:hover:translate-y-0"
-                  >
-                    <span class="block aspect-square overflow-hidden bg-grey">
-                      <img
-                        src={p.image}
-                        alt={p.title ?? 'Store product'}
-                        loading="lazy"
-                        width="200"
-                        height="200"
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100"
-                      />
-                    </span>
-                    <span class="flex items-center justify-between gap-2 px-3 py-2">
-                      <span class="truncate text-xs font-bold">{p.title}</span>
-                      {p.price && (
-                        <span class="shrink-0 text-xs font-extrabold text-sky-ink">{p.price}</span>
-                      )}
-                    </span>
-                  </a>
-                </li>
+          {/* Category tabs + flickable product carousel */}
+          <div class="wcp-store-tabs min-w-0">
+            {hasTabs && (
+              <fieldset class="wcp-store-tabrow -mx-1 flex gap-2 overflow-x-auto px-1 pb-3">
+                <legend class="sr-only">Shop by category</legend>
+                {tabs.map((t, i) => (
+                  <span class="contents">
+                    <input
+                      type="radio"
+                      name="wcp-store-cat"
+                      id={`wcp-cat-${i}`}
+                      class="wcp-store-radio"
+                      checked={i === 0}
+                    />
+                    <label
+                      for={`wcp-cat-${i}`}
+                      class="wcp-store-tab shrink-0 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap text-white/90 transition-colors hover:bg-white/20"
+                    >
+                      {t.title}
+                    </label>
+                  </span>
+                ))}
+              </fieldset>
+            )}
+
+            <div class="wcp-store-panels relative">
+              {tabs.map((t, i) => (
+                <ul
+                  class="wcp-store-panel wcp-store-rail -mx-1 gap-3 overflow-x-auto px-1 pb-2"
+                  data-panel={i}
+                >
+                  {t.products.map((p) => (
+                    <li class="w-36 shrink-0 sm:w-40">
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noopener"
+                        class="wcp-store-tile group block overflow-hidden rounded-2xl bg-white text-navy shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0"
+                      >
+                        <span class="block aspect-square overflow-hidden bg-grey">
+                          <img
+                            src={p.image}
+                            alt={p.title ?? 'Store product'}
+                            loading="lazy"
+                            width="200"
+                            height="200"
+                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:group-hover:scale-100"
+                          />
+                        </span>
+                        <span class="flex items-center justify-between gap-2 px-3 py-2">
+                          <span class="truncate text-xs font-bold">{p.title}</span>
+                          {p.price && (
+                            <span class="shrink-0 text-xs font-extrabold text-sky-ink">
+                              {p.price}
+                            </span>
+                          )}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               ))}
-            </ul>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
+{
+  /* CSS-only category switching + flickable-rail mechanics (generated per tab
+    count). is:inline so it stays global and un-scoped — the :has() panel
+    toggle must not pick up Astro's scoping attribute. */
+}
+<style is:inline set:html={panelCss}></style>
+
 <style>
+  /* Hide the radios but keep them focusable (keyboard tabs + :checked state). */
+  .wcp-store-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .wcp-store-tab {
+    cursor: pointer;
+  }
+  /* Active category: solid amber pill, navy text (AA on amber). */
+  .wcp-store-radio:checked + .wcp-store-tab {
+    background: var(--color-amber);
+    color: var(--color-navy);
+  }
+  .wcp-store-radio:focus-visible + .wcp-store-tab {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+  .wcp-store-tabrow {
+    scrollbar-width: none;
+  }
+  .wcp-store-tabrow::-webkit-scrollbar {
+    display: none;
+  }
+  /* Flickable product rail: snap points, thin scrollbar, gentle edge fade so
+     the last tile hints "there's more" without a hard cut. */
+  .wcp-store-rail {
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, #000 94%, transparent);
+    mask-image: linear-gradient(to right, #000 94%, transparent);
+  }
+  .wcp-store-rail > li {
+    scroll-snap-align: start;
+  }
+
   /* Slow diagonal shine sweeping across the panel. */
   .wcp-store-shine {
     position: absolute;
@@ -165,10 +281,18 @@ const salesLine =
     background-size: 250% 100%;
     background-position: 150% 0;
   }
+  /* Fine dot grid — reads as a printed texture under the doodles. */
+  .wcp-store-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.5px);
+    background-size: 22px 22px;
+    opacity: 0.5;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 40%, transparent 85%);
+    mask-image: radial-gradient(ellipse at center, #000 40%, transparent 85%);
+  }
   .wcp-store-doodles {
     background-image: var(--wcp-doodles-dark);
     background-size: 300px;
-    opacity: 0.7;
+    opacity: 0.6;
   }
   @media (prefers-reduced-motion: no-preference) {
     .wcp-store-shine {
@@ -198,9 +322,5 @@ const salesLine =
     50% {
       transform: translateY(-6px) rotate(6deg);
     }
-  }
-  /* Thin, unobtrusive scrollbar on the mobile product rail. */
-  .wcp-store-rail {
-    scrollbar-width: thin;
   }
 </style>

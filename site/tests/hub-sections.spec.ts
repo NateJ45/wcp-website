@@ -44,7 +44,12 @@ for (const route of ROUTES) {
         await page.evaluate((t) => {
           document.documentElement.classList.toggle('dark', t === 'dark');
         }, theme);
-        const results = await new AxeBuilder({ page }).analyze();
+        // Audit OUR markup, not the internals of third-party embeds we don't
+        // control: the Calendar page auto-loads the Google Calendar iframe, and
+        // axe would otherwise descend into Google's own (imperfect) DOM and fail
+        // on ~77 violations we can't fix. This scopes the rule set to our page
+        // without narrowing which rules run.
+        const results = await new AxeBuilder({ page }).exclude('iframe').analyze();
         expect(
           results.violations,
           `[${theme}] ` + results.violations.map((v) => v.id).join(', '),

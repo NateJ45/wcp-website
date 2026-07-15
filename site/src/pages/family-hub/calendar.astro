@@ -235,15 +235,17 @@ const icalUrl = calId
               The full school calendar
             </h2>
             <p class="mt-1 max-w-2xl text-ink-muted">
-              Month view of every dated item. It opens from Google Calendar only when you click, so
-              nothing loads from Google until you ask.
+              Month view of every dated item, straight from the school Google Calendar.
             </p>
             <HubCard class="mt-6 overflow-hidden p-0">
               <div
                 class="relative h-[620px] bg-grey"
                 data-embed-calendar={calEmbedUrl}
+                data-embed-auto
                 data-embed-title="West Chester Preschool calendar"
               >
+                {/* Loading state / no-JS fallback: shown until the embed loads
+                    itself on idle (embeds.ts), or if the family taps to load. */}
                 <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
                   <span
                     class="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white"
@@ -252,10 +254,9 @@ const icalUrl = calId
                     <Icon name="calendar-days" class="h-7 w-7" />
                   </span>
                   <div>
-                    <p class="font-bold text-heading">The WCP school calendar</p>
+                    <p class="font-bold text-heading">Loading the school calendar…</p>
                     <p class="mt-1 text-sm text-ink-muted">
-                      Opens from Google Calendar when you click, so nothing loads from Google until
-                      you ask.
+                      It appears automatically. If it doesn’t, tap below to open it.
                     </p>
                   </div>
                   <button

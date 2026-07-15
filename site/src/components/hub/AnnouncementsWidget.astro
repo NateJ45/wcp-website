@@ -1,7 +1,8 @@
 ---
 /* ============================================================================
    AnnouncementsWidget — pinned + most-recent `update` docs (the same source
-   as the full Updates page). Pinned first, then newest, capped at 3.
+   as the full Updates page). Pinned first, then newest, capped at 6 (enough to
+   fill the card's height beside taller widgets rather than leaving dead space).
    Meeting minutes are `update` docs too (category "minutes") — they belong to
    the Meeting Minutes widget, so they're filtered out here. `coalesce` keeps
    older docs (written before the category field existed) counting as
@@ -24,7 +25,7 @@ try {
   updates = await sanityFetch<UpdateDoc[]>(
     // `showUntil` lets a pinned announcement (e.g. a snow-day notice) drop off
     // the home on its own; it still lives in the full Updates list.
-    `*[_type == "update" && coalesce(category, "announcement") == "announcement" && (!defined(showUntil) || showUntil >= now())] | order(pinned desc, publishedAt desc)[0...3]{ _id, title, publishedAt, pinned, "slug": slug.current }`,
+    `*[_type == "update" && coalesce(category, "announcement") == "announcement" && (!defined(showUntil) || showUntil >= now())] | order(pinned desc, publishedAt desc)[0...6]{ _id, title, publishedAt, pinned, "slug": slug.current }`,
   );
 } catch {
   updates = [];
@@ -40,7 +41,11 @@ const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
   empty={updates.length === 0}
   emptyText="Board and administrator announcements will list here once posted."
 >
-  <ul class="space-y-3">
+  {
+    /* Two columns on sm+ so the wide (col-span-8) home slot fills its width
+      instead of stranding a thin list beside a big empty gap. */
+  }
+  <ul class="grid gap-x-8 gap-y-3 sm:grid-cols-2">
     {
       updates.map((u) => (
         /* data-published feeds the "new since your last visit" pills
