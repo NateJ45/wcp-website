@@ -91,7 +91,7 @@ export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
     // within minutes of the next visit.
     const raw = await cached(
       `calfeed:${feedUrl}`,
-      900_000,
+      1_800_000, // 30 min fresh — the calendar changes ~daily; keeps KV writes low
       async () => {
         const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) throw new Error(`feed ${res.status}`);

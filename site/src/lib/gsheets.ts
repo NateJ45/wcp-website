@@ -21,13 +21,21 @@ interface GvizCell {
 }
 
 /** Fetch one sheet tab's rows as a cell matrix. Throws on any failure.
- *  Cached (see hub-cache.ts): 5 min fresh, then up to an hour of
- *  serve-stale-and-refresh-in-background — a gviz round-trip runs 0.5-1.5s
- *  and treasurer/enrollment sheets change a few times a week at most. */
-export async function fetchSheetRows(sheetId: string, tab: string): Promise<GvizCell[][]> {
+ *  Cached (see hub-cache.ts) with a PER-TAB freshness window, because each
+ *  refresh writes through to the CACHE KV namespace and the free tier allows
+ *  only ~1k writes/day account-wide (see CLAUDE.md's KV write-budget gotcha).
+ *  The budget changes ~monthly, fundraising a few times a week during a
+ *  campaign, availability during enrollment — so the callers pass their own
+ *  ttl/swr rather than sharing one short window. */
+export async function fetchSheetRows(
+  sheetId: string,
+  tab: string,
+  ttlMs = 21_600_000, // 6h default
+  swrMs = 86_400_000, // 24h default
+): Promise<GvizCell[][]> {
   return cached(
     `gviz:${sheetId}:${tab}`,
-    900_000, // 15 min fresh — sheets change a few times/week; keeps KV writes low
+    ttlMs,
     async () => {
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -37,7 +45,7 @@ export async function fetchSheetRows(sheetId: string, tab: string): Promise<Gviz
       const rows: { c?: (GvizCell | null)[] }[] = json?.table?.rows ?? [];
       return rows.map((r) => (r.c ?? []).map((c) => c ?? {}));
     },
-    { swrMs: 3_600_000 },
+    { swrMs },
   );
 }
 
@@ -83,7 +91,8 @@ function monthLabel(raw: unknown): string {
 /** Read the Budget tab. Returns null on any failure (widget shows empty state). */
 export async function getBudgetSnapshot(sheetId: string): Promise<BudgetSnapshot | null> {
   try {
-    const rows = await fetchSheetRows(sheetId, 'Budget');
+    // Budget changes ~monthly — long window keeps KV writes tiny.
+    const rows = await fetchSheetRows(sheetId, 'Budget', 43_200_000, 172_800_000); // 12h fresh, 48h swr
     const kv: Record<string, GvizCell> = {};
     for (const r of rows) {
       const key = cellStr(r[0]);
@@ -140,7 +149,8 @@ const AVAILABILITY_STATUSES = new Set(['open', 'few', 'waitlist', 'full']);
 /** Read the Availability tab. Returns [] on any failure (badges just hide). */
 export async function getAvailability(sheetId: string): Promise<ClassAvailability[]> {
   try {
-    const rows = await fetchSheetRows(sheetId, 'Availability');
+    // Availability shifts during enrollment — keep it the freshest of the sheets.
+    const rows = await fetchSheetRows(sheetId, 'Availability', 3_600_000, 21_600_000); // 1h fresh, 6h swr
     const items: ClassAvailability[] = [];
     for (const r of rows) {
       const slug = cellStr(r[0]).toLowerCase();
