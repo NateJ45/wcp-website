@@ -159,6 +159,7 @@ const weather = await getWeather();
         <a href="/family-hub/calendar" class="wcp-strip-stat">
           <HubStat
             tone="navy"
+            countUp
             value={String(daysToFirstDay)}
             label={`day${daysToFirstDay === 1 ? '' : 's'} 'til school`}
           />
@@ -178,6 +179,7 @@ const weather = await getWeather();
         <a href="/family-hub/directory" class="wcp-strip-stat">
           <HubStat
             tone="navy"
+            countUp
             value={String(familyCount)}
             label={`famil${familyCount === 1 ? 'y' : 'ies'}`}
           />

@@ -105,9 +105,12 @@ the Home dashboard rather than a marketing page stacked in the shell. The patter
 - **The data expression kit** (2026-07-14 app-elevation Track C, all in
   `src/components/hub/`, all server-rendered, zero client libraries): **`HubStat`** (big
   tabular-numeral KPI + label + optional delta chip; `tone="navy"` variant reserved for the
-  Home command strip), **`HubRing`** (SVG progress ring, same clamped-percent ARIA contract as
-  `HubProgress`), **`HubSpark`** (tiny `aria-hidden` sparkline — honest series only, real
-  numbers always adjacent in text), **`HubPill`** (the ONE status-pill vocabulary: `new` /
+  Home command strip; opt-in `countUp` animates a plain-number figure up from 0 on scroll-in
+  via `scripts/countup.ts` — reduced-motion-safe, used on the command strip's "days 'til school"
+  and "families"), **`HubRing`** (SVG progress ring, same clamped-percent ARIA contract as
+  `HubProgress`; fill sweeps in on load), **`HubSpark`** (tiny `aria-hidden` sparkline — honest
+  series only, real numbers always adjacent in text; bars grow / the line strokes itself in on
+  load, pure CSS so it plays even inside a deferred widget island), **`HubPill`** (the ONE status-pill vocabulary: `new` /
   `open` / `waitlist` / `important` / `due` / `past`; extend the set in the component, never
   improvise a pill on a page), and **`HubTable`** (styled table shell whose rows stack into
   cards below `md` via `data-th` cell labels). See

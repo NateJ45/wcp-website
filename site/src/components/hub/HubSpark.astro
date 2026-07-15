@@ -47,18 +47,64 @@ const points = data
 >
   {
     type === 'bar' ? (
-      bars.map((b) => (
-        <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1" class="fill-current opacity-70" />
+      bars.map((b, i) => (
+        <rect
+          x={b.x}
+          y={b.y}
+          width={b.w}
+          height={b.h}
+          rx="1"
+          class="wcp-spark-bar fill-current opacity-70"
+          style={`--i:${i}`}
+        />
       ))
     ) : (
       <polyline
         points={points}
+        pathLength="1"
         fill="none"
         stroke="currentColor"
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
+        class="wcp-spark-line"
       />
     )
   }
 </svg>
+
+<style>
+  /* Draw-on: bars grow up from the baseline with a short left-to-right stagger;
+     the line strokes itself in. Decorative + aria-hidden, so this is pure
+     texture — reduced-motion users get the finished chart with no motion, and
+     it runs on plain CSS so it still plays for a spark inserted inside a
+     server-deferred widget island (where a one-shot script would miss it).
+     `backwards` holds the pre-animation state during the stagger delay; with no
+     `forwards` fill each mark settles back to its natural, fully drawn value. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-spark-bar {
+      transform-box: fill-box;
+      transform-origin: bottom;
+      animation: wcp-spark-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(var(--i, 0) * 45ms);
+    }
+    @keyframes wcp-spark-grow {
+      from {
+        transform: scaleY(0);
+      }
+    }
+    .wcp-spark-line {
+      animation: wcp-spark-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    @keyframes wcp-spark-draw {
+      from {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+      }
+      to {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 0;
+      }
+    }
+  }
+</style>

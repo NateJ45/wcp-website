@@ -28,6 +28,13 @@ interface Props {
   footnote?: string;
   tone?: 'card' | 'navy';
   size?: 'md' | 'lg';
+  /**
+   * Animate the figure up from 0 on scroll-in (see scripts/countup.ts). Only
+   * for a value that is a PLAIN NUMBER string ("34", "42") — the count-up reads
+   * the number straight off the text. Leave off for dates ("Jul 15"), currency,
+   * or any value that isn't a bare number. Reduced-motion users see it static.
+   */
+  countUp?: boolean;
   class?: string;
 }
 const {
@@ -38,6 +45,7 @@ const {
   footnote,
   tone = 'card',
   size = 'md',
+  countUp = false,
   class: className,
 } = Astro.props;
 
@@ -63,6 +71,7 @@ const deltaIconColor = onNavy
 <div class={cn('min-w-0', className)}>
   <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
     <span
+      data-countup={countUp ? '' : undefined}
       class={cn(
         'font-display tabular-nums',
         size === 'lg' ? 'text-4xl' : 'text-3xl',
@@ -102,3 +111,12 @@ const deltaIconColor = onNavy
     )
   }
 </div>
+
+{
+  /* Colocated like StatBlock: the count-up module ships only on pages that
+     render a HubStat, and self-noops when no [data-countup] is present (a
+     HubStat without countUp). Astro dedupes it into one bundle include. */
+}
+<script>
+  import '@/scripts/countup';
+</script>
