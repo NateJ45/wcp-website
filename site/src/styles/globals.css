@@ -524,6 +524,30 @@
 .wcp-hub-pagelink:hover {
   text-decoration-thickness: 2px;
 }
+
+/* Month-calendar prev/next controls (HubCalendarGrid): square icon buttons in
+   the hub's border/hover idiom, disabled at the ends of the rendered range. */
+.wcp-cal-nav {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-heading);
+  transition: background-color 0.15s ease;
+}
+.wcp-cal-nav:hover:not(:disabled) {
+  background: var(--color-grey);
+}
+.dark .wcp-cal-nav:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+.wcp-cal-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 /* "Copied!" token that pops by the cursor when a desktop click copies an email. */
 .wcp-copy-toast {
   position: fixed;

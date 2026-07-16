@@ -188,17 +188,17 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                              |
-| ----------------------------- | ----------------------------------------------------------------------------- |
-| Calendar                      | Google Calendar (set `googleCalendarId` in Site Settings; auto-loads on idle) |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)           |
-| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)  |
-| Documents                     | `hubDocument` docs                                                            |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)           |
-| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)    |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton            |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only               |
-| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)    |
+| Section                       | Live data source                                                                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Site Settings |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                           |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                  |
+| Documents                     | `hubDocument` docs                                                                                                            |
+| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                           |
+| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)                                                    |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                            |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                               |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                    |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -428,7 +428,7 @@ Studio like the public pages. Each page reads a **`hubPage`** doc (by a fixed
 `hubKey`) at request time behind the gate: an editable **heading**, **intro**, and a stack
 of **sections** from the hub-safe palette (`HUB_SECTION_TYPE_NAMES` — content sections only;
 the build-time "pull" sections can't run behind the gate). The page's **fixed widget**
-(per-child health info, calendar embed, PayPal buttons, directory map, live campaign bars,
+(per-child health info, calendar month grid, PayPal buttons, directory map, live campaign bars,
 class facts) stays locked in code and the editable sections wrap around it. If no `hubPage`
 doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
 
@@ -597,18 +597,18 @@ requested at 400px (2x for the ~190px tiles, no over-fetch); the widget renders 
 album is empty. Motion is reduced-motion-safe. It's rendered **inline** (not a `server:defer`
 island) — the single album read rides the CDN cache, below the cost of an extra island round-trip.
 
-| Hub page                          | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
-| --------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Landing                           | Quick-link nav grids                                                                         | —                                                  |
-| Calendar (month-separated agenda) | Google Calendar embed (auto-loads on idle, non-blocking) + event legend                      | `googleCalendarId` in Site Settings                |
-| Co-op Jobs                        | Role descriptions + tiered org chart                                                         | `coopRole` docs (holders: `org-holders.ts`)        |
-| Documents                         | Document library + required-forms callout                                                    | `hubDocument` docs                                 |
-| Tuition                           | Pay-card + fee-card layout, payment FAQ                                                      | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
-| Updates                           | Meeting-blog post list (minutes rows get a category pill)                                    | `update` docs                                      |
-| Fundraising                       | Year ring + stat, per-fundraiser status pills                                                | `campaign` docs                                    |
-| Health                            | Illness policy cards + closures band                                                         | —                                                  |
-| Directory                         | Opt-in family cards + map, alpha jump rail, class-ring initial avatars for no-photo families | `directoryEntry` docs                              |
-| Class pages                       | Fact-card + pay-button layout, teacher modal                                                 | `class` docs (facts, button) + `teacherNote` docs  |
+| Hub page                               | Fixed widget (locked)                                                                        | Already editable elsewhere                         |
+| -------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Landing                                | Quick-link nav grids                                                                         | —                                                  |
+| Calendar (agenda + branded month grid) | Upcoming agenda (type-coloured) + `HubCalendarGrid` month view (desktop), both from the feed | `googleCalendarId` / feed in Site Settings         |
+| Co-op Jobs                             | Role descriptions + tiered org chart                                                         | `coopRole` docs (holders: `org-holders.ts`)        |
+| Documents                              | Document library + required-forms callout                                                    | `hubDocument` docs                                 |
+| Tuition                                | Pay-card + fee-card layout, payment FAQ                                                      | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
+| Updates                                | Meeting-blog post list (minutes rows get a category pill)                                    | `update` docs                                      |
+| Fundraising                            | Year ring + stat, per-fundraiser status pills                                                | `campaign` docs                                    |
+| Health                                 | Illness policy cards + closures band                                                         | —                                                  |
+| Directory                              | Opt-in family cards + map, alpha jump rail, class-ring initial avatars for no-photo families | `directoryEntry` docs                              |
+| Class pages                            | Fact-card + pay-button layout, teacher modal                                                 | `class` docs (facts, button) + `teacherNote` docs  |
 
 Only the widget **layout** stays in code. All of its content is Board-editable through its own
 doc type: class facts, tuition rates, and PayPal button ids live in the `class` docs and the

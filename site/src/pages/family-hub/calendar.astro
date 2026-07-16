@@ -5,11 +5,12 @@
    Live sources, all read server-side inside the gate:
      1. The school Google Calendar via its Apps Script JSON feed (Sanity
         `event` docs as fallback — see src/lib/hub-calendar.ts), rendered as
-        the upcoming list with type chips.
-     2. The full Google Calendar embed, click-to-load (privacy: nothing loads
-        from Google until the family clicks).
-   Plus subscribe buttons (Add to Google / Apple & Outlook) built from the
-   calendar id, so families can put the school calendar on their phones.
+        the upcoming agenda list with type chips.
+     2. The same feed, rendered as our own on-brand month grid (HubCalendarGrid,
+        desktop only) — replaces the un-styleable cross-origin Google iframe.
+   Plus subscribe buttons (Add to Google / Apple & Outlook / Open in browser)
+   built from the calendar id, so families can put the school calendar on their
+   phones or open Google's own full UI.
    ============================================================================ */
 export const prerender = false;
 
@@ -21,11 +22,13 @@ import HubFilterChip from '@/components/hub/HubFilterChip.astro';
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import HubCalendarGrid from '@/components/hub/HubCalendarGrid.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import {
   getUpcomingEvents,
+  getCalendarEvents,
   eventDate,
   fmtEventMonth,
   fmtEventDay,
@@ -70,6 +73,9 @@ try {
 
 // The upcoming list — the live Google Calendar feed (Sanity events fallback).
 const allEvents: HubEvent[] = (await getUpcomingEvents(feedUrl)).slice(0, 12);
+// The full-window event set for the branded month grid (shares the same cache
+// entry as the upcoming list above, so this is a cache hit, not a second fetch).
+const calendarEvents: HubEvent[] = await getCalendarEvents(feedUrl);
 
 // Event-type filter (?type=meeting|volunteer|milestone|event): page-global
 // link-chips, same SSR mechanics as the Directory's class filter. Chips only
@@ -229,50 +235,23 @@ const icalUrl = calId
         }
       </div>
 
-      {/* The full school calendar — privacy-preserving click-to-load embed */}
       {
-        calEmbedUrl && (
-          <div class="mt-12" aria-labelledby="full-calendar">
-            <h2 id="full-calendar" class="text-xl font-extrabold text-heading">
-              The full school calendar
-            </h2>
-            <p class="mt-1 max-w-2xl text-ink-muted">
-              Month view of every dated item, straight from the school Google Calendar.
-            </p>
-            <HubCard class="mt-6 overflow-hidden p-0">
-              <div
-                class="relative h-[620px] bg-grey"
-                data-embed-calendar={calEmbedUrl}
-                data-embed-auto
-                data-embed-title="West Chester Preschool calendar"
-              >
-                {/* Loading state / no-JS fallback: shown until the embed loads
-                    itself on idle (embeds.ts), or if the family taps to load. */}
-                <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
-                  <span
-                    class="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white"
-                    aria-hidden="true"
-                  >
-                    <Icon name="calendar-days" class="h-7 w-7" />
-                  </span>
-                  <div>
-                    <p class="font-bold text-heading">Loading the school calendar…</p>
-                    <p class="mt-1 text-sm text-ink-muted">
-                      It appears automatically. If it doesn’t, tap below to open it.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    class="wcp-embed-open rounded-full bg-navy px-6 py-2.5 font-semibold text-white transition hover:bg-navy/90"
-                  >
-                    Show the calendar
-                  </button>
-                </div>
-              </div>
-            </HubCard>
-          </div>
-        )
+        /* The full school calendar — our own on-brand month grid, built from the
+          same feed as the agenda above (desktop only; phones use the agenda).
+          "Open in browser" in the subscribe card still reaches Google's own UI. */
       }
+      <div class="mt-12 hidden md:block" aria-labelledby="full-calendar">
+        <h2 id="full-calendar" class="text-xl font-extrabold text-heading">
+          The full school calendar
+        </h2>
+        <p class="mt-1 max-w-2xl text-ink-muted">
+          Month view of every dated item, straight from the school calendar. Updates made there show
+          up here automatically.
+        </p>
+        <HubCard class="mt-6 p-4 sm:p-5">
+          <HubCalendarGrid events={calendarEvents} />
+        </HubCard>
+      </div>
 
       {/* Weather closures — neutral info note (was a Callout side-stripe) */}
       <HubCard class="mt-12 flex items-start gap-4 p-4">
@@ -295,6 +274,6 @@ const icalUrl = calId
   <SectionRenderer sections={doc?.sections} site={site} />
 
   <script>
-    import '@/scripts/embeds';
+    import '@/scripts/hub-calendar-grid';
   </script>
 </HubShell>

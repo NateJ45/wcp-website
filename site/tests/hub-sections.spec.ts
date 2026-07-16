@@ -45,11 +45,12 @@ for (const route of ROUTES) {
         await page.evaluate((t) => {
           document.documentElement.classList.toggle('dark', t === 'dark');
         }, theme);
-        // Audit OUR markup, not the internals of third-party embeds we don't
-        // control: the Calendar page auto-loads the Google Calendar iframe, and
-        // axe would otherwise descend into Google's own (imperfect) DOM and fail
-        // on ~77 violations we can't fix. This scopes the rule set to our page
-        // without narrowing which rules run.
+        // Audit OUR markup, not the internals of any third-party embed we don't
+        // control (a Board-added page-builder section may still drop one in):
+        // axe would otherwise descend into a vendor's own (imperfect) DOM and
+        // fail on violations we can't fix. This scopes the rule set to our page
+        // without narrowing which rules run. (The Calendar page renders its own
+        // month grid now — HubCalendarGrid — not the old Google iframe.)
         const results = await new AxeBuilder({ page }).exclude('iframe').analyze();
         expect(
           results.violations,

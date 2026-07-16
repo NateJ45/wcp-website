@@ -116,18 +116,15 @@ export const EVENT_TYPE_META: Record<
 };
 
 /**
- * Upcoming events: the Google Calendar feed first, Sanity `event` docs as the
- * fallback. Always sorted soonest-first, already filtered to today-or-later
- * (Eastern). Returns [] only when both sources fail or are empty.
+ * All events from the Google Calendar feed, sorted soonest-first, NO date
+ * filter. Rides hub-cache's long stale-while-revalidate window (30 min fresh,
+ * then up to 24h serve-stale-and-refresh-behind-the-response), so visitors
+ * never wait on the 1.5-3s Apps Script execution and an edit still shows within
+ * minutes of the next visit. Returns null (not []) when the feed is
+ * unreachable or empty, so callers know to fall back to Sanity.
  */
-export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
-  const cutoff = Date.now() - 86_400_000; // yesterday, so late-running events linger a day
+async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
   try {
-    // The school calendar changes at most ~daily, so it rides hub-cache's
-    // long stale-while-revalidate window: 15 min fresh, then up to 24h of
-    // serve-stale-instantly-and-refresh-behind-the-response. Visitors never
-    // wait on the 1.5-3s Apps Script execution, and an edit still shows
-    // within minutes of the next visit.
     const raw = await cached(
       `calfeed:${feedUrl}`,
       1_800_000, // 30 min fresh — the calendar changes ~daily; keeps KV writes low
@@ -139,12 +136,17 @@ export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
       { swrMs: 86_400_000 },
     );
     const events = (raw ?? [])
-      .filter((e) => e && e.title && e.start && eventDate(e.start).getTime() >= cutoff)
+      .filter((e) => e && e.title && e.start)
       .sort((a, b) => eventDate(a.start).getTime() - eventDate(b.start).getTime());
-    if (events.length > 0) return events;
+    return events.length > 0 ? events : null;
   } catch {
-    /* fall through to Sanity */
+    return null;
   }
+}
+
+/** Sanity `event` docs (the public Events page's source), the feed's fallback.
+ *  Upcoming-only by query, which is fine for both callers. */
+async function fetchSanityEvents(): Promise<HubEvent[]> {
   try {
     const docs = await sanityFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY);
     return expandRecurring(docs ?? [])
@@ -158,4 +160,28 @@ export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Upcoming events: the Google Calendar feed first, Sanity `event` docs as the
+ * fallback. Always sorted soonest-first, filtered to today-or-later (Eastern).
+ * Returns [] only when both sources fail or are empty.
+ */
+export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
+  const cutoff = Date.now() - 86_400_000; // yesterday, so late-running events linger a day
+  const feed = await fetchFeedEvents(feedUrl);
+  const upcoming = (feed ?? []).filter((e) => eventDate(e.start).getTime() >= cutoff);
+  // Feed unreachable, or reachable but with nothing still upcoming → Sanity.
+  return upcoming.length > 0 ? upcoming : fetchSanityEvents();
+}
+
+/**
+ * Every event in the feed's rolling 12-month window (Sanity fallback), sorted
+ * soonest-first and UNFILTERED by date — the month grid needs the earlier days
+ * of the current month, not just what's still upcoming. Shares the same cache
+ * entry as getUpcomingEvents, so calling both on one page is a single fetch.
+ */
+export async function getCalendarEvents(feedUrl: string): Promise<HubEvent[]> {
+  const feed = await fetchFeedEvents(feedUrl);
+  return feed && feed.length > 0 ? feed : fetchSanityEvents();
 }

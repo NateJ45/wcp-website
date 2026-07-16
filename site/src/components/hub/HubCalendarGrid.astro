@@ -1,0 +1,263 @@
+---
+/* ============================================================================
+   HubCalendarGrid — a fully on-brand month calendar (replaces the Google embed)
+   ============================================================================
+   The Google Calendar iframe is a cross-origin embed: no CSS of ours reaches
+   inside it, it ignores dark mode, and it reads as "a Google calendar". Since
+   the Apps Script feed already serves a rolling 12 months of events (the same
+   source as the "What's coming up" agenda above), we render our OWN month grid
+   from that data — brand fonts, the EVENT_TYPE_META colour system, HubCard
+   styling, dark mode.
+
+   Rendering strategy: every month in range is rendered server-side (so a no-JS
+   visitor sees the current month), only the current one visible; hub-calendar-
+   grid.ts flips visibility on prev/next. Desktop-only (md+) — on phones the
+   agenda list above is the better view and this stays display:none (also keeps
+   it out of the 320px reflow budget).
+
+   DATE HANDLING: the Workers runtime Date is UTC, so "today" and each event's
+   day are bucketed by EASTERN calendar date (toLocaleDateString + EVENT_TZ);
+   the grid's own day/weekday arithmetic is pure integer calendar math anchored
+   at NOON UTC (getUTCDay/getUTCDate), which never trips a DST/tz boundary.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import {
+  eventDate,
+  eventType,
+  fmtEventTime,
+  EVENT_TYPE_META,
+  type HubEvent,
+} from '@/lib/hub-calendar';
+import { EVENT_TZ } from '@/lib/events';
+import { deEmDash } from '@/lib/portable-text';
+
+interface Props {
+  events: HubEvent[];
+  /** How many event pills to show per day before collapsing to "+N more". */
+  maxPerDay?: number;
+}
+const { events, maxPerDay = 3 } = Astro.props;
+
+// Eastern calendar date of a Date, as [year, month0, day].
+const easternYMD = (d: Date): [number, number, number] => {
+  // en-CA gives ISO "YYYY-MM-DD"; split beats parsing back into a Date.
+  const [y, m, day] = d.toLocaleDateString('en-CA', { timeZone: EVENT_TZ }).split('-').map(Number);
+  return [y, m - 1, day];
+};
+const keyOf = (y: number, m0: number, d: number) => `${y}-${m0}-${d}`;
+
+// Bucket every event by its Eastern day.
+const byDay = new Map<string, HubEvent[]>();
+for (const e of events) {
+  const [y, m0, d] = easternYMD(eventDate(e.start));
+  const k = keyOf(y, m0, d);
+  (byDay.get(k) ?? byDay.set(k, []).get(k)!).push(e);
+}
+// Keep each day's events time-ordered (all-day first, then by start).
+for (const list of byDay.values()) {
+  list.sort((a, b) => eventDate(a.start).getTime() - eventDate(b.start).getTime());
+}
+
+// Today (Eastern) + the month range to render: current month through the month
+// of the latest event (capped at +11 months), so nav never runs off the data.
+const [ty, tm0, td] = easternYMD(new Date());
+const todayKey = keyOf(ty, tm0, td);
+let lastY = ty;
+let lastM0 = tm0;
+for (const e of events) {
+  const [y, m0] = easternYMD(eventDate(e.start));
+  if (y > lastY || (y === lastY && m0 > lastM0)) {
+    lastY = y;
+    lastM0 = m0;
+  }
+}
+const monthSpan = Math.min((lastY - ty) * 12 + (lastM0 - tm0), 11);
+
+const WEEKDAYS = [
+  ['Sun', 'Sunday'],
+  ['Mon', 'Monday'],
+  ['Tue', 'Tuesday'],
+  ['Wed', 'Wednesday'],
+  ['Thu', 'Thursday'],
+  ['Fri', 'Friday'],
+  ['Sat', 'Saturday'],
+];
+
+interface Cell {
+  y: number;
+  m0: number;
+  d: number;
+  key: string;
+  inMonth: boolean;
+  isToday: boolean;
+  events: HubEvent[];
+}
+interface MonthModel {
+  y: number;
+  m0: number;
+  label: string;
+  cells: Cell[];
+}
+
+// Build one month's 6x7 grid. Cell dates use Date.UTC(y, m0, dayNumber, 12),
+// which normalises the leading/trailing spill days into the correct
+// prev/next-month dates without any timezone risk (noon UTC).
+function buildMonth(y: number, m0: number): MonthModel {
+  const firstWeekday = new Date(Date.UTC(y, m0, 1, 12)).getUTCDay();
+  const cells: Cell[] = [];
+  for (let i = 0; i < 42; i++) {
+    const dayNumber = i - firstWeekday + 1;
+    const dt = new Date(Date.UTC(y, m0, dayNumber, 12));
+    const cy = dt.getUTCFullYear();
+    const cm0 = dt.getUTCMonth();
+    const cd = dt.getUTCDate();
+    const key = keyOf(cy, cm0, cd);
+    cells.push({
+      y: cy,
+      m0: cm0,
+      d: cd,
+      key,
+      inMonth: cm0 === m0 && cy === y,
+      isToday: key === todayKey,
+      events: byDay.get(key) ?? [],
+    });
+  }
+  const label = new Date(Date.UTC(y, m0, 1, 12)).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+  return { y, m0, label, cells };
+}
+
+const months: MonthModel[] = [];
+for (let i = 0; i <= monthSpan; i++) {
+  const y = ty + Math.floor((tm0 + i) / 12);
+  const m0 = (tm0 + i) % 12;
+  months.push(buildMonth(y, m0));
+}
+const single = months.length <= 1;
+---
+
+<div class="hidden md:block" data-cal-root role="group" aria-label="School calendar, month view">
+  {
+    /* Header: month label + prev / today / next controls. The label is a styled
+      span (not a heading) so it never disturbs the page heading outline; a
+      polite live region announces the month for screen readers on nav. */
+  }
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <span class="text-lg font-extrabold text-heading" data-cal-label>{months[0].label}</span>
+    <div class="flex items-center gap-1.5">
+      <button type="button" class="wcp-cal-nav" data-cal-prev aria-label="Previous month" disabled>
+        <Icon name="chevron-left" class="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        class="rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-heading transition-colors hover:bg-grey disabled:opacity-40 dark:hover:bg-white/5"
+        data-cal-today
+        disabled={single}
+      >
+        Today
+      </button>
+      <button
+        type="button"
+        class="wcp-cal-nav"
+        data-cal-next
+        aria-label="Next month"
+        disabled={single}
+      >
+        <Icon name="chevron-right" class="h-5 w-5" />
+      </button>
+    </div>
+  </div>
+  <div class="sr-only" aria-live="polite" data-cal-live></div>
+
+  {
+    months.map((month, mi) => (
+      <table
+        class="w-full table-fixed border-collapse"
+        data-cal-month={mi}
+        data-cal-monthlabel={month.label}
+        hidden={mi !== 0}
+      >
+        <caption class="sr-only">{month.label}</caption>
+        <thead>
+          <tr>
+            {WEEKDAYS.map(([short, full]) => (
+              <th
+                scope="col"
+                class="pb-2 text-center text-xs font-bold tracking-wide text-ink-muted uppercase"
+              >
+                <abbr title={full} class="no-underline">
+                  {short}
+                </abbr>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[0, 1, 2, 3, 4, 5].map((row) => (
+            <tr>
+              {month.cells.slice(row * 7, row * 7 + 7).map((cell) => (
+                <td
+                  class:list={[
+                    'h-24 border border-border align-top',
+                    cell.inMonth ? '' : 'bg-grey/40 dark:bg-white/[0.02]',
+                  ]}
+                  {...(cell.isToday ? { 'aria-current': 'date' } : {})}
+                >
+                  <div class="flex h-full flex-col gap-0.5 p-1">
+                    <span
+                      class:list={[
+                        'flex h-6 w-6 items-center justify-center self-start rounded-full text-xs font-bold',
+                        cell.isToday
+                          ? 'bg-navy text-white'
+                          : cell.inMonth
+                            ? 'text-heading'
+                            : 'text-ink-muted/50',
+                      ]}
+                    >
+                      {cell.d}
+                    </span>
+                    {cell.events.length > 0 && (
+                      <ul class="flex min-h-0 flex-col gap-0.5 overflow-hidden">
+                        {cell.events.slice(0, maxPerDay).map((e) => {
+                          const meta = EVENT_TYPE_META[eventType(e.title)];
+                          return (
+                            <li
+                              class:list={[
+                                // Neutral text on the soft tint + an aria-hidden
+                                // accent dot for the type: the -ink-on-tint combo
+                                // fails AA in dark mode (CLAUDE.md), so the colour
+                                // lives only in the dot, the label stays neutral.
+                                'flex items-center gap-1 rounded px-1 py-0.5 text-[0.7rem] leading-tight text-heading',
+                                meta.chipBg,
+                              ]}
+                              title={`${deEmDash(e.title)} · ${fmtEventTime(e)}`}
+                            >
+                              <span
+                                class="h-1.5 w-1.5 shrink-0 rounded-full"
+                                style={`background:${meta.accent}`}
+                                aria-hidden="true"
+                              />
+                              <span class="truncate">{deEmDash(e.title)}</span>
+                            </li>
+                          );
+                        })}
+                        {cell.events.length > maxPerDay && (
+                          <li class="px-1 text-[0.7rem] font-semibold text-ink-muted">
+                            +{cell.events.length - maxPerDay} more
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ))
+  }
+</div>
