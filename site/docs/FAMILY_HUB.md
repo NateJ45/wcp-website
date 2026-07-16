@@ -327,8 +327,8 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   and `HomeWidgetCard` on top of their Tailwind base): a faint graph-paper grid + grain,
   and a 3px brand-colour top tab whose colour rotates by list position (or is pinned per
   card via `--note-accent`, set on the six home widgets by meaning). Interactive (link)
-  cards add a pushpin + a gentle tilt that straightens on hover — tilt only at `sm+` (so a
-  flush 320px card never overflows) and only under `prefers-reduced-motion: no-preference`.
+  cards keep the standard HubCard hover-lift — the pinned/tilted look is reserved for the
+  community photo wall (`SocialWallWidget`), not these cards.
   `HubCard`/`HomeWidgetCard` take a `postit` prop for a warm sticky-note fill (Announcements
   - Meeting Minutes use it); the tint tracks the theme so text tokens keep AA contrast. All
     of it is decorative and below the text, so `test:hub` axe holds in both themes.

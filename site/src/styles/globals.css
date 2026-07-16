@@ -663,63 +663,11 @@ li:nth-child(4n + 4) > .hub-note {
   --note-accent: var(--color-sky);
 }
 
-/* Interactive cards (HubCard links carry `.group`) read as notes tacked to the
-   board: a pushpin tinted to the card's accent, plus a gentle tilt that
-   straightens on hover/focus. The tilt uses the standalone `rotate` property so
-   it composes with Tailwind's translate/scale on the same card instead of
-   clobbering `transform`. It lives inside no-preference AND min-width:640px, so
-   a flush 320px card never tilts (no reflow overflow) and reduced-motion users
-   get a still card. Home dashboard widgets are NOT links, so they stay upright
-   — "tilt on link cards only". */
-.hub-note.group::before {
-  content: '';
-  position: absolute;
-  top: -7px;
-  left: 50%;
-  margin-left: -8px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 34% 30%,
-    rgba(255, 255, 255, 0.6),
-    var(--note-accent, var(--color-sky)) 56%,
-    rgba(0, 0, 0, 0.32)
-  );
-  box-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.35),
-    inset 0 1px 2px rgba(255, 255, 255, 0.45);
-  z-index: 2;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hub-note.group {
-    transition:
-      transform 0.2s ease,
-      translate 0.2s ease,
-      box-shadow 0.2s ease,
-      rotate 0.25s ease;
-  }
-  @media (min-width: 640px) {
-    /* Alternate the lean by list position so a row of link cards scatters
-       instead of leaning as one block. Covers both direct-sibling cards and the
-       common `li > .hub-note.group` wrapping (documents, updates). */
-    .hub-note.group:nth-child(odd),
-    li:nth-child(odd) > .hub-note.group {
-      rotate: -0.9deg;
-    }
-    .hub-note.group:nth-child(even),
-    li:nth-child(even) > .hub-note.group {
-      rotate: 0.8deg;
-    }
-    .hub-note.group:hover,
-    .hub-note.group:focus-visible,
-    li:nth-child(n) > .hub-note.group:hover,
-    li:nth-child(n) > .hub-note.group:focus-visible {
-      rotate: 0deg;
-    }
-  }
-}
+/* Note: interactive hub cards were briefly given pushpins + a gentle tilt
+   (straighten-on-hover). Removed by request — the pinned/tilted look reads best
+   only on the community photo wall (SocialWallWidget's own .wcp-wall-tile),
+   which is untouched. Link cards keep the paper texture, brand top tab, and the
+   standard HubCard hover-lift. */
 
 /* Post-it variant (`.hub-note--postit`, via HubCard/HomeWidgetCard `postit`):
    a warm sticky-note fill for note-like cards (announcements, celebrations).
