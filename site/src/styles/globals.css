@@ -436,6 +436,32 @@
     radial-gradient(58rem 42rem at 0% 0%, rgba(1, 69, 126, 0.075), transparent 60%),
     radial-gradient(54rem 40rem at 100% 0%, rgba(255, 140, 0, 0.08), transparent 60%),
     radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.075), transparent 58%);
+  /* Own stacking context so the fixed emblem's negative z-index stays scoped
+     here (above this element's bg, below its content) instead of escaping. */
+  isolation: isolate;
+}
+
+/* Fixed emblem watermark — the WCP sun+cloud mark, held in the viewport center
+   as the page scrolls (position: fixed, not background-attachment: fixed, which
+   stutters on mobile). z-index -1 keeps it above the paper texture but behind
+   every card. Small + centered enough to never reach under the navy rail. */
+.wcp-hub-emblem {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(56vmin, 440px);
+  opacity: 0.045;
+}
+.dark .wcp-hub-emblem {
+  opacity: 0.06;
+}
+@media print {
+  .wcp-hub-emblem {
+    display: none;
+  }
 }
 /* Dark canvas: navy washes vanish against the dark bg, so the washes lean on the
    bright tiers (sky/orange/amber) at lower alpha. */

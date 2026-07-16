@@ -20,6 +20,9 @@ import AnnouncementModal from '@/components/AnnouncementModal.astro';
 import StructuredData from '@/components/StructuredData.astro';
 import { site } from '@/data/site';
 import { getClosureAlert, getAnnouncements } from '@/lib/cms';
+// Fixed emblem watermark behind the hub canvas (plain <img> src via a pre-sized
+// webp; a bg-image data-URI would bloat the CSS).
+import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 
 interface Props {
   /** Browser tab + Open Graph title. Required so no page ships untitled. */
@@ -273,6 +276,14 @@ const currentPath = Astro.url.pathname;
               empty band under the content. No footer — the hub is an app
               surface, not a marketing page. */}
           <div class="wcp-hub-canvas flex min-w-0 flex-1 flex-col bg-grey">
+            {/* Fixed emblem watermark: stays put as the page scrolls, sits above
+                the paper texture but below every card (z-index handled in
+                globals.css). Purely decorative. */}
+            <div
+              class="wcp-hub-emblem"
+              style={`background-image: url('${wcpEmblem.src}')`}
+              aria-hidden="true"
+            />
             <HubTopBar title={hubTitle} />
             {/* data-pagefind-body: site search (Pagefind) indexes only the main
                 content of real pages, not the header/footer chrome — and because
