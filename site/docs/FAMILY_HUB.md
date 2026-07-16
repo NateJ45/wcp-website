@@ -327,6 +327,19 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   class-colored one behind each class page header, the greeting carries a live
   weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
   sign-up success fires a reduced-motion-safe confetti burst.
+- **Prose auto-links itself** (client enhancement, progressive): two scripts scan the
+  rendered hub content and turn plain text into links, because the copy is Board-editable
+  Sanity content with no link marks and Sanity writes are quota-blocked (so it can't be
+  re-authored at the source). `wcp-email-copy.ts` linkifies email addresses (+ desktop
+  copy-to-clipboard); `hub-page-links.ts` linkifies cross-references between hub pages
+  ("the **Documents page**", "See **Co-op Jobs**") to their routes. The page-linker is
+  precision-first: case-sensitive proper-noun matching, common-word names (Documents,
+  Calendar, Health, ...) require a literal " page" suffix while distinctive names (Co-op
+  Jobs, Super Helper, Getting Started, Twos & Threes, Budget & Fundraising) link on their
+  own, first-occurrence-per-target only, never self-links, and skips existing links /
+  buttons / headings / code (opt out with `data-no-autolink`). Both are no-JS-degradable
+  (plain text) and skipped in `/preview` so stega click-to-edit stays intact; links inherit
+  the body colour + underline so they pass axe on any surface.
 - **Cards are notes on the board** (`.hub-note`, globals.css — carried by both `HubCard`
   and `HomeWidgetCard` on top of their Tailwind base): a faint graph-paper grid + grain,
   and a faint brand-colour SURFACE tint whose colour rotates by list position (or is pinned

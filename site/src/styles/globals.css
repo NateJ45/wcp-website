@@ -510,12 +510,19 @@
 /* Clickable emails (wcp-email-copy.ts): inherit the surrounding text color and
    just underline, so a linkified address reads as a link on ANY background (a
    navy CTA, a white card) without a hardcoded link color that could fail AA. */
-.wcp-email-link {
+.wcp-email-link,
+.wcp-hub-pagelink {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
   text-decoration-thickness: 1px;
   cursor: pointer;
+}
+/* Auto-linked hub page cross-references (hub-page-links.ts): inherit the body
+   colour (AA on any surface, like the email links) but thicken the underline on
+   hover so they read as navigation, not just emphasis. */
+.wcp-hub-pagelink:hover {
+  text-decoration-thickness: 2px;
 }
 /* "Copied!" token that pops by the cursor when a desktop click copies an email. */
 .wcp-copy-toast {
