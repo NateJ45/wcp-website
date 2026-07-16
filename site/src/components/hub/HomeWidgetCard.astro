@@ -21,6 +21,8 @@ interface Props {
   empty?: boolean;
   /** Shown in place of the slot when `empty` is true. */
   emptyText?: string;
+  /** Warm sticky-note fill (`.hub-note--postit`) for note-like widgets. */
+  postit?: boolean;
   class?: string;
 }
 const {
@@ -30,13 +32,16 @@ const {
   seeAllLabel = 'See all',
   empty = false,
   emptyText = 'Nothing here yet.',
+  postit = false,
   class: className,
 } = Astro.props;
 ---
 
 <div
   class={cn(
-    'flex h-full flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface',
+    // `hub-note` (globals.css) adds the paper texture + rotating brand top tab.
+    'hub-note flex h-full flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface',
+    postit && 'hub-note--postit',
     className,
   )}
   data-reveal

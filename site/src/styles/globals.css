@@ -423,12 +423,38 @@
   --wcp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   --wcp-doodles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%2301457E' stroke-opacity='0.055' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
   --wcp-doodles-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
+
+  /* Crayon + paint layer (treatment B): a sparse 720px tile of rough crayon
+     strokes and paint splotches in brand colors (navy/orange/sky/amber), the
+     feTurbulence+feDisplacement filter giving the hand-drawn crayon edge. Low
+     opacity, behind the white cards, so it colors the paper without ever
+     touching text contrast. Dark tile swaps navy (invisible on the dark canvas)
+     for sky and drops opacity. Tile is a hand-authored 720px SVG (sparse, so
+     the repeat reads as scatter, not a pattern); tune the per-stroke
+     stroke-opacity / fill-opacity to make the color bolder or quieter. */
+  --wcp-crayon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='720' fill='none'%3E%3Cdefs%3E%3Cfilter id='c' x='-12%25' y='-12%25' width='124%25' height='124%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.018 0.028' numOctaves='2' seed='5' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='9'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23c)' stroke-linecap='round'%3E%3Cpath d='M36 118 q120 -42 260 0 t320 -12' stroke='%23ff8c00' stroke-width='10' stroke-opacity='0.115'/%3E%3Cpath d='M-24 300 q160 52 300 6 t360 18' stroke='%2340aaed' stroke-width='9' stroke-opacity='0.108'/%3E%3Cpath d='M78 560 q120 -46 250 4 t300 -16' stroke='%2301457e' stroke-width='10' stroke-opacity='0.094'/%3E%3Cpath d='M430 44 q44 118 -12 244' stroke='%23ffa334' stroke-width='8' stroke-opacity='0.094'/%3E%3C/g%3E%3Cg filter='url(%23c)'%3E%3Cpath d='M150 428 q30 -26 60 2 t2 66 q-30 22 -62 -2 t0 -66z' fill='%2340aaed' fill-opacity='0.079'/%3E%3Cellipse cx='560' cy='432' rx='34' ry='26' fill='%23ff8c00' fill-opacity='0.079'/%3E%3Cellipse cx='300' cy='650' rx='26' ry='22' fill='%23ffa334' fill-opacity='0.086'/%3E%3Cellipse cx='612' cy='150' rx='22' ry='18' fill='%2340aaed' fill-opacity='0.072'/%3E%3C/g%3E%3C/svg%3E");
+  --wcp-crayon-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='720' fill='none'%3E%3Cdefs%3E%3Cfilter id='c' x='-12%25' y='-12%25' width='124%25' height='124%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.018 0.028' numOctaves='2' seed='5' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='9'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23c)' stroke-linecap='round'%3E%3Cpath d='M36 118 q120 -42 260 0 t320 -12' stroke='%23ff8c00' stroke-width='10' stroke-opacity='0.083'/%3E%3Cpath d='M-24 300 q160 52 300 6 t360 18' stroke='%2340aaed' stroke-width='9' stroke-opacity='0.078'/%3E%3Cpath d='M78 560 q120 -46 250 4 t300 -16' stroke='%2340aaed' stroke-width='10' stroke-opacity='0.068'/%3E%3Cpath d='M430 44 q44 118 -12 244' stroke='%23ffa334' stroke-width='8' stroke-opacity='0.068'/%3E%3C/g%3E%3Cg filter='url(%23c)'%3E%3Cpath d='M150 428 q30 -26 60 2 t2 66 q-30 22 -62 -2 t0 -66z' fill='%2340aaed' fill-opacity='0.057'/%3E%3Cellipse cx='560' cy='432' rx='34' ry='26' fill='%23ff8c00' fill-opacity='0.057'/%3E%3Cellipse cx='300' cy='650' rx='26' ry='22' fill='%23ffa334' fill-opacity='0.062'/%3E%3Cellipse cx='612' cy='150' rx='22' ry='18' fill='%2340aaed' fill-opacity='0.052'/%3E%3C/g%3E%3C/svg%3E");
 }
+/* Layer order (first = on top): grain noise, then the crayon/paint color, then
+   the line doodles, then three soft brand washes (navy top-left, orange
+   top-right, sky bottom) that frame the header and footer of the column. The
+   tiles repeat at their intrinsic sizes; the wash gradients fill the column, so
+   they need no size/repeat overrides. Everything sits UNDER the white cards. */
 .wcp-hub-canvas {
-  background-image: var(--wcp-grain), var(--wcp-doodles);
+  background-image:
+    var(--wcp-grain), var(--wcp-crayon), var(--wcp-doodles),
+    radial-gradient(58rem 42rem at 0% 0%, rgba(1, 69, 126, 0.075), transparent 60%),
+    radial-gradient(54rem 40rem at 100% 0%, rgba(255, 140, 0, 0.08), transparent 60%),
+    radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.075), transparent 58%);
 }
+/* Dark canvas: navy washes vanish against the dark bg, so the washes and the
+   crayon tile lean on the bright tiers (sky/orange/amber) at lower alpha. */
 .dark .wcp-hub-canvas {
-  background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+  background-image:
+    var(--wcp-grain), var(--wcp-crayon-dark), var(--wcp-doodles-dark),
+    radial-gradient(56rem 42rem at 0% 0%, rgba(64, 170, 237, 0.07), transparent 60%),
+    radial-gradient(52rem 40rem at 100% 0%, rgba(255, 140, 0, 0.06), transparent 60%),
+    radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.055), transparent 58%);
 }
 /* Hub pages wrap content in <Section bg="grey">; over the textured canvas
    those direct sections go transparent so the paper shows through. Scoped to
@@ -561,6 +587,157 @@
 }
 .dark .hub-doc-block[data-treatment='card'] {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+}
+
+/* ----------------------------------------------------------------------------
+   Hub card system — `.hub-note`: the "paper note on the board" look
+   ----------------------------------------------------------------------------
+   Both card shells (HubCard + HomeWidgetCard) carry `.hub-note` ON TOP of their
+   Tailwind base (border / bg-white dark:bg-surface / p-6 / shadow stay
+   utilities, so per-card overrides like `p-4` still win). This class adds only
+   the display-case character, all decorative and BELOW the text so contrast is
+   untouched and axe holds in both themes:
+     - a faint graph-paper GRID + paper grain, so a card reads handmade, not
+       flat SaaS white;
+     - a 3px brand-colour top edge (the note's coloured header tab). The colour
+       is `--note-accent`, which ROTATES across sibling cards (sky → orange →
+       amber → navy) so a grid of cards is a spread of brand colour. Wrapped or
+       lone cards keep the sky default; a caller can set `--note-accent` on the
+       card (or any ancestor, it inherits) to pin a meaningful colour.
+   position:relative sets up the pushpins/tape added for interactive cards. */
+:root {
+  --wcp-note-line: rgba(1, 69, 126, 0.05);
+}
+.dark {
+  --wcp-note-line: rgba(255, 255, 255, 0.045);
+}
+.hub-note {
+  position: relative;
+  background-image:
+    linear-gradient(var(--wcp-note-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--wcp-note-line) 1px, transparent 1px), var(--wcp-grain);
+  background-size:
+    22px 22px,
+    22px 22px,
+    auto;
+  /* The coloured header tab. `--note-accent` is NOT set on the base (so an
+     ancestor that pins it wins by inheritance); the sky fallback is the default.
+     border-box keeps the card the same size; only the top border thickens, so
+     nothing shifts. Overrides the 1px `border-border` top edge; the other three
+     sides keep the neutral border. */
+  border-top: 3px solid var(--note-accent, var(--color-sky));
+}
+/* Rotate the accent across LIST cards (HubCard as="li" in a card grid — the
+   directory, co-op jobs, nav tiles, ...). Scoped to `li.hub-note` on purpose:
+   a directly-set nth-child var would beat an inherited one, so leaving it global
+   let it clobber the meaningful accents that wrapped/island cards inherit from
+   an ancestor (the home widgets). List cards have no such ancestor accent, so
+   here rotation is exactly what we want. Lone/wrapped cards keep the sky
+   fallback or their inherited colour. */
+/* Rotate by the LIST ITEM's position, covering both `li.hub-note` (direct list
+   cards: calendar, coop-jobs, tuition, ...) and `li > .hub-note` link cards
+   (documents, updates, where the <a> is wrapped in a bare <li>). */
+li.hub-note:nth-child(4n + 2),
+li:nth-child(4n + 2) > .hub-note {
+  --note-accent: var(--color-orange);
+}
+li.hub-note:nth-child(4n + 3),
+li:nth-child(4n + 3) > .hub-note {
+  --note-accent: var(--color-amber);
+}
+li.hub-note:nth-child(4n + 4),
+li:nth-child(4n + 4) > .hub-note {
+  --note-accent: var(--color-navy);
+}
+/* Navy vanishes on the dark canvas, so that slot borrows sky in dark mode. */
+.dark li.hub-note:nth-child(4n + 4),
+.dark li:nth-child(4n + 4) > .hub-note {
+  --note-accent: var(--color-sky);
+}
+
+/* Interactive cards (HubCard links carry `.group`) read as notes tacked to the
+   board: a pushpin tinted to the card's accent, plus a gentle tilt that
+   straightens on hover/focus. The tilt uses the standalone `rotate` property so
+   it composes with Tailwind's translate/scale on the same card instead of
+   clobbering `transform`. It lives inside no-preference AND min-width:640px, so
+   a flush 320px card never tilts (no reflow overflow) and reduced-motion users
+   get a still card. Home dashboard widgets are NOT links, so they stay upright
+   — "tilt on link cards only". */
+.hub-note.group::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  margin-left: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 30%,
+    rgba(255, 255, 255, 0.6),
+    var(--note-accent, var(--color-sky)) 56%,
+    rgba(0, 0, 0, 0.32)
+  );
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.45);
+  z-index: 2;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hub-note.group {
+    transition:
+      transform 0.2s ease,
+      translate 0.2s ease,
+      box-shadow 0.2s ease,
+      rotate 0.25s ease;
+  }
+  @media (min-width: 640px) {
+    /* Alternate the lean by list position so a row of link cards scatters
+       instead of leaning as one block. Covers both direct-sibling cards and the
+       common `li > .hub-note.group` wrapping (documents, updates). */
+    .hub-note.group:nth-child(odd),
+    li:nth-child(odd) > .hub-note.group {
+      rotate: -0.9deg;
+    }
+    .hub-note.group:nth-child(even),
+    li:nth-child(even) > .hub-note.group {
+      rotate: 0.8deg;
+    }
+    .hub-note.group:hover,
+    .hub-note.group:focus-visible,
+    li:nth-child(n) > .hub-note.group:hover,
+    li:nth-child(n) > .hub-note.group:focus-visible {
+      rotate: 0deg;
+    }
+  }
+}
+
+/* Post-it variant (`.hub-note--postit`, via HubCard/HomeWidgetCard `postit`):
+   a warm sticky-note fill for note-like cards (announcements, celebrations).
+   The tint TRACKS THE THEME — light yellow in light, warm-dark in dark — so the
+   normal text tokens keep their AA contrast; we never put coloured -ink text on
+   the tint (the dark-mode trap). It drops the grid + colour tab (the fill is the
+   colour) and adds a folded corner. */
+.hub-note--postit {
+  background-image: none;
+  background-color: #fff3bf;
+  border-top-width: 1px;
+  border-top-color: var(--color-border);
+}
+.dark .hub-note--postit {
+  background-color: color-mix(in oklab, var(--color-amber) 15%, var(--color-surface));
+}
+.hub-note--postit::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.13), transparent 55%);
+  border-bottom-right-radius: var(--radius);
+  pointer-events: none;
 }
 
 /* bleed: no outer card. The section fills the column (container un-capped, but

@@ -38,6 +38,8 @@ interface Props {
   interactive?: boolean;
   empty?: boolean;
   emptyText?: string;
+  /** Warm sticky-note fill (`.hub-note--postit`) for note-like cards. */
+  postit?: boolean;
   /** Scroll-reveal entrance (geometry-based, visible-by-default). */
   reveal?: boolean;
   class?: string;
@@ -53,6 +55,7 @@ const {
   interactive,
   empty = false,
   emptyText = 'Nothing here yet.',
+  postit = false,
   reveal = true,
   class: className,
   ...rest
@@ -63,7 +66,10 @@ const isInteractive = interactive ?? isLink;
 const Tag = isLink ? 'a' : as;
 const hasHeader = Boolean(icon) || Boolean(title);
 
-const base = 'rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface';
+// `hub-note` (globals.css) adds the paper-note look: grid texture + a rotating
+// brand-colour top tab. The utilities stay so per-card class overrides still win.
+const base =
+  'hub-note rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface';
 // Pressed state (Track E micro-feedback): a subtle scale-down on press, still
 // exempt under reduced motion like the hover lift.
 const interactiveClasses = isInteractive
@@ -72,7 +78,7 @@ const interactiveClasses = isInteractive
 ---
 
 <Tag
-  class={cn(base, interactiveClasses, className)}
+  class={cn(base, interactiveClasses, postit && 'hub-note--postit', className)}
   href={isLink ? href : undefined}
   data-reveal={reveal ? true : undefined}
   {...rest}

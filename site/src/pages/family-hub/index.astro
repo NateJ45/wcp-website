@@ -127,7 +127,10 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
           widgets stay inline: the authenticated CDN answers in ~100ms, below
           the cost of an extra island round-trip. */
       }
-      <div class="lg:col-span-4 lg:row-span-2" style="--reveal-delay: 60ms">
+      <div
+        class="lg:col-span-4 lg:row-span-2"
+        style="--reveal-delay: 60ms; --note-accent: var(--color-sky)"
+      >
         <UpcomingEventsWidget server:defer>
           <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
         </UpcomingEventsWidget>
@@ -196,22 +199,22 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         <ClassHelperRow />
       </div>
 
-      <div class="lg:col-span-8" style="--reveal-delay: 180ms">
+      <div class="lg:col-span-8" style="--reveal-delay: 180ms; --note-accent: var(--color-orange)">
         <AnnouncementsWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 240ms">
+      <div class="lg:col-span-4" style="--reveal-delay: 240ms; --note-accent: var(--color-green)">
         <FundraisingWidget server:defer>
           <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
         </FundraisingWidget>
       </div>
 
-      <div class="lg:col-span-4" style="--reveal-delay: 300ms">
+      <div class="lg:col-span-4" style="--reveal-delay: 300ms; --note-accent: var(--color-amber)">
         <MeetingMinutesWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 360ms">
+      <div class="lg:col-span-4" style="--reveal-delay: 360ms; --note-accent: var(--color-sky)">
         <ClassPhotosWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 420ms">
+      <div class="lg:col-span-4" style="--reveal-delay: 420ms; --note-accent: var(--color-green)">
         <BudgetSnapshotWidget server:defer>
           <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
         </BudgetSnapshotWidget>

@@ -315,11 +315,23 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   a percentage height there resolves after intrinsic row sizing and overflows the cell
   into Announcements whenever the hero grows (bit twice on 2026-07-14).
 - **Texture & flair**: the canvas is construction paper (grain + hand-drawn doodle
-  tile, light/dark variants — globals.css "Hub canvas texture"; direct grey Sections
+  tile + a crayon/paint tile of rough brand-color strokes and splotches, plus three
+  soft brand washes baked into the same `.wcp-hub-canvas` background — navy top-left,
+  orange top-right, sky bottom; light/dark variants, all UNDER the white cards so they
+  never touch text contrast — globals.css "Hub canvas texture"; direct grey Sections
   render transparent over it), a warm glow sits behind the greeting and a
   class-colored one behind each class page header, the greeting carries a live
   weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
   sign-up success fires a reduced-motion-safe confetti burst.
+- **Cards are notes on the board** (`.hub-note`, globals.css — carried by both `HubCard`
+  and `HomeWidgetCard` on top of their Tailwind base): a faint graph-paper grid + grain,
+  and a 3px brand-colour top tab whose colour rotates by list position (or is pinned per
+  card via `--note-accent`, set on the six home widgets by meaning). Interactive (link)
+  cards add a pushpin + a gentle tilt that straightens on hover — tilt only at `sm+` (so a
+  flush 320px card never overflows) and only under `prefers-reduced-motion: no-preference`.
+  `HubCard`/`HomeWidgetCard` take a `postit` prop for a warm sticky-note fill (Announcements
+  + Meeting Minutes use it); the tint tracks the theme so text tokens keep AA contrast. All
+  of it is decorative and below the text, so `test:hub` axe holds in both themes.
 - **Class pages** open with a `TeacherCard` (photo/name/role/**email + phone** straight
   from the class's `teacherNote` doc — the same fields that power the welcome modal; the
   card shows a **Say hi** (email) and a **Call or text** (phone) link), beside the facts
