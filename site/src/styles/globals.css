@@ -926,11 +926,6 @@ li:nth-child(4n + 4) > .hub-note {
   .js [data-reveal] {
     opacity: 0;
     transform: translateY(1.75rem);
-    transition:
-      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-      filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    transition-delay: var(--reveal-delay, 0ms);
   }
   /* Direction + emphasis variants — set data-reveal="left|right|scale|blur|fade". */
   .js [data-reveal='fade'] {
@@ -949,10 +944,70 @@ li:nth-child(4n + 4) > .hub-note {
     transform: translateY(1rem);
     filter: blur(10px);
   }
+  /* Reveal is a ONE-SHOT ANIMATION, not a persistent `transition`. A transition
+     on the element would sit on transform/opacity forever and clobber each
+     card's OWN hover transition (making a hover lift snap or ease at the reveal's
+     0.7s instead of the card's ~300ms). An animation plays once and leaves the
+     `transition` property untouched, so the card's hover transition stays in
+     charge. `backwards` fill holds the hidden frame through `--reveal-delay` (no
+     flash of visible content); no forwards fill, so `:hover` can move transform
+     again once it's done. */
   .js [data-reveal].is-visible {
     opacity: 1;
     transform: none;
     filter: none;
+    animation: wcp-reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms) backwards;
+  }
+  .js [data-reveal='fade'].is-visible {
+    animation-name: wcp-reveal-fade;
+  }
+  .js [data-reveal='left'].is-visible {
+    animation-name: wcp-reveal-left;
+  }
+  .js [data-reveal='right'].is-visible {
+    animation-name: wcp-reveal-right;
+  }
+  .js [data-reveal='scale'].is-visible {
+    animation-name: wcp-reveal-scale;
+  }
+  .js [data-reveal='blur'].is-visible {
+    animation-name: wcp-reveal-blur;
+  }
+}
+@keyframes wcp-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.75rem);
+  }
+}
+@keyframes wcp-reveal-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes wcp-reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-1.75rem);
+  }
+}
+@keyframes wcp-reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(1.75rem);
+  }
+}
+@keyframes wcp-reveal-scale {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.95);
+  }
+}
+@keyframes wcp-reveal-blur {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+    filter: blur(10px);
   }
 }
 
