@@ -82,7 +82,7 @@ export const budgetGroups: BudgetGroup[] = [
       { label: 'Fall flower sales (mums)', now: 1_500, was: 1_000, note: 'Annual mum sale' },
       { label: 'Spring flower sales', now: 1_000, was: 750, note: 'Annual spring planter sale' },
       { label: 'DoubleGood popcorn', now: 1_900, was: 1_800, note: 'Online popcorn fundraiser' },
-      { label: "Mike's Car Wash", now: 1_000, was: 0, note: 'New this year' },
+      { label: "Mike's Car Wash", now: 1_000, was: 600, note: 'Car wash fundraiser' },
     ],
   },
   {
