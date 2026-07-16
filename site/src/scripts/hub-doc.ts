@@ -202,9 +202,14 @@ function scrollspy(nav: HTMLElement): void {
   let pinTimer = 0;
   const unpin = () => {
     if (!pinned) return;
+    // The click's scroll has settled: keep the section the user CLICKED active,
+    // rather than re-running pick(). On a short page the clicked heading may not
+    // reach the offset line (nothing left to scroll), and pick() would then land
+    // on the PREVIOUS section — the "highlights one section up" bug. Release the
+    // pin so the user's own next scroll drives pick() normally from here.
+    setActive(pinned);
     pinned = '';
     clearTimeout(pinTimer);
-    setActive(pick());
   };
 
   let ticking = false;
