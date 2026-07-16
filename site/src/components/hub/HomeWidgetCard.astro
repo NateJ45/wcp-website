@@ -23,8 +23,9 @@ interface Props {
   emptyText?: string;
   /** Warm sticky-note fill (`.hub-note--postit`) for note-like widgets. */
   postit?: boolean;
-  /** Opt in to a large faint icon watermark (the header `icon`) overflowing the
-   *  bottom-right corner, like the home helper tiles. */
+  /** Large faint icon watermark (the header `icon`) overflowing the bottom-right
+   *  corner, like the home helper tiles. On by default for every dashboard
+   *  widget; pass `watermark={false}` to opt a card out. */
   watermark?: boolean;
   class?: string;
 }
@@ -36,7 +37,7 @@ const {
   empty = false,
   emptyText = 'Nothing here yet.',
   postit = false,
-  watermark = false,
+  watermark = true,
   class: className,
 } = Astro.props;
 ---
