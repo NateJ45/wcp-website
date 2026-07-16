@@ -315,11 +315,15 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   a percentage height there resolves after intrinsic row sizing and overflows the cell
   into Announcements whenever the hero grows (bit twice on 2026-07-14).
 - **Texture & flair**: the canvas is construction paper (grain + hand-drawn doodle
-  tile + a crayon/paint tile of rough brand-color strokes and splotches, plus three
-  soft brand washes baked into the same `.wcp-hub-canvas` background — navy top-left,
-  orange top-right, sky bottom; light/dark variants, all UNDER the white cards so they
-  never touch text contrast — globals.css "Hub canvas texture"; direct grey Sections
-  render transparent over it), a warm glow sits behind the greeting and a
+  tile, plus three soft brand washes baked into the same `.wcp-hub-canvas` background —
+  navy top-left, orange top-right, sky bottom; light/dark variants, all UNDER the white
+  cards so they never touch text contrast — globals.css "Hub canvas texture"; direct grey
+  Sections render transparent over it). A **fixed WCP emblem watermark** (`.wcp-hub-emblem`,
+  `position: fixed` bottom-right, overflowing the corner at ~5% opacity) floats over the
+  paper but behind every card, held in place as the page scrolls; a page-grey backing plate
+  (`.wcp-hub-emblem-plate`, a `--color-grey` disc one z-layer below it) fills the mark's own
+  transparent gaps so the doodles don't read through the emblem. A warm glow sits behind the
+  greeting and a
   class-colored one behind each class page header, the greeting carries a live
   weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
   sign-up success fires a reduced-motion-safe confetti burst.

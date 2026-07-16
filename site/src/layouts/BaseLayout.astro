@@ -278,7 +278,13 @@ const currentPath = Astro.url.pathname;
           <div class="wcp-hub-canvas flex min-w-0 flex-1 flex-col bg-grey">
             {/* Fixed emblem watermark: stays put as the page scrolls, sits above
                 the paper texture but below every card (z-index handled in
-                globals.css). Purely decorative. */}
+                globals.css). Purely decorative. The plate is a page-grey disc
+                one layer beneath the emblem that fills the mark's own
+                transparent gaps with the canvas colour, so the hand-drawn
+                doodles don't read THROUGH the emblem. Separate element on
+                purpose: the emblem is at 5% opacity, so a child/pseudo would
+                inherit that and couldn't occlude anything. */}
+            <div class="wcp-hub-emblem-plate" aria-hidden="true" />
             <div
               class="wcp-hub-emblem"
               style={`background-image: url('${wcpEmblem.src}')`}

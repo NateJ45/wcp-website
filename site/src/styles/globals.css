@@ -457,6 +457,34 @@
   background-size: min(62vmin, 520px);
   opacity: 0.05;
 }
+/* Backing plate: a page-grey disc the size and position of the emblem, one
+   layer below it (z-index -2, still above the canvas texture). It occludes the
+   grain/doodles/washes inside the mark's circle so they don't show through the
+   emblem's transparent gaps. Keyed to --color-grey (the canvas base, light AND
+   dark) so the disc itself is invisible against the surrounding page — only the
+   texture-removal reads. Feathered edge, so no hard circle line. Full opacity
+   on its own element (the emblem's 5% can't occlude). Two explicit size values
+   because a gradient has no intrinsic aspect ratio: a single value would leave
+   the height at auto (full viewport) instead of a square. */
+.wcp-hub-emblem-plate {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: right -3.5rem bottom -4.5rem;
+  background-size: min(62vmin, 520px) min(62vmin, 520px);
+  background-image: radial-gradient(
+    circle,
+    var(--color-grey) 0 72%,
+    transparent 84%
+  );
+}
+@media print {
+  .wcp-hub-emblem-plate {
+    display: none;
+  }
+}
 .dark .wcp-hub-emblem {
   opacity: 0.07;
 }
