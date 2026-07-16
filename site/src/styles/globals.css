@@ -576,6 +576,23 @@
   outline-offset: 2px;
 }
 
+/* Compact full-year schedule (HubCalendarSchedule, mobile): collapsible months.
+   Hide the native marker and spin the chevron when a month is open. */
+.wcp-sched-summary {
+  list-style: none;
+}
+.wcp-sched-summary::-webkit-details-marker {
+  display: none;
+}
+.wcp-sched-month[open] .wcp-sched-chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .wcp-sched-chevron {
+    transition: none;
+  }
+}
+
 /* Event/day details modal (HubEventDialog + hub-event-dialog.ts). Native
    <dialog>: centred by the browser; the panel carries the card look, the
    backdrop dims + blurs the page. */

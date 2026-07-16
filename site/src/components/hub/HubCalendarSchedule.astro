@@ -1,0 +1,129 @@
+---
+/* ============================================================================
+   HubCalendarSchedule — compact full-year schedule (mobile counterpart to the
+   month grid)
+   ============================================================================
+   On phones the month grid is hidden (a 7-col grid is unusable at 375px) and
+   the agenda above only shows the next 12 events, so families couldn't see
+   further out. This lists the WHOLE feed window (~12 months) as collapsible
+   months — compact, browsable, and the current month open by default. Each row
+   is a trigger for the shared HubEventDialog (details + add-to-calendar), same
+   as the grid days and agenda cards. Mobile-only (md:hidden), set on the call
+   site.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import {
+  eventDate,
+  eventType,
+  eventId,
+  easternYMD,
+  fmtEventMonth,
+  fmtEventDay,
+  fmtEventWeekday,
+  fmtEventTime,
+  EVENT_TYPE_META,
+  type HubEvent,
+} from '@/lib/hub-calendar';
+import { deEmDash } from '@/lib/portable-text';
+
+interface Props {
+  events: HubEvent[];
+}
+const { events } = Astro.props;
+
+// Group into Eastern months, in feed order (already soonest-first); only months
+// that actually have events, so the list is a real schedule, not empty shells.
+interface MonthGroup {
+  key: string;
+  label: string;
+  events: HubEvent[];
+}
+const groups: MonthGroup[] = [];
+const byKey = new Map<string, MonthGroup>();
+for (const e of events) {
+  const [y, m0] = easternYMD(eventDate(e.start));
+  const key = `${y}-${m0}`;
+  let g = byKey.get(key);
+  if (!g) {
+    g = {
+      key,
+      label: new Date(Date.UTC(y, m0, 1, 12)).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }),
+      events: [],
+    };
+    byKey.set(key, g);
+    groups.push(g);
+  }
+  g.events.push(e);
+}
+
+// Open the current month by default (or the first month with events if this
+// month has none).
+const [ty, tm0] = easternYMD(new Date());
+const todayKey = `${ty}-${tm0}`;
+const defaultOpen = byKey.has(todayKey) ? todayKey : (groups[0]?.key ?? '');
+---
+
+<div class="flex flex-col gap-2">
+  {
+    groups.map((g) => (
+      <details
+        class="wcp-sched-month overflow-hidden rounded-[var(--radius)] border border-border bg-white dark:bg-surface"
+        open={g.key === defaultOpen}
+      >
+        <summary class="wcp-sched-summary flex cursor-pointer items-center justify-between gap-2 px-4 py-3">
+          <span class="font-bold text-heading">{g.label}</span>
+          <span class="flex items-center gap-2 text-sm text-ink-muted">
+            {g.events.length} event{g.events.length > 1 ? 's' : ''}
+            <Icon name="chevron-down" class="wcp-sched-chevron h-4 w-4 transition-transform" />
+          </span>
+        </summary>
+        <ul>
+          {g.events.map((e) => {
+            const meta = EVENT_TYPE_META[eventType(e.title)];
+            return (
+              <li class="border-t border-border">
+                <button
+                  type="button"
+                  class="wcp-card-trigger flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-grey/60 dark:hover:bg-white/5"
+                  data-event-id={eventId(e)}
+                  aria-label={`View details: ${deEmDash(e.title)}`}
+                >
+                  <span
+                    class:list={[
+                      'flex w-11 shrink-0 flex-col items-center rounded-lg py-1',
+                      meta.chipBg,
+                    ]}
+                  >
+                    <span class="text-[0.6rem] font-bold text-ink-muted uppercase">
+                      {fmtEventMonth(e)}
+                    </span>
+                    <span class="text-base leading-none font-extrabold text-heading">
+                      {fmtEventDay(e)}
+                    </span>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-center gap-1.5">
+                      <span
+                        class="h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={`background:${meta.accent}`}
+                        aria-hidden="true"
+                      />
+                      <span class="truncate font-semibold text-heading">{deEmDash(e.title)}</span>
+                    </span>
+                    <span class="mt-0.5 block text-xs text-ink-muted">
+                      {fmtEventWeekday(e)} · {fmtEventTime(e)}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    ))
+  }
+</div>

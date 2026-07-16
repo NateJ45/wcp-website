@@ -23,6 +23,7 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import HubCalendarGrid from '@/components/hub/HubCalendarGrid.astro';
+import HubCalendarSchedule from '@/components/hub/HubCalendarSchedule.astro';
 import HubEventDialog from '@/components/hub/HubEventDialog.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -246,21 +247,28 @@ const icalUrl = calId
       </div>
 
       {
-        /* The full school calendar — our own on-brand month grid, built from the
-          same feed as the agenda above (desktop only; phones use the agenda).
-          "Open in browser" in the subscribe card still reaches Google's own UI. */
+        /* The full school calendar — the same feed as the agenda, shown as our
+          on-brand month grid on desktop and a compact collapsible-month schedule
+          on phones (where a 7-col grid is unusable). Both cover the full ~12
+          month window. "Open in browser" in the subscribe card still reaches
+          Google's own UI. */
       }
-      <div class="mt-12 hidden md:block" aria-labelledby="full-calendar">
+      <div class="mt-12" aria-labelledby="full-calendar">
         <h2 id="full-calendar" class="text-xl font-extrabold text-heading">
           The full school calendar
         </h2>
         <p class="mt-1 max-w-2xl text-ink-muted">
-          Month view of every dated item, straight from the school calendar. Updates made there show
-          up here automatically.
+          Every dated item, straight from the school calendar. Updates made there show up here
+          automatically. Tap any day or event for details.
         </p>
-        <HubCard class="mt-6 p-4 sm:p-5">
+        {/* Desktop: month grid. */}
+        <HubCard class="mt-6 hidden p-4 sm:p-5 md:block">
           <HubCalendarGrid events={calendarEvents} />
         </HubCard>
+        {/* Phones: compact full-year schedule (browse all 12 months). */}
+        <div class="mt-6 md:hidden">
+          <HubCalendarSchedule events={calendarEvents} />
+        </div>
       </div>
 
       {/* Weather closures — neutral info note (was a Callout side-stripe) */}
