@@ -13,6 +13,7 @@ export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
+import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubGreeting from '@/components/hub/HubGreeting.astro';
 import ClassHelperRow from '@/components/hub/ClassHelperRow.astro';
@@ -99,7 +100,6 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
       {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
       <div class="relative lg:col-span-8">
         <HubGreeting
-          tagline={settings?.tagline || site.tagline}
           yearStart={settings?.yearStart}
           yearEnd={settings?.yearEnd}
           firstDay={settings?.firstDay}
@@ -213,6 +213,44 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         </BudgetSnapshotWidget>
       </div>
     </div>
+
+    {
+      /* Become a Super Helper — a prominent, warm call to action to get
+        certified for the classroom (the school's top volunteer ask). Full-width
+        amber banner so it stands apart from the widget grid. */
+    }
+    <section aria-labelledby="hub-super-heading" class="mt-4" data-reveal>
+      <a
+        href="/family-hub/super-helper"
+        class="wcp-lift group flex flex-col items-start gap-4 rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 no-underline sm:flex-row sm:items-center dark:bg-amber/10"
+      >
+        <span
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
+          aria-hidden="true"
+        >
+          <Icon name="star" class="wcp-pop h-7 w-7" />
+        </span>
+        <div class="min-w-0 flex-1">
+          <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
+            Become a Super Helper
+          </h2>
+          <p class="mt-1 text-ink">
+            Get certified to be counted in the classroom and help lead the day. Here is every step,
+            start to finish.
+          </p>
+        </div>
+        <span
+          class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white"
+        >
+          See the steps
+          <Icon
+            name="arrow-right"
+            class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+            aria-hidden="true"
+          />
+        </span>
+      </a>
+    </section>
 
     {
       /* The official store — live Fourthwall catalog + a "supporting our co-op"

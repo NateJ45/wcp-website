@@ -97,6 +97,7 @@ export const hubNav: HubGroup[] = [
     links: [
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
+      { label: 'Become a Super Helper', href: '/family-hub/super-helper', icon: 'star' },
       {
         label: 'Store',
         href: 'https://store.westchesterpreschool.org/',

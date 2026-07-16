@@ -1,0 +1,228 @@
+---
+/* ============================================================================
+   Family Hub — Become a Super Helper (GATED)
+   ============================================================================
+   The certification path for parents who want to be counted in the classroom:
+   online training, CPR / First Aid, and proof of education, plus the periodic
+   background-check renewal for returning helpers. Content is code-owned (from
+   the school's Super Helper + Background Check PDFs) and rendered through the
+   SAME HubSectionedBody handbook style as the class pages, so it needs no
+   Sanity edit. prerender=false so the sign-in gate runs.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+
+const ADMIN = 'admin@westchesterpreschool.org';
+
+// Minimal portable-text builder for the prose sections (unique keys per run).
+let _k = 0;
+const uid = (p: string) => `sh-${p}-${_k++}`;
+const pt = (text: string) => [
+  {
+    _type: 'block',
+    _key: uid('b'),
+    style: 'normal',
+    markDefs: [],
+    children: [{ _type: 'span', _key: uid('s'), text, marks: [] }],
+  },
+];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sections: any[] = [
+  {
+    _type: 'proseSection',
+    _key: 'sh-intro',
+    background: 'white',
+    narrow: true,
+    header: { _type: 'sectionHeader', title: 'What is a Super Helper?', align: 'center' },
+    body: pt(
+      'Super Helpers are certified parent volunteers who can be counted in the classroom ratio and help lead the day. It is a one-time certification (plus a periodic background-check renewal), so once you are through it you can jump in whenever your class needs an extra set of hands. It takes three things, on top of your Employee Medical Statement and background check. Here is every step, start to finish.',
+    ),
+  },
+  {
+    _type: 'cardGridSection',
+    _key: 'sh-what',
+    background: 'grey',
+    columns: 3,
+    header: {
+      _type: 'sectionHeader',
+      title: 'What it takes',
+      lead: 'Three things, plus your Employee Medical Statement and background check.',
+      align: 'center',
+    },
+    cards: [
+      {
+        _key: 'sh-w1',
+        icon: 'monitor',
+        chip: 'sky',
+        title: 'Online training',
+        body: 'About 8 hours: Child Care Orientation and Child Abuse recognition, done online through your OCCRRA account.',
+      },
+      {
+        _key: 'sh-w2',
+        icon: 'heart-pulse',
+        chip: 'orange',
+        title: 'CPR & First Aid',
+        body: 'In-person Adult and Pediatric CPR and First Aid, certified by the State of Ohio.',
+      },
+      {
+        _key: 'sh-w3',
+        icon: 'graduation-cap',
+        chip: 'green',
+        title: 'Proof of education',
+        body: 'An official transcript or diploma showing you finished high school or college.',
+      },
+    ],
+  },
+  {
+    _type: 'stepListSection',
+    _key: 'sh-online',
+    background: 'white',
+    header: {
+      _type: 'sectionHeader',
+      title: 'Online training, step by step',
+      lead: 'Both courses live in your OCCRRA account and are free.',
+      align: 'center',
+    },
+    steps: [
+      {
+        _key: 'sh-o1',
+        title: 'Log into OCCRRA',
+        body: 'Sign into your OCCRRA account and choose the "Training Search" tab on the left.',
+      },
+      {
+        _key: 'sh-o2',
+        title: 'Add the Orientation training',
+        body: 'Search "DCY Child Care Staff Orientation Training" and pick the free, online (no date or time), 7.00 contact-hour class (course AT144793, section ST10163195). Add it to your cart and check out.',
+      },
+      {
+        _key: 'sh-o3',
+        title: 'Add the Child Abuse training',
+        body: 'Do the same for "DCY Child Abuse and Neglect Recognition and Mandated Reporting Requirements".',
+      },
+      {
+        _key: 'sh-o4',
+        title: 'Complete both courses',
+        body: 'Find each class under your "Professional Development" tab. The link to the training itself is in the class details.',
+      },
+      {
+        _key: 'sh-o5',
+        title: 'Tell the Administrator',
+        body: `Once both are done, send a quick note to ${ADMIN}.`,
+      },
+    ],
+  },
+  {
+    _type: 'stepListSection',
+    _key: 'sh-cpr',
+    background: 'white',
+    header: {
+      _type: 'sectionHeader',
+      title: 'CPR & First Aid, step by step',
+      lead: 'This part is in person, so give yourself a little lead time to book a class.',
+      align: 'center',
+    },
+    steps: [
+      {
+        _key: 'sh-c1',
+        title: 'Book an in-person class',
+        body: 'You need both Adult and Pediatric CPR and First Aid, in person, certified by the State of Ohio. An "Online plus Classroom" combo is fine as long as it includes the in-person portion.',
+      },
+      {
+        _key: 'sh-c2',
+        title: 'We recommend Red Cross',
+        body: 'Go to redcross.org/take-a-class, choose CPR, and enter your zip code. Filter Class Focus to "Adult And Pediatric CPR/AED" (for example, "Adult And Pediatric First Aid/CPR/AED"). Many classes have an online part to finish before the in-person session.',
+        note: 'Register and pay directly with the provider.',
+      },
+      {
+        _key: 'sh-c3',
+        title: 'Send your certificate',
+        body: `Forward an electronic copy of your 8.5x11 completion certificate to ${ADMIN}.`,
+      },
+      {
+        _key: 'sh-c4',
+        title: 'Log it in OCCRRA',
+        body: 'Under "Professional Development", click "+ Add Training", enter the class title (copy it from your certificate) and the date completed, and upload your certificate PDF.',
+      },
+    ],
+  },
+  {
+    _type: 'proseSection',
+    _key: 'sh-proof',
+    background: 'white',
+    narrow: true,
+    header: { _type: 'sectionHeader', title: 'Proof of education', align: 'center' },
+    body: pt(
+      `Submit an official transcript or diploma showing you completed high school or college to ${ADMIN}. Once your CPR certificate and proof of education are in and both online courses are done, you are a certified Super Helper. Welcome to the classroom!`,
+    ),
+  },
+  {
+    _type: 'stepListSection',
+    _key: 'sh-renew',
+    background: 'grey',
+    header: {
+      _type: 'sectionHeader',
+      title: 'Already a Super Helper? Renew your background check',
+      lead: 'Ohio requires a new background check at least every five years, and our insurance requires one every two. If you have not worked in the classroom for six months or more, you also need a new Employee Medical Statement.',
+      align: 'center',
+    },
+    steps: [
+      {
+        _key: 'sh-r1',
+        title: 'Get fingerprinted',
+        body: 'Request BOTH state and federal checks (codes 5104.013 for BCI and CCDBGA for FBI). Bring these instructions, your completed WebCheck application, and a photo ID. It is $65. Locations include the Butler County Sheriff (Hamilton) and the Warren County Sheriff (Lebanon or the Deerfield Township post in Mason). Call ahead, since hours vary and some require appointments.',
+        note: `Email ${ADMIN} once you are fingerprinted.`,
+      },
+      {
+        _key: 'sh-r2',
+        title: 'Request the check in OCCRRA within 7 days',
+        body: 'Log in, then Account, then "Request Background Check". Role: Employee. Reason: Five Year Renewal (choose this even if it has been less than five years). Start date: September 1 of the school year. When prompted for the program, enter "West Chester Co-op" or number 204552. If you have had a check in the last five years and worked in the last six months, add the note: "I obtained FBI/BCI results within the past five years but would like to renew early for insurance purposes." Sign, submit, and save the confirmation number.',
+      },
+      {
+        _key: 'sh-r3',
+        title: 'Notify the Administrator',
+        body: `Email ${ADMIN} once all steps are done. Results usually arrive within about two weeks, and the school gets a copy too.`,
+      },
+    ],
+  },
+  {
+    _type: 'ctaSection',
+    _key: 'sh-cta',
+    title: 'Questions about any of this?',
+    lead: 'The Administrator is our paperwork wizard and is always happy to walk you through a step.',
+    tone: 'navy',
+    actions: [
+      {
+        _key: 'sh-cta-a',
+        label: 'Email the Administrator',
+        style: 'accent',
+        linkType: 'url',
+        url: `mailto:${ADMIN}`,
+      },
+    ],
+  },
+];
+---
+
+<HubShell
+  title="Become a Super Helper"
+  bare
+  current="/family-hub/super-helper"
+  pageTitle="Become a Super Helper — WCP Family Hub"
+>
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader
+        title="Become a Super Helper"
+        subtitle="Get certified to volunteer in the classroom. Here is every step, start to finish."
+        icon="star"
+        iconChip="bg-amber/15 text-amber-ink"
+      />
+
+      <HubSectionedBody sections={sections} label="Super Helper steps" class="mt-8" />
+    </div>
+  </Section>
+</HubShell>

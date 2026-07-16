@@ -45,13 +45,13 @@ const { steps, footnote, class: className } = Astro.props;
         >
           {i + 1}
         </span>
-        <div class="pt-1">
-          <h3 class="text-lg text-heading">{s.title}</h3>
-          <p class="mt-1 leading-relaxed text-ink">{s.body}</p>
+        <div class="min-w-0 pt-1">
+          <h3 class="text-lg break-words text-heading">{s.title}</h3>
+          <p class="mt-1 leading-relaxed break-words text-ink">{s.body}</p>
           {s.note && (
-            <p class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1 text-sm font-semibold text-orange-ink">
-              <Icon name="sparkles" class="h-4 w-4" />
-              {s.note}
+            <p class="mt-2 flex w-fit max-w-full items-start gap-1.5 rounded-2xl bg-cream px-3 py-1 text-sm font-semibold break-words text-orange-ink">
+              <Icon name="sparkles" class="mt-0.5 h-4 w-4 shrink-0" />
+              <span class="min-w-0">{s.note}</span>
             </p>
           )}
         </div>

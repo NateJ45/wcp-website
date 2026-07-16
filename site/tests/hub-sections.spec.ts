@@ -18,6 +18,7 @@ const ROUTES = [
   '/family-hub/updates',
   '/family-hub/twos-threes',
   '/family-hub/pre-k',
+  '/family-hub/super-helper',
   '/family-hub/directory',
   '/family-hub/sign-ups',
   '/family-hub/celebrations',

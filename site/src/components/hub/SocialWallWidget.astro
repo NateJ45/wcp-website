@@ -127,7 +127,7 @@ const tiles = (album?.photos ?? [])
             community.
           </p>
 
-          <ul class="wcp-wall-grid mt-6">
+          <ul class="wcp-wall-grid">
             {tiles.map((t) => (
               <li class="wcp-wall-tile">
                 <a href={igProfile} target="_blank" rel="noopener">
@@ -169,7 +169,9 @@ const tiles = (album?.photos ?? [])
   /* The board of pinned snapshots. */
   .wcp-wall-grid {
     list-style: none;
-    margin: 0;
+    /* Extra breathing room above the board so the photos sit clear of the
+       intro line. */
+    margin: 1.75rem 0 0;
     padding: 4px 4px 8px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);

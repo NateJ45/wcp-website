@@ -572,13 +572,36 @@
   max-width: none;
   margin-inline: 0;
 }
+/* Bleed sections shed their vertical padding: the block-to-block margin already
+   spaces them, and stacking both left big blank gaps between handbook sections.
+   (CtaBanner is `section.bg-navy`, not `.wcp-section`, so it keeps its own pad.)
+   The marketing header→content gap (mt-12) also tightens to app scale. */
 .hub-doc-block[data-treatment='bleed'] .wcp-section {
-  padding-block: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+  padding-block: 0;
+}
+.hub-doc-block[data-treatment='bleed'] .mt-12 {
+  margin-top: 1.5rem;
 }
 .hub-doc-block[data-treatment='bleed'] .wcp-section.bg-white,
 .hub-doc-block[data-treatment='bleed'] .wcp-section.bg-cream,
 .hub-doc-block[data-treatment='bleed'] .wcp-section.bg-grey {
   background-color: transparent;
+}
+
+/* Card grids in the narrow handbook doc column: cap to 2-up (marketing 3/4-up
+   made cards too skinny). Kept to `.hub-doc-block` — wider hub pages (calendar)
+   keep their own column counts. */
+.hub-doc-block .wcp-section ul:has(> li.group) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* Shrink the FeatureCard title from marketing display scale to a card-scale
+   size across ALL hub pages, so long words like "Enrichment" stop breaking
+   mid-word (hyphens as a safety; lang="en" is set). Public pages unaffected. */
+.wcp-hub-canvas li.group > h3 {
+  font-size: 1.35rem;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 /* A navy band in the doc column is almost always the closing CTA. Lift it off
    the page as a self-contained CTA card: a rounder corner + a soft, navy-tinted
