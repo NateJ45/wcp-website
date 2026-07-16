@@ -20,20 +20,39 @@
 import { sanityFetch } from '@/lib/sanity';
 import { cached } from '@/lib/hub-cache';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
-import { EVENT_TZ, expandRecurring, type EventDoc } from '@/lib/events';
+import { EVENT_TZ, expandRecurring, eventPlace, type EventDoc } from '@/lib/events';
+import { deEmDash } from '@/lib/portable-text';
 
 export interface HubEvent {
   title: string;
   /** ISO datetime, or date-only "YYYY-MM-DD" for all-day events. */
   start: string;
+  /** ISO end datetime (Sanity events only; the feed doesn't carry one). */
+  end?: string;
   allDay?: boolean;
   location?: string;
+  /** Long text (Sanity events only; the Google feed doesn't carry one). */
+  description?: string;
 }
 
 /** Parse feed/Sanity start strings safely (see DATE HANDLING above). */
 export function eventDate(start: string): Date {
   return start.length === 10 ? new Date(`${start}T12:00:00Z`) : new Date(start);
 }
+
+/** A date's Eastern calendar day as [year, month0, day]. en-CA gives ISO
+ *  "YYYY-MM-DD"; splitting beats parsing back into a Date. */
+export function easternYMD(d: Date): [number, number, number] {
+  const [y, m, day] = d.toLocaleDateString('en-CA', { timeZone: EVENT_TZ }).split('-').map(Number);
+  return [y, m - 1, day];
+}
+/** Stable per-day bucket key, shared by the month grid and the detail dialog so
+ *  a day cell's data-day-key matches its events' keys exactly. */
+export const dayKeyOf = (y: number, m0: number, d: number) => `${y}-${m0}-${d}`;
+export const eventDayKey = (e: HubEvent) => dayKeyOf(...easternYMD(eventDate(e.start)));
+/** Stable per-event id (start + title) so the agenda and grid reference the same
+ *  event across the two arrays without depending on array position. */
+export const eventId = (e: HubEvent) => `${e.start}::${e.title}`;
 
 const fmtOpts = (opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions => ({
   ...opts,
@@ -115,6 +134,85 @@ export const EVENT_TYPE_META: Record<
   },
 };
 
+/** A display-ready event for the detail dialog: pre-formatted (Eastern) date +
+ *  time so the client never touches timezones, plus a per-event "add to Google
+ *  Calendar" template URL. location/description are '' when the source doesn't
+ *  carry them (the Google feed doesn't; Sanity `event` docs do). */
+export interface EventDetail {
+  id: string;
+  dayKey: string;
+  title: string;
+  typeLabel: string;
+  typeAccent: string;
+  dateLabel: string;
+  timeLabel: string;
+  location: string;
+  description: string;
+  addUrl: string;
+}
+
+/** Google Calendar template `dates` value: YYYYMMDD/next for all-day, else UTC
+ *  YYYYMMDDTHHMMSSZ/start+end (defaulting a timed event to +1h). */
+function gcalDates(e: HubEvent): string {
+  if (e.allDay || e.start.length === 10) {
+    const startDay = e.start.slice(0, 10).replace(/-/g, '');
+    const next = new Date(eventDate(e.start).getTime() + 86_400_000)
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, '');
+    return `${startDay}/${next}`;
+  }
+  const stamp = (iso: string) =>
+    new Date(iso)
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}/, '');
+  const end = e.end ?? new Date(new Date(e.start).getTime() + 3_600_000).toISOString();
+  return `${stamp(e.start)}/${stamp(end)}`;
+}
+
+export function toEventDetail(e: HubEvent): EventDetail {
+  const meta = EVENT_TYPE_META[eventType(e.title)];
+  const fmtT = (iso: string) =>
+    new Date(iso).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: EVENT_TZ,
+    });
+  const allDay = e.allDay || e.start.length === 10;
+  const sameDayEnd =
+    e.end && easternYMD(eventDate(e.end)).join() === easternYMD(eventDate(e.start)).join();
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: e.title,
+    dates: gcalDates(e),
+    details: e.description ?? '',
+    location: e.location ?? '',
+  });
+  return {
+    id: eventId(e),
+    dayKey: eventDayKey(e),
+    title: deEmDash(e.title),
+    typeLabel: meta.label,
+    typeAccent: meta.accent,
+    dateLabel: eventDate(e.start).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: EVENT_TZ,
+    }),
+    timeLabel: allDay
+      ? 'All day'
+      : sameDayEnd
+        ? `${fmtT(e.start)} – ${fmtT(e.end!)}`
+        : fmtT(e.start),
+    location: e.location ? deEmDash(e.location) : '',
+    description: e.description ? deEmDash(e.description) : '',
+    addUrl: `https://calendar.google.com/calendar/render?${params.toString()}`,
+  };
+}
+
 /**
  * All events from the Google Calendar feed, sorted soonest-first, NO date
  * filter. Rides hub-cache's long stale-while-revalidate window (30 min fresh,
@@ -154,8 +252,10 @@ async function fetchSanityEvents(): Promise<HubEvent[]> {
       .map((d) => ({
         title: d.title!,
         start: d.startDate!,
+        end: d.endDate,
         allDay: d.allDay,
-        location: d.location,
+        location: eventPlace(d),
+        description: d.description,
       }));
   } catch {
     return [];

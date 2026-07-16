@@ -1,0 +1,59 @@
+---
+/* ============================================================================
+   HubEventDialog — the shared "event / day details" modal for the Calendar page
+   ============================================================================
+   One native <dialog> reused by both the agenda list and the month grid. It's
+   populated on click by hub-event-dialog.ts from the JSON blob below, so there's
+   a single source of event data and no per-instance detail markup.
+
+   Triggers (wired on their own elements, not here):
+     - an agenda card / grid pill carrying data-event-id  → that one event
+     - a grid day cell carrying data-day-key              → every event that day
+
+   The JSON is pre-formatted server-side (Eastern date + time strings, the
+   per-event "add to Google Calendar" URL) so the client never touches
+   timezones. location/description are '' when the source doesn't carry them —
+   the Google feed sends neither; Sanity `event` docs do — and the dialog simply
+   omits the empty rows.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { toEventDetail, type HubEvent } from '@/lib/hub-calendar';
+
+interface Props {
+  events: HubEvent[];
+}
+const { events } = Astro.props;
+const details = events.map(toEventDetail);
+// Escape "<" so a title/description can never break out of the <script> or the
+// JSON context; the client JSON.parses it back.
+const json = JSON.stringify(details).replace(/</g, '\\u003c');
+---
+
+<script type="application/json" data-hub-events set:html={json} />
+
+{/* Icon sources the dialog script clones (avoids building SVG in JS). */}
+<template data-icon="clock"><Icon name="clock" class="h-4 w-4 shrink-0" /></template>
+<template data-icon="map-pin"><Icon name="map-pin" class="h-4 w-4 shrink-0" /></template>
+<template data-icon="plus"><Icon name="plus" class="h-4 w-4" /></template>
+
+<dialog id="hub-event-dialog" class="wcp-event-dialog" aria-labelledby="hub-event-dialog-title">
+  <div class="wcp-event-dialog__panel">
+    <div class="flex items-start justify-between gap-4">
+      <p
+        id="hub-event-dialog-title"
+        data-dialog-title
+        class="text-sm font-bold tracking-wide text-ink-muted uppercase"
+      >
+      </p>
+      <button
+        type="button"
+        data-dialog-close
+        class="-mt-1 -mr-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-grey hover:text-heading dark:hover:bg-white/5"
+        aria-label="Close"
+      >
+        <Icon name="x" class="h-5 w-5" />
+      </button>
+    </div>
+    <div data-dialog-body class="mt-2 flex flex-col gap-5"></div>
+  </div>
+</dialog>

@@ -548,6 +548,74 @@
   opacity: 0.4;
   cursor: default;
 }
+
+/* Clickable day cell (grid) — a transparent overlay button; a subtle wash on
+   hover signals it's clickable, plus a keyboard focus ring inset in the cell. */
+.wcp-cal-day {
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s ease;
+}
+.wcp-cal-day:hover {
+  background: rgba(1, 69, 126, 0.05);
+}
+.dark .wcp-cal-day:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.wcp-cal-day:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+}
+/* Clickable agenda card — the card itself already lifts on hover, so the
+   overlay trigger stays washless and only shows a keyboard focus ring. */
+.wcp-card-trigger {
+  cursor: pointer;
+}
+.wcp-card-trigger:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+/* Event/day details modal (HubEventDialog + hub-event-dialog.ts). Native
+   <dialog>: centred by the browser; the panel carries the card look, the
+   backdrop dims + blurs the page. */
+.wcp-event-dialog {
+  width: 100%;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+.wcp-event-dialog::backdrop {
+  background: rgba(1, 24, 46, 0.45);
+  backdrop-filter: blur(2px);
+}
+.wcp-event-dialog__panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 1rem);
+  background: #fff;
+  padding: 1.25rem 1.5rem 1.5rem;
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.35);
+}
+.dark .wcp-event-dialog__panel {
+  background: var(--color-surface);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-event-dialog[open] {
+    animation: wcp-dialog-in 0.18s ease-out;
+  }
+  @keyframes wcp-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
 /* "Copied!" token that pops by the cursor when a desktop click copies an email. */
 .wcp-copy-toast {
   position: fixed;

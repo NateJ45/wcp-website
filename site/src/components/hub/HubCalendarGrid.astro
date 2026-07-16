@@ -25,10 +25,11 @@ import {
   eventDate,
   eventType,
   fmtEventTime,
+  easternYMD,
+  dayKeyOf,
   EVENT_TYPE_META,
   type HubEvent,
 } from '@/lib/hub-calendar';
-import { EVENT_TZ } from '@/lib/events';
 import { deEmDash } from '@/lib/portable-text';
 
 interface Props {
@@ -38,13 +39,9 @@ interface Props {
 }
 const { events, maxPerDay = 3 } = Astro.props;
 
-// Eastern calendar date of a Date, as [year, month0, day].
-const easternYMD = (d: Date): [number, number, number] => {
-  // en-CA gives ISO "YYYY-MM-DD"; split beats parsing back into a Date.
-  const [y, m, day] = d.toLocaleDateString('en-CA', { timeZone: EVENT_TZ }).split('-').map(Number);
-  return [y, m - 1, day];
-};
-const keyOf = (y: number, m0: number, d: number) => `${y}-${m0}-${d}`;
+// Day-key helpers are shared with hub-calendar.ts so a cell's data-day-key
+// matches its events' keys in the detail dialog exactly. keyOf(y, m0, d) here.
+const keyOf = dayKeyOf;
 
 // Bucket every event by its Eastern day.
 const byDay = new Map<string, HubEvent[]>();
@@ -201,11 +198,25 @@ const single = months.length <= 1;
               {month.cells.slice(row * 7, row * 7 + 7).map((cell) => (
                 <td
                   class:list={[
-                    'h-24 border border-border align-top',
+                    'relative h-24 border border-border align-top',
                     cell.inMonth ? '' : 'bg-grey/40 dark:bg-white/[0.02]',
                   ]}
                   {...(cell.isToday ? { 'aria-current': 'date' } : {})}
                 >
+                  {/* Overlay button (a sibling, not a wrapper: a <button> can't
+                      legally contain the <ul> of pills). Fills the cell so a
+                      click anywhere on a day with events opens that day in the
+                      detail dialog (hub-event-dialog.ts). */}
+                  {cell.events.length > 0 && (
+                    <button
+                      type="button"
+                      class="wcp-cal-day absolute inset-0 z-[1]"
+                      data-day-key={cell.key}
+                      aria-label={`${month.label.split(' ')[0]} ${cell.d}: ${cell.events.length} event${
+                        cell.events.length > 1 ? 's' : ''
+                      }`}
+                    />
+                  )}
                   <div class="flex h-full flex-col gap-0.5 p-1">
                     <span
                       class:list={[

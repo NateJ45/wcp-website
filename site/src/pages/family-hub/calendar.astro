@@ -23,6 +23,7 @@ import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import HubCalendarGrid from '@/components/hub/HubCalendarGrid.astro';
+import HubEventDialog from '@/components/hub/HubEventDialog.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
@@ -35,6 +36,7 @@ import {
   fmtEventWeekday,
   fmtEventTime,
   eventType,
+  eventId,
   EVENT_TYPE_META,
   type HubEvent,
 } from '@/lib/hub-calendar';
@@ -193,9 +195,17 @@ const icalUrl = calId
                     )}
                     <HubCard
                       as="li"
-                      class="flex items-center gap-4 p-4"
+                      class="relative flex cursor-pointer items-center gap-4 p-4 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                       style={`--note-accent: ${meta.accent}`}
                     >
+                      {/* Overlay trigger — click the card to open the event in
+                          the detail dialog (hub-event-dialog.ts). */}
+                      <button
+                        type="button"
+                        class="wcp-card-trigger absolute inset-0 z-[1] rounded-[inherit]"
+                        data-event-id={eventId(e)}
+                        aria-label={`View details: ${deEmDash(e.title)}`}
+                      />
                       <span
                         class={`flex w-12 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
                       >
@@ -267,6 +277,12 @@ const icalUrl = calId
           Watch your email and our Facebook page for school-specific updates.
         </p>
       </HubCard>
+
+      {
+        /* Shared event/day details modal — opened by the agenda cards and grid
+          day cells above. Built from the full event window (same data). */
+      }
+      <HubEventDialog events={calendarEvents} />
     </div>
   </Section>
 
@@ -275,5 +291,6 @@ const icalUrl = calId
 
   <script>
     import '@/scripts/hub-calendar-grid';
+    import '@/scripts/hub-event-dialog';
   </script>
 </HubShell>
