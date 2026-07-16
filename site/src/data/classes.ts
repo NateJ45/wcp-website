@@ -47,7 +47,7 @@ export const classes: WcpClass[] = [
   {
     slug: 'threes',
     name: 'Threes',
-    icon: 'puzzle',
+    icon: 'sprout',
     tagline: 'A joyful first real school experience.',
     days: 'Mon, Tue, Wed',
     daysCount: '3 days per week',
