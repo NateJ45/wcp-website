@@ -22,6 +22,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import TeacherCard from '@/components/hub/TeacherCard.astro';
 import ClassRepCard from '@/components/hub/ClassRepCard.astro';
+import ClassAskGuide from '@/components/hub/ClassAskGuide.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
@@ -133,6 +134,9 @@ const classCards = [
         <ClassRepCard slug="pre-k-am" role="Pre-K AM Rep" label="Morning class rep · 2026-27" />
         <ClassRepCard slug="pre-k-pm" role="Pre-K PM Rep" label="Afternoon class rep · 2026-27" />
       </div>
+
+      {/* Who to ask for what — teacher vs. class rep. */}
+      <ClassAskGuide class="mb-4" />
 
       {/* FIXED: the two classes side by side, each in its own color. */}
       <div class="grid gap-4 lg:grid-cols-2">

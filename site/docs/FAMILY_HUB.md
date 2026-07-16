@@ -334,12 +334,20 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   `HubCard`/`HomeWidgetCard` take a `postit` prop for a warm sticky-note fill (Announcements
   - Meeting Minutes use it); the tint tracks the theme so text tokens keep AA contrast. All
     of it is decorative and below the text, so `test:hub` axe holds in both themes.
-- **Class pages** open with a `TeacherCard` (photo/name/role/**email + phone** straight
-  from the class's `teacherNote` doc — the same fields that power the welcome modal; the
-  card shows a **Say hi** (email) and a **Call or text** (phone) link), beside the facts
-  grid, then a photo "How our day flows" `storyTimelineSection` seeded from each class's
-  own schedule (`scripts/seed-class-stories.mjs`; the board swaps in real class photos in
-  the Studio).
+- **Class pages** open with a **people row**: a `TeacherCard` (photo/name/role/**email +
+  phone** straight from the class's `teacherNote` doc — the same fields that power the
+  welcome modal; the card shows a **Say hi** (email) and a **Call or text** (phone) link)
+  next to one `ClassRepCard` **per class the page covers** (Twos + Threes, or Pre-K AM +
+  PM). Each class elects ONE parent rep in the fall; until then the rep card is a designed
+  **"To be announced"** placeholder that reserves the seat. Rep names/emails/photos live in
+  `src/data/hub/org-holders.ts` (`classReps`, code-owned, so they can be filled in while
+  the Studio is quota-blocked). Below the row, a `ClassAskGuide` box (**"Not sure who to
+  ask?"**) splits **teacher vs. class rep** questions — grounded in `coop-roles.ts` + the
+  class handbooks (teacher = the child, curriculum, routines, attendance, health-in-class;
+  rep = the helping schedule, class updates, the class page, parties + Teacher
+  Appreciation, the co-op job). Then the facts grid and a photo "How our day flows"
+  `storyTimelineSection` seeded from each class's own schedule (`scripts/seed-class-stories.mjs`;
+  the board swaps in real class photos in the Studio).
 - **Signed sign-off CTA.** The handbook's **closing** CTA on a class page becomes a signed
   sign-off card: the teacher's headshot in a class-colour ring + **Email** / **Call or
   text** pill buttons (`TeacherSignoff.astro`), which stand in for the CTA's plain-text
