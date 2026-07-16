@@ -300,6 +300,12 @@ const sized = (u?: string): string | undefined =>
     outline-offset: 2px;
   }
   .wcp-store-tabrow {
+    /* A <fieldset> defaults to min-inline-size: min-content, so it grows to fit
+       every category pill and overflows the card instead of scrolling (the last
+       tab, e.g. "Youth", ends up cut off with no way to reach it). Force it to 0
+       so overflow-x-auto engages and the row flick-scrolls like the product rail
+       below. */
+    min-inline-size: 0;
     scrollbar-width: none;
   }
   .wcp-store-tabrow::-webkit-scrollbar {

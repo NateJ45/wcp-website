@@ -199,22 +199,43 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         <ClassHelperRow />
       </div>
 
-      <div class="lg:col-span-8" style="--reveal-delay: 180ms; --note-accent: var(--color-orange)">
+      {
+        /* Mobile ordering: group the two post-it list cards (Announcements +
+          Meeting Minutes) together and the two stat cards (Fundraising + Budget)
+          together, since the single-column stack otherwise interleaves them.
+          `order-*` reorders only the phone stack; `lg:order-none` restores the
+          source order so the desktop bento layout is unchanged. */
+      }
+      <div
+        class="order-1 lg:order-none lg:col-span-8"
+        style="--reveal-delay: 180ms; --note-accent: var(--color-orange)"
+      >
         <AnnouncementsWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 240ms; --note-accent: var(--color-green)">
+      <div
+        class="order-3 lg:order-none lg:col-span-4"
+        style="--reveal-delay: 240ms; --note-accent: var(--color-green)"
+      >
         <FundraisingWidget server:defer>
           <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
         </FundraisingWidget>
       </div>
-
-      <div class="lg:col-span-4" style="--reveal-delay: 300ms; --note-accent: var(--color-amber)">
+      <div
+        class="order-2 lg:order-none lg:col-span-4"
+        style="--reveal-delay: 300ms; --note-accent: var(--color-amber)"
+      >
         <MeetingMinutesWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 360ms; --note-accent: var(--color-sky)">
+      <div
+        class="order-5 lg:order-none lg:col-span-4"
+        style="--reveal-delay: 360ms; --note-accent: var(--color-sky)"
+      >
         <ClassPhotosWidget />
       </div>
-      <div class="lg:col-span-4" style="--reveal-delay: 420ms; --note-accent: var(--color-green)">
+      <div
+        class="order-4 lg:order-none lg:col-span-4"
+        style="--reveal-delay: 420ms; --note-accent: var(--color-green)"
+      >
         <BudgetSnapshotWidget server:defer>
           <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
         </BudgetSnapshotWidget>
