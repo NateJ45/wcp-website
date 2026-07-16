@@ -7,18 +7,18 @@
 // so the hub reads them from there. `src/data/classes.ts` is only a fallback for
 // any field Sanity is missing, or if the gated read fails — a class card always
 // renders. EXCEPT the decorative `icon`: that's a fixed brand/design choice, not
-// volunteer content, so it's CODE-OWNED (classes.ts wins), which also keeps it
-// identical to the home hub's class tiles (ClassHelperRow) — the two used to
-// diverge because the class page read the icon from Sanity. `safeIcon` still
-// guards, with the Studio value only as an emergency fallback for a bad literal.
+// volunteer content, so it's CODE-OWNED (from classes.ts, carried through by the
+// `...base` spread below — the Sanity icon field is not read). That also keeps it
+// identical to the home hub's class tiles (ClassHelperRow); the class page used to
+// diverge because it read the icon from Sanity.
 // =============================================================================
 import { sanityFetch } from '@/lib/sanity';
 import { classes, classBySlug, type WcpClass } from '@/data/classes';
-import { safeIcon } from '@/lib/icons';
 
 // Only the fields the hub actually shows. `slug` matches the data-file slug.
+// (No `icon` — that stays code-owned, see the note above.)
 const CLASS_FACTS = `{
-  "slug": slug.current, name, icon, days, time, age, monthly, annual, studentFee, payId
+  "slug": slug.current, name, days, time, age, monthly, annual, studentFee, payId
 }`;
 const ALL_CLASSES_QUERY = `*[_type == "class"]${CLASS_FACTS}`;
 const ONE_CLASS_QUERY = `*[_type == "class" && slug.current == $slug][0]${CLASS_FACTS}`;
@@ -26,7 +26,6 @@ const ONE_CLASS_QUERY = `*[_type == "class" && slug.current == $slug][0]${CLASS_
 interface ClassRow {
   slug?: string;
   name?: string;
-  icon?: string;
   days?: string;
   time?: string;
   age?: string;
@@ -40,9 +39,9 @@ interface ClassRow {
 function merge(base: WcpClass, s?: ClassRow | null): WcpClass {
   if (!s) return base;
   return {
+    // `...base` carries the code-owned `icon` through unchanged.
     ...base,
     name: s.name ?? base.name,
-    icon: safeIcon(base.icon, s.icon),
     days: s.days ?? base.days,
     time: s.time ?? base.time,
     age: s.age ?? base.age,
