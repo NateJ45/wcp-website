@@ -57,3 +57,11 @@ export const site = {
     instagram: 'https://www.instagram.com/westchesterpreschool',
   },
 } as const;
+
+// The Family Handbook PDF (2026/2027), uploaded to Sanity's asset CDN. This is
+// a school-wide document families reference all year, so it lives here as a
+// stable site constant — linked from the hub topbar and the hub-home handbook
+// widget. (A Sanity CDN file, NOT a Google share-by-link resource, so it's fine
+// to commit; if the handbook is re-uploaded, update this one URL.)
+export const familyHandbookUrl =
+  'https://cdn.sanity.io/files/niemhgev/production/0817c54b835d67dd03f395e534f11879a02cca65.pdf';

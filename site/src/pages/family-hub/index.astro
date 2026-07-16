@@ -29,7 +29,11 @@ import StoreCard from '@/components/hub/StoreCard.astro';
 import SocialWallWidget from '@/components/hub/SocialWallWidget.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
-import { site } from '@/data/site';
+import { site, familyHandbookUrl } from '@/data/site';
+// Pre-sized webp of the Family Handbook cover (SSR page — the Cloudflare
+// adapter can't resize at request time, so a plain <img> over a committed
+// sized asset, never astro:assets <Image>).
+import handbookCover from '@/assets/brand/handbook-cover-sm.webp';
 
 interface HubPageDoc {
   heading?: string;
@@ -243,6 +247,47 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
           class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white"
         >
           See the steps
+          <Icon
+            name="arrow-right"
+            class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+            aria-hidden="true"
+          />
+        </span>
+      </a>
+    </section>
+
+    {
+      /* Family Handbook — the year's reference doc. The cover art is the
+        widget's face, so it links straight to the PDF; a white card keeps it
+        distinct from the amber Super Helper banner above. */
+    }
+    <section aria-labelledby="hub-handbook-heading" class="mt-4" data-reveal>
+      <a
+        href={familyHandbookUrl}
+        target="_blank"
+        rel="noopener"
+        class="wcp-lift group flex flex-col items-start gap-5 rounded-[var(--radius)] border border-border bg-white p-6 no-underline sm:flex-row sm:items-center dark:bg-surface"
+      >
+        <img
+          src={handbookCover.src}
+          width={handbookCover.width}
+          height={handbookCover.height}
+          alt="Family Handbook 2026/2027 cover"
+          class="h-32 w-auto shrink-0 rounded-lg border border-border shadow-md transition-transform duration-300 group-hover:-rotate-1 motion-reduce:group-hover:rotate-0"
+        />
+        <div class="min-w-0 flex-1">
+          <h2 id="hub-handbook-heading" class="font-display text-2xl text-heading">
+            Family Handbook
+          </h2>
+          <p class="mt-1 text-ink">
+            Everything about the 2026/2027 year in one place: our policies, the daily rhythm, co-op
+            duties, and who to call.
+          </p>
+        </div>
+        <span
+          class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white"
+        >
+          Open the handbook
           <Icon
             name="arrow-right"
             class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"

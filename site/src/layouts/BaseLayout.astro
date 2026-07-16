@@ -241,8 +241,12 @@ const currentPath = Astro.url.pathname;
               overflow-hidden on the wrapper (not auto): HubRail's nav owns the
               scrolling (its min-h-0 middle), so the logo and Sign out stay
               pinned. The collapse widths in globals.css include this gutter. */}
+          {/* shadow-xl lifts the navy off the light canvas; in dark mode the
+              shadow reads as a hard black halo around the panel (there's nothing
+              lighter for it to lift OFF of), so drop it there — the navy sits
+              flush and blends with the dark dashboard bg. */}
           <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 p-2 lg:block">
-            <div class="h-full overflow-hidden rounded-2xl shadow-xl">
+            <div class="h-full overflow-hidden rounded-2xl shadow-xl dark:shadow-none">
               <HubRail collapsible />
             </div>
           </aside>

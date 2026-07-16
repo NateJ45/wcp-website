@@ -273,12 +273,17 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   open sign-up sheets). Triggers: the rail's Search row, the phone strip's icon, and
   the desktop topbar's search field.
 - **Desktop topbar** (2026-07-14 app-elevation Track A, in `HubTopBar.astro` alongside
-  the phone strip): a sticky `h-14` bar over the content column with the page title, a
-  visible search-field affordance for the palette, the what's-new **bell**, and a "New"
-  quick-action menu (Sign up to help / Pay tuition / Contact the board). The menus are
-  native `<details data-hub-menu>` — usable with no JS — and `hub-menus.ts` adds
-  outside-click/Escape closing. `HubTable`'s sticky column headers offset by `lg:top-14`
-  to slide under this bar; keep the two heights in sync.
+  the phone strip): a floating sticky bar (`h-10` + `m-2` gutter, ~56px total) over the
+  content column. On the left, a row of quick links to the things a parent wants on any
+  page — the **Become a Super Helper** amber pill (the flagship ask), the device-class
+  helper schedule and pay-tuition links (personalized from `wcp-my-classes` by
+  `hub-quicklinks.ts`: a direct link for one class, a `<details>` dropdown for two+),
+  the next event, the **Family Handbook** PDF (icon-only), and the latest update (whose
+  title is `min-w-0` so it shows in full when the bar has room and truncates only on a
+  narrow desktop). On the right, a visible search-field affordance for the palette and
+  the what's-new **bell**. The dropdown menus are native `<details data-hub-menu>` —
+  usable with no JS — and `hub-menus.ts` adds outside-click/Escape closing. `HubTable`'s
+  sticky column headers offset by `lg:top-14` to slide under this bar.
 - **The bell** (`HubBell.astro`): server-renders the recent feed (updates + newest
   documents, one `BOARD_CONTENT_CACHE`-tier query fetched once in `HubTopBar` and shared
   by both bell instances). Updates with the Board's **`highlight`** checkbox pin to the

@@ -79,6 +79,7 @@ export const hubNav: HubGroup[] = [
     accent: '#ffa334', // amber
     links: [
       { label: 'Getting Started', href: '/family-hub/getting-started', icon: 'rocket' },
+      { label: 'Become a Super Helper', href: '/family-hub/super-helper', icon: 'star' },
       { label: 'Documents', href: '/family-hub/documents', icon: 'folder-open' },
       { label: 'Health', href: '/family-hub/health', icon: 'heart-pulse' },
     ],
@@ -97,7 +98,6 @@ export const hubNav: HubGroup[] = [
     links: [
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
-      { label: 'Become a Super Helper', href: '/family-hub/super-helper', icon: 'star' },
       {
         label: 'Store',
         href: 'https://store.westchesterpreschool.org/',

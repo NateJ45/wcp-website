@@ -30,7 +30,7 @@ import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback, helperScheduleFallback } from '@/data/hub/live-links';
 import { payUrl } from '@/data/classes';
-import { site } from '@/data/site';
+import { site, familyHandbookUrl } from '@/data/site';
 // Pre-sized webp, NOT the 9000x6000 original via astro:assets <Image>: hub
 // pages are SSR, and the Cloudflare adapter can't resize at request time, so
 // /_image passes the ORIGINAL through — Lighthouse caught the 4.1MB logo
@@ -186,7 +186,7 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         icon + label on xl. hub-quicklinks.ts personalizes the helper link to
         the device's class. */
     }
-    <nav aria-label="Quick links" class="flex items-center gap-0.5">
+    <nav aria-label="Quick links" class="flex min-w-0 items-center gap-0.5">
       {
         /* Flagship call to action — becoming a certified Super Helper is a top
          priority, so it leads the bar as a filled amber pill (navy text, AA). */
@@ -285,21 +285,43 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         <Icon name="calendar-days" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">{nextEventLabel}</span>
       </a>
+      {/* Family Handbook — the year's reference doc, one tap from any hub page.
+         Icon-only (the book glyph reads clearly) with its name in the tooltip +
+         a sr-only label, so it stays compact and leaves the wider bar room for
+         the latest-update title to show in full. */}
+      <a
+        href={familyHandbookUrl}
+        target="_blank"
+        rel="noopener"
+        class="hub-quick"
+        title="Family Handbook (PDF)"
+      >
+        <Icon name="book-open" class="h-4 w-4 shrink-0" />
+        <span class="sr-only">Family Handbook</span>
+      </a>
+      {/* min-w-0 makes THIS chip the one that gives when the bar runs out of
+         room: on a wide screen it shows the full title, and only on a narrow
+         desktop does its label truncate (every other chip holds its size), so
+         the title is never needlessly clipped and the bar never overflows. */}
       <a
         href={latestUpdate?.href ?? '/family-hub/updates'}
-        class="hub-quick"
+        class="hub-quick min-w-0"
         aria-label={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
         title={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
       >
         <Icon name="newspaper" class="h-4 w-4 shrink-0" />
-        {/* inline-block (not inline) so max-width + truncate hold it to one line */}
-        <span class="hidden max-w-[10rem] truncate align-middle xl:inline-block" aria-hidden="true">
+        {/* max-w is a generous ceiling (fits "Apr. 13, 2026 Meeting Minutes");
+           min-w-0 lets it truncate below that only when space is tight. */}
+        <span
+          class="hidden max-w-[17rem] min-w-0 truncate align-middle xl:inline-block"
+          aria-hidden="true"
+        >
           {latestUpdate ? latestUpdate.title : 'Updates'}
         </span>
       </a>
     </nav>
 
-    <div class="ml-auto flex items-center gap-2">
+    <div class="ml-auto flex shrink-0 items-center gap-2">
       <button
         type="button"
         class="flex h-9 w-40 cursor-pointer items-center gap-2 rounded-full border border-border bg-grey/60 px-3 text-sm text-ink-muted transition-colors hover:border-navy/30 xl:w-56 dark:bg-white/5 dark:hover:border-white/30"
