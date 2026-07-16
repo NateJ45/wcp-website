@@ -531,8 +531,17 @@ via `src/lib/fourthwall.ts` (cached, SWR):
   12 products per category (name, price, image, product link), so new/changed products appear
   automatically.
 - `getMerchStats()` — the Open API (`FOURTHWALL_API_USER` / `_PASSWORD`, basic auth, SUPER-ADMIN):
-  AGGREGATE order totals only (gross sales + order count; no customer PII ever read out). Note
-  Fourthwall's API exposes no profit figure, so this is gross **sales**, not a "raised" number.
+  AGGREGATE order totals only (gross sales + order count; no customer PII ever read out). This is
+  gross **sales** (what buyers paid), used only for the store card's supporting line.
+- `getStoreProfit(since)` — the same Open API creds: the school's **net profit** on orders placed
+  on/after `since` (default `2026-05-01`). The API exposes no single profit number, so it's
+  reconstructed per line item as retail (`offers[].variant.unitPrice`) minus Fourthwall's cost
+  (`unitCost`), less order discounts, plus donations — Fourthwall's own profit definition. Each
+  purchased unit is its own `offers` entry (no quantity field; the unit prices sum to the order
+  subtotal). Powers the **Store Sales** fundraiser card on `/family-hub/fundraising` (a live,
+  green "Live"-pilled card that replaces the old hand-kept "Shirt Sales" sheet row — any
+  shirt/store-sales row is auto-hidden when the live total is available). Sums only; profit lags
+  ~24-48h on brand-new orders while Fourthwall aggregates costs, then settles.
 
 All three are Worker secrets (`.dev.vars` locally, `wrangler secret put` in prod — see
 `.dev.vars.example`), never committed. Everything degrades gracefully: if the Storefront API is

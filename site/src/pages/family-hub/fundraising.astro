@@ -25,6 +25,7 @@ import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
+import { getStoreProfit } from '@/lib/fourthwall';
 import { budgetSheetIdFallback, pastFundraisingTotalsFallback } from '@/data/hub/live-links';
 
 interface Campaign {
@@ -78,8 +79,21 @@ const cmsTotals = (settings?.pastFundraisingTotals ?? []).filter(
 );
 const pastTotals = cmsTotals.length > 0 ? cmsTotals : pastFundraisingTotalsFallback;
 const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
-const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
-const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
+
+// Store Sales is now LIVE from Fourthwall (net profit since the cutoff), so it
+// gets its own card below instead of a hand-kept sheet row. When the live total
+// is available, drop any "shirt/store sales" row from the sheet so it doesn't
+// show twice; if Fourthwall is unreachable, keep whatever the sheet has as the
+// fallback.
+const storeProfit = await getStoreProfit();
+const storeSinceLabel = 'since May 1, 2026';
+const shownFundraisers = storeProfit
+  ? fundraisers.filter((f) => !/\b(shirt|store)\s+sales\b/i.test(f.name))
+  : fundraisers;
+const hasYearData = shownFundraisers.length > 0 || Boolean(storeProfit);
+
+const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0);
+const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0);
 const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
 
 // Status pills from the hub's shared vocabulary (HubPill) — same mapping the
@@ -174,7 +188,7 @@ const fmtDeadline = (iso: string) =>
           sheet.
         </p>
         {
-          fundraisers.length === 0 ? (
+          !hasYearData ? (
             campaigns.length === 0 && (
               <HubEmptyState
                 spot="celebration"
@@ -186,38 +200,71 @@ const fmtDeadline = (iso: string) =>
           ) : (
             <>
               {/* Year total: ring + stat (the 2026-07-14 kit) — the same pairing
-                  as the home widget and the command strip, at page scale. */}
-              <HubCard class="mt-6">
-                <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
-                  <HubRing
+                  as the home widget and the command strip, at page scale. Shown
+                  only when the sheet has goal-based fundraisers; the live Store
+                  Sales card below carries its own net-profit figure. */}
+              {shownFundraisers.length > 0 && (
+                <HubCard class="mt-6">
+                  <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+                    <HubRing
+                      value={totalRaised}
+                      max={totalGoal}
+                      color="text-orange-ink dark:text-amber"
+                      label="Fundraising progress this year"
+                      valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
+                    />
+                    <HubStat
+                      size="lg"
+                      value={money(totalRaised)}
+                      label="raised this year"
+                      footnote={`${money(totalGoal)} annual goal · ${totalPct}%`}
+                    />
+                  </div>
+                  <HubProgress
+                    class="mt-4"
+                    height="h-4"
                     value={totalRaised}
                     max={totalGoal}
-                    color="text-orange-ink dark:text-amber"
+                    fill="bg-amber"
                     label="Fundraising progress this year"
                     valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
                   />
-                  <HubStat
-                    size="lg"
-                    value={money(totalRaised)}
-                    label="raised this year"
-                    footnote={`${money(totalGoal)} annual goal · ${totalPct}%`}
-                  />
-                </div>
-                <HubProgress
-                  class="mt-4"
-                  height="h-4"
-                  value={totalRaised}
-                  max={totalGoal}
-                  fill="bg-amber"
-                  label="Fundraising progress this year"
-                  valueText={`${money(totalRaised)} of ${money(totalGoal)} raised`}
-                />
-                <p class="mt-2 text-sm text-ink-muted">Every dollar goes back to our classrooms.</p>
-              </HubCard>
+                  <p class="mt-2 text-sm text-ink-muted">
+                    Every dollar goes back to our classrooms.
+                  </p>
+                </HubCard>
+              )}
 
               {/* grid-cols-1 at base: see the bento note on the hub home. */}
               <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {fundraisers.map((f) => (
+                {/* Store Sales — LIVE net profit from Fourthwall (src/lib/
+                    fourthwall.ts). Styled like its sheet siblings for cohesion,
+                    but green-accented with a "Live" pill so it reads as the
+                    always-on, self-updating one. */}
+                {storeProfit && (
+                  <HubCard as="li" class="p-4" style="--note-accent: var(--color-green)">
+                    <div class="flex items-center justify-between gap-3">
+                      <p class="min-w-0 truncate font-bold text-heading" title="Store Sales">
+                        Store Sales
+                      </p>
+                      <HubPill kind="open" class="shrink-0">
+                        Live
+                      </HubPill>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                      <span class="font-semibold text-heading">
+                        {money(storeProfit.netProfit)}
+                        <span class="font-normal text-ink-muted"> net profit</span>
+                      </span>
+                      <span class="text-ink-muted">{storeSinceLabel}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-ink-muted">
+                      {storeProfit.orderCount} order{storeProfit.orderCount === 1 ? '' : 's'} ·
+                      every purchase funds our classrooms
+                    </p>
+                  </HubCard>
+                )}
+                {shownFundraisers.map((f) => (
                   <HubCard as="li" class="p-4">
                     <div class="flex items-center justify-between gap-3">
                       <p class="min-w-0 truncate font-bold text-heading" title={f.name}>
