@@ -20,6 +20,10 @@
 import { onPageLoad } from '@/scripts/_page-load';
 
 const OFFSET = 140; // px from viewport top: a heading above this line is "read"
+// Declared before the onPageLoad() call below: when the document is already
+// loaded, onPageLoad runs its callback SYNCHRONOUSLY, so linkIcon() would hit
+// a TDZ ReferenceError if this const still sat further down the module.
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function slugify(text: string): string {
   const base = text
@@ -82,7 +86,6 @@ function enhance(prose: HTMLElement, nav: HTMLElement | null): void {
   });
 }
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
 /** A small link/chain icon (lucide "link-2"), built with DOM APIs. */
 function linkIcon(): SVGSVGElement {
   const svg = document.createElementNS(SVG_NS, 'svg');
