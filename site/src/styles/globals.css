@@ -574,9 +574,13 @@
 }
 /* Bleed sections shed their vertical padding: the block-to-block margin already
    spaces them, and stacking both left big blank gaps between handbook sections.
-   (CtaBanner is `section.bg-navy`, not `.wcp-section`, so it keeps its own pad.)
+   BOTH the section AND its inner .wcp-container carry marketing 2xl padding
+   (~100px each), so both must go — zeroing only the section still left the
+   container's ~100px top+bottom. Scoped to `.wcp-section > .wcp-container` so
+   CtaBanner (a `section.bg-navy`, not `.wcp-section`) keeps its own padding.
    The marketing header→content gap (mt-12) also tightens to app scale. */
-.hub-doc-block[data-treatment='bleed'] .wcp-section {
+.hub-doc-block[data-treatment='bleed'] .wcp-section,
+.hub-doc-block[data-treatment='bleed'] .wcp-section > .wcp-container {
   padding-block: 0;
 }
 .hub-doc-block[data-treatment='bleed'] .mt-12 {
