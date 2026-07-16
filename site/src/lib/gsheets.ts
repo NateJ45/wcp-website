@@ -70,6 +70,19 @@ export interface BudgetSnapshot {
   monthLabel: string;
 }
 
+/** The old-hub cash-health bands, restated in brand-safe colors. Shared by the
+ *  home BudgetSnapshotWidget and the expanded BudgetSnapshotPanel so both agree.
+ *  Fill is a THEME-STABLE solid dark hex with white text (like classStyles
+ *  .badge) — the -ink tokens flip bright in dark mode and white-on-bright fails
+ *  AA. No celebratory styling: it reads the same in strong and stressed months. */
+export function budgetHealth(cash: number): { label: string; fill: string } {
+  return cash > 50_000
+    ? { label: 'Strong', fill: 'bg-[#0e7b2e]' }
+    : cash > 20_000
+      ? { label: 'Healthy', fill: 'bg-[#9e5c0a]' }
+      : { label: 'Watch closely', fill: 'bg-[#a85300]' };
+}
+
 /** The Budget tab's month cell arrives as a Sheets date serial, a
  *  "Date(y,m,d)" string, or plain text — normalize all three. */
 function monthLabel(raw: unknown): string {

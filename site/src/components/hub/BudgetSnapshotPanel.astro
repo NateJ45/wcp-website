@@ -1,0 +1,116 @@
+---
+/* ============================================================================
+   BudgetSnapshotPanel — the expanded budget snapshot for the Budget page
+   ============================================================================
+   The full-page-scale cousin of the home dashboard's BudgetSnapshotWidget: same
+   live source (the treasurer's Budget sheet tab, cached), but roomier — a big
+   cash balance + health badge, revenue and expenses each in their own sub-panel
+   with a percentage and the amount still to go, and the year-to-date net. The
+   sheetId comes from the page (already fetched) so this doesn't re-read it.
+
+   A plain HubCard (no title): the page owns the "Budget snapshot" <h2> so the
+   heading order stays h1 -> h2 without a redundant card <h3>. Degrades to the
+   empty state on any fetch/parse failure, never a broken card.
+   ============================================================================ */
+import HubCard from '@/components/hub/HubCard.astro';
+import HubStat from '@/components/hub/HubStat.astro';
+import HubProgress from '@/components/hub/HubProgress.astro';
+import { getBudgetSnapshot, budgetHealth, type BudgetSnapshot } from '@/lib/gsheets';
+
+interface Props {
+  sheetId: string;
+  class?: string;
+}
+const { sheetId, class: className } = Astro.props;
+
+const snap: BudgetSnapshot | null = await getBudgetSnapshot(sheetId);
+const money = (n: number) => `$${Math.round(Math.abs(n)).toLocaleString('en-US')}`;
+const pct = (a: number, b: number) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+const net = snap ? snap.revenueActual - snap.expensesActual : 0;
+const health = snap ? budgetHealth(snap.cash) : null;
+const revLeft = snap ? Math.max(0, snap.revenueBudgeted - snap.revenueActual) : 0;
+const expLeft = snap ? Math.max(0, snap.expensesBudgeted - snap.expensesActual) : 0;
+---
+
+<HubCard
+  class={className}
+  empty={!snap}
+  emptyText="A live budget summary will appear here once the treasurer's tracking sheet is connected."
+>
+  {
+    snap && health && (
+      <div>
+        {/* Balance + health badge */}
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <HubStat
+            size="lg"
+            value={money(snap.cash)}
+            label="School account balance"
+            footnote={`As of ${snap.monthLabel}`}
+          />
+          <span class={`rounded-full px-3 py-1 text-sm font-bold text-white ${health.fill}`}>
+            {health.label}
+          </span>
+        </div>
+
+        {/* Revenue + Expenses, each in its own sub-panel with % + amount to go */}
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <div class="rounded-xl bg-grey/60 p-4 dark:bg-white/5">
+            <p class="text-sm font-semibold text-ink-muted">Revenue collected</p>
+            <p class="mt-1 font-display text-2xl text-heading tabular-nums">
+              {money(snap.revenueActual)}
+              <span class="text-sm font-normal text-ink-muted">
+                {' '}
+                / {money(snap.revenueBudgeted)}
+              </span>
+            </p>
+            <HubProgress
+              class="mt-2"
+              height="h-2.5"
+              value={snap.revenueActual}
+              max={snap.revenueBudgeted}
+              fill="bg-green"
+              label="Revenue collected vs budget"
+              valueText={`${money(snap.revenueActual)} of ${money(snap.revenueBudgeted)} collected`}
+            />
+            <p class="mt-1.5 text-xs text-ink-muted">
+              {pct(snap.revenueActual, snap.revenueBudgeted)}% collected · {money(revLeft)} to go
+            </p>
+          </div>
+          <div class="rounded-xl bg-grey/60 p-4 dark:bg-white/5">
+            <p class="text-sm font-semibold text-ink-muted">Expenses spent</p>
+            <p class="mt-1 font-display text-2xl text-heading tabular-nums">
+              {money(snap.expensesActual)}
+              <span class="text-sm font-normal text-ink-muted">
+                {' '}
+                / {money(snap.expensesBudgeted)}
+              </span>
+            </p>
+            <HubProgress
+              class="mt-2"
+              height="h-2.5"
+              value={snap.expensesActual}
+              max={snap.expensesBudgeted}
+              fill="bg-orange"
+              label="Expenses spent vs budget"
+              valueText={`${money(snap.expensesActual)} of ${money(snap.expensesBudgeted)} spent`}
+            />
+            <p class="mt-1.5 text-xs text-ink-muted">
+              {pct(snap.expensesActual, snap.expensesBudgeted)}% spent · {money(expLeft)} left in
+              budget
+            </p>
+          </div>
+        </div>
+
+        {/* Year-to-date net */}
+        <div class="mt-6 flex items-center justify-between border-t border-border pt-4">
+          <span class="font-semibold text-ink-muted">Year to date</span>
+          <span class={`font-display text-2xl ${net >= 0 ? 'text-green-ink' : 'text-orange-ink'}`}>
+            {net >= 0 ? '+' : '-'}
+            {money(net)} {net >= 0 ? 'surplus' : 'deficit'}
+          </span>
+        </div>
+      </div>
+    )
+  }
+</HubCard>

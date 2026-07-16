@@ -18,7 +18,7 @@ import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubStat from '@/components/hub/HubStat.astro';
 import { sanityFetch } from '@/lib/sanity';
-import { getBudgetSnapshot, type BudgetSnapshot } from '@/lib/gsheets';
+import { getBudgetSnapshot, budgetHealth, type BudgetSnapshot } from '@/lib/gsheets';
 import { budgetSheetIdFallback } from '@/data/hub/live-links';
 
 let sheetId = budgetSheetIdFallback;
@@ -35,14 +35,7 @@ const snap: BudgetSnapshot | null = await getBudgetSnapshot(sheetId);
 const money = (n: number) => `$${Math.round(Math.abs(n)).toLocaleString('en-US')}`;
 const net = snap ? snap.revenueActual - snap.expensesActual : 0;
 
-// Old-hub health thresholds, restated in brand-safe colors.
-const health = !snap
-  ? null
-  : snap.cash > 50_000
-    ? { label: 'Strong', fill: 'bg-[#0e7b2e]' }
-    : snap.cash > 20_000
-      ? { label: 'Healthy', fill: 'bg-[#9e5c0a]' }
-      : { label: 'Watch closely', fill: 'bg-[#a85300]' };
+const health = snap ? budgetHealth(snap.cash) : null;
 ---
 
 <HomeWidgetCard

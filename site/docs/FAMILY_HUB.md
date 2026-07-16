@@ -470,8 +470,11 @@ skin in `globals.css` re-skins them as app content: headers left-align, the eyeb
 and type shrinks to app scale.
 
 **Budget & Fundraising** (the renamed Fundraising page — nav group "Money", URL still
-`/family-hub/fundraising`): dashboard-style fundraiser cards (with the live Store Sales net-profit
-card) and the "raised together" band, then a full-width **`BudgetTable`** — the whole
+`/family-hub/fundraising`): leads with an expanded **`BudgetSnapshotPanel`** — the page-scale
+cousin of the home `BudgetSnapshotWidget` (same Budget sheet tab, shared `budgetHealth()` from
+`gsheets.ts`): big cash balance + health badge, revenue and expenses each with a bar, percentage,
+and amount-to-go, and the YTD net. Then dashboard-style fundraiser cards (with the live Store Sales
+net-profit card) and the "raised together" band, then a full-width **`BudgetTable`** — the whole
 member-approved operating budget from `src/data/hub/budget.ts` (transcribed from the Treasurer's
 proposed-budget PDF): a target-revenue / total-expenses / net summary with a revenue-vs-expenses
 balance bar, then a card per group (tuition & fees, fundraising, operating expenses, programs &

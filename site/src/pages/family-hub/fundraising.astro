@@ -23,6 +23,7 @@ import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Button from '@/components/ui/Button.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import BudgetTable from '@/components/hub/BudgetTable.astro';
+import BudgetSnapshotPanel from '@/components/hub/BudgetSnapshotPanel.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
@@ -153,10 +154,33 @@ const fmtDeadline = (iso: string) =>
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="party-popper" />
 
+      {
+        /* FIXED: expanded budget snapshot — the school's live financial health,
+          the page-scale cousin of the home dashboard widget (same Budget sheet
+          tab). Leads the page as the at-a-glance headline. */
+      }
+      <div aria-labelledby="snapshot">
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h2 id="snapshot" class="text-xl font-extrabold text-heading">Budget snapshot</h2>
+            <p class="mt-1 max-w-2xl text-ink-muted">
+              Our live financial health, straight from the treasurer’s tracking sheet.
+            </p>
+          </div>
+          <a
+            href="/family-hub/documents"
+            class="shrink-0 text-sm font-semibold text-sky-ink hover:underline"
+          >
+            Full reports
+          </a>
+        </div>
+        <BudgetSnapshotPanel sheetId={sheetId} class="mt-6" />
+      </div>
+
       {/* FIXED: featured campaigns (Sanity docs with donate links), when any. */}
       {
         campaigns.length > 0 && (
-          <div aria-labelledby="active-now">
+          <div class="mt-12" aria-labelledby="active-now">
             <h2 id="active-now" class="text-xl font-extrabold text-heading">
               Featured right now
             </h2>
@@ -207,7 +231,7 @@ const fmtDeadline = (iso: string) =>
       }
 
       {/* FIXED: the year at a glance — live from the treasurer's sheet. */}
-      <div class={campaigns.length > 0 ? 'mt-12' : ''} aria-labelledby="year-glance">
+      <div class="mt-12" aria-labelledby="year-glance">
         <h2 id="year-glance" class="text-xl font-extrabold text-heading">This year so far</h2>
         <p class="mt-1 max-w-2xl text-ink-muted">
           Every fundraiser on this year’s calendar, with live totals from the treasurer’s tracking
