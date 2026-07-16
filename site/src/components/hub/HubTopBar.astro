@@ -285,10 +285,12 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         <Icon name="calendar-days" class="h-4 w-4 shrink-0" />
         <span class="sr-only xl:not-sr-only xl:inline">{nextEventLabel}</span>
       </a>
-      {/* Family Handbook — the year's reference doc, one tap from any hub page.
+      {
+        /* Family Handbook — the year's reference doc, one tap from any hub page.
          Icon-only (the book glyph reads clearly) with its name in the tooltip +
          a sr-only label, so it stays compact and leaves the wider bar room for
-         the latest-update title to show in full. */}
+         the latest-update title to show in full. */
+      }
       <a
         href={familyHandbookUrl}
         target="_blank"
@@ -299,10 +301,12 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         <Icon name="book-open" class="h-4 w-4 shrink-0" />
         <span class="sr-only">Family Handbook</span>
       </a>
-      {/* min-w-0 makes THIS chip the one that gives when the bar runs out of
+      {
+        /* min-w-0 makes THIS chip the one that gives when the bar runs out of
          room: on a wide screen it shows the full title, and only on a narrow
          desktop does its label truncate (every other chip holds its size), so
-         the title is never needlessly clipped and the bar never overflows. */}
+         the title is never needlessly clipped and the bar never overflows. */
+      }
       <a
         href={latestUpdate?.href ?? '/family-hub/updates'}
         class="hub-quick min-w-0"
@@ -310,8 +314,10 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         title={latestUpdate ? `Latest: ${latestUpdate.title}` : 'Latest updates'}
       >
         <Icon name="newspaper" class="h-4 w-4 shrink-0" />
-        {/* max-w is a generous ceiling (fits "Apr. 13, 2026 Meeting Minutes");
-           min-w-0 lets it truncate below that only when space is tight. */}
+        {
+          /* max-w is a generous ceiling (fits "Apr. 13, 2026 Meeting Minutes");
+           min-w-0 lets it truncate below that only when space is tight. */
+        }
         <span
           class="hidden max-w-[17rem] min-w-0 truncate align-middle xl:inline-block"
           aria-hidden="true"
