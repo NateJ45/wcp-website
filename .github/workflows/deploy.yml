@@ -66,6 +66,7 @@ jobs:
         run: npm run build
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
 
       # Deploys with the adapter-generated config (dist/server/wrangler.json),
       # NOT the source wrangler.jsonc — see site/docs/ for why the plain

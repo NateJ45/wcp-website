@@ -53,6 +53,7 @@ jobs:
         run: npm run build
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
 
       - name: Check internal links
         run: npm run check:links
@@ -86,6 +87,7 @@ jobs:
         run: npm test
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

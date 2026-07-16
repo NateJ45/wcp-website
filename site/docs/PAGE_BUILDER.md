@@ -88,12 +88,29 @@ standalone section (a standalone one would double the band padding).
 **Instagram "Life inside WCP".** `instagramSection` shows the school's Instagram as a
 pinned-photo bulletin board. It pulls the **live feed at build time** via
 `src/lib/instagram.ts` when the `INSTAGRAM_TOKEN` env var (a long-lived Instagram Graph
-API token) is set — add it as a GitHub Actions **and** Cloudflare secret. Until then (or
-if a fetch fails) it shows the section's **fallback album** (`album-life-inside-wcp`), so
-the home is never empty. Because the site is static, the live feed refreshes on each
-rebuild; for a fresh feed, trigger a periodic rebuild (e.g. a scheduled GitHub Action) —
-otherwise it updates whenever the site next builds. No token, no third-party script hits a
-visitor's browser.
+API token, from the **Instagram API with Instagram Login** product in a Meta developer
+app — not oEmbed, which can't list an account's recent media) is set. It's read via
+`import.meta.env`, so it only needs to exist at build time — set it as a **GitHub Actions
+repo secret** (`gh secret set INSTAGRAM_TOKEN`); no Cloudflare secret needed. Until it's
+set (or if a fetch fails) the section shows its **fallback album**
+(`album-life-inside-wcp`), so the home is never empty. No token, no third-party script
+hits a visitor's browser.
+
+Getting the token: the Instagram account must be a Business/Creator account linked to a
+Facebook Page, added as an **Instagram Tester** on the Meta app (App roles → Instagram
+testers → accept the invite from the Instagram account itself, or you'll hit "Insufficient
+developer role"), then authorized through the app's "Generate access tokens" step to
+produce a long-lived (60-day) token.
+
+Because the site is static, both the feed content and the token need periodic rebuilds/
+refreshing — both automated: `.github/workflows/refresh-instagram-token.yml` runs weekly,
+refreshes the long-lived token via `graph.instagram.com/refresh_access_token` every 50
+days (tracked in `.github/instagram-token-refreshed-at`, since GitHub cron can't express
+"every N days" directly), writes the new token back to the `INSTAGRAM_TOKEN` secret, and
+triggers a `deploy.yml` rebuild so it — and any new posts — go live immediately. That
+refresh/rebuild step needs a **PAT** (not the default `GITHUB_TOKEN`, which can't write
+repo secrets or trigger other workflows) stored as the `GH_ACTIONS_PAT` secret, scoped to
+this repo with "Secrets: write" and "Actions: write" permissions.
 
 ## Brand-lock
 

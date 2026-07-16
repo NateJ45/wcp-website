@@ -36,6 +36,7 @@ jobs:
         run: npm run build
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
 
       # Accessibility is a hard gate (minScore 1) in lighthouserc.json;
       # performance / best-practices / SEO are warnings.

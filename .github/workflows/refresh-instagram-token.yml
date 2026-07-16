@@ -1,0 +1,91 @@
+name: Refresh Instagram token
+
+# Instagram's long-lived Graph API token (INSTAGRAM_TOKEN) is valid ~60 days
+# and can be extended for another 60 by calling Meta's refresh endpoint any
+# time after it's 24h old. This keeps it perpetually fresh so the live feed
+# in InstagramSection never silently falls back to the curated album.
+#
+# GitHub Actions cron is calendar-based (fixed times/dates), not
+# interval-based, so it cannot express "every 50 days" directly. Instead this
+# runs on a frequent-enough cron and gates the actual refresh behind a
+# checked-in timestamp (.github/instagram-token-refreshed-at) — the refresh
+# only fires once >= 50 days have actually elapsed since the last one, giving
+# an exact 50-day cadence independent of how the cron itself is expressed.
+# Comfortably inside the 60-day expiry window even if a run is skipped
+# (GitHub can delay/drop scheduled runs during high load).
+on:
+  schedule:
+    - cron: '0 13 * * 1' # every Monday 13:00 UTC — the gate below decides if it actually acts
+  workflow_dispatch: # manual "run now" from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check if 50 days have elapsed
+        id: check
+        run: |
+          STATE_FILE=".github/instagram-token-refreshed-at"
+          LAST=0
+          if [ -f "$STATE_FILE" ]; then
+            LAST=$(cat "$STATE_FILE")
+          fi
+          NOW=$(date +%s)
+          DAYS_SINCE=$(( (NOW - LAST) / 86400 ))
+          echo "$DAYS_SINCE days since last refresh (0 = never)"
+          if [ "$DAYS_SINCE" -ge 50 ]; then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "due=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # graph.instagram.com/refresh_access_token exchanges a still-valid
+      # long-lived token for a new 60-day one. Requires INSTAGRAM_TOKEN itself
+      # (read-only use — this step never writes it).
+      - name: Refresh long-lived token
+        if: steps.check.outputs.due == 'true'
+        id: refresh
+        run: |
+          RESPONSE=$(curl -s "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${{ secrets.INSTAGRAM_TOKEN }}")
+          NEW_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token // empty')
+          if [ -z "$NEW_TOKEN" ]; then
+            echo "::error::Instagram token refresh failed: $RESPONSE"
+            exit 1
+          fi
+          echo "::add-mask::$NEW_TOKEN"
+          echo "new_token=$NEW_TOKEN" >> "$GITHUB_OUTPUT"
+
+      # The default GITHUB_TOKEN cannot write repo Actions secrets or trigger
+      # other workflows (events it creates don't cascade — GitHub's
+      # anti-recursion rule). Both steps below need a real PAT with the repo's
+      # "Secrets: write" and "Actions: write" permissions, stored as
+      # GH_ACTIONS_PAT. See site/docs/PAGE_BUILDER.md for setup.
+      - name: Store the refreshed token
+        if: steps.check.outputs.due == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
+        run: gh secret set INSTAGRAM_TOKEN --body "${{ steps.refresh.outputs.new_token }}"
+
+      - name: Record refresh timestamp
+        if: steps.check.outputs.due == 'true'
+        run: |
+          mkdir -p .github
+          date +%s > .github/instagram-token-refreshed-at
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/instagram-token-refreshed-at
+          git commit -m "chore: record Instagram token refresh"
+          git push
+
+      # Rebuilds so the new token is baked into the static build immediately,
+      # rather than waiting for the next content push or Sanity publish.
+      - name: Trigger a rebuild
+        if: steps.check.outputs.due == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
+        run: gh workflow run deploy.yml --ref main
