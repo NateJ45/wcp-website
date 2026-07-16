@@ -190,9 +190,21 @@ function scrollspy(nav: HTMLElement): void {
   };
 
   const pick = () => {
+    // Near the page bottom, the LAST section wins. A short final section or a
+    // tall trailing band (e.g. the CTA under the FAQ) can stop the last heading
+    // from ever reaching the offset line, which otherwise strands the highlight
+    // one section back once you've read to the end. Use the scrolling element
+    // (not window.scrollY) so it's correct regardless of the scroll container.
+    const se = document.scrollingElement || document.documentElement;
+    if (se.scrollTop + se.clientHeight >= se.scrollHeight - 80) {
+      return sections[sections.length - 1].id;
+    }
+    // Activate a heading once it's ~30% down the viewport (sooner than only at
+    // the very top), with OFFSET as the floor on short screens.
+    const line = Math.max(OFFSET, Math.round(window.innerHeight * 0.3));
     let current = sections[0].id;
     for (const s of sections) {
-      if (s.getBoundingClientRect().top <= OFFSET) current = s.id;
+      if (s.getBoundingClientRect().top <= line) current = s.id;
       else break;
     }
     return current;
