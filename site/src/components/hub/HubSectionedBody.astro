@@ -140,6 +140,10 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
       style={accentStyle}
       data-hub-doc
     >
+      {/* Below xl the sticky TOC column is hidden, which left a 10k px handbook
+           with no way to skip ahead on a phone — this collapsed "On this page"
+           jump list is the mobile answer (xl:hidden inside the component). */}
+      <HubSectionIndex sections={sections} label={label} variant="inline" />
       {/* Content column FIRST (natural reading order, content-first for screen
            readers) — the TOC follows and is placed in the right grid column.
            Inside `.hub-prose` the shared marketing sections are re-skinned as

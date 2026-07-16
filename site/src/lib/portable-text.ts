@@ -30,6 +30,21 @@ export function deEmDash(text: string): string {
     .replace(/,\s*,/g, ',');
 }
 
+// Board-pasted plain-string fields (update excerpts, pasted from HTML email)
+// can carry literal entities — "trip to&nbsp;Niedermann Family Farm" rendered
+// the raw "&nbsp;" on the Updates cards (2026-07-16 audit). Decode the handful
+// that show up in prose before rendering as text. Like deEmDash, a no-op once
+// the Studio content itself is clean.
+export function decodeEntities(text: string): string {
+  return text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
 // Deep variant: strip em-dashes from every string in an object/array (section
 // headers, step descriptions, schedule text, page intros — the plain-string
 // fields that don't flow through Portable Text). Returns a cleaned clone; keys

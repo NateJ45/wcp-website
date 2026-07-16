@@ -19,7 +19,7 @@ import HubPill from '@/components/hub/HubPill.astro';
 import HubFilterChip from '@/components/hub/HubFilterChip.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { classLabel } from '@/lib/class-colors';
-import { deEmDash } from '@/lib/portable-text';
+import { deEmDash, decodeEntities } from '@/lib/portable-text';
 
 interface Update {
   _id: string;
@@ -170,7 +170,11 @@ const intro =
                         )}
                       </div>
                       <p class="mt-2 text-lg font-extrabold text-heading">{deEmDash(u.title)}</p>
-                      {u.excerpt && <p class="mt-2 leading-relaxed text-ink-muted">{u.excerpt}</p>}
+                      {u.excerpt && (
+                        <p class="mt-2 leading-relaxed text-ink-muted">
+                          {decodeEntities(deEmDash(u.excerpt))}
+                        </p>
+                      )}
                       {u.slug && (
                         <span class="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-sky-ink">
                           Read the full update

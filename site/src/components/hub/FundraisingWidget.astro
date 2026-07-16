@@ -14,13 +14,24 @@ import { sanityFetch } from '@/lib/sanity';
 import { ACTIVE_CAMPAIGN_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
 import { getStoreProfit } from '@/lib/fourthwall';
-import { budgetSheetIdFallback, storeSalesGoalFallback } from '@/data/hub/live-links';
+import {
+  budgetSheetIdFallback,
+  storeSalesGoalFallback,
+  pastFundraisingTotalsFallback,
+} from '@/data/hub/live-links';
 
 let sheetId = budgetSheetIdFallback;
+// Last finished year's grand total — the pre-season stand-in for the ring (a
+// 0% meter reads as a stalled campaign; last year's number is social proof).
+let lastYearRaised = pastFundraisingTotalsFallback[0]?.amount ?? 0;
 try {
-  sheetId =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
-    budgetSheetIdFallback;
+  const settings = await sanityFetch<{
+    budgetSheetId?: string | null;
+    pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
+  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`);
+  sheetId = settings?.budgetSheetId || budgetSheetIdFallback;
+  const cmsLast = (settings?.pastFundraisingTotals ?? []).find((t) => typeof t.amount === 'number');
+  if (cmsLast?.amount) lastYearRaised = cmsLast.amount;
 } catch {
   sheetId = budgetSheetIdFallback;
 }
@@ -75,7 +86,7 @@ const campaignPct =
   emptyText="Current campaigns and totals will show here once one is active."
 >
   {
-    fundraisers.length > 0 ? (
+    fundraisers.length > 0 && totalRaised > 0 ? (
       <div>
         {/* Ring + stat (2026-07-14 kit): attainment as geometry, the real
             numbers beside it. Ring color: amber-ink measures AA as a graphic
@@ -101,6 +112,25 @@ const campaignPct =
           {activeCount === 0 && upcomingCount === 0 && (
             <p class="text-sm text-ink-muted">Every dollar goes back to our classrooms.</p>
           )}
+        </div>
+      </div>
+    ) : fundraisers.length > 0 ? (
+      <div>
+        {/* Pre-season (nothing raised yet): no 0% ring — the season ahead and
+            last year's total instead. Same slot, forward-looking numbers. */}
+        <HubStat
+          value={String(activeCount + upcomingCount)}
+          label={`fundraiser${activeCount + upcomingCount === 1 ? '' : 's'} lined up`}
+          footnote={`${money(totalGoal)} year goal`}
+        />
+        {lastYearRaised > 0 && (
+          <p class="mt-2 text-sm text-ink-muted">
+            Together we raised {money(lastYearRaised)} last year.
+          </p>
+        )}
+        <div class="mt-3 flex flex-wrap gap-1.5">
+          {activeCount > 0 && <HubPill kind="open">{activeCount} active now</HubPill>}
+          {upcomingCount > 0 && <HubPill kind="waitlist">{upcomingCount} coming up</HubPill>}
         </div>
       </div>
     ) : campaign ? (

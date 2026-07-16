@@ -104,13 +104,25 @@ describe('yearProgressPercent', () => {
 });
 
 describe('formatShortDate', () => {
+  // Pin "now" so the same-year check is deterministic in any CI year.
+  const NOW = new Date('2026-07-16T12:00:00Z');
+
   it('renders an evening Eastern event on the Eastern day, even when that is the next UTC day', () => {
     // 2026-01-15T23:30:00-05:00 (Eastern) === 2026-01-16T04:30:00Z (UTC, next day)
-    expect(formatShortDate('2026-01-16T04:30:00Z', 'America/New_York')).toBe('Jan 15');
+    expect(formatShortDate('2026-01-16T04:30:00Z', 'America/New_York', NOW)).toBe('Jan 15');
   });
 
   it('renders a plain morning date the same in both zones', () => {
-    expect(formatShortDate('2026-01-15T15:00:00Z', 'America/New_York')).toBe('Jan 15');
+    expect(formatShortDate('2026-01-15T15:00:00Z', 'America/New_York', NOW)).toBe('Jan 15');
+  });
+
+  it('adds the year to a date from a different year', () => {
+    expect(formatShortDate('2025-11-01T15:00:00Z', 'America/New_York', NOW)).toBe('Nov 1, 2025');
+  });
+
+  it('compares years in the target timezone (Dec 31 late-night UTC is next year)', () => {
+    // 2027-01-01T02:00:00Z is still Dec 31, 2026 in Eastern — same year as NOW.
+    expect(formatShortDate('2027-01-01T02:00:00Z', 'America/New_York', NOW)).toBe('Dec 31');
   });
 });
 

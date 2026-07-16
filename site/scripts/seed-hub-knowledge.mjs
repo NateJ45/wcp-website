@@ -197,12 +197,19 @@ const gettingStarted = {
       ),
       columns: 2,
       cards: [
-        card(
-          'smartphone',
-          'green',
-          'ClassDojo',
-          'Our classroom app: photos, reminders, class news, and private messages with your teacher. Download the free app, then join with the link or QR code your teacher sends at the start of the year.',
-        ),
+        {
+          ...card(
+            'smartphone',
+            'green',
+            'ClassDojo',
+            'Our classroom app: photos, reminders, class news, and private messages with your teacher. Download the free app, then join with the link or QR code your teacher sends at the start of the year.',
+          ),
+          // Same registration link the addClassDojoRegisterLink stopgap applies
+          // at render time (src/lib/hub-stopgaps.ts) — seeded here so a re-seed
+          // carries it natively and the stopgap becomes a no-op refinement.
+          href: 'https://www.classdojo.com/ul/p/addKid?target=school&schoolID=68c6cf034709b1f40c668049',
+          linkLabel: 'Register your child on ClassDojo',
+        },
         card(
           'mail',
           'green',

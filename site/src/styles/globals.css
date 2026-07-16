@@ -1749,4 +1749,12 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
   .hub-quick {
     padding-inline: 0.75rem;
   }
+  /* The label spans use Tailwind's `xl:not-sr-only`, which resets the span's
+     own white-space to `normal` — that let "Helper schedule" / "Next: Jul 20"
+     wrap to two lines and overflow the 56px bar (2026-07-16 audit). The chip
+     must never wrap; the latest-update chip (min-w-0 + truncate) is the one
+     element designed to give when the bar runs tight. */
+  .hub-quick span {
+    white-space: nowrap;
+  }
 }

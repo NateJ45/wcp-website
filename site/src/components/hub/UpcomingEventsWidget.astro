@@ -39,6 +39,14 @@ const HORIZON = Date.now() + 92 * 24 * 60 * 60 * 1000;
 const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
   .filter((e) => eventDate(e.start).getTime() <= HORIZON)
   .slice(0, 12);
+
+// On PHONES the single-column stack means every extra event pushes the rest of
+// the dashboard down a screen — 12 events cost ~4 screens before any personal
+// content (2026-07-16 audit). Show the first 5 and fold the tail behind a
+// "+N more" calendar link; on lg+ the tall row-span-2 tile still wants the
+// full list, so the cap is CSS-only (hidden lg:flex on the tail items).
+const MOBILE_CAP = 5;
+const foldedCount = Math.max(0, events.length - MOBILE_CAP);
 ---
 
 <HomeWidgetCard
@@ -50,13 +58,13 @@ const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
 >
   <ul class="space-y-3">
     {
-      events.map((e) => {
+      events.map((e, i) => {
         // Colour the date chip by event type — same brand mapping as the
         // Calendar page (meetings navy, volunteer sky, milestones orange,
         // events green).
         const meta = EVENT_TYPE_META[eventType(e.title)];
         return (
-          <li class="flex items-center gap-3">
+          <li class={`items-center gap-3 ${i < MOBILE_CAP ? 'flex' : 'hidden lg:flex'}`}>
             <span
               class={`flex w-11 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
             >
@@ -77,6 +85,19 @@ const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
           </li>
         );
       })
+    }
+    {
+      foldedCount > 0 && (
+        <li class="lg:hidden">
+          <a
+            href="/family-hub/calendar"
+            class="inline-flex items-center gap-1.5 font-bold text-sky-ink hover:underline"
+          >
+            +{foldedCount} more on the calendar
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </li>
+      )
     }
   </ul>
 </HomeWidgetCard>

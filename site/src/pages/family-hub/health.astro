@@ -36,6 +36,23 @@ try {
   doc = null;
 }
 const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
+
+// The Board's "Numbers by the phone" section sat ~80% down a 5,000px page —
+// the worst spot for the one card a parent needs mid-incident (2026-07-16
+// audit). A fixed quick strip under the header carries the two universal
+// numbers (911, Poison Control — national constants, safe in code) and jumps
+// to that section for the full list when it exists (anchor id is the same
+// `sec-<_key>` scheme HubSectionIndex uses).
+const NUMBERS_RE = /numbers by the phone|emergency numbers/i;
+const numbersKey = (doc?.sections ?? []).find(
+  (s) =>
+    NUMBERS_RE.test(s?.header?.title ?? '') ||
+    // The numbers usually live as a CARD inside a grid ("Practiced, posted,
+    // and ready" holds "Numbers by the phone") — jump to that section then.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Array.isArray(s?.cards) && s.cards.some((c: any) => NUMBERS_RE.test(c?.title ?? ''))),
+)?._key as string | undefined;
+
 const title = doc?.heading || 'Health & Safety';
 const intro =
   doc?.intro ||
@@ -75,6 +92,28 @@ const keepHome = [
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="heart-pulse" />
+
+      {/* Emergency quick strip — always visible up top, never scrolled for. */}
+      <HubCard class="mb-8 flex flex-wrap items-center gap-x-5 gap-y-2 p-4">
+        <span
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange/15 text-orange-ink"
+          aria-hidden="true"
+        >
+          <Icon name="phone" class="h-5 w-5" />
+        </span>
+        <p class="text-sm font-bold text-heading">In an emergency</p>
+        <a href="tel:911" class="text-sm font-bold text-sky-ink hover:underline">Call 911</a>
+        <a href="tel:8002221222" class="text-sm font-bold text-sky-ink hover:underline">
+          Poison Control (800) 222-1222
+        </a>
+        {
+          numbersKey && (
+            <a href={`#sec-${numbersKey}`} class="text-sm font-bold text-sky-ink hover:underline">
+              All numbers, by the phone
+            </a>
+          )
+        }
+      </HubCard>
 
       {
         !hasSections && (

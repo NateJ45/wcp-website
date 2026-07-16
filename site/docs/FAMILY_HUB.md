@@ -309,8 +309,16 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   deep-linking stats (days 'til school, next event from the cached calendar feed,
   families count, the fundraising-year `HubRing`) over the school-year bar. Every
   figure is real and SWR-cache-deduped with the widgets below; empty sources omit
-  their stat. The Fundraising widget pairs a ring with its `HubStat` + status
-  `HubPill`s, and Budget Snapshot's balance is a `HubStat`. Layout note: the class-tile
+  their stat. **Season-aware (2026-07-16):** before any money lands, the fundraising
+  ring slot shows a forward-looking stat instead of a dead 0% meter — "N fundraisers
+  lined up" + last year's grand total (Site Settings `pastFundraisingTotals`, fallback in
+  `live-links.ts`) — and the school-year bar renders only once `yearPct > 0` ("0%" in July
+  is noise; the countdown stat, now with a "First day: <date>" sub-line, owns the pre-year
+  story). The Fundraising widget applies the same rule (stat + "Together we raised $X last
+  year" until `totalRaised > 0`, then the ring), and Budget Snapshot's balance is a
+  `HubStat`. The Upcoming Events widget caps the PHONE stack at 5 items + a "+N more on
+  the calendar" link (`hidden lg:flex` on the tail) while lg+ keeps the full 12 for the
+  tall bento tile. Layout note: the class-tile
   grid fills its bento row with `lg:flex-1` (wrapper is `lg:flex-col`), NOT `h-full` —
   a percentage height there resolves after intrinsic row sizing and overflows the cell
   into Announcements whenever the hero grows (bit twice on 2026-07-14).
@@ -336,7 +344,9 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   precision-first: case-sensitive proper-noun matching, common-word names (Documents,
   Calendar, Health, ...) require a literal " page" suffix while distinctive names (Co-op
   Jobs, Super Helper, Getting Started, Twos & Threes, Budget & Fundraising) link on their
-  own, first-occurrence-per-target only, never self-links, and skips existing links /
+  own ("Pre-K" is the in-between: too common to link bare, so it links as "Pre-K page" or
+  as a parenthetical "(Pre-K)" — the teacher-list idiom on Getting Started),
+  first-occurrence-per-target only, never self-links, and skips existing links /
   buttons / headings / code (opt out with `data-no-autolink`). Both are no-JS-degradable
   (plain text) and skipped in `/preview` so stega click-to-edit stays intact; links inherit
   the body colour + underline so they pass axe on any surface.
@@ -499,8 +509,11 @@ mounts `HubSectionedBody` INSIDE the same `<Section bg="grey"> → max-w-6xl` co
 left/right rail (previously the body was a full-width sibling and floated at a different width —
 the "TOC far to the left, nothing aligned" bug). On xl+ the column is paired with a sticky "On
 this page" TOC (`HubSectionIndex`) on the **right** (GitBook/Notion-style, off the hub rail's
-side); below xl the TOC hides and the cards run full-width. Grid + card CSS lives in the
-"Handbook document column" block of `globals.css`, keyed off `.hub-doc-grid` / `.hub-doc-block`.
+side); below xl the sticky TOC hides and a collapsed "On this page" `<details>` jump list
+(`HubSectionIndex variant="inline"`, self-closing after a jump) sits above the column instead —
+a 10k-px handbook on a phone needs a way to skip ahead (2026-07-16 audit). Grid + card CSS lives
+in the "Handbook document column" block of `globals.css`, keyed off `.hub-doc-grid` /
+`.hub-doc-block`.
 
 Each section is wrapped in a `.hub-doc-block[data-treatment]` whose treatment (chosen in
 `HubSectionedBody` from the section `_type`) decides its chrome — the **hybrid card** model:
@@ -519,8 +532,10 @@ sections exactly as before — only the hub rendering changes.
 
 The page header carries a quiet **meta line** — an estimated reading time and an "Updated <Month
 YYYY>" freshness stamp — so a handbook reads as maintained reference content. Reading time comes
-from `src/lib/hub-reading-time.ts` (`estimateReadMinutes`, ~200 wpm over headings + prose + FAQ
-text only — scannable blocks like schedules/tables are deliberately not counted); the stamp is
+from `src/lib/hub-reading-time.ts` (`estimateReadMinutes`, ~200 wpm over headings, prose, FAQ
+text, AND the sentence-bearing fields of cards / steps / schedule entries — these pages are built
+of card grids, so skipping them once put "2 min read" on a 13,000px page; pure lookup values like
+times and prices still don't count); the stamp is
 `formatMonthYear(doc._updatedAt)` from `src/lib/hub-dashboard-dates.ts` (Eastern-safe, per the
 Workers-UTC gotcha). `HUB_PAGE_QUERY` projects `_updatedAt`. Both helpers are Vitest-covered.
 
@@ -622,7 +637,10 @@ can never crash a page. Everything on every hub page is now Board-editable.
 **Welcome-letter modals:** the hub home shows the `presidentNote` singleton once per version
 stamp; each class page shows its class's `teacherNote` doc the same way (Studio → Family Hub →
 Teacher welcome notes; seed/refresh with `node scripts/seed-teacher-notes.mjs`). Both share
-`src/scripts/note-modal.ts` (per-note localStorage keys).
+`src/scripts/note-modal.ts` (per-note localStorage keys). A dismissed letter is never lost:
+each page with a note also renders a hidden `[data-note-open]` reopen pill ("A note from your
+President" chip in the hero; "Welcome letter" action on the teacher card) that note-modal.ts
+unhides and wires when the modal is present — JS-only, like the modal itself.
 
 **Org chart holders:** who fills each role each year is `src/data/hub/org-holders.ts` — a
 plain data file (names/emails only render behind the gate). Update it after spring elections.

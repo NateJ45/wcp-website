@@ -55,11 +55,18 @@ export function yearProgressPercent(
   return Math.min(100, Math.max(0, Math.round(pct)));
 }
 
-/** Short "Mon D" date, rendered in `timeZone` (event/update fmt() helpers). */
-export function formatShortDate(iso: string, timeZone: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+/** Short "Mon D" date, rendered in `timeZone` (event/update fmt() helpers).
+ *  A date from a DIFFERENT year gains the year ("Nov 1, 2025") — a bare
+ *  "Nov 1" on last fall's newsletter read as a future date in July (2026-07-16
+ *  audit). `now` is injectable for tests; both years compare in `timeZone`. */
+export function formatShortDate(iso: string, timeZone: string, now: Date = new Date()): string {
+  const d = new Date(iso);
+  const yearOf = (x: Date) => x.toLocaleDateString('en-US', { year: 'numeric', timeZone });
+  const sameYear = yearOf(d) === yearOf(now);
+  return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
     timeZone,
   });
 }

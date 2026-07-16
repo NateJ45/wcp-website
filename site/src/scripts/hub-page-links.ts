@@ -45,7 +45,11 @@ const TARGETS: [group: string, slug: string, src: string][] = [
   ['tuition', 'tuition', 'Tuition page'],
   ['health', 'health', 'Health page'],
   ['updates', 'updates', 'Updates page'],
-  ['preK', 'pre-k', 'Pre-?K page'],
+  // "Pre-K" alone is too common to link ("Pre-K AM", tuition rows, ...), but a
+  // parenthetical "(Pre-K)" is always a class-page reference — the teacher list
+  // on Getting Started writes "lisa@ (Pre-K)" the same way it writes
+  // "erin@ (Twos & Threes)", which links via its own target above.
+  ['preK', 'pre-k', 'Pre-?K page|Pre-?K(?=\\))'],
 ];
 
 const SKIP = new Set([

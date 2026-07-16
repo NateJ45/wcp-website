@@ -38,6 +38,26 @@ describe('readableWordCount', () => {
   it('ignores scannable blocks with no readable text fields', () => {
     expect(readableWordCount([{ _type: 'scheduleSection', rows: [{ time: '9:15' }] }])).toBe(0);
   });
+
+  it('counts card titles + bodies (handbook pages are built of card grids)', () => {
+    const words = readableWordCount([
+      {
+        _type: 'cardGridSection',
+        cards: [{ title: 'Helper shifts', body: 'Help in the classroom monthly' }],
+      },
+    ]);
+    expect(words).toBe(7); // 2 title + 5 body
+  });
+
+  it('counts schedule entry titles + descriptions but not times', () => {
+    const words = readableWordCount([
+      {
+        _type: 'scheduleSection',
+        entries: [{ time: '9:15', title: 'Greeting and free play', description: 'Warm start' }],
+      },
+    ]);
+    expect(words).toBe(6); // 4 title + 2 description, "9:15" not counted
+  });
 });
 
 describe('estimateReadMinutes', () => {

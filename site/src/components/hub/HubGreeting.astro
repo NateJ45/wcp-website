@@ -4,17 +4,25 @@
    ============================================================================
    The dashboard's HERO TILE and (since the 2026-07-14 app-elevation Track B)
    the hub's ONE hero-tier DATA surface: time-of-day greeting, ambient chips
-   (date, weather), then a row of live, deep-linking stats — next school event,
-   days 'til school, families, and the fundraising-year ring — over the
-   school-year progress bar. Every number is real (Sanity, the treasurer's
-   sheet, the calendar feed) and every stat links to its page. A stat whose
-   source is empty simply omits itself ("designed absence, not a broken zero").
+   (date, weather, air quality), then a row of live, deep-linking stats — next
+   school event, days 'til school, families, and the fundraising-year ring —
+   over the school-year progress bar. Every number is real (Sanity, the
+   treasurer's sheet, the calendar feed, Open-Meteo, NWS) and every stat links
+   to its page. A stat whose source is empty simply omits itself ("designed
+   absence, not a broken zero").
+
+   Weather (src/lib/hub-weather.ts) and air quality (hub-air-quality.ts) are
+   free/keyless Open-Meteo reads for the school's fixed coordinates. A NWS
+   weather alert (hub-alerts.ts), when one is active and school-relevant,
+   breaks out of the chip row as its own banner — the one thing on this tile
+   urgent enough to warrant it.
 
    Server-rendered only. The calendar + fundraising reads ride the same
    SWR-cached helpers the widgets below already call, so within a request the
-   in-isolate cache dedupes them — no new blocking reads on first paint.
-   Greeting uses America/New_York wall-clock time via Intl (NOT Date#getHours,
-   which is UTC in the Workers runtime).
+   in-isolate cache dedupes them — no new blocking reads on first paint; the
+   three new external reads run concurrently with the Sanity settings read for
+   the same reason. Greeting uses America/New_York wall-clock time via Intl
+   (NOT Date#getHours, which is UTC in the Workers runtime).
 
    THEME-STABLE ISLAND: like the hub rail, this navy tile looks identical in
    light and dark mode, so the gradient's sky end hardcodes the light-mode
@@ -34,8 +42,15 @@ import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
 import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
 import { getFundraisers } from '@/lib/gsheets';
+import { getWeather } from '@/lib/hub-weather';
+import { getAirQuality } from '@/lib/hub-air-quality';
+import { getActiveAlert } from '@/lib/hub-alerts';
 import { sanityFetch } from '@/lib/sanity';
-import { budgetSheetIdFallback, calendarFeedUrlFallback } from '@/data/hub/live-links';
+import {
+  budgetSheetIdFallback,
+  calendarFeedUrlFallback,
+  pastFundraisingTotalsFallback,
+} from '@/data/hub/live-links';
 
 interface Props {
   yearStart?: string;
@@ -69,15 +84,27 @@ const summerChip = daysToYearEnd !== null && daysToYearEnd <= 0 && !countingDown
 const yearPct = yearProgressPercent(yearStart, yearEnd, now);
 
 // --- Live stats (same settings-fallback pattern as the widgets below) ------
-const settings = await (async () => {
-  try {
-    return await sanityFetch<{ calendarFeedUrl?: string; budgetSheetId?: string } | null>(
-      `*[_type == "siteSettings"][0]{ calendarFeedUrl, budgetSheetId }`,
-    );
-  } catch {
-    return null;
-  }
-})();
+// Weather/air-quality/alert are independent of the Sanity read, so they run
+// concurrently with it — keeps this tile's "no new blocking reads on first
+// paint" promise even with three more external fetches.
+const [settings, weather, airQuality, alert] = await Promise.all([
+  (async () => {
+    try {
+      return await sanityFetch<{
+        calendarFeedUrl?: string;
+        budgetSheetId?: string;
+        pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
+      } | null>(
+        `*[_type == "siteSettings"][0]{ calendarFeedUrl, budgetSheetId, pastFundraisingTotals }`,
+      );
+    } catch {
+      return null;
+    }
+  })(),
+  getWeather(),
+  getAirQuality(),
+  getActiveAlert(),
+]);
 
 // Next school event (SWR-cached feed; the Upcoming Events widget re-uses it).
 const events: HubEvent[] = await getUpcomingEvents(
@@ -97,6 +124,30 @@ const fundraisers = await getFundraisers(settings?.budgetSheetId || budgetSheetI
 const raised = fundraisers.reduce((s, f) => s + f.raised, 0);
 const goal = fundraisers.reduce((s, f) => s + f.goal, 0);
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+
+// SEASON-AWARE fundraising slot: a 0% ring is worse than no ring (a stalled
+// meter reads as a dying campaign), so before any money lands the same slot
+// looks FORWARD instead: how many fundraisers are lined up, plus last year's
+// grand total as social proof (Board-editable "Past fundraising totals" on
+// Site Settings, same source as the Fundraising page's band).
+const fundraisersComing = fundraisers.filter((f) => f.status !== 'complete').length;
+const cmsPastTotals = (settings?.pastFundraisingTotals ?? []).filter(
+  (t): t is { yearLabel: string; amount: number } =>
+    Boolean(t.yearLabel) && typeof t.amount === 'number',
+);
+const lastYearRaised = (cmsPastTotals[0] ?? pastFundraisingTotalsFallback[0])?.amount ?? 0;
+
+// First-day sub-line under the countdown (date-only ISO string — anchor via
+// eventDate's noon-UTC rule, never `new Date('YYYY-MM-DD')`, see CLAUDE.md).
+const firstDayLabel =
+  countingDown && firstDay
+    ? eventDate(firstDay).toLocaleDateString('en-US', {
+        timeZone: 'America/New_York',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+    : null;
 ---
 
 <div
@@ -111,6 +162,23 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
       </h1>
       <p class="mt-2 max-w-xl text-white/90">Welcome to the WCP Family Hub!</p>
 
+      {
+        /* Active weather alert — the one thing on this tile urgent enough to
+           break out of the quiet chip row. Only school-relevant NWS alerts
+           (winter/ice/flood/extreme temps, or anything NWS flags Severe or
+           Extreme) reach here; see src/lib/hub-alerts.ts. */
+        alert && (
+          <div class="mt-3 flex items-start gap-2 rounded-lg border border-amber/40 bg-amber/20 px-3 py-2 text-sm font-semibold text-white">
+            <Icon
+              name="triangle-alert"
+              class="mt-0.5 h-4 w-4 shrink-0 text-amber"
+              aria-hidden="true"
+            />
+            <span>{alert.headline}</span>
+          </div>
+        )
+      }
+
       <ul class="mt-5 flex flex-wrap gap-2">
         <li
           class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold"
@@ -119,6 +187,22 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
           {todayLabel}
         </li>
         {
+          weather && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name={weather.icon} class="h-4 w-4" />
+              {weather.tempF}°F · {weather.line}
+            </li>
+          )
+        }
+        {
+          airQuality && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name={airQuality.icon} class="h-4 w-4" />
+              AQI {airQuality.aqi} · {airQuality.line}
+            </li>
+          )
+        }
+        {
           summerChip && (
             <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
               <Icon name="sun" class="h-4 w-4 text-amber" />
@@ -126,6 +210,22 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
             </li>
           )
         }
+        {
+          /* Reopen pill for the President's welcome letter — hidden until
+             note-modal.ts confirms the modal is on the page (JS running), so a
+             dismissed letter is never lost behind its one-time auto-open. */
+        }
+        <li hidden data-note-open-wrap>
+          <button
+            type="button"
+            data-note-open
+            hidden
+            class="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-white/25"
+          >
+            <Icon name="mail" class="h-4 w-4 text-amber" />
+            A note from your President
+          </button>
+        </li>
       </ul>
     </div>
 
@@ -150,6 +250,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
             value={String(daysToFirstDay)}
             label={`day${daysToFirstDay === 1 ? '' : 's'} 'til school`}
           />
+          {firstDayLabel && <p class="mt-0.5 text-xs text-white/85">First day: {firstDayLabel}</p>}
         </a>
       )
     }
@@ -174,7 +275,9 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
       ) : null
     }
     {
-      goal > 0 && (
+      /* Money in → the live ring. Nothing raised yet (pre-season) → look
+         forward instead of showing a dead 0% meter. Neither → omit. */
+      goal > 0 && raised > 0 ? (
         <a href="/family-hub/fundraising" class="wcp-strip-stat flex items-center gap-3">
           <HubRing
             tone="navy"
@@ -189,12 +292,26 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
             <span class="block text-white/85">of {money(goal)} goal</span>
           </span>
         </a>
-      )
+      ) : goal > 0 && fundraisersComing > 0 ? (
+        <a href="/family-hub/fundraising" class="wcp-strip-stat">
+          <HubStat
+            tone="navy"
+            countUp
+            value={String(fundraisersComing)}
+            label={`fundraiser${fundraisersComing === 1 ? '' : 's'} lined up`}
+          />
+          {lastYearRaised > 0 && (
+            <p class="mt-0.5 text-xs text-white/85">{money(lastYearRaised)} raised last year</p>
+          )}
+        </a>
+      ) : null
     }
   </div>
 
   {
-    yearPct !== null && (
+    /* Progress bar only once the year is actually under way — "0%" in July is
+       noise (the countdown stat already owns the pre-year story). */
+    yearPct !== null && yearPct > 0 && (
       <div class="mt-auto max-w-xl pt-6">
         <div class="flex items-center justify-between text-xs font-semibold text-white/90">
           <span>School year progress</span>

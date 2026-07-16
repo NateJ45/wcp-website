@@ -86,6 +86,17 @@ function init() {
     btn.addEventListener('click', close);
   });
 
+  // Reopen affordances: pages with a note render a HIDDEN "[data-note-open]"
+  // pill (hero chip on home, teacher-card action on class pages) so a family
+  // can re-read a dismissed letter any time. Unhidden only when the modal is
+  // actually on the page and JS is running — without JS the modal can't open,
+  // so the pill stays hidden (consistent, not broken).
+  document.querySelectorAll<HTMLElement>('[data-note-open]').forEach((btn) => {
+    btn.hidden = false;
+    btn.closest<HTMLElement>('[data-note-open-wrap]')?.removeAttribute('hidden');
+    btn.addEventListener('click', open);
+  });
+
   let seen: string | null = null;
   try {
     seen = localStorage.getItem(el.dataset.storageKey ?? 'wcp-note-seen');
