@@ -1,0 +1,149 @@
+---
+/* ============================================================================
+   BudgetTable — the member-approved operating budget, as a polished hub table
+   ============================================================================
+   Renders src/data/hub/budget.ts: a summary trio (target revenue / total
+   expenses / net) with a revenue-vs-expenses balance bar, then one card per
+   budget group (tuition & fees, fundraising, operating expenses, programs &
+   payroll) with every line's this-year figure, last-year comparison, and note,
+   plus a derived subtotal. Revenue groups accent green, expenses navy. Full
+   width (fills the doc column — no dangling reading-cap gap), responsive by
+   flex rows (no fixed table columns), reduced-motion-safe.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import { budgetGroups, budgetMeta } from '@/data/hub/budget';
+import { cn } from '@/lib/utils';
+
+const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+const signed = (n: number) => (n < 0 ? `−${money(Math.abs(n))}` : money(n));
+const sumNow = (lines: { now: number }[]) => lines.reduce((s, l) => s + l.now, 0);
+const sumWas = (lines: { was?: number }[]) => lines.reduce((s, l) => s + (l.was ?? 0), 0);
+
+const { targetRevenue, totalExpenses, net } = budgetMeta;
+const barMax = Math.max(targetRevenue, totalExpenses);
+
+// Per-group accent + icon (kind drives the color; key picks the glyph).
+const GROUP_ICON: Record<string, string> = {
+  revenue: 'circle-dollar-sign',
+  fundraising: 'party-popper',
+  operating: 'building-2',
+  programs: 'graduation-cap',
+};
+const accentFor = (kind: 'revenue' | 'expense') =>
+  kind === 'revenue'
+    ? { chip: 'bg-green/20 text-green-ink', dot: 'bg-green', tint: 'var(--color-green)' }
+    : { chip: 'bg-sky/15 text-sky-ink', dot: 'bg-navy dark:bg-sky', tint: 'var(--color-navy)' };
+---
+
+<section aria-labelledby="budget-heading" class="mt-12">
+  <h2 id="budget-heading" class="text-xl font-extrabold text-heading">The full budget</h2>
+  <p class="mt-1 max-w-2xl text-ink-muted">
+    Our member-approved {budgetMeta.year} operating budget, line by line, with last year for comparison.
+    {budgetMeta.enrollment}; every extra summer enrollment moves us further into the black.
+  </p>
+
+  {/* Summary — target revenue / total expenses / net, plus a balance bar. */}
+  <HubCard class="mt-6" style="--note-accent: var(--color-green)">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="rounded-xl bg-grey/60 p-4 dark:bg-white/5">
+        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Target revenue</p>
+        <p class="mt-1 font-display text-3xl text-heading tabular-nums">{money(targetRevenue)}</p>
+        <p class="mt-0.5 text-xs text-ink-muted">Tuition, fees & fundraising</p>
+      </div>
+      <div class="rounded-xl bg-grey/60 p-4 dark:bg-white/5">
+        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Total expenses</p>
+        <p class="mt-1 font-display text-3xl text-heading tabular-nums">{money(totalExpenses)}</p>
+        <p class="mt-0.5 text-xs text-ink-muted">Operations, payroll & programs</p>
+      </div>
+      <div class="rounded-xl bg-amber/15 p-4">
+        <p class="text-xs font-semibold tracking-wide text-orange-ink uppercase">Net position</p>
+        <p class="mt-1 font-display text-3xl text-orange-ink tabular-nums">{signed(net)}</p>
+        <p class="mt-0.5 text-xs text-ink-muted">{budgetMeta.netNote}</p>
+      </div>
+    </div>
+
+    {/* Balance bar: revenue vs expenses, near-identical by design. */}
+    <div class="mt-5 space-y-2" aria-hidden="true">
+      <div class="flex items-center gap-3">
+        <span class="w-20 shrink-0 text-xs font-semibold text-ink-muted">Revenue</span>
+        <span class="h-2.5 flex-1 overflow-hidden rounded-full bg-grey dark:bg-white/10">
+          <span
+            class="block h-full rounded-full bg-green"
+            style={`width:${(targetRevenue / barMax) * 100}%`}></span>
+        </span>
+        <span class="w-20 shrink-0 text-right text-xs font-bold text-heading tabular-nums"
+          >{money(targetRevenue)}</span
+        >
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="w-20 shrink-0 text-xs font-semibold text-ink-muted">Expenses</span>
+        <span class="h-2.5 flex-1 overflow-hidden rounded-full bg-grey dark:bg-white/10">
+          <span
+            class="block h-full rounded-full bg-navy dark:bg-sky"
+            style={`width:${(totalExpenses / barMax) * 100}%`}></span>
+        </span>
+        <span class="w-20 shrink-0 text-right text-xs font-bold text-heading tabular-nums"
+          >{money(totalExpenses)}</span
+        >
+      </div>
+    </div>
+  </HubCard>
+
+  {/* One card per budget group. */}
+  <div class="mt-4 grid gap-4">
+    {
+      budgetGroups.map((g) => {
+        const a = accentFor(g.kind);
+        const now = sumNow(g.lines);
+        const was = sumWas(g.lines);
+        return (
+          <HubCard class="min-w-0 overflow-hidden p-0" style={`--note-accent: ${a.tint}`}>
+            <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+              <span class="flex min-w-0 items-center gap-2.5">
+                <span
+                  class={cn(
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                    a.chip,
+                  )}
+                  aria-hidden="true"
+                >
+                  <Icon name={GROUP_ICON[g.key] ?? 'circle-dollar-sign'} class="h-4.5 w-4.5" />
+                </span>
+                <span class="truncate font-display text-lg text-heading">{g.label}</span>
+              </span>
+              <span class="shrink-0 text-right">
+                <span class="block font-display text-xl text-heading tabular-nums">
+                  {money(now)}
+                </span>
+                <span class="block text-xs text-ink-muted tabular-nums">was {money(was)}</span>
+              </span>
+            </div>
+            <ul class="divide-y divide-border px-5">
+              {g.lines.map((l) => (
+                <li class="flex items-start justify-between gap-4 py-3">
+                  <span class="min-w-0">
+                    <span class="block font-semibold text-heading">{l.label}</span>
+                    {l.note && (
+                      <span class="mt-0.5 block text-xs leading-relaxed text-ink-muted">
+                        {l.note}
+                      </span>
+                    )}
+                  </span>
+                  <span class="shrink-0 text-right">
+                    <span class="block font-bold text-heading tabular-nums">{money(l.now)}</span>
+                    {l.was !== undefined && (
+                      <span class="block text-xs text-ink-muted tabular-nums">
+                        was {money(l.was)}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </HubCard>
+        );
+      })
+    }
+  </div>
+</section>

@@ -85,11 +85,11 @@ export const hubNav: HubGroup[] = [
     ],
   },
   {
-    label: 'Budget',
+    label: 'Money',
     accent: '#4ade80', // green — it's the money group
     links: [
       { label: 'Tuition', href: '/family-hub/tuition', icon: 'circle-dollar-sign' },
-      { label: 'Fundraising', href: '/family-hub/fundraising', icon: 'party-popper' },
+      { label: 'Budget & Fundraising', href: '/family-hub/fundraising', icon: 'party-popper' },
     ],
   },
   {

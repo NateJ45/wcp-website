@@ -452,8 +452,18 @@ register (centered eyebrow headers, hero-scale type, alternating full-bleed band
 skin in `globals.css` re-skins them as app content: headers left-align, the eyebrow kicker drops,
 and type shrinks to app scale.
 
-The content-heavy hub pages — **Co-op Jobs, Health & Safety, Tuition, Fundraising** — also run
-their Board-editable sections through `HubSectionedBody` (they used to render them as plain
+**Budget & Fundraising** (the renamed Fundraising page — nav group "Money", URL still
+`/family-hub/fundraising`): dashboard-style fundraiser cards (with the live Store Sales net-profit
+card) and the "raised together" band, then a full-width **`BudgetTable`** — the whole
+member-approved operating budget from `src/data/hub/budget.ts` (transcribed from the Treasurer's
+proposed-budget PDF): a target-revenue / total-expenses / net summary with a revenue-vs-expenses
+balance bar, then a card per group (tuition & fees, fundraising, operating expenses, programs &
+payroll) with each line's this-year figure, last-year comparison, note, and a derived subtotal.
+It replaces the old "The Budget" prose section (which left a narrow reading-cap column with a
+dangling right gap — the table fills the full width). Update `budget.ts` each year at the vote.
+
+The content-heavy hub pages — **Co-op Jobs, Health & Safety, Tuition, Budget & Fundraising** — also
+run their Board-editable sections through `HubSectionedBody` (they used to render them as plain
 full-width `SectionRenderer` bands at the page tail). On Co-op Jobs / Tuition / Fundraising the
 fixed dashboard content stays full-width and the handbook sections follow as a card doc column
 with its own TOC ("dashboard above, handbook below"); Health swaps its fixed fallback for the doc

@@ -22,6 +22,7 @@ import HubPill from '@/components/hub/HubPill.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import Button from '@/components/ui/Button.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+import BudgetTable from '@/components/hub/BudgetTable.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
@@ -117,18 +118,24 @@ const STATUS_META: Record<FundraiserStatus, { label: string; kind: 'open' | 'wai
     upcoming: { label: 'Soon', kind: 'waitlist' },
     complete: { label: 'Done', kind: 'past' },
   };
-// Drop the budget count-up band (statBandSection) from the Board-editable
-// sections. It was removed from the seed too; this filter makes it disappear on
-// the live page NOW, while Sanity writes are quota-blocked and the doc can't yet
-// be patched (see scripts/patch-drop-fundraising-statband.mjs). Safe to remove
-// this filter once that patch has run.
+// Trim the Board-editable sections: drop the old count-up band
+// (statBandSection) AND the "The Budget" prose section — both are superseded by
+// the live BudgetTable below (the prose left a narrow reading-cap column and a
+// dangling right gap). Filtered in code while Sanity writes are quota-blocked;
+// once the doc is patched in the Studio these filters can go.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const docSections = ((doc?.sections ?? []) as any[]).filter((s) => s?._type !== 'statBandSection');
+const docSections = ((doc?.sections ?? []) as any[]).filter(
+  (s) =>
+    s?._type !== 'statBandSection' &&
+    !(s?._type === 'proseSection' && /budget|money goes/i.test(s?.header?.title ?? '')),
+);
 const hasSections = docSections.length > 0;
-const title = doc?.heading || 'Fundraising';
+// Renamed: this is now the general Budget & Fundraising page. Keep a Board's
+// custom heading if they set one, but replace the old default "Fundraising".
+const title = doc?.heading && doc.heading !== 'Fundraising' ? doc.heading : 'Budget & Fundraising';
 const intro =
   doc?.intro ||
-  'What we’re raising money for this year, what’s active right now, and how you can help. Every dollar goes back into the classrooms.';
+  'Where our money comes from and where it goes: the year’s fundraisers and the full member-approved operating budget. Every dollar goes back into the classrooms.';
 
 const money = (n?: number) => `$${Math.round(n ?? 0).toLocaleString('en-US')}`;
 const pctOf = (r?: number, g?: number) =>
@@ -141,7 +148,7 @@ const fmtDeadline = (iso: string) =>
   });
 ---
 
-<HubShell title={title} bare pageTitle="Fundraising — WCP Family Hub">
+<HubShell title={title} bare pageTitle="Budget & Fundraising — WCP Family Hub">
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="party-popper" />
@@ -350,9 +357,12 @@ const fmtDeadline = (iso: string) =>
           </HubCard>
         )
       }
+      {/* The full member-approved operating budget as a polished table. */}
+      <BudgetTable />
+
       {
-        /* Board-editable handbook sections (The Budget, and anything the Board
-         adds) as an aligned card doc column with an "On this page" TOC. */
+        /* Any other Board-editable handbook sections (the old "The Budget" prose
+         is filtered out above, replaced by BudgetTable). */
       }
       {
         hasSections && (
