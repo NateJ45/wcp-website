@@ -579,9 +579,15 @@
    container's ~100px top+bottom. Scoped to `.wcp-section > .wcp-container` so
    CtaBanner (a `section.bg-navy`, not `.wcp-section`) keeps its own padding.
    The marketing header→content gap (mt-12) also tightens to app scale. */
-.hub-doc-block[data-treatment='bleed'] .wcp-section,
-.hub-doc-block[data-treatment='bleed'] .wcp-section > .wcp-container {
+.hub-doc-block[data-treatment='bleed'] .wcp-section {
   padding-block: 0;
+}
+/* The Section-based bleed container (card grids, galleries) sheds ALL its
+   marketing padding so its cards align flush with the flow prose above, instead
+   of sitting inset a few px. Scoped to `.wcp-section > .wcp-container` so the
+   navy CTA (a `section.bg-navy`, not `.wcp-section`) keeps its own padding. */
+.hub-doc-block[data-treatment='bleed'] .wcp-section > .wcp-container {
+  padding: 0;
 }
 .hub-doc-block[data-treatment='bleed'] .mt-12 {
   margin-top: 1.5rem;
@@ -597,6 +603,10 @@
    keep their own column counts. */
 .hub-doc-block .wcp-section ul:has(> li.group) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* A lone card (single-card grid) spans the full column instead of half. */
+.hub-doc-block .wcp-section ul:has(> li.group:only-child) {
+  grid-template-columns: minmax(0, 1fr);
 }
 /* Shrink the FeatureCard title from marketing display scale to a card-scale
    size across ALL hub pages, so long words like "Enrichment" stop breaking

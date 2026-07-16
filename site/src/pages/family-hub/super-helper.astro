@@ -15,6 +15,8 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/Icon.astro';
 
 const ADMIN = 'admin@westchesterpreschool.org';
 
@@ -150,14 +152,20 @@ const sections: any[] = [
     ],
   },
   {
-    _type: 'proseSection',
+    _type: 'cardGridSection',
     _key: 'sh-proof',
     background: 'white',
-    narrow: true,
+    columns: 1,
     header: { _type: 'sectionHeader', title: 'Proof of education', align: 'center' },
-    body: pt(
-      `Submit an official transcript or diploma showing you completed high school or college to ${ADMIN}. Once your CPR certificate and proof of education are in and both online courses are done, you are a certified Super Helper. Welcome to the classroom!`,
-    ),
+    cards: [
+      {
+        _key: 'sh-proof-c',
+        icon: 'graduation-cap',
+        chip: 'green',
+        title: 'The last step',
+        body: `Submit an official transcript or diploma showing you finished high school or college to ${ADMIN}. Once your CPR certificate and proof of education are in and both online courses are done, you are a certified Super Helper. Welcome to the classroom!`,
+      },
+    ],
   },
   {
     _type: 'stepListSection',
@@ -220,7 +228,30 @@ const sections: any[] = [
         subtitle="Get certified to volunteer in the classroom. Here is every step, start to finish."
         icon="star"
         iconChip="bg-amber/15 text-amber-ink"
-      />
+      >
+        <div slot="action" class="flex flex-wrap gap-2">
+          <Button
+            href="/super-helper-certification.pdf"
+            target="_blank"
+            rel="noopener"
+            variant="outline"
+            size="sm"
+          >
+            <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+            Super Helper steps (PDF)
+          </Button>
+          <Button
+            href="/background-check-renewal.pdf"
+            target="_blank"
+            rel="noopener"
+            variant="outline"
+            size="sm"
+          >
+            <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+            Background check (PDF)
+          </Button>
+        </div>
+      </HubPageHeader>
 
       <HubSectionedBody sections={sections} label="Super Helper steps" class="mt-8" />
     </div>
