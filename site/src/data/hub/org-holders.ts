@@ -126,7 +126,7 @@ export const secretaryBranch: ChairStack[] = [
 /** One rep per class (green tier). Names set each fall. */
 export const classReps: OrgPerson[] = [
   { role: 'Twos Rep', icon: 'blocks' },
-  { role: 'Threes Rep', icon: 'crayon' },
+  { role: 'Threes Rep', icon: 'puzzle' },
   { role: 'Pre-K AM Rep', icon: 'sun' },
   { role: 'Pre-K PM Rep', icon: 'moon' },
 ];
