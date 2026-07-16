@@ -595,21 +595,21 @@
 }
 
 /* ----------------------------------------------------------------------------
-   Hub card system — `.hub-note`: the "paper note on the board" look
+   Hub card system — `.hub-note`: the paper-note card look
    ----------------------------------------------------------------------------
    Both card shells (HubCard + HomeWidgetCard) carry `.hub-note` ON TOP of their
    Tailwind base (border / bg-white dark:bg-surface / p-6 / shadow stay
-   utilities, so per-card overrides like `p-4` still win). This class adds only
-   the display-case character, all decorative and BELOW the text so contrast is
-   untouched and axe holds in both themes:
-     - a faint graph-paper GRID + paper grain, so a card reads handmade, not
-       flat SaaS white;
-     - a 3px brand-colour top edge (the note's coloured header tab). The colour
-       is `--note-accent`, which ROTATES across sibling cards (sky → orange →
-       amber → navy) so a grid of cards is a spread of brand colour. Wrapped or
-       lone cards keep the sky default; a caller can set `--note-accent` on the
-       card (or any ancestor, it inherits) to pin a meaningful colour.
-   position:relative sets up the pushpins/tape added for interactive cards. */
+   utilities, so per-card overrides like `p-4` still win). Adds only decorative
+   character, all BELOW the text so contrast is untouched and axe holds in both
+   themes:
+     - a faint graph-paper GRID + paper grain, so a card reads handmade;
+     - a whisper-faint WASH of the rotating brand `--note-accent` across the
+       whole card. Colour lives in the tinted SURFACE + the icon chip, NOT a
+       coloured top/left strip — a card strip is a recognized AI-slop tell, and
+       the best products (Notion, Linear) carry brand colour as a tinted surface
+       + coloured token instead (2026-07-16 design-benchmark). `--note-accent`
+       rotates across sibling cards (sky → orange → amber → navy) and can be
+       pinned by an ancestor/caller; sky is the default. */
 :root {
   --wcp-note-line: rgba(1, 69, 126, 0.05);
 }
@@ -618,19 +618,16 @@
 }
 .hub-note {
   position: relative;
+  --note-tint: color-mix(in oklab, var(--note-accent, var(--color-sky)) 6%, transparent);
   background-image:
     linear-gradient(var(--wcp-note-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--wcp-note-line) 1px, transparent 1px), var(--wcp-grain);
+    linear-gradient(90deg, var(--wcp-note-line) 1px, transparent 1px), var(--wcp-grain),
+    linear-gradient(var(--note-tint), var(--note-tint));
   background-size:
     22px 22px,
     22px 22px,
+    auto,
     auto;
-  /* The coloured header tab. `--note-accent` is NOT set on the base (so an
-     ancestor that pins it wins by inheritance); the sky fallback is the default.
-     border-box keeps the card the same size; only the top border thickens, so
-     nothing shifts. Overrides the 1px `border-border` top edge; the other three
-     sides keep the neutral border. */
-  border-top: 3px solid var(--note-accent, var(--color-sky));
 }
 /* Rotate the accent across LIST cards (HubCard as="li" in a card grid — the
    directory, co-op jobs, nav tiles, ...). Scoped to `li.hub-note` on purpose:
@@ -1118,6 +1115,28 @@ li:nth-child(4n + 4) > .hub-note {
     100% {
       transform: translateX(100%);
     }
+  }
+}
+
+/* Skeleton delay-gate: the home's `server:defer` widgets stream in ~100ms on a
+   warm cache, so their fallback skeleton would flash for a blink. Hold it hidden
+   for ~300ms — if the real widget arrives first (the common case) the skeleton
+   is never seen; only a genuinely slow cold-cache load reveals it (NN/g: skeletons
+   only help past ~300-500ms). Reduced-motion (and any no-animation path) shows it
+   immediately, so a skeleton is never stuck invisible. */
+.wcp-skel-gate {
+  opacity: 0;
+  animation: wcp-skel-in 0.01s linear 0.3s forwards;
+}
+@keyframes wcp-skel-in {
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wcp-skel-gate {
+    opacity: 1;
+    animation: none;
   }
 }
 

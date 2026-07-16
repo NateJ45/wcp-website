@@ -325,8 +325,10 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   sign-up success fires a reduced-motion-safe confetti burst.
 - **Cards are notes on the board** (`.hub-note`, globals.css — carried by both `HubCard`
   and `HomeWidgetCard` on top of their Tailwind base): a faint graph-paper grid + grain,
-  and a 3px brand-colour top tab whose colour rotates by list position (or is pinned per
-  card via `--note-accent`, set on the six home widgets by meaning). Interactive (link)
+  and a faint brand-colour SURFACE tint whose colour rotates by list position (or is pinned
+  per card via `--note-accent`, set on the six home widgets by meaning). Colour lives in the
+  tinted surface + the icon chip, not a top/left strip — a card strip is an AI-slop tell
+  (2026-07-16 design benchmark against Notion/Linear). Interactive (link)
   cards keep the standard HubCard hover-lift — the pinned/tilted look is reserved for the
   community photo wall (`SocialWallWidget`), not these cards.
   `HubCard`/`HomeWidgetCard` take a `postit` prop for a warm sticky-note fill (Announcements
