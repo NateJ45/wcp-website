@@ -287,9 +287,9 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
       </a>
       {
         /* Family Handbook — the year's reference doc, one tap from any hub page.
-         Icon-only (the book glyph reads clearly) with its name in the tooltip +
-         a sr-only label, so it stays compact and leaves the wider bar room for
-         the latest-update title to show in full. */
+         Carries a visible "Handbook" label at xl (sr-only below), like every
+         other quick link, so the book glyph is never a mystery icon; the full
+         "Family Handbook (PDF)" stays in the tooltip + aria-label. */
       }
       <a
         href={familyHandbookUrl}
@@ -297,9 +297,10 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
         rel="noopener"
         class="hub-quick"
         title="Family Handbook (PDF)"
+        aria-label="Family Handbook (PDF)"
       >
         <Icon name="book-open" class="h-4 w-4 shrink-0" />
-        <span class="sr-only">Family Handbook</span>
+        <span class="sr-only xl:not-sr-only xl:inline">Handbook</span>
       </a>
       {
         /* min-w-0 makes THIS chip the one that gives when the bar runs out of
