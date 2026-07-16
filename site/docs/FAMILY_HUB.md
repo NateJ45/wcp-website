@@ -330,8 +330,8 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   cards add a pushpin + a gentle tilt that straightens on hover — tilt only at `sm+` (so a
   flush 320px card never overflows) and only under `prefers-reduced-motion: no-preference`.
   `HubCard`/`HomeWidgetCard` take a `postit` prop for a warm sticky-note fill (Announcements
-  + Meeting Minutes use it); the tint tracks the theme so text tokens keep AA contrast. All
-  of it is decorative and below the text, so `test:hub` axe holds in both themes.
+  - Meeting Minutes use it); the tint tracks the theme so text tokens keep AA contrast. All
+    of it is decorative and below the text, so `test:hub` axe holds in both themes.
 - **Class pages** open with a `TeacherCard` (photo/name/role/**email + phone** straight
   from the class's `teacherNote` doc — the same fields that power the welcome modal; the
   card shows a **Say hi** (email) and a **Call or text** (phone) link), beside the facts
