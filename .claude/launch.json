@@ -8,6 +8,12 @@
       "port": 4321
     },
     {
+      "name": "wcp-dev-4399",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "site", "--", "--port", "4399"],
+      "port": 4399
+    },
+    {
       "name": "wcp-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--prefix", "site"],
