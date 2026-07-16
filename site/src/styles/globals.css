@@ -457,15 +457,19 @@
   background-size: min(62vmin, 520px);
   opacity: 0.05;
 }
-/* Backing plate: a page-grey disc the size and position of the emblem, one
-   layer below it (z-index -2, still above the canvas texture). It occludes the
-   grain/doodles/washes inside the mark's circle so they don't show through the
+/* Backing plate: a soft page-grey wash behind the emblem, one layer below it
+   (z-index -2, still above the canvas texture). It knocks back the
+   grain/doodles/washes inside the mark's circle so they don't clutter the
    emblem's transparent gaps. Keyed to --color-grey (the canvas base, light AND
-   dark) so the disc itself is invisible against the surrounding page — only the
-   texture-removal reads. Feathered edge, so no hard circle line. Full opacity
-   on its own element (the emblem's 5% can't occlude). Two explicit size values
-   because a gradient has no intrinsic aspect ratio: a single value would leave
-   the height at auto (full viewport) instead of a square. */
+   dark). Two things keep it SEAMLESS instead of a visible disc: (1) a long,
+   gradual feather (core to ~40%, fading all the way out to ~95% of the box)
+   so there's no perceptible edge, just a soft vignette; (2) the core is only
+   ~85% opaque (color-mix with transparent), so the canvas's soft brand wash
+   bleeds through and the plate takes on the LOCAL tone rather than sitting as a
+   flat cool-grey patch over a warm-washed corner. Full-strength element (the
+   emblem's own 5% opacity can't occlude). Two explicit size values because a
+   gradient has no intrinsic aspect ratio: a single value would leave the height
+   at auto (full viewport) instead of a square. */
 .wcp-hub-emblem-plate {
   position: fixed;
   inset: 0;
@@ -474,7 +478,11 @@
   background-repeat: no-repeat;
   background-position: right -3.5rem bottom -4.5rem;
   background-size: min(62vmin, 520px) min(62vmin, 520px);
-  background-image: radial-gradient(circle, var(--color-grey) 0 72%, transparent 84%);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-grey) 85%, transparent) 0 40%,
+    transparent 95%
+  );
 }
 @media print {
   .wcp-hub-emblem-plate {
