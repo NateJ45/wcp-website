@@ -157,7 +157,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
       nextEvent && nextEventDate && (
         <a href="/family-hub/calendar" class="wcp-strip-stat max-w-56">
           <HubStat tone="navy" value={nextEventDate} label="next up" />
-          <p class="mt-0.5 truncate text-xs text-white/85">{nextEvent.title}</p>
+          <p class="mt-0.5 line-clamp-2 text-xs text-white/85">{nextEvent.title}</p>
         </a>
       )
     }

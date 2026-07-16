@@ -294,9 +294,7 @@ const fmtDeadline = (iso: string) =>
                 {storeProfit && (
                   <HubCard as="li" class="p-4" style="--note-accent: var(--color-green)">
                     <div class="flex items-center justify-between gap-3">
-                      <p class="min-w-0 truncate font-bold text-heading" title="Store Sales">
-                        Store Sales
-                      </p>
+                      <p class="min-w-0 font-bold text-heading">Store Sales</p>
                       <HubPill kind="open" class="shrink-0">
                         Live
                       </HubPill>
@@ -317,9 +315,7 @@ const fmtDeadline = (iso: string) =>
                 {shownFundraisers.map((f) => (
                   <HubCard as="li" class="p-4">
                     <div class="flex items-center justify-between gap-3">
-                      <p class="min-w-0 truncate font-bold text-heading" title={f.name}>
-                        {f.name}
-                      </p>
+                      <p class="min-w-0 font-bold text-heading">{f.name}</p>
                       <HubPill kind={STATUS_META[f.status].kind} class="shrink-0">
                         {STATUS_META[f.status].label}
                       </HubPill>

@@ -50,13 +50,14 @@ const empty = albums.length === 0;
 >
   <p class="text-sm text-ink-muted">This year's album for each class, on Google Photos.</p>
   {
-    /* lg:grid-cols-1: in the 1024–1100 band the dashboard's sidebar column
-       squeezes this card to ~240px, and two-up tiles truncate their labels to
-       "Tw… / VIEW ALBU M" (2026-07 responsive audit). One tile per row there;
-       back to two-up at xl where the column is wide again. Below lg the card
-       sits in the single-column page flow, so two-up always fits. */
+    /* Column count follows how wide the card actually is, so the class label
+       never truncates: single column below 360px (two-up clips "Pre-K AM" at
+       320 — 2026-07-16 mobile audit), two-up on phones, then back to one in the
+       1024–1100 band where the dashboard sidebar squeezes the card to ~240px
+       ("Tw… / VIEW ALBU M", 2026-07 responsive audit), and two-up again at xl
+       where the column is wide. */
   }
-  <div class="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-1 xl:grid-cols-2">
+  <div class="mt-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
     {
       albums.map((a) => (
         <a

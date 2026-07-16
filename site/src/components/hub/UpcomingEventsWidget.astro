@@ -68,9 +68,7 @@ const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
               </span>
             </span>
             <div class="min-w-0">
-              <p class="truncate font-semibold text-heading" title={deEmDash(e.title)}>
-                {deEmDash(e.title)}
-              </p>
+              <p class="line-clamp-2 font-semibold text-heading">{deEmDash(e.title)}</p>
               <p class="text-sm text-ink-muted">
                 {fmtEventWeekday(e)} · {fmtEventTime(e)}
                 {e.location ? ` · ${e.location}` : ''}
