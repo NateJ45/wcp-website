@@ -74,9 +74,14 @@ export const fmtEventTime = (e: HubEvent) =>
       );
 
 // The old hub's title heuristic, kept so the two calendars agree on labels.
-export type HubEventType = 'meeting' | 'volunteer' | 'milestone' | 'event';
+export type HubEventType = 'meeting' | 'volunteer' | 'milestone' | 'closure' | 'event';
 export function eventType(title: string): HubEventType {
   const t = (title || '').toLowerCase();
+  // Closures FIRST: a "No School" day is not an "event". Matches no school / no
+  // class / closed / closure / a break / in-service / day off. "\bbreak\b" so
+  // "breakfast" doesn't match; "holiday" is deliberately excluded (a "Holiday
+  // Party" is an event, not a closure).
+  if (/no school|no class|closed|closure|\bbreak\b|in-?service|day off/.test(t)) return 'closure';
   if (t.includes('board') || t.includes('meeting') || t.includes('orientation')) return 'meeting';
   if (t.includes('helper') || t.includes('volunteer')) return 'volunteer';
   if (t.includes('first day') || t.includes('last day') || t.includes('graduation'))
@@ -93,6 +98,8 @@ export const EVENT_TYPE_META: Record<
   HubEventType,
   {
     label: string;
+    /** Plural for the filter chips (some don't pluralise with a bare "s"). */
+    labelPlural: string;
     icon: string;
     iconColor: string;
     accent: string;
@@ -102,6 +109,7 @@ export const EVENT_TYPE_META: Record<
 > = {
   meeting: {
     label: 'Meeting',
+    labelPlural: 'Meetings',
     icon: 'users',
     iconColor: 'text-navy dark:text-sky',
     accent: 'var(--color-navy)',
@@ -110,6 +118,7 @@ export const EVENT_TYPE_META: Record<
   },
   volunteer: {
     label: 'Volunteer',
+    labelPlural: 'Volunteer days',
     icon: 'heart-handshake',
     iconColor: 'text-sky-ink',
     accent: 'var(--color-sky)',
@@ -118,14 +127,27 @@ export const EVENT_TYPE_META: Record<
   },
   milestone: {
     label: 'Milestone',
+    labelPlural: 'Milestones',
     icon: 'graduation-cap',
     iconColor: 'text-orange-ink',
     accent: 'var(--color-orange)',
     chipBg: 'bg-amber/20',
     chipText: 'text-orange-ink',
   },
+  // No-school days: neutral grey, deliberately de-emphasised — an absence, not
+  // an event. Neutral text on a faint ink tint stays AA in both themes.
+  closure: {
+    label: 'No school',
+    labelPlural: 'No-school days',
+    icon: 'house',
+    iconColor: 'text-ink-muted',
+    accent: 'var(--color-ink-muted)',
+    chipBg: 'bg-ink/8',
+    chipText: 'text-ink-muted',
+  },
   event: {
     label: 'Event',
+    labelPlural: 'Events',
     icon: 'party-popper',
     iconColor: 'text-green-ink',
     accent: 'var(--color-green)',
