@@ -474,11 +474,7 @@
   background-repeat: no-repeat;
   background-position: right -3.5rem bottom -4.5rem;
   background-size: min(62vmin, 520px) min(62vmin, 520px);
-  background-image: radial-gradient(
-    circle,
-    var(--color-grey) 0 72%,
-    transparent 84%
-  );
+  background-image: radial-gradient(circle, var(--color-grey) 0 72%, transparent 84%);
 }
 @media print {
   .wcp-hub-emblem-plate {
