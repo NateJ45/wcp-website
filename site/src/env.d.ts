@@ -70,6 +70,12 @@ declare namespace Cloudflare {
     /** Turnstile server secret — when set, /api/contact rejects submissions
      *  whose widget token fails siteverify. Pair with PUBLIC_TURNSTILE_SITE_KEY. */
     TURNSTILE_SECRET_KEY?: string;
+    /** Long-lived Instagram Graph API token, AS A WORKER SECRET — same value as
+     *  the build-time INSTAGRAM_TOKEN env var, but set separately via
+     *  `wrangler secret put INSTAGRAM_TOKEN` since SSR pages can't see
+     *  import.meta.env. Read by SocialWallWidget.astro (hub home). Unset =
+     *  the widget falls back to the Board-curated album. See docs/FAMILY_HUB.md. */
+    INSTAGRAM_TOKEN?: string;
     /** Google Apps Script web-app URL — the free forms inbox that emails the
      *  board + logs to a Google Sheet. Unset = skip. See docs/FORMS.md. */
     FORMS_WEBHOOK_URL?: string;

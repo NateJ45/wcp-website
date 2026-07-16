@@ -10,6 +10,7 @@
 #   npx wrangler secret put FOURTHWALL_STOREFRONT_TOKEN
 #   npx wrangler secret put FOURTHWALL_API_USER
 #   npx wrangler secret put FOURTHWALL_API_PASSWORD
+#   npx wrangler secret put INSTAGRAM_TOKEN
 # =============================================================================
 
 # The single shared password families enter to reach the gated Family Hub.
@@ -20,3 +21,9 @@ FAMILY_HUB_PASSWORD="change-me"
 # /preview/* Presentation Tool routes.
 # Create one at manage.sanity.io → project → API → Tokens (Editor role).
 SANITY_TOKEN="change-me"
+
+# Long-lived Instagram Graph API token — SAME value as the public site's
+# build-time INSTAGRAM_TOKEN (site/.env), but set separately here since SSR
+# pages (the Family Hub's SocialWallWidget) can't see import.meta.env. Unset =
+# the hub's "Life inside WCP" widget falls back to the curated album.
+INSTAGRAM_TOKEN="change-me"

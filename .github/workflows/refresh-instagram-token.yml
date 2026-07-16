@@ -13,6 +13,12 @@ name: Refresh Instagram token
 # an exact 50-day cadence independent of how the cron itself is expressed.
 # Comfortably inside the 60-day expiry window even if a run is skipped
 # (GitHub can delay/drop scheduled runs during high load).
+#
+# The same token value has to land in TWO places, since the public site and
+# the Family Hub read it through different mechanisms (see env.d.ts): the
+# GitHub Actions secret (build-time INSTAGRAM_TOKEN for the static build) and
+# the Cloudflare Worker secret of the same name (SSR runtime, for the hub's
+# SocialWallWidget). Both are updated below.
 on:
   schedule:
     - cron: '0 13 * * 1' # every Monday 13:00 UTC — the gate below decides if it actually acts
@@ -65,11 +71,34 @@ jobs:
       # anti-recursion rule). Both steps below need a real PAT with the repo's
       # "Secrets: write" and "Actions: write" permissions, stored as
       # GH_ACTIONS_PAT. See site/docs/PAGE_BUILDER.md for setup.
-      - name: Store the refreshed token
+      - name: Store the refreshed token (GitHub Actions secret)
         if: steps.check.outputs.due == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
         run: gh secret set INSTAGRAM_TOKEN --body "${{ steps.refresh.outputs.new_token }}"
+
+      # Same token, pushed to the Worker so the SSR Family Hub picks it up too
+      # — import.meta.env (the build-time secret above) isn't visible at
+      # request time. wrangler resolves the target Worker from wrangler.jsonc's
+      # "name" field, so no build/deploy config is needed for a secret write.
+      - uses: actions/setup-node@v7
+        if: steps.check.outputs.due == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        if: steps.check.outputs.due == 'true'
+        working-directory: site
+        run: npm ci
+
+      - name: Store the refreshed token (Cloudflare Worker secret)
+        if: steps.check.outputs.due == 'true'
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: echo "${{ steps.refresh.outputs.new_token }}" | npx wrangler secret put INSTAGRAM_TOKEN
 
       - name: Record refresh timestamp
         if: steps.check.outputs.due == 'true'

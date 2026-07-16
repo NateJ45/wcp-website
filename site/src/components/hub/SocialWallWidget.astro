@@ -9,16 +9,23 @@
    the public "Life inside WCP." section (InstagramSection) and the old
    Squarespace site used.
 
-   Source: the SAME Board-curated album the public section falls back to
-   (`album-life-inside-wcp`, edited in the Studio under Photo albums), read at
-   request time through the cached authenticated client. No Instagram token is
-   needed — the Board controls exactly which moments show here. Renders nothing
-   when the album is empty, so an unseeded hub never shows a broken board.
-   Motion (tilt, hover-straighten) is reduced-motion-safe.
+   Source: the LIVE Instagram feed, fetched at request time and cached 24h
+   fresh + 3-day stale-while-revalidate (src/lib/hub-cache.ts — same pattern as
+   the Fourthwall store reads) so a visitor never waits on Instagram and KV
+   writes stay low. Needs the INSTAGRAM_TOKEN Worker secret (separate from the
+   public site's build-time env var of the same name — see env.d.ts). No
+   token, or any fetch failure, falls back to the SAME Board-curated album the
+   public section falls back to (`album-life-inside-wcp`, edited in the Studio
+   under Photo albums). Renders nothing when both are empty, so an unseeded
+   hub never shows a broken board. Motion (tilt, hover-straighten) is
+   reduced-motion-safe.
    ============================================================================ */
+import { env } from 'cloudflare:workers';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { cached } from '@/lib/hub-cache';
 import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
+import { fetchInstagram } from '@/lib/instagram';
 import { imageUrl, type SanityImageValue } from '@/lib/image';
 import { site } from '@/data/site';
 
@@ -30,30 +37,55 @@ interface Album {
   title?: string;
   photos?: AlbumPhoto[];
 }
-
-let album: Album | null = null;
-try {
-  album = await sanityFetch<Album | null>(
-    PHOTO_ALBUM_QUERY,
-    { id: 'album-life-inside-wcp' },
-    { cache: BOARD_CONTENT_CACHE },
-  );
-} catch {
-  album = null;
+interface Tile {
+  imgUrl: string;
+  alt: string;
+  href: string;
 }
 
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
 const fbProfile = site.social?.facebook || 'https://www.facebook.com/westchesterpreschool';
 
-// figureImage nests the real image under `.image` (asset at .image.asset).
-// 400px covers the ~190px tiles at 2x without over-fetching; no srcset needed.
-const tiles = (album?.photos ?? [])
-  .filter((p) => (p as { image?: { asset?: unknown } })?.image?.asset)
-  .slice(0, 8)
-  .map((p) => ({
-    imgUrl: imageUrl(p.image as never, 400),
-    alt: p.alt ?? 'A moment from West Chester Preschool',
-  }));
+let tiles: Tile[] = [];
+
+const igToken = env.INSTAGRAM_TOKEN;
+if (igToken) {
+  try {
+    const live = await cached(
+      'ig:feed',
+      86_400_000, // 24h fresh — matches the Fourthwall store cadence
+      () => fetchInstagram(8, igToken),
+      { swrMs: 259_200_000 }, // serve stale up to 3 days while refreshing
+    );
+    tiles = live.map((t) => ({ imgUrl: t.imgUrl, alt: t.alt, href: t.href }));
+  } catch {
+    tiles = [];
+  }
+}
+
+if (tiles.length === 0) {
+  let album: Album | null = null;
+  try {
+    album = await sanityFetch<Album | null>(
+      PHOTO_ALBUM_QUERY,
+      { id: 'album-life-inside-wcp' },
+      { cache: BOARD_CONTENT_CACHE },
+    );
+  } catch {
+    album = null;
+  }
+
+  // figureImage nests the real image under `.image` (asset at .image.asset).
+  // 400px covers the ~190px tiles at 2x without over-fetching; no srcset needed.
+  tiles = (album?.photos ?? [])
+    .filter((p) => (p as { image?: { asset?: unknown } })?.image?.asset)
+    .slice(0, 8)
+    .map((p) => ({
+      imgUrl: imageUrl(p.image as never, 400),
+      alt: p.alt ?? 'A moment from West Chester Preschool',
+      href: igProfile,
+    }));
+}
 ---
 
 {
@@ -130,7 +162,7 @@ const tiles = (album?.photos ?? [])
           <ul class="wcp-wall-grid">
             {tiles.map((t) => (
               <li class="wcp-wall-tile">
-                <a href={igProfile} target="_blank" rel="noopener">
+                <a href={t.href} target="_blank" rel="noopener">
                   <img
                     src={t.imgUrl}
                     alt={t.alt}

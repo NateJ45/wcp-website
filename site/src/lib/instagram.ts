@@ -1,10 +1,16 @@
 // =============================================================================
-// Instagram feed — build-time fetch of the "Life inside WCP" gallery
+// Instagram feed — fetch of the "Life inside WCP" gallery
 // =============================================================================
-// The public site is static, so we pull recent Instagram media once at BUILD
-// time (server-only) with a long-lived Graph API token in INSTAGRAM_TOKEN. No
-// token, a failed request, or an empty feed all return [] so the section falls
-// back to its curated album. Nothing hits Instagram from a visitor's browser.
+// Shared by two call sites with two different token sources, which is why the
+// token is a parameter rather than read internally:
+//   - Public site (static): InstagramSection.astro calls this at BUILD time,
+//     token from the build-time INSTAGRAM_TOKEN env var (import.meta.env).
+//   - Family Hub (SSR): SocialWallWidget.astro calls this at REQUEST time,
+//     token from the INSTAGRAM_TOKEN Worker secret (`cloudflare:workers` env),
+//     wrapped in src/lib/hub-cache.ts so a visitor never waits on Instagram.
+// No token, a failed request, or an empty feed all return [] so each caller
+// falls back to its curated album. Nothing hits Instagram from a visitor's
+// browser either way — both fetches are server-only.
 // =============================================================================
 
 export interface InstaTile {
@@ -22,9 +28,13 @@ interface IgMediaItem {
   caption?: string;
 }
 
-/** Recent Instagram media as ready-to-render tiles. [] when unavailable. */
-export async function fetchInstagram(limit = 12): Promise<InstaTile[]> {
-  const token = import.meta.env.INSTAGRAM_TOKEN;
+/** Recent Instagram media as ready-to-render tiles. [] when unavailable.
+ *  `token` defaults to the build-time env var for the public call site; the
+ *  hub call site passes its Worker-secret token explicitly. */
+export async function fetchInstagram(
+  limit = 12,
+  token = import.meta.env.INSTAGRAM_TOKEN,
+): Promise<InstaTile[]> {
   if (!token) return [];
   try {
     const fields = 'id,media_type,media_url,thumbnail_url,permalink,caption';
