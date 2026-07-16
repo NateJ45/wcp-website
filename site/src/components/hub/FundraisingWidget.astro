@@ -13,6 +13,7 @@ import HubPill from '@/components/hub/HubPill.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { ACTIVE_CAMPAIGN_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
+import { getStoreProfit } from '@/lib/fourthwall';
 import { budgetSheetIdFallback } from '@/data/hub/live-links';
 
 let sheetId = budgetSheetIdFallback;
@@ -25,10 +26,20 @@ try {
 }
 
 const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
-const totalGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
-const totalRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
-const activeCount = fundraisers.filter((f) => f.status === 'active').length;
-const upcomingCount = fundraisers.filter((f) => f.status === 'upcoming').length;
+
+// Store Sales is live from Fourthwall (net profit) and folds into the year
+// total — same rule as the Fundraising page, so the two rings agree. When the
+// live total is available, drop any hand-kept shirt/store-sales sheet row so it
+// isn't double-counted; the store has no goal, so it lifts raised only.
+const storeProfit = await getStoreProfit();
+const shown = storeProfit
+  ? fundraisers.filter((f) => !/\b(shirt|store)\s+sales\b/i.test(f.name))
+  : fundraisers;
+const storeNet = storeProfit?.netProfit ?? 0;
+const totalGoal = shown.reduce((s, f) => s + f.goal, 0);
+const totalRaised = shown.reduce((s, f) => s + f.raised, 0) + storeNet;
+const activeCount = shown.filter((f) => f.status === 'active').length;
+const upcomingCount = shown.filter((f) => f.status === 'upcoming').length;
 
 // Sheet unreachable → the old Sanity-campaign path.
 interface Campaign {

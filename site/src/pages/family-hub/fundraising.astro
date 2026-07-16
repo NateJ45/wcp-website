@@ -92,8 +92,12 @@ const shownFundraisers = storeProfit
   : fundraisers;
 const hasYearData = shownFundraisers.length > 0 || Boolean(storeProfit);
 
+// Live store net profit counts toward the year total (it's real money raised);
+// the store has no goal, so it lifts the numerator only. The Store Sales card
+// below still breaks out the store's own share.
+const storeNet = storeProfit?.netProfit ?? 0;
 const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0);
-const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0);
+const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0) + storeNet;
 const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
 
 // Status pills from the hub's shared vocabulary (HubPill) — same mapping the
