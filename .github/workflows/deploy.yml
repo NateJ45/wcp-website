@@ -48,9 +48,9 @@ jobs:
     if: >-
       ${{ !contains(fromJSON('["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"]'), github.event.client_payload.type) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -71,7 +71,7 @@ jobs:
       # NOT the source wrangler.jsonc — see site/docs/ for why the plain
       # `wrangler deploy` 404s every sub-route on this hybrid static+SSR build.
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 7e75a15ddc72aae04dca71aca5c7294b
