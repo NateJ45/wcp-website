@@ -599,6 +599,11 @@
 .wcp-event-dialog {
   width: 100%;
   max-width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  /* The global reset zeroes margin on every element, which overrides the UA
+     `margin: auto` that centres a modal <dialog> (it otherwise pins to the
+     inset:0 top-left corner). Restore it so the dialog sits mid-screen. */
+  margin: auto;
   padding: 0;
   border: none;
   background: transparent;
@@ -609,6 +614,8 @@
   backdrop-filter: blur(2px);
 }
 .wcp-event-dialog__panel {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius, 1rem);
   background: #fff;
