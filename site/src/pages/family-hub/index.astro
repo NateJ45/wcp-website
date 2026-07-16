@@ -19,6 +19,7 @@ import HubGreeting from '@/components/hub/HubGreeting.astro';
 import ClassHelperRow from '@/components/hub/ClassHelperRow.astro';
 import PresidentNoteModal from '@/components/hub/PresidentNoteModal.astro';
 import UpcomingEventsWidget from '@/components/hub/UpcomingEventsWidget.astro';
+import WeatherWeekWidget from '@/components/hub/WeatherWeekWidget.astro';
 import AnnouncementsWidget from '@/components/hub/AnnouncementsWidget.astro';
 import ClassPhotosWidget from '@/components/hub/ClassPhotosWidget.astro';
 import MeetingMinutesWidget from '@/components/hub/MeetingMinutesWidget.astro';
@@ -116,6 +117,15 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
           Positioned absolutely (sr-only), so it doesn't occupy a grid cell. */
       }
       <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
+
+      {
+        /* Full-width strip right under the hero — the "what to pack" answer is
+          time-sensitive enough to earn top billing, not get buried below the
+          fold with the smaller accent widgets. */
+      }
+      <div class="lg:col-span-12" style="--reveal-delay: 30ms">
+        <WeatherWeekWidget />
+      </div>
 
       {
         /* The three Google-backed widgets (calendar feed, treasurer's sheet)
