@@ -457,31 +457,40 @@
   background-size: min(62vmin, 520px);
   opacity: 0.05;
 }
-/* Backing plate: a soft page-grey wash behind the emblem, one layer below it
-   (z-index -2, still above the canvas texture). It knocks back the
-   grain/doodles/washes inside the mark's circle so they don't clutter the
-   emblem's transparent gaps. Keyed to --color-grey (the canvas base, light AND
-   dark). Two things keep it SEAMLESS instead of a visible disc: (1) a long,
-   gradual feather (core to ~40%, fading all the way out to ~95% of the box)
-   so there's no perceptible edge, just a soft vignette; (2) the core is only
-   ~85% opaque (color-mix with transparent), so the canvas's soft brand wash
-   bleeds through and the plate takes on the LOCAL tone rather than sitting as a
-   flat cool-grey patch over a warm-washed corner. Full-strength element (the
-   emblem's own 5% opacity can't occlude). Two explicit size values because a
-   gradient has no intrinsic aspect ratio: a single value would leave the height
-   at auto (full viewport) instead of a square. */
+/* Scrim: a soft page-grey clearing the emblem rests in, one layer below it
+   (z-index -2, still above the canvas texture) but larger than the mark. The
+   hand-drawn doodle SVGs on the canvas fade out as they approach it, so the
+   emblem sits in a calm pool instead of a busy field. Keyed to --color-grey
+   (the canvas base, light AND dark).
+
+   Anchored to the EMBLEM'S CENTRE, not the corner: the shared vars below place
+   the emblem-centre relative to the bottom-right (its right/bottom offsets minus
+   half its size), so the scrim stays concentric with the mark at every viewport
+   without duplicating the position math. The gradient uses an explicit radius
+   + `at` centre (no background-size/position needed) so the scrim can be sized
+   independently of the emblem — here ~0.85x the emblem size, a clearing a touch
+   wider than the mark.
+
+   Two things keep it SEAMLESS rather than a visible disc: (1) a long dissolve
+   (solid core to ~45% of the radius, fading all the way to the rim) so there's
+   no edge, just doodles thinning to nothing; (2) the core is only ~85% opaque
+   (color-mix with transparent), so the canvas's soft brand wash bleeds through
+   and the scrim takes the LOCAL tone instead of a flat cool-grey patch over a
+   warm-washed corner. Full-strength element (the emblem's own 5% can't occlude).
+   Decorative + aria-hidden, so a browser without color-mix just falls back to
+   no scrim (doodles show), never anything broken. */
 .wcp-hub-emblem-plate {
+  --emblem-size: min(62vmin, 520px);
+  --emblem-cx: calc(100% + 3.5rem - var(--emblem-size) / 2);
+  --emblem-cy: calc(100% + 4.5rem - var(--emblem-size) / 2);
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  background-repeat: no-repeat;
-  background-position: right -3.5rem bottom -4.5rem;
-  background-size: min(62vmin, 520px) min(62vmin, 520px);
   background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-grey) 85%, transparent) 0 40%,
-    transparent 95%
+    circle calc(var(--emblem-size) * 0.85) at var(--emblem-cx) var(--emblem-cy),
+    color-mix(in srgb, var(--color-grey) 85%, transparent) 0 45%,
+    transparent 100%
   );
 }
 @media print {
