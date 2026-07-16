@@ -21,6 +21,7 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import TeacherCard from '@/components/hub/TeacherCard.astro';
+import ClassRepCard from '@/components/hub/ClassRepCard.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
@@ -122,9 +123,15 @@ const classCards = [
         </div>
       </HubPageHeader>
 
-      {/* Mrs. Lisa's teacher card (mirrors Ms. Erin's on the Twos & Threes page). */}
-      <div class="mb-4">
+      {
+        /* The people who run the room: Mrs. Lisa, then one parent rep per class
+          (AM + PM). Reps are elected each fall — placeholder cards hold the seat
+          until then. Mirrors the Twos & Threes page. */
+      }
+      <div class="mb-4 grid gap-4 lg:grid-cols-3">
         <TeacherCard slug="pre-k" />
+        <ClassRepCard slug="pre-k-am" role="Pre-K AM Rep" label="Morning class rep · 2026-27" />
+        <ClassRepCard slug="pre-k-pm" role="Pre-K PM Rep" label="Afternoon class rep · 2026-27" />
       </div>
 
       {/* FIXED: the two classes side by side, each in its own color. */}

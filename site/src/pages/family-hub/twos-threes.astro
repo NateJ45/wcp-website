@@ -18,6 +18,7 @@ import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import TeacherCard from '@/components/hub/TeacherCard.astro';
+import ClassRepCard from '@/components/hub/ClassRepCard.astro';
 import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
@@ -130,9 +131,15 @@ const classCards = [
         </div>
       </HubPageHeader>
 
-      {/* Ms. Erin's teacher card. */}
-      <div class="mb-4">
+      {
+        /* The people who run the room: Ms. Erin, then one parent rep per class
+          (Twos + Threes). Reps are elected each fall — placeholder cards hold
+          the seat until then. Mirrors the Pre-K page. */
+      }
+      <div class="mb-4 grid gap-4 lg:grid-cols-3">
         <TeacherCard slug="twos" />
+        <ClassRepCard slug="twos" role="Twos Rep" label="Twos class rep · 2026-27" />
+        <ClassRepCard slug="threes" role="Threes Rep" label="Threes class rep · 2026-27" />
       </div>
 
       {/* FIXED: the two classes side by side, each in its own color. */}

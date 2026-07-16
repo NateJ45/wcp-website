@@ -429,7 +429,9 @@
      strokes) but BAKED to static WebP by `node scripts/bake-crayon.mjs` — a live
      SVG filter re-rasterizes on scroll and was choppy on mobile; a plain bitmap
      blits cheaply. Rendered in real Chromium so the raster matches the live look.
-     Two coprime tiles (1200 + 820) so the pattern never visibly repeats; only the
+     ONLY soft flowing lines (no closed loops — those distinctive marks were what
+     caught the eye repeating tile-to-tile). Two large coprime tiles (1600 + 1180)
+     so the wave pattern's repeat period is long and reads as organic; only the
      active theme's two tiles download. Re-run the bake if the marks change. */
   --wcp-crayon-a: url('/hub/crayon-a.webp');
   --wcp-crayon-b: url('/hub/crayon-b.webp');
@@ -1320,6 +1322,13 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-label] {
 }
 html[data-rail-collapsed] .hub-rail-aside [data-rail-group],
 html[data-rail-collapsed] .hub-rail-aside [data-rail-logo] {
+  display: none;
+}
+/* The "your class" amber dot (my-class.ts appends it after the now-hidden
+   label) must not linger in the collapsed rail: its margin + width would offset
+   the icon from center. Hide it so icons stay centered; the active fill still
+   marks the current page. */
+html[data-rail-collapsed] .hub-rail-aside [data-my-class-dot] {
   display: none;
 }
 html[data-rail-collapsed] .hub-rail-aside [data-rail-toggle-row] {

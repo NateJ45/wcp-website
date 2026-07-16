@@ -46,29 +46,47 @@ function svg(size, marks, o) {
   return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='none'><defs>${FILTER}</defs><g filter='url(#c)' stroke-linecap='round' stroke-linejoin='round'>${body}</g></svg>`;
 }
 
+// ONLY long flowing lines — no closed loops/ellipses. Those distinctive marks
+// were what the eye caught repeating tile-to-tile; gentle spread-out waves read
+// as organic even when the tile repeats. Curves span the full tile height so a
+// bigger tile has no empty band, and the tiles are large + coprime (1600 + 1180)
+// so the wave pattern's repeat period is long.
 const A = (navy) => [
   {
-    d: 'M-40 360 C 260 210 520 210 780 350 C 1000 470 1090 340 1230 400',
+    d: 'M-60 300 C 300 160 640 200 980 340 C 1240 450 1420 320 1680 400',
     c: ORANGE,
     w: 18,
-    a: 0.2,
+    a: 0.17,
   },
-  { d: 'M-40 950 C 260 860 520 1040 800 920 C 1000 835 1120 980 1240 900', c: SKY, w: 17, a: 0.18 },
-  { cx: 250, cy: 710, rx: 66, ry: 48, c: AMBER, a: 0.16 },
-  { cx: 980, cy: 210, rx: 52, ry: 42, c: navy, a: 0.15 },
+  {
+    d: 'M-60 780 C 340 660 700 850 1040 730 C 1290 640 1470 780 1680 705',
+    c: navy,
+    w: 15,
+    a: 0.12,
+  },
+  {
+    d: 'M-60 1200 C 320 1080 700 1290 1050 1140 C 1300 1035 1470 1195 1680 1100',
+    c: SKY,
+    w: 17,
+    a: 0.16,
+  },
 ];
 const B = (navy) => [
-  { d: 'M-40 250 C 200 150 440 350 680 260 C 840 205 920 300 990 380', c: navy, w: 16, a: 0.17 },
-  { d: 'M-40 660 C 220 560 460 740 720 610 C 860 545 940 640 1010 690', c: AMBER, w: 16, a: 0.18 },
-  { cx: 650, cy: 660, rx: 60, ry: 46, c: ORANGE, a: 0.16 },
+  { d: 'M-60 380 C 280 250 580 470 880 350 C 1060 278 1180 385 1260 460', c: navy, w: 16, a: 0.14 },
+  {
+    d: 'M-60 920 C 300 800 620 1000 920 860 C 1080 785 1200 890 1260 950',
+    c: AMBER,
+    w: 16,
+    a: 0.15,
+  },
 ];
 
 // Opacities match globals.css (light 0.72 / dark 0.55, dark swaps navy -> sky).
 const tiles = [
-  { name: 'crayon-a', size: 1200, svg: svg(1200, A(NAVY), 0.72) },
-  { name: 'crayon-b', size: 820, svg: svg(820, B(NAVY), 0.72) },
-  { name: 'crayon-a-dark', size: 1200, svg: svg(1200, A(SKY), 0.55) },
-  { name: 'crayon-b-dark', size: 820, svg: svg(820, B(SKY), 0.55) },
+  { name: 'crayon-a', size: 1600, svg: svg(1600, A(NAVY), 0.72) },
+  { name: 'crayon-b', size: 1180, svg: svg(1180, B(NAVY), 0.72) },
+  { name: 'crayon-a-dark', size: 1600, svg: svg(1600, A(SKY), 0.55) },
+  { name: 'crayon-b-dark', size: 1180, svg: svg(1180, B(SKY), 0.55) },
 ];
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'hub');

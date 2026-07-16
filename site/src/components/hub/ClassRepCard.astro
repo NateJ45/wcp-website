@@ -1,0 +1,78 @@
+---
+/* ============================================================================
+   ClassRepCard — the class parent rep, beside the teacher card
+   ============================================================================
+   Mirrors TeacherCard's layout (photo/icon ring + name + contact) so the class
+   page opens with the people who run the room: the teacher, then one parent rep
+   per class. Each class elects ONE rep in the fall, so until then the card is a
+   designed placeholder ("To be announced") that reserves the seat. Reps live in
+   src/data/hub/org-holders.ts (`classReps`, code-owned so a name/email can be
+   filled in even while the Studio is unavailable); pass the `role` that matches
+   a classReps entry. Always renders — the empty seat is the point.
+   ============================================================================ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/Icon.astro';
+import { classReps } from '@/data/hub/org-holders';
+import { classStyles } from '@/lib/class-colors';
+
+interface Props {
+  /** Class slug for the accent color (e.g. 'pre-k-am', 'twos'). */
+  slug: string;
+  /** Role label to look up in `classReps`, e.g. 'Pre-K AM Rep'. */
+  role: string;
+  /** Subtitle under the name, e.g. 'Morning class rep · 2026-27'. */
+  label: string;
+}
+const { slug, role, label } = Astro.props;
+
+const person = classReps.find((r) => r.role === role);
+const cc = classStyles(slug);
+const named = Boolean(person?.name);
+---
+
+<div
+  class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+>
+  {
+    person?.photo ? (
+      <Image
+        src={person.photo}
+        alt={`${person.name}, class rep`}
+        widths={[80, 160]}
+        sizes="5rem"
+        class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
+      />
+    ) : (
+      <span
+        class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}
+        aria-hidden="true"
+      >
+        <Icon name="hand-heart" class="h-8 w-8" />
+      </span>
+    )
+  }
+  <div class="min-w-0">
+    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Class rep</p>
+    {
+      named ? (
+        <p class="font-display text-xl text-heading">{person!.name}</p>
+      ) : (
+        <p class="font-display text-xl text-ink-muted">To be announced</p>
+      )
+    }
+    <p class="text-sm text-ink-muted">{label}</p>
+    {
+      named && person!.email && (
+        <div class="mt-1.5">
+          <a
+            href={`mailto:${person!.email}`}
+            class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
+          >
+            <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
+            Say hi
+          </a>
+        </div>
+      )
+    }
+  </div>
+</div>
