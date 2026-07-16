@@ -1,0 +1,52 @@
+---
+/* ============================================================================
+   HubSpot — friendly brand spot illustrations (STARTER SET)
+   ============================================================================
+   A small, deliberately consistent illustration set in the WCP hand — one
+   shared 96×96 viewBox, one navy outline weight, one soft brand palette, and
+   the sun/cloud emblem motif recurring — so the set reads as a single
+   illustrator (the thing that makes authored art feel premium, per the
+   2026-07-16 illustration benchmark: Mailchimp/Duolingo/Headspace). Used on
+   HubEmptyState in place of the lucide-icon-in-a-circle.
+
+   This is a STARTER set: honest, on-brand, and free. It's isolated behind this
+   one component + a `spot` name, so a commissioned illustrator's set can be
+   dropped in later without touching a single call site. Purely decorative — the
+   empty-state title carries the meaning, so the <svg> is aria-hidden.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+export type Spot =
+  'sun' | 'families' | 'documents' | 'calendar' | 'photos' | 'celebration' | 'signup';
+
+interface Props {
+  name: Spot;
+  class?: string;
+}
+const { name, class: className } = Astro.props;
+
+// Bodies inherit the <svg>'s navy stroke; each shape sets its own soft fill.
+// Palette: navy #01457e line · sky #bfe3f8 · orange #ffcf8f/#ffab4d · green
+// #22c55e · white #fff. Keep shapes simple + geometric so the set stays legible.
+const SPOTS: Record<Spot, string> = {
+  sun: `<circle cx='48' cy='48' r='16' fill='#ffcf8f'/><path d='M48 20V12M48 84v-8M20 48h-8M84 48h-8M28 28l-6-6M74 28l6-6M28 68l-6 6M74 68l6 6'/>`,
+  families: `<circle cx='34' cy='30' r='11' fill='#bfe3f8'/><path d='M20 80V60a14 14 0 0 1 28 0v20' fill='#bfe3f8'/><circle cx='66' cy='42' r='8' fill='#ffcf8f'/><path d='M55 80V62a11 11 0 0 1 22 0v18' fill='#ffcf8f'/>`,
+  documents: `<rect x='36' y='26' width='40' height='54' rx='6' fill='#eaf6fd'/><rect x='22' y='18' width='40' height='54' rx='6' fill='#fff'/><path d='M31 34h22M31 46h22M31 58h14' stroke='#40aaed' stroke-width='4'/>`,
+  calendar: `<path d='M32 16v10M64 16v10'/><rect x='18' y='22' width='60' height='56' rx='7' fill='#fff'/><path d='M18 40h60'/><circle cx='58' cy='60' r='8' fill='#ffcf8f'/>`,
+  photos: `<rect x='22' y='20' width='52' height='60' rx='5' fill='#fff'/><rect x='30' y='28' width='36' height='30' rx='3' fill='#bfe3f8'/><circle cx='57' cy='38' r='5' fill='#ffcf8f'/><path d='M30 52l9-8 7 6 9-7' stroke-width='4'/><path d='M31 68h18' stroke='#40aaed' stroke-width='4'/>`,
+  celebration: `<circle cx='42' cy='38' r='16' fill='#ffab4d'/><path d='M42 54c-3 4 3 7 0 12' stroke-width='4'/><circle cx='72' cy='28' r='4' fill='#40aaed' stroke='none'/><circle cx='22' cy='34' r='4' fill='#22c55e' stroke='none'/><rect x='66' y='50' width='7' height='7' rx='2' fill='#ffcf8f'/><path d='M20 58l7 3' stroke='#ff8c00' stroke-width='3'/>`,
+  signup: `<rect x='26' y='22' width='44' height='56' rx='6' fill='#fff'/><rect x='37' y='15' width='22' height='13' rx='4' fill='#bfe3f8'/><path d='M35 46l8 8 16-18' stroke='#22c55e' stroke-width='5'/><path d='M36 64h24' stroke='#40aaed' stroke-width='4'/>`,
+};
+---
+
+<svg
+  viewBox="0 0 96 96"
+  class={cn('inline-block', className)}
+  fill="none"
+  stroke="#01457e"
+  stroke-width="5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={SPOTS[name]}
+/>

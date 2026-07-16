@@ -9,15 +9,18 @@
    slot in custom content.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubSpot, { type Spot } from '@/components/hub/HubSpot.astro';
 import { cn } from '@/lib/utils';
 
 interface Props {
   icon?: string;
+  /** A friendly brand spot illustration, shown in place of the icon chip. */
+  spot?: Spot;
   title: string;
   source?: 'sanity' | 'google-calendar' | 'google-sheets' | 'directory' | 'health';
   class?: string;
 }
-const { icon = 'sparkles', title, source, class: className } = Astro.props;
+const { icon = 'sparkles', spot, title, source, class: className } = Astro.props;
 
 const sourceNote: Record<NonNullable<Props['source']>, string> = {
   sanity:
@@ -38,12 +41,18 @@ const sourceNote: Record<NonNullable<Props['source']>, string> = {
   )}
   data-reveal
 >
-  <span
-    class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
-    aria-hidden="true"
-  >
-    <Icon name={icon} class="h-7 w-7" />
-  </span>
+  {
+    spot ? (
+      <HubSpot name={spot} class="mx-auto mb-4 h-24 w-24" />
+    ) : (
+      <span
+        class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+        aria-hidden="true"
+      >
+        <Icon name={icon} class="h-7 w-7" />
+      </span>
+    )
+  }
   <p class="text-lg font-bold text-heading">{title}</p>
   {
     source && (

@@ -132,7 +132,7 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
        column — the handbook body is entirely Board-editable, so an unseeded
        page shouldn't read as broken. */
     <div class:list={['hub-doc', className]}>
-      <HubEmptyState icon="book-open" title="This handbook is being written." source="sanity" />
+      <HubEmptyState spot="documents" title="This handbook is being written." source="sanity" />
     </div>
   ) : (
     <div
