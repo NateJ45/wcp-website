@@ -37,6 +37,20 @@ export const iconCard = defineType({
         'Shows a large number above the text, e.g. "2" on a "Dedicated classrooms" card.',
     }),
     defineField({ name: 'body', title: 'Text', type: 'text', rows: 3 }),
+    defineField({
+      name: 'href',
+      title: 'Link (optional)',
+      type: 'url',
+      description:
+        'Make the card link out, e.g. a Google Photos album or a ClassDojo invite. A small "→" link shows under the text.',
+      validation: (R) => R.uri({ scheme: ['http', 'https', 'mailto', 'tel'] }),
+    }),
+    defineField({
+      name: 'linkLabel',
+      title: 'Link text (optional)',
+      type: 'string',
+      description: 'The words on the link, e.g. "Open the album". Defaults to "Open".',
+    }),
   ],
   preview: {
     select: { title: 'title', subtitle: 'body' },

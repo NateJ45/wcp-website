@@ -40,6 +40,13 @@ export const scheduleSection = defineType({
           fields: [
             { name: 'time', title: 'Time', type: 'string' },
             {
+              name: 'timePm',
+              title: 'Second time (optional)',
+              type: 'string',
+              description:
+                'A second class’s time for the same activity (e.g. a PM class). Shown beside the first time in a different colour so families can read both at a glance.',
+            },
+            {
               name: 'title',
               title: 'What happens',
               type: 'string',

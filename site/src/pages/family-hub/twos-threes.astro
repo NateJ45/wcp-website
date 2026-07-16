@@ -31,6 +31,9 @@ import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
+// TEMPORARY: Sanity write quota maxed — a few content edits are applied in code
+// until they can be saved in the Studio. Remove with src/lib/hub-stopgaps.ts.
+import { applyHubStopgaps } from '@/lib/hub-stopgaps';
 
 interface HubPageDoc {
   heading?: string;
@@ -237,7 +240,7 @@ const classCards = [
           width, with a sticky "on this page" TOC on the right. */
       }
       <HubSectionedBody
-        sections={doc?.sections}
+        sections={applyHubStopgaps(doc?.sections)}
         label="Handbook sections"
         tint="twos"
         signoff="twos"

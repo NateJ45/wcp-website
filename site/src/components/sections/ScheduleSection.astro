@@ -6,6 +6,7 @@ import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-h
 
 interface Entry {
   time?: string;
+  timePm?: string;
   title: string;
   description?: string;
 }
@@ -16,6 +17,7 @@ const { section } = Astro.props;
 const titleId = titleIdFor(section);
 const entries = ((section.entries as Entry[] | undefined) ?? []).map((e) => ({
   time: e.time,
+  timePm: e.timePm,
   title: e.title,
   desc: e.description,
 }));

@@ -15,6 +15,8 @@ interface Card {
   title: string;
   statValue?: string;
   body?: string;
+  href?: string;
+  linkLabel?: string;
 }
 interface Props {
   section: SectionData;
@@ -86,7 +88,14 @@ const chipTint: Record<string, string> = {
     ) : (
       <ul class={cn('grid grid-cols-1 gap-6', section.header?.title && 'mt-12', grid)}>
         {cards.map((c) => (
-          <FeatureCard as="li" icon={c.icon} chip={c.chip ?? 'sky'} title={c.title}>
+          <FeatureCard
+            as="li"
+            icon={c.icon}
+            chip={c.chip ?? 'sky'}
+            title={c.title}
+            href={c.href}
+            linkLabel={c.linkLabel}
+          >
             {c.statValue && <span class="font-display text-3xl text-heading">{c.statValue}</span>}
             {c.statValue ? <span class="mt-1 block">{c.body}</span> : c.body}
           </FeatureCard>

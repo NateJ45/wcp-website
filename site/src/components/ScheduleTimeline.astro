@@ -10,6 +10,10 @@ import { cn } from '@/lib/utils';
 
 interface Entry {
   time: string;
+  /** Optional second time for the same activity (e.g. a PM class), shown beside
+      the first in the PM colour with an AM/PM label so it never relies on colour
+      alone. */
+  timePm?: string;
   title: string;
   desc?: string;
 }
@@ -38,7 +42,20 @@ const { entries, class: className } = Astro.props;
           aria-hidden="true"
         />
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-bold text-sky-ink">{e.time}</p>
+          {e.timePm ? (
+            <p class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm font-bold">
+              <span class="text-orange-ink">
+                <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">AM</span>{' '}
+                {e.time}
+              </span>
+              <span class="text-sky-ink">
+                <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">PM</span>{' '}
+                {e.timePm}
+              </span>
+            </p>
+          ) : (
+            <p class="text-sm font-bold text-sky-ink">{e.time}</p>
+          )}
           {/* h3: these entries sit directly under the section's h2 header, so
               h4 here would skip a level (fails axe/Lighthouse heading-order). */}
           <h3 class="mt-0.5 text-lg text-heading">{e.title}</h3>
