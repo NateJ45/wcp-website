@@ -944,11 +944,19 @@ li:nth-child(4n + 4) > .hub-note {
   background-color: transparent;
 }
 
-/* Card grids in the narrow handbook doc column: cap to 2-up (marketing 3/4-up
-   made cards too skinny). Kept to `.hub-doc-block` — wider hub pages (calendar)
-   keep their own column counts. */
+/* Card grids in the narrow handbook doc column: ONE-up on phones, capped to
+   2-up above (marketing 3/4-up made cards too skinny). The single-column base is
+   what stops a display-font heading like "Withdrawing mid-year" from hard-
+   breaking mid-word in a ~128px half-column at 320px (2026-07-16 mobile audit);
+   without a breakpoint this rule forced 2-up at every width. Kept to
+   `.hub-doc-block` — wider hub pages (calendar) keep their own column counts. */
 .hub-doc-block .wcp-section ul:has(> li.group) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 40rem) {
+  .hub-doc-block .wcp-section ul:has(> li.group) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 /* A lone card (single-card grid) spans the full column instead of half. */
 .hub-doc-block .wcp-section ul:has(> li.group:only-child) {
