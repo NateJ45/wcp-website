@@ -85,7 +85,7 @@ const showThanks = new URL(Astro.request.url).searchParams.has('thanks');
 
 <HubShell title="Sign-ups & RSVPs" bare pageTitle="Sign-ups — WCP Family Hub">
   <Section bg="grey" labelledby="hub-page-title">
-    <div class="mx-auto max-w-4xl">
+    <div class="mx-auto max-w-6xl">
       <HubPageHeader
         title="Sign-ups & RSVPs"
         subtitle="Take a helper slot, claim a snack day, or tell us you’re coming — right here, no outside sign-up site."
@@ -94,7 +94,7 @@ const showThanks = new URL(Astro.request.url).searchParams.has('thanks');
 
       {
         showThanks && (
-          <HubCard class="mb-6 border-l-4 border-l-green">
+          <HubCard class="mb-6" style="--note-accent: var(--color-green)">
             <p class="font-semibold text-heading">You’re on the list — thank you!</p>
           </HubCard>
         )

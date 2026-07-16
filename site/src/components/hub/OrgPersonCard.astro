@@ -33,7 +33,9 @@ const initials = person.name
   : '?';
 ---
 
-<div class="flex min-w-36 flex-col items-center rounded-xl bg-white p-3 shadow-sm dark:bg-surface">
+<div
+  class="flex min-w-36 flex-col items-center rounded-[var(--radius)] border border-border bg-white p-3 shadow-sm dark:bg-surface"
+>
   {
     person.photo ? (
       <Image

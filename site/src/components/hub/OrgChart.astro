@@ -65,7 +65,7 @@ try {
   </ul>
 
   {/* ── Executive Board ── */}
-  <div class="mt-6 rounded-2xl border-2 border-navy/25 p-4 sm:p-6 dark:border-white/20">
+  <div class="mt-6 rounded-[var(--radius)] border border-navy/25 p-4 sm:p-6 dark:border-white/20">
     <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Executive Board</p>
     <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
       Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and
@@ -99,7 +99,7 @@ try {
   </p>
   <div class="mt-4 grid gap-4 lg:grid-cols-2">
     {/* Left: the Secretary's cabinet */}
-    <div class="rounded-2xl border-2 border-border p-4">
+    <div class="rounded-[var(--radius)] border border-border p-4">
       <p class="text-xs font-extrabold tracking-widest text-heading uppercase">
         Reports to Secretary
       </p>
@@ -137,7 +137,7 @@ try {
       }
     </div>
     {/* Right: the VP's cabinet */}
-    <div class="rounded-2xl border-2 border-border p-4">
+    <div class="rounded-[var(--radius)] border border-border p-4">
       <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Reports to VP</p>
       {
         vpBranch.map((s) => (
@@ -167,7 +167,7 @@ try {
   <div class="org-vline" aria-hidden="true"></div>
   <a
     href="/family-hub/directory"
-    class="inline-flex flex-col items-center gap-1 rounded-2xl border-2 border-amber bg-cream/60 px-8 py-4 no-underline transition-shadow hover:shadow-md dark:bg-white/5"
+    class="inline-flex flex-col items-center gap-1 rounded-[var(--radius)] border border-amber bg-cream/60 px-8 py-4 no-underline transition-shadow hover:shadow-md dark:bg-white/5"
   >
     <span class="inline-flex items-center gap-2 font-bold text-heading">
       <Icon name="users" class="h-5 w-5 text-orange-ink" aria-hidden="true" />

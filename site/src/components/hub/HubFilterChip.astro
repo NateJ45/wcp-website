@@ -1,0 +1,33 @@
+---
+/* ============================================================================
+   HubFilterChip — the hub's ONE filter/segmented-nav chip
+   ============================================================================
+   The shared pill used to filter a hub list page (the Calendar's event-type
+   filter, the Directory's class filter, ...). One look so every filter row reads
+   the same: outlined pill, `aria-current="true"` swaps to a solid navy fill.
+   Renders an <a> (no-JS filtering via query string); pass the icon/dot + label
+   as the slot. Extend the look HERE, never re-improvise the class string.
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+
+interface Props {
+  href: string;
+  /** The active filter — sets aria-current and the solid-navy state. */
+  active?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+const { href, active = false, class: className, ...rest } = Astro.props;
+---
+
+<a
+  href={href}
+  aria-current={active ? 'true' : undefined}
+  class={cn(
+    'inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface',
+    className,
+  )}
+  {...rest}
+>
+  <slot />
+</a>

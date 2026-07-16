@@ -20,6 +20,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import HubRing from '@/components/hub/HubRing.astro';
 import HubStat from '@/components/hub/HubStat.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import HubPill from '@/components/hub/HubPill.astro';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { COOP_HOURS_META_QUERY, COOP_HOURS_FOR_FAMILY_QUERY } from '@/lib/queries';
@@ -83,7 +84,7 @@ const inputClass =
 
 <HubShell title="My Co-op Hours" bare pageTitle="My Co-op Hours — WCP Family Hub">
   <Section bg="grey" labelledby="hub-page-title">
-    <div class="mx-auto max-w-3xl">
+    <div class="mx-auto max-w-6xl">
       <HubPageHeader
         title="My Co-op Hours"
         subtitle="Track your family’s volunteer hours for the year and log new ones as you go."
@@ -101,7 +102,7 @@ const inputClass =
         ) : (
           <>
             {showThanks && (
-              <HubCard class="mb-6 border-l-4 border-l-green">
+              <HubCard class="mb-6" style="--note-accent: var(--color-green)">
                 <p class="font-semibold text-heading">Logged — thank you for pitching in!</p>
                 <p class="mt-1 text-sm text-ink-muted">
                   A board member will confirm it. It already counts toward your total below.
@@ -310,23 +311,9 @@ const inputClass =
                           <div class="flex shrink-0 items-center gap-3">
                             <span class="text-sm text-ink-muted">{fmtDate(e.date)}</span>
                             {e.verified ? (
-                              <span class="inline-flex items-center gap-1 rounded-full bg-green/15 px-2.5 py-0.5 text-xs font-semibold text-heading">
-                                <Icon
-                                  name="check"
-                                  class="h-3 w-3 text-green-ink"
-                                  aria-hidden="true"
-                                />
-                                Verified
-                              </span>
+                              <HubPill kind="open">Verified</HubPill>
                             ) : (
-                              <span class="inline-flex items-center gap-1 rounded-full bg-amber/25 px-2.5 py-0.5 text-xs font-semibold text-heading">
-                                <Icon
-                                  name="clock"
-                                  class="h-3 w-3 text-amber-ink"
-                                  aria-hidden="true"
-                                />
-                                Pending
-                              </span>
+                              <HubPill kind="waitlist">Pending</HubPill>
                             )}
                           </div>
                         </li>

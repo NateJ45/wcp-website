@@ -44,7 +44,7 @@ const inputClass =
 
 <HubShell title="Family Photos" bare pageTitle="Family Photos — WCP Family Hub">
   <Section bg="grey" labelledby="hub-page-title">
-    <div class="mx-auto max-w-5xl">
+    <div class="mx-auto max-w-6xl">
       <HubPageHeader
         title="Family Photos"
         subtitle="A shared album of our classrooms and events, just for our families. Share your own below."
@@ -53,7 +53,7 @@ const inputClass =
 
       {
         showThanks && (
-          <HubCard class="mb-6 border-l-4 border-l-green">
+          <HubCard class="mb-6" style="--note-accent: var(--color-green)">
             <p class="font-semibold text-heading">Thanks — your photo was sent for review.</p>
             <p class="mt-1 text-sm text-ink-muted">
               A board member will approve it, then it appears in the album below.
@@ -159,7 +159,7 @@ const inputClass =
               return (
                 src && (
                   <li>
-                    <figure class="overflow-hidden rounded-xl border border-border bg-white shadow-sm dark:bg-surface">
+                    <figure class="overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm dark:bg-surface">
                       <img
                         src={src}
                         alt={alt}

@@ -88,12 +88,7 @@ const intro =
                   )}
                   <div class="flex flex-1 flex-col p-6">
                     <div class="flex flex-wrap items-center gap-2">
-                      {u.pinned && (
-                        <span class="inline-flex items-center gap-1 rounded-full bg-amber/25 px-2.5 py-0.5 text-xs font-bold text-heading">
-                          <Icon name="star" class="h-3.5 w-3.5 text-orange-ink" />
-                          Pinned
-                        </span>
-                      )}
+                      {u.pinned && <HubPill kind="important">Pinned</HubPill>}
                       <span class="text-sm text-ink-muted">{fmtDate(u.publishedAt)}</span>
                       {/* Category pill (shared vocabulary): minutes are the
                           exception worth marking; announcements are the

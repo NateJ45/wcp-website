@@ -12,6 +12,7 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
+import HubFilterChip from '@/components/hub/HubFilterChip.astro';
 import HubDisclosure from '@/components/hub/HubDisclosure.astro';
 import Icon from '@/components/Icon.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
@@ -235,25 +236,20 @@ const intro =
                 chips carry the class dot, active chip goes solid navy. */}
             {classesPresent.length > 1 && (
               <nav aria-label="Filter families by class" class="mb-4 flex flex-wrap gap-2">
-                <a
-                  href={Astro.url.pathname}
-                  aria-current={!classFilter ? 'true' : undefined}
-                  class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
-                >
+                <HubFilterChip href={Astro.url.pathname} active={!classFilter}>
                   All families
-                </a>
+                </HubFilterChip>
                 {classesPresent.map((slug) => (
-                  <a
+                  <HubFilterChip
                     href={`${Astro.url.pathname}?class=${slug}`}
-                    aria-current={classFilter === slug ? 'true' : undefined}
-                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-ink no-underline transition-colors hover:border-navy hover:text-heading aria-[current=true]:border-navy aria-[current=true]:bg-navy aria-[current=true]:text-white dark:bg-surface"
+                    active={classFilter === slug}
                   >
                     <span
                       class={`h-2 w-2 rounded-full ${classStyles(slug).dot}`}
                       aria-hidden="true"
                     />
                     {classLabel(slug)}
-                  </a>
+                  </HubFilterChip>
                 ))}
               </nav>
             )}
@@ -286,7 +282,7 @@ const intro =
                 return (
                   <li
                     id={letter ? `dir-${letter}` : undefined}
-                    class="wcp-lift group flex scroll-mt-20 flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-lg dark:bg-surface"
+                    class="wcp-lift group flex scroll-mt-20 flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-white shadow-sm hover:shadow-md dark:bg-surface"
                   >
                     {/* Large portrait family photo with class overlay */}
                     <div class="relative aspect-[3/4] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
