@@ -53,6 +53,13 @@ export const teacherPhoneFallback: Record<string, string> = {
 /** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (siteSettings.budgetSheetId). */
 export const budgetSheetIdFallback = '';
 
+/** Fundraising goal for the store (the merch line in the approved 2026-27
+ *  budget, $150). The live "Store Sales" card replaces the treasurer's manual
+ *  "Shirt Sales" sheet row; this keeps the store's goal in the year total when
+ *  that row is dropped, so removing it never lowers the $5,700 fundraising goal.
+ *  Derived from the removed row's goal when present, falling back to this. */
+export const storeSalesGoalFallback = 150;
+
 /** The school Google Calendar's ID — the primary calendar of the school's
  *  contact account (from the old site's embed `cid`). Drives the calendar
  *  page's subscribe buttons + click-to-load embed. Board-editable on

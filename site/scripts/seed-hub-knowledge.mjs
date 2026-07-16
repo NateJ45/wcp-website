@@ -26,7 +26,6 @@ import {
   stepList,
   proseSection,
   faqSection,
-  statBand,
   p,
   bullet,
   strong,
@@ -765,29 +764,6 @@ const fundraisingSections = [
       p(
         'Every family joins at least one fundraiser a year (more is always welcome!) — plus the easy extras: link your Kroger card to Community Rewards and wear the school merch. Extra fundraising money goes to improving the school, maintaining equipment, and teacher raises — allocated by the Board at the monthly meetings everyone is invited to. The full line-item budget lives on the Documents page.',
       ),
-    ],
-  }),
-  statBand({
-    ariaLabel: 'The 2026-27 proposed budget at a glance',
-    stats: [
-      {
-        value: '67,165',
-        prefix: '$',
-        label: 'Target revenue',
-        note: 'tuition, fees & fundraising',
-      },
-      {
-        value: '67,266',
-        prefix: '$',
-        label: 'Total expenses',
-        note: 'operations, payroll & programs',
-      },
-      {
-        value: '101',
-        prefix: '−$',
-        label: 'Projected net',
-        note: 'at 39 students — surplus at 40+',
-      },
     ],
   }),
 ];

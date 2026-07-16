@@ -14,7 +14,7 @@ import { sanityFetch } from '@/lib/sanity';
 import { ACTIVE_CAMPAIGN_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
 import { getStoreProfit } from '@/lib/fourthwall';
-import { budgetSheetIdFallback } from '@/data/hub/live-links';
+import { budgetSheetIdFallback, storeSalesGoalFallback } from '@/data/hub/live-links';
 
 let sheetId = budgetSheetIdFallback;
 try {
@@ -32,11 +32,15 @@ const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
 // live total is available, drop any hand-kept shirt/store-sales sheet row so it
 // isn't double-counted; the store has no goal, so it lifts raised only.
 const storeProfit = await getStoreProfit();
-const shown = storeProfit
-  ? fundraisers.filter((f) => !/\b(shirt|store)\s+sales\b/i.test(f.name))
-  : fundraisers;
+const isStoreRow = (f: Fundraiser) => /\b(shirt|store)\s+sales\b/i.test(f.name);
+const shown = storeProfit ? fundraisers.filter((f) => !isStoreRow(f)) : fundraisers;
 const storeNet = storeProfit?.netProfit ?? 0;
-const totalGoal = shown.reduce((s, f) => s + f.goal, 0);
+// Keep the replaced row's goal (the budget's merch line) in the total so the
+// year goal doesn't drop — same rule as the Fundraising page.
+const storeGoal = storeProfit
+  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) || storeSalesGoalFallback
+  : 0;
+const totalGoal = shown.reduce((s, f) => s + f.goal, 0) + storeGoal;
 const totalRaised = shown.reduce((s, f) => s + f.raised, 0) + storeNet;
 const activeCount = shown.filter((f) => f.status === 'active').length;
 const upcomingCount = shown.filter((f) => f.status === 'upcoming').length;

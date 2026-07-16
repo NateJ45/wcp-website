@@ -26,7 +26,11 @@ import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
 import { getStoreProfit } from '@/lib/fourthwall';
-import { budgetSheetIdFallback, pastFundraisingTotalsFallback } from '@/data/hub/live-links';
+import {
+  budgetSheetIdFallback,
+  pastFundraisingTotalsFallback,
+  storeSalesGoalFallback,
+} from '@/data/hub/live-links';
 
 interface Campaign {
   title?: string;
@@ -87,16 +91,20 @@ const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
 // fallback.
 const storeProfit = await getStoreProfit();
 const storeSinceLabel = 'since May 1, 2026';
-const shownFundraisers = storeProfit
-  ? fundraisers.filter((f) => !/\b(shirt|store)\s+sales\b/i.test(f.name))
-  : fundraisers;
+const isStoreRow = (f: Fundraiser) => /\b(shirt|store)\s+sales\b/i.test(f.name);
+const shownFundraisers = storeProfit ? fundraisers.filter((f) => !isStoreRow(f)) : fundraisers;
 const hasYearData = shownFundraisers.length > 0 || Boolean(storeProfit);
 
-// Live store net profit counts toward the year total (it's real money raised);
-// the store has no goal, so it lifts the numerator only. The Store Sales card
-// below still breaks out the store's own share.
+// Live store net profit counts toward the year total (it's real money raised).
+// The store keeps the goal of the sheet row it replaces (the budget's merch
+// line) so removing that row never lowers the $5,700 fundraising goal — derived
+// from the removed row when present, else the budget fallback. The Store Sales
+// card below still breaks out the store's own share.
 const storeNet = storeProfit?.netProfit ?? 0;
-const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0);
+const storeGoal = storeProfit
+  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) || storeSalesGoalFallback
+  : 0;
+const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0) + storeGoal;
 const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0) + storeNet;
 const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
 
@@ -109,7 +117,14 @@ const STATUS_META: Record<FundraiserStatus, { label: string; kind: 'open' | 'wai
     upcoming: { label: 'Soon', kind: 'waitlist' },
     complete: { label: 'Done', kind: 'past' },
   };
-const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
+// Drop the budget count-up band (statBandSection) from the Board-editable
+// sections. It was removed from the seed too; this filter makes it disappear on
+// the live page NOW, while Sanity writes are quota-blocked and the doc can't yet
+// be patched (see scripts/patch-drop-fundraising-statband.mjs). Safe to remove
+// this filter once that patch has run.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const docSections = ((doc?.sections ?? []) as any[]).filter((s) => s?._type !== 'statBandSection');
+const hasSections = docSections.length > 0;
 const title = doc?.heading || 'Fundraising';
 const intro =
   doc?.intro ||
@@ -341,7 +356,7 @@ const fmtDeadline = (iso: string) =>
       }
       {
         hasSections && (
-          <HubSectionedBody sections={doc!.sections} label="Fundraising sections" class="mt-12" />
+          <HubSectionedBody sections={docSections} label="Fundraising sections" class="mt-12" />
         )
       }
     </div>
