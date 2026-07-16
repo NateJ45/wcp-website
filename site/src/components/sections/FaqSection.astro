@@ -3,7 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Faq from '@/components/faq/Faq.astro';
 import FaqItem from '@/components/faq/FaqItem.astro';
-import { renderPortableText, portableTextToPlain } from '@/lib/portable-text';
+import { renderPortableText, portableTextToPlain, deEmDash } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface QA {
@@ -53,7 +53,7 @@ const faqJsonLd = {
   <Faq class="mt-10">
     {
       items.map((qa) => (
-        <FaqItem question={qa.question}>
+        <FaqItem question={deEmDash(qa.question as string)}>
           <Fragment set:html={renderPortableText(qa.answer as never, linkBase)} />
         </FaqItem>
       ))

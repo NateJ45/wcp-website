@@ -424,137 +424,23 @@
   --wcp-doodles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%2301457E' stroke-opacity='0.055' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
   --wcp-doodles-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
 
-  /* Paint splodges (treatment B). Brand-color paint blobs, positioned (no baked
-     WebP, no tile-repeat: the % positions are relative to the whole canvas, so on
-     a tall page the nine blobs just spread further apart). Fuller + more opaque
-     than the first pass (which read too faint), with a two-stop body so they look
-     like painted discs, not faint washes. The `--wcp-paintgrain` noise layer over
-     them does the "noisy textured paint" mottling. Dark swaps navy -> sky. */
-  --wcp-splodges:
-    radial-gradient(
-      150px 122px at 16% 7%,
-      rgba(255, 140, 0, 0.17),
-      rgba(255, 140, 0, 0.1) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      122px 150px at 82% 14%,
-      rgba(64, 170, 237, 0.15),
-      rgba(64, 170, 237, 0.09) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      160px 128px at 37% 26%,
-      rgba(255, 163, 52, 0.16),
-      rgba(255, 163, 52, 0.1) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      132px 112px at 90% 40%,
-      rgba(1, 69, 126, 0.13),
-      rgba(1, 69, 126, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      142px 162px at 11% 51%,
-      rgba(64, 170, 237, 0.14),
-      rgba(64, 170, 237, 0.09) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      152px 122px at 66% 60%,
-      rgba(255, 140, 0, 0.15),
-      rgba(255, 140, 0, 0.09) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      128px 142px at 29% 75%,
-      rgba(255, 163, 52, 0.14),
-      rgba(255, 163, 52, 0.09) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      138px 118px at 85% 83%,
-      rgba(64, 170, 237, 0.13),
-      rgba(64, 170, 237, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      124px 138px at 50% 94%,
-      rgba(1, 69, 126, 0.12),
-      rgba(1, 69, 126, 0.08) 48%,
-      transparent 78%
-    );
-  --wcp-splodges-dark:
-    radial-gradient(
-      150px 122px at 16% 7%,
-      rgba(255, 140, 0, 0.14),
-      rgba(255, 140, 0, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      122px 150px at 82% 14%,
-      rgba(64, 170, 237, 0.13),
-      rgba(64, 170, 237, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      160px 128px at 37% 26%,
-      rgba(255, 163, 52, 0.13),
-      rgba(255, 163, 52, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      132px 112px at 90% 40%,
-      rgba(64, 170, 237, 0.12),
-      rgba(64, 170, 237, 0.07) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      142px 162px at 11% 51%,
-      rgba(64, 170, 237, 0.12),
-      rgba(64, 170, 237, 0.08) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      152px 122px at 66% 60%,
-      rgba(255, 140, 0, 0.12),
-      rgba(255, 140, 0, 0.07) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      128px 142px at 29% 75%,
-      rgba(255, 163, 52, 0.12),
-      rgba(255, 163, 52, 0.07) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      138px 118px at 85% 83%,
-      rgba(64, 170, 237, 0.11),
-      rgba(64, 170, 237, 0.07) 48%,
-      transparent 78%
-    ),
-    radial-gradient(
-      124px 138px at 50% 94%,
-      rgba(64, 170, 237, 0.1),
-      rgba(64, 170, 237, 0.07) 48%,
-      transparent 78%
-    );
-  /* Coarse desaturated noise, laid OVER the splodges (and the whole canvas) to
-     give the flat gradient discs a mottled, hand-painted grain. Bigger cells than
-     --wcp-grain (0.42 vs 0.9 baseFrequency) so it reads as paint texture, not
-     film grain. Tiles, but noise repeats invisibly. */
-  --wcp-paintgrain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.42' numOctaves='2' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)' opacity='0.09'/%3E%3C/svg%3E");
+  /* Paint splodges (treatment B). Soft brand-color FINGER-PAINT blobs: mottled,
+     broken-edged marks (NOT smooth glow gradients), baked to WebP by
+     `node scripts/bake-splodges.mjs` so the turbulence texture ships as a cheap
+     bitmap the GPU blits on scroll. Two large coprime tiles (1600 + 1180) so the
+     pattern repeat period is long. Dark swaps navy -> sky; only the active
+     theme downloads its two tiles. */
+  --wcp-splodges: url('/hub/splodge-a.webp'), url('/hub/splodge-b.webp');
+  --wcp-splodges-dark: url('/hub/splodge-a-dark.webp'), url('/hub/splodge-b-dark.webp');
 }
-/* Layer order (first = on top): fine grain, line doodles, the coarse paint-grain
-   (mottles the splodges just beneath it), the paint splodges, then three soft
-   brand washes (navy top-left, orange top-right, sky bottom) framing the column.
-   The SVG tiles (grain, doodles, paint-grain) repeat at their intrinsic sizes;
-   the gradients fill the column, so no size/repeat overrides. All UNDER the
-   white cards. */
+/* Layer order (first = on top): fine grain, line doodles, the baked finger-paint
+   splodge tiles, then three soft brand washes (navy top-left, orange top-right,
+   sky bottom) framing the column. The tiles (grain, doodles, splodges) repeat at
+   their intrinsic sizes; the washes fill the column, so no size/repeat overrides.
+   All UNDER the white cards. */
 .wcp-hub-canvas {
   background-image:
-    var(--wcp-grain), var(--wcp-doodles), var(--wcp-paintgrain), var(--wcp-splodges),
+    var(--wcp-grain), var(--wcp-doodles), var(--wcp-splodges),
     radial-gradient(58rem 42rem at 0% 0%, rgba(1, 69, 126, 0.075), transparent 60%),
     radial-gradient(54rem 40rem at 100% 0%, rgba(255, 140, 0, 0.08), transparent 60%),
     radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.075), transparent 58%);
@@ -563,7 +449,7 @@
    splodges lean on the bright tiers (sky/orange/amber) at lower alpha. */
 .dark .wcp-hub-canvas {
   background-image:
-    var(--wcp-grain), var(--wcp-doodles-dark), var(--wcp-paintgrain), var(--wcp-splodges-dark),
+    var(--wcp-grain), var(--wcp-doodles-dark), var(--wcp-splodges-dark),
     radial-gradient(56rem 42rem at 0% 0%, rgba(64, 170, 237, 0.07), transparent 60%),
     radial-gradient(52rem 40rem at 100% 0%, rgba(255, 140, 0, 0.06), transparent 60%),
     radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.055), transparent 58%);

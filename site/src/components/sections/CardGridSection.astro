@@ -4,7 +4,7 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
-import { renderPortableText } from '@/lib/portable-text';
+import { renderPortableText, deEmDash } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { safeIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,10 @@ const titleId = titleIdFor(section);
 const cards = ((section.cards as Card[] | undefined) ?? []).map((c) => ({
   ...c,
   icon: c.icon ? safeIcon(c.icon, 'sparkles') : undefined,
+  // House style: no em-dashes. Card title/body are plain strings (not Portable
+  // Text), so strip them here the way renderPortableText does for prose.
+  title: deEmDash(c.title),
+  body: c.body ? deEmDash(c.body) : c.body,
 }));
 const columns = (section.columns as number | undefined) ?? 3;
 const layout = (section.layout as string | undefined) ?? 'card';

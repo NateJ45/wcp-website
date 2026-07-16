@@ -46,7 +46,7 @@ const intro =
 // body while Sanity writes are quota-blocked. Drop it once the doc is re-seeded
 // or patched in the Studio.
 const ACCESSIBLE_ENTRANCE_BODY =
-  'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Just let the Board know and we’ll have it open for you.';
+  'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Your provided door code opens that one as well.';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sections = ((doc?.sections ?? []) as any[]).map((s) =>
   s?._type === 'cardGridSection' && Array.isArray(s.cards)

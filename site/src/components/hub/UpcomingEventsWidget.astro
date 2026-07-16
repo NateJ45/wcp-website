@@ -13,6 +13,8 @@ import { sanityFetch } from '@/lib/sanity';
 import {
   getUpcomingEvents,
   eventDate,
+  eventType,
+  EVENT_TYPE_META,
   fmtEventMonth,
   fmtEventDay,
   fmtEventWeekday,
@@ -20,6 +22,7 @@ import {
   type HubEvent,
 } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
+import { deEmDash } from '@/lib/portable-text';
 
 let feedUrl = calendarFeedUrlFallback;
 try {
@@ -47,23 +50,35 @@ const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
 >
   <ul class="space-y-3">
     {
-      events.map((e) => (
-        <li class="flex items-center gap-3">
-          <span class="flex w-11 shrink-0 flex-col items-center rounded-lg bg-grey py-1.5">
-            <span class="text-[0.62rem] font-bold text-sky-ink uppercase">{fmtEventMonth(e)}</span>
-            <span class="text-lg leading-tight font-extrabold text-heading">{fmtEventDay(e)}</span>
-          </span>
-          <div class="min-w-0">
-            <p class="truncate font-semibold text-heading" title={e.title}>
-              {e.title}
-            </p>
-            <p class="text-sm text-ink-muted">
-              {fmtEventWeekday(e)} · {fmtEventTime(e)}
-              {e.location ? ` · ${e.location}` : ''}
-            </p>
-          </div>
-        </li>
-      ))
+      events.map((e) => {
+        // Colour the date chip by event type — same brand mapping as the
+        // Calendar page (meetings navy, volunteer sky, milestones orange,
+        // events green).
+        const meta = EVENT_TYPE_META[eventType(e.title)];
+        return (
+          <li class="flex items-center gap-3">
+            <span
+              class={`flex w-11 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
+            >
+              <span class={`text-[0.62rem] font-bold uppercase ${meta.chipText}`}>
+                {fmtEventMonth(e)}
+              </span>
+              <span class="text-lg leading-tight font-extrabold text-heading">
+                {fmtEventDay(e)}
+              </span>
+            </span>
+            <div class="min-w-0">
+              <p class="truncate font-semibold text-heading" title={deEmDash(e.title)}>
+                {deEmDash(e.title)}
+              </p>
+              <p class="text-sm text-ink-muted">
+                {fmtEventWeekday(e)} · {fmtEventTime(e)}
+                {e.location ? ` · ${e.location}` : ''}
+              </p>
+            </div>
+          </li>
+        );
+      })
     }
   </ul>
 </HomeWidgetCard>

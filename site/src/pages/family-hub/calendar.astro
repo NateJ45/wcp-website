@@ -36,6 +36,7 @@ import {
   type HubEvent,
 } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback, googleCalendarIdFallback } from '@/data/hub/live-links';
+import { deEmDash } from '@/lib/portable-text';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
@@ -200,7 +201,7 @@ const icalUrl = calId
                         </span>
                       </span>
                       <div class="min-w-0 flex-1">
-                        <p class="font-bold text-heading">{e.title}</p>
+                        <p class="font-bold text-heading">{deEmDash(e.title)}</p>
                         <p class="text-sm text-ink-muted">
                           {fmtEventWeekday(e)} · {fmtEventTime(e)}
                           {e.location ? ` · ${e.location}` : ''}
@@ -283,8 +284,8 @@ const icalUrl = calId
         </span>
         <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
           <strong class="font-bold text-heading">Weather closures:</strong> WCP follows
-          <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes —
-          watch your email and our Facebook page for school-specific updates.
+          <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes.
+          Watch your email and our Facebook page for school-specific updates.
         </p>
       </HubCard>
     </div>

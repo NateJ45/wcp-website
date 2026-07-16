@@ -16,6 +16,49 @@ function escapeAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
+// House style bans em-dashes (the #1 AI tell). Most hub prose is Board-editable
+// Sanity content that can't be re-seeded while writes are quota-blocked, so we
+// strip em-dashes at render time as a safety net: a numeric range becomes an
+// en-dash (allowed), everything else (the parenthetical em-dash) becomes a
+// comma. Applied to every portable-text render below; also exported for the
+// plain-string fields (card bodies) that don't go through Portable Text. Once
+// the Studio content itself is em-dash-free this is a harmless no-op.
+export function deEmDash(text: string): string {
+  return text
+    .replace(/(\d)\s*—\s*(\d)/g, '$1–$2')
+    .replace(/\s*—\s*/g, ', ')
+    .replace(/,\s*,/g, ',');
+}
+
+// Deep variant: strip em-dashes from every string in an object/array (section
+// headers, step descriptions, schedule text, page intros — the plain-string
+// fields that don't flow through Portable Text). Returns a cleaned clone; keys
+// and non-content strings (hrefs, _type) never contain em-dashes, so it's a
+// no-op there. Preserves stega characters (only the em-dash glyph is touched).
+export function deEmDashDeep<T>(value: T): T {
+  if (typeof value === 'string') return deEmDash(value) as unknown as T;
+  if (Array.isArray(value)) return value.map((v) => deEmDashDeep(v)) as unknown as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = deEmDashDeep(v);
+    return out as T;
+  }
+  return value;
+}
+
+function stripEmDashBlocks(blocks: PortableTextBlock[]): PortableTextBlock[] {
+  return blocks.map((block) =>
+    Array.isArray(block.children)
+      ? {
+          ...block,
+          children: block.children.map((child) =>
+            typeof child.text === 'string' ? { ...child, text: deEmDash(child.text) } : child,
+          ),
+        }
+      : block,
+  );
+}
+
 const HEADING_STYLE = /^h([1-6])$/;
 
 // Normalize the heading levels of a body that renders directly under the page
@@ -73,7 +116,9 @@ export function renderPortableText(
   options: { normalizeHeadings?: boolean } = {},
 ): string {
   if (!blocks || blocks.length === 0) return '';
-  const prepared = options.normalizeHeadings ? normalizeHeadingLevels(blocks) : blocks;
+  const prepared = stripEmDashBlocks(
+    options.normalizeHeadings ? normalizeHeadingLevels(blocks) : blocks,
+  );
   return toHTML(prepared, { components: { marks: linkMark(linkBase) } });
 }
 
@@ -85,7 +130,7 @@ export function portableTextToPlain(blocks: PortableTextBlock[] | undefined): st
   return blocks
     .map((b) =>
       Array.isArray(b.children)
-        ? b.children.map((c) => (typeof c.text === 'string' ? c.text : '')).join('')
+        ? b.children.map((c) => (typeof c.text === 'string' ? deEmDash(c.text) : '')).join('')
         : '',
     )
     .filter(Boolean)
@@ -101,7 +146,7 @@ export function renderPostBody(blocks: PortableTextBlock[] | undefined, linkBase
   if (!blocks || blocks.length === 0) return '';
   // A post body is always the whole article under the page <h1>, so normalize
   // its heading levels unconditionally (no-op for correctly-authored h2/h3).
-  const normalized = normalizeHeadingLevels(blocks);
+  const normalized = stripEmDashBlocks(normalizeHeadingLevels(blocks));
   const components: Partial<PortableTextHtmlComponents> = {
     marks: linkMark(linkBase),
     types: {

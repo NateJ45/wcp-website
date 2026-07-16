@@ -183,7 +183,7 @@ const gettingStarted = {
           'shield-check',
           'sky',
           'Accessible entrance',
-          'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Just let the Board know and we’ll have it open for you.',
+          'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Your provided door code opens that one as well.',
         ),
       ],
     }),
