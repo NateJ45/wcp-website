@@ -202,7 +202,8 @@ const tiles = (album?.photos ?? [])
   .wcp-wall-tile img {
     display: block;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    /* 4:5 vertical — matches the school's Instagram photo/reel crop. */
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 2px;
   }

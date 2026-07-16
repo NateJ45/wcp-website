@@ -183,7 +183,7 @@ const gettingStarted = {
           'shield-check',
           'sky',
           'Accessible entrance',
-          'If the Door 5 stairs are difficult with a stroller, wheelchair, or other mobility needs, a no-stairs entrance can be arranged — just let the Board know.',
+          'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Just let the Board know and we’ll have it open for you.',
         ),
       ],
     }),
