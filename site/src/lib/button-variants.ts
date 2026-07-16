@@ -43,6 +43,12 @@ export const buttonVariants = cva(
         // ever used ON a navy band, which doesn't change in dark mode, so it
         // stays constant regardless of the page-level toggle.
         'outline-white': 'border-2 border-white/60 text-white hover:bg-white/10',
+        // SOLID button on a navy band: amber fill, navy text (matches the hub
+        // store's "Shop" button). The navy `accent`/`primary` fills vanish on a
+        // navy CTA, so ActionButtons remaps them to this on navy banners. Theme-
+        // stable like the band it sits on.
+        'on-navy':
+          'bg-amber text-navy shadow-md hover:-translate-y-0.5 hover:bg-[#ffb658] hover:shadow-lg',
         // Minimal text button. Navy text needs to lighten in dark mode since
         // its surrounding surface goes dark; the hover wash is decorative
         // (not text), so no AA requirement, but a light-tinted wash reads

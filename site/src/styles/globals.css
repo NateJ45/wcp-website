@@ -441,28 +441,72 @@
   isolation: isolate;
 }
 
-/* Fixed emblem watermark — the WCP sun+cloud mark, held in the viewport center
-   as the page scrolls (position: fixed, not background-attachment: fixed, which
+/* Fixed emblem watermark — the WCP sun+cloud mark, held in the viewport as the
+   page scrolls (position: fixed, not background-attachment: fixed, which
    stutters on mobile). z-index -1 keeps it above the paper texture but behind
-   every card. Small + centered enough to never reach under the navy rail. */
+   every card. Anchored to the BOTTOM-RIGHT and pushed past the corner so it
+   overflows and clips against the viewport edge, like the widget-card icon
+   watermarks. */
 .wcp-hub-emblem {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: min(56vmin, 440px);
-  opacity: 0.045;
+  background-position: right -3.5rem bottom -4.5rem;
+  background-size: min(62vmin, 520px);
+  opacity: 0.05;
 }
 .dark .wcp-hub-emblem {
-  opacity: 0.06;
+  opacity: 0.07;
 }
 @media print {
   .wcp-hub-emblem {
     display: none;
   }
 }
+
+/* Clickable emails (wcp-email-copy.ts): inherit the surrounding text color and
+   just underline, so a linkified address reads as a link on ANY background (a
+   navy CTA, a white card) without a hardcoded link color that could fail AA. */
+.wcp-email-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+/* "Copied!" token that pops by the cursor when a desktop click copies an email. */
+.wcp-copy-toast {
+  position: fixed;
+  z-index: 9999;
+  transform: translate(-50%, -100%);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--color-navy);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.wcp-copy-toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 4px));
+}
+@media (prefers-reduced-motion: reduce) {
+  .wcp-copy-toast {
+    transition: opacity 0.15s ease;
+  }
+  .wcp-copy-toast.is-shown {
+    transform: translate(-50%, -100%);
+  }
+}
+
 /* Dark canvas: navy washes vanish against the dark bg, so the washes lean on the
    bright tiers (sky/orange/amber) at lower alpha. */
 .dark .wcp-hub-canvas {

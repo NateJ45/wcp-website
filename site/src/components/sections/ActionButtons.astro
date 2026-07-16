@@ -7,8 +7,24 @@ interface Props {
   actions?: ActionData[];
   linkBase?: string;
   size?: 'sm' | 'lg';
+  /** Background the buttons sit on. On 'navy', the navy fills (accent/primary)
+   *  and outlines are remapped to navy-visible variants so a button is never
+   *  invisible-until-hover on a navy CTA band. */
+  tone?: 'navy' | 'cream';
 }
-const { actions = [], linkBase = '', size = 'lg' } = Astro.props;
+const { actions = [], linkBase = '', size = 'lg', tone } = Astro.props;
+
+// On a navy band, swap the fills/outlines that vanish against navy.
+const forNavy: Record<string, string> = {
+  accent: 'on-navy',
+  primary: 'on-navy',
+  ghost: 'outline-white',
+  outline: 'outline-white',
+};
+const variantFor = (style?: string) => {
+  const s = style ?? 'accent';
+  return tone === 'navy' ? (forNavy[s] ?? s) : s;
+};
 ---
 
 {
@@ -18,7 +34,7 @@ const { actions = [], linkBase = '', size = 'lg' } = Astro.props;
     return (
       <Button
         href={href}
-        variant={(a.style ?? 'accent') as never}
+        variant={variantFor(a.style) as never}
         size={size}
         class="whitespace-nowrap"
         {...(ext ? { target: '_blank', rel: 'noopener' } : {})}

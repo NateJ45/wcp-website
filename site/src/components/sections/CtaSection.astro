@@ -26,7 +26,12 @@ const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, li
   titleId={`sec-${section._key}`}
 >
   <Fragment slot="actions">
-    <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+    <ActionButtons
+      actions={actions}
+      linkBase={linkBase}
+      size="lg"
+      tone={(section.tone as 'navy' | 'cream') ?? 'navy'}
+    />
   </Fragment>
   {
     teacherSlug && (
