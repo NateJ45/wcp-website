@@ -423,33 +423,25 @@
   --wcp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   --wcp-doodles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%2301457E' stroke-opacity='0.055' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
   --wcp-doodles-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='42' cy='48' r='11'/%3E%3Cpath d='M42 26v-7M42 77v-7M64 48h7M13 48h7M58 32l5-5M21 69l5-5M58 64l5 5M21 27l5 5'/%3E%3Cpath d='M160 22l4.5 9.5 10.5 1.2-7.8 7.2 2.1 10.3-9.3-5.2-9.3 5.2 2.1-10.3-7.8-7.2 10.5-1.2z'/%3E%3Cg transform='rotate(32 262 78)'%3E%3Crect x='255' y='58' width='14' height='34' rx='3'/%3E%3Cpath d='M255 58l7-12 7 12'/%3E%3C/g%3E%3Crect x='44' y='158' width='27' height='27' rx='4'/%3E%3Crect x='52' y='166' width='11' height='11' rx='2'/%3E%3Cpath d='M168 200c-6-7-17-4-17 4 0 7 9 12 17 18 8-6 17-11 17-18 0-8-11-11-17-4z'/%3E%3Cpath d='M234 226q9-9 18 0t18 0'/%3E%3Ccircle cx='92' cy='272' r='4'/%3E%3Ccircle cx='109' cy='266' r='4'/%3E%3Ccircle cx='124' cy='276' r='4'/%3E%3Cpath d='M292 300a13 13 0 1 0 4 24 11 11 0 0 1-4-24z'/%3E%3C/svg%3E");
-
-  /* Paint splodges (treatment B). Soft brand-color FINGER-PAINT blobs: mottled,
-     broken-edged marks (NOT smooth glow gradients), baked to WebP by
-     `node scripts/bake-splodges.mjs` so the turbulence texture ships as a cheap
-     bitmap the GPU blits on scroll. Two large coprime tiles (1600 + 1180) so the
-     pattern repeat period is long. Dark swaps navy -> sky; only the active
-     theme downloads its two tiles. */
-  --wcp-splodges: url('/hub/splodge-a.webp'), url('/hub/splodge-b.webp');
-  --wcp-splodges-dark: url('/hub/splodge-a-dark.webp'), url('/hub/splodge-b-dark.webp');
 }
-/* Layer order (first = on top): fine grain, line doodles, the baked finger-paint
-   splodge tiles, then three soft brand washes (navy top-left, orange top-right,
-   sky bottom) framing the column. The tiles (grain, doodles, splodges) repeat at
-   their intrinsic sizes; the washes fill the column, so no size/repeat overrides.
-   All UNDER the white cards. */
+/* Layer order (first = on top): fine grain, line doodles, then three soft brand
+   washes (navy top-left, orange top-right, sky bottom) framing the column. The
+   tiles (grain, doodles) repeat at their intrinsic sizes; the washes fill the
+   column, so no size/repeat overrides. All UNDER the white cards. (Paint
+   "splodges" were tried and dropped: they never read as anything but glow blobs;
+   the grain + doodles + washes carry the texture on their own.) */
 .wcp-hub-canvas {
   background-image:
-    var(--wcp-grain), var(--wcp-doodles), var(--wcp-splodges),
+    var(--wcp-grain), var(--wcp-doodles),
     radial-gradient(58rem 42rem at 0% 0%, rgba(1, 69, 126, 0.075), transparent 60%),
     radial-gradient(54rem 40rem at 100% 0%, rgba(255, 140, 0, 0.08), transparent 60%),
     radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.075), transparent 58%);
 }
-/* Dark canvas: navy washes vanish against the dark bg, so the washes and the
-   splodges lean on the bright tiers (sky/orange/amber) at lower alpha. */
+/* Dark canvas: navy washes vanish against the dark bg, so the washes lean on the
+   bright tiers (sky/orange/amber) at lower alpha. */
 .dark .wcp-hub-canvas {
   background-image:
-    var(--wcp-grain), var(--wcp-doodles-dark), var(--wcp-splodges-dark),
+    var(--wcp-grain), var(--wcp-doodles-dark),
     radial-gradient(56rem 42rem at 0% 0%, rgba(64, 170, 237, 0.07), transparent 60%),
     radial-gradient(52rem 40rem at 100% 0%, rgba(255, 140, 0, 0.06), transparent 60%),
     radial-gradient(52rem 44rem at 4% 100%, rgba(64, 170, 237, 0.055), transparent 58%);
