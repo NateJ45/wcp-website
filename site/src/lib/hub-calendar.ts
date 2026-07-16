@@ -65,15 +65,54 @@ export function eventType(title: string): HubEventType {
   return 'event';
 }
 
-/** Label + AA-safe decorative icon color per type (labels stay neutral text). */
+/** Per-type styling, colour-coded to a brand tier so a calendar card reads by
+ *  its KIND, not its position: Board meetings navy, volunteer sky, milestones
+ *  orange, everyday events green. `accent` feeds the card's `--note-accent`
+ *  surface tint; `chipBg`/`chipText` colour the date box + type pill (AA-safe
+ *  `-ink` text on soft tints); `iconColor` tints the pill glyph. */
 export const EVENT_TYPE_META: Record<
   HubEventType,
-  { label: string; icon: string; iconColor: string }
+  {
+    label: string;
+    icon: string;
+    iconColor: string;
+    accent: string;
+    chipBg: string;
+    chipText: string;
+  }
 > = {
-  meeting: { label: 'Meeting', icon: 'users', iconColor: 'text-heading' },
-  volunteer: { label: 'Volunteer', icon: 'heart-handshake', iconColor: 'text-sky-ink' },
-  milestone: { label: 'Milestone', icon: 'graduation-cap', iconColor: 'text-orange-ink' },
-  event: { label: 'Event', icon: 'party-popper', iconColor: 'text-green-ink' },
+  meeting: {
+    label: 'Meeting',
+    icon: 'users',
+    iconColor: 'text-navy dark:text-sky',
+    accent: 'var(--color-navy)',
+    chipBg: 'bg-navy/10 dark:bg-sky/15',
+    chipText: 'text-heading',
+  },
+  volunteer: {
+    label: 'Volunteer',
+    icon: 'heart-handshake',
+    iconColor: 'text-sky-ink',
+    accent: 'var(--color-sky)',
+    chipBg: 'bg-sky/15',
+    chipText: 'text-sky-ink',
+  },
+  milestone: {
+    label: 'Milestone',
+    icon: 'graduation-cap',
+    iconColor: 'text-orange-ink',
+    accent: 'var(--color-orange)',
+    chipBg: 'bg-amber/20',
+    chipText: 'text-orange-ink',
+  },
+  event: {
+    label: 'Event',
+    icon: 'party-popper',
+    iconColor: 'text-green-ink',
+    accent: 'var(--color-green)',
+    chipBg: 'bg-green/15',
+    chipText: 'text-green-ink',
+  },
 };
 
 /**

@@ -11,7 +11,7 @@
    no sheet link anywhere falls back to linking its class hub page.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { classStyles } from '@/lib/class-colors';
+import { classStyles, classColor } from '@/lib/class-colors';
 import { sanityFetch } from '@/lib/sanity';
 import { helperScheduleFallback } from '@/data/hub/live-links';
 
@@ -66,16 +66,26 @@ const tiles = CLASSES.map((c) => {
           <a
             href={c.href}
             {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
-            class={`group flex h-full items-center gap-3 rounded-[var(--radius)] border-2 bg-white p-4 no-underline shadow-sm transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-surface ${styles.border}`}
+            class={`group relative flex h-full items-center gap-3 overflow-hidden rounded-[var(--radius)] border-2 bg-white p-4 no-underline shadow-sm transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-surface ${styles.border}`}
             data-reveal
           >
+            {/* Faint class-icon watermark, overflowing the bottom-right corner.
+                Wrapped in a span so it can carry the class-colour tint (Icon
+                inherits currentColor) — Icon takes no style prop. */}
             <span
-              class={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${styles.iconChip}`}
+              class="pointer-events-none absolute -right-5 -bottom-7 rotate-6 opacity-[0.08] transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100"
+              style={`color: var(--color-${classColor(c.slug)})`}
+              aria-hidden="true"
+            >
+              <Icon name={c.icon} class="h-28 w-28" />
+            </span>
+            <span
+              class={`relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${styles.iconChip}`}
               aria-hidden="true"
             >
               <Icon name={c.icon} class="h-5 w-5" />
             </span>
-            <span class="min-w-0 flex-1">
+            <span class="relative z-10 min-w-0 flex-1">
               <span class="flex items-center gap-2 font-bold text-heading">
                 {c.label}
                 <span
@@ -90,7 +100,10 @@ const tiles = CLASSES.map((c) => {
               </span>
             </span>
             {c.external && (
-              <Icon name="external-link" class="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+              <Icon
+                name="external-link"
+                class="relative z-10 h-3.5 w-3.5 shrink-0 text-ink-muted"
+              />
             )}
           </a>
         </li>
