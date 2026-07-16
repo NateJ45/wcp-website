@@ -113,7 +113,15 @@ const segments = documentGroups.map((g) => ({
 // Editable heading/intro + closing section(s), from the hubPage doc (falls back
 // to the built-in strings + Drive card if no doc exists yet).
 const doc: HubPageDoc | null = await hubDocPromise;
-const hasSections = Array.isArray(doc?.sections) && doc!.sections.length > 0;
+// Drop the full-bleed closing `ctaSection` ("Need a file that isn't listed?"):
+// the Board asked to remove it, and its full-bleed treatment is too heavy for
+// this page. Filtered in code because Sanity writes are quota-blocked; remove
+// this filter once the doc is patched in the Studio. (The built-in fallback
+// prompt was removed too — its Drive link is a redacted placeholder, so it can't
+// offer a working link anyway.)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const docSections = ((doc?.sections ?? []) as any[]).filter((s) => s?._type !== 'ctaSection');
+const hasSections = docSections.length > 0;
 const title = doc?.heading || 'Handbook & Documents';
 const intro =
   doc?.intro ||
@@ -203,33 +211,12 @@ const intro =
           </>
         )
       }
-
-      {
-        !hasSections && (
-          <HubCard class="mt-12 text-center">
-            <span
-              class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white"
-              aria-hidden="true"
-            >
-              <Icon name="folder-open" class="h-6 w-6" />
-            </span>
-            <p class="text-lg font-bold text-heading">Need a file that isn’t listed?</p>
-            <p class="mx-auto mt-1 max-w-md text-ink">
-              Every WCP document lives in our shared Google Drive folder.
-            </p>
-            {driveFolderUrl !== '#' ? (
-              <Button href={driveFolderUrl} variant="primary" size="md" class="mt-5">
-                Open Google Drive
-              </Button>
-            ) : (
-              <p class="mt-4 text-sm text-ink-muted">(Drive folder link is added during setup.)</p>
-            )}
-          </HubCard>
-        )
-      }
     </div>
   </Section>
 
-  {/* Editable closing section(s) from the hubPage doc (Board-managed). */}
-  {hasSections && <SectionRenderer sections={doc!.sections} site={site} />}
+  {
+    /* Editable closing section(s) from the hubPage doc (Board-managed). The
+      full-bleed ctaSection is filtered out above. */
+  }
+  {hasSections && <SectionRenderer sections={docSections} site={site} />}
 </HubShell>

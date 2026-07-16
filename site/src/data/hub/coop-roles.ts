@@ -127,7 +127,7 @@ export const coopTiers: CoopTier[] = [
         icon: 'users',
         team: 'One per class',
         reportsTo: 'Reports to Secretary',
-        body: 'Attends monthly Board meetings as a voting member, communicates updates to class families, schedules the Teacher’s Aides, runs the private class Facebook page, and coordinates Teacher Appreciation Week.',
+        body: 'Attends monthly Board meetings as a voting member, communicates updates to class families, schedules the Teacher’s Aides, and coordinates Teacher Appreciation Week.',
       },
     ],
   },

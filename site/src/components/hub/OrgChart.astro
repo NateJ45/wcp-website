@@ -14,8 +14,10 @@
    plus `-ink` role text (AA on the card surface in both themes). Mobile:
    every row wraps and the columns stack; nothing scrolls sideways at 320px.
    ============================================================================ */
-import Icon from '@/components/Icon.astro';
 import OrgPersonCard from '@/components/hub/OrgPersonCard.astro';
+// Plain <img> + pre-sized webp (not astro:assets): SSR hub pages can't resize
+// at request time on the Cloudflare adapter (see HubRail's note).
+import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { sanityFetch } from '@/lib/sanity';
 import { DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import {
@@ -169,10 +171,15 @@ try {
     href="/family-hub/directory"
     class="inline-flex flex-col items-center gap-1 rounded-[var(--radius)] border border-amber bg-cream/60 px-8 py-4 no-underline transition-shadow hover:shadow-md dark:bg-white/5"
   >
-    <span class="inline-flex items-center gap-2 font-bold text-heading">
-      <Icon name="users" class="h-5 w-5 text-orange-ink" aria-hidden="true" />
-      All WCP Families
-    </span>
+    <img
+      src={wcpEmblem.src}
+      width={wcpEmblem.width}
+      height={wcpEmblem.height}
+      alt=""
+      aria-hidden="true"
+      class="mb-0.5 h-11 w-11 object-contain"
+    />
+    <span class="font-bold text-heading">All WCP Families</span>
     <span class="text-sm text-ink-muted">
       {
         familyCount
