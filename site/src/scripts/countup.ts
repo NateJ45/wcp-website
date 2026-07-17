@@ -34,13 +34,25 @@ function animateTo(el: HTMLElement, target: number, fmt: CountFormat, duration: 
 }
 
 let io: IntersectionObserver | null = null;
+let mo: MutationObserver | null = null;
+
+function observe(el: HTMLElement) {
+  // Guard against double-observing the same node (the initial scan + a
+  // MutationObserver hit for the same element).
+  if (el.dataset.countupBound) return;
+  el.dataset.countupBound = '1';
+  io?.observe(el);
+}
+
+function scan(root: ParentNode) {
+  root.querySelectorAll<HTMLElement>('[data-countup]').forEach(observe);
+}
 
 function init() {
   io?.disconnect();
   io = null;
-
-  const els = Array.from(document.querySelectorAll<HTMLElement>('[data-countup]'));
-  if (!els.length) return;
+  mo?.disconnect();
+  mo = null;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Leave the real value untouched for reduced-motion / no-IO environments.
@@ -77,13 +89,31 @@ function init() {
     { threshold: 0.6 },
   );
 
-  els.forEach((el) => io!.observe(el));
+  scan(document);
+
+  // The home's KPI widgets are `server:defer` islands that stream in AFTER this
+  // one-shot scan runs, so a plain scan never sees their [data-countup]. Watch
+  // for late-inserted nodes and observe them too — same fix reveal.ts uses (see
+  // the "Server islands render hub content" gotcha in CLAUDE.md).
+  mo = new MutationObserver((records) => {
+    for (const rec of records) {
+      rec.addedNodes.forEach((node) => {
+        if (node.nodeType !== 1) return;
+        const el = node as HTMLElement;
+        if (el.matches?.('[data-countup]')) observe(el);
+        scan(el);
+      });
+    }
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
 }
 
 onPageLoad(init);
 onBeforeSwap(() => {
   io?.disconnect();
   io = null;
+  mo?.disconnect();
+  mo = null;
 });
 
 export {};

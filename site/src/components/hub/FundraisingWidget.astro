@@ -119,6 +119,7 @@ const campaignPct =
         {/* Pre-season (nothing raised yet): no 0% ring — the season ahead and
             last year's total instead. Same slot, forward-looking numbers. */}
         <HubStat
+          countUp
           value={String(activeCount + upcomingCount)}
           label={`fundraiser${activeCount + upcomingCount === 1 ? '' : 's'} lined up`}
           footnote={`${money(totalGoal)} year goal`}
