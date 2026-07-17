@@ -39,9 +39,14 @@ const before = idx >= 0 ? hero.title.slice(0, idx) : hero.title;
 const after = idx >= 0 ? hero.title.slice(idx + (word?.length ?? 0)) : '';
 const actions = hero.actions ?? [];
 
-// The accent-word title fragment, shared by both hero layouts.
+// The accent-word title fragment, shared by both hero layouts. Hyphenated
+// tokens inside the accent phrase get a nowrap wrapper (the ClassCard pattern)
+// so huge display type can never break AFTER a hyphen ("FRONT- / ROW") — the
+// ugliest possible line break; the phrase still wraps at spaces on phones.
 const titleFragment =
-  idx >= 0 && word ? { before, word, after, color: hero.accentColor ?? 'amber' } : null;
+  idx >= 0 && word
+    ? { before, tokens: word.split(' '), after, color: hero.accentColor ?? 'amber' }
+    : null;
 
 // Hero doctrine (2026-07-17): a VIDEO hero renders the framed "living
 // photograph" (HeroFramed) — the film in a taped polaroid beside the navy
@@ -64,7 +69,14 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
         {titleFragment ? (
           <>
             {titleFragment.before}
-            <Underline color={titleFragment.color}>{titleFragment.word}</Underline>
+            <Underline color={titleFragment.color}>
+              {titleFragment.tokens.map((t, i) => (
+                <>
+                  {i > 0 && ' '}
+                  {t.includes('-') ? <span class="whitespace-nowrap">{t}</span> : t}
+                </>
+              ))}
+            </Underline>
             {titleFragment.after}
           </>
         ) : (
@@ -92,7 +104,14 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
         {titleFragment ? (
           <>
             {titleFragment.before}
-            <Underline color={titleFragment.color}>{titleFragment.word}</Underline>
+            <Underline color={titleFragment.color}>
+              {titleFragment.tokens.map((t, i) => (
+                <>
+                  {i > 0 && ' '}
+                  {t.includes('-') ? <span class="whitespace-nowrap">{t}</span> : t}
+                </>
+              ))}
+            </Underline>
             {titleFragment.after}
           </>
         ) : (

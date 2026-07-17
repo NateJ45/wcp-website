@@ -91,7 +91,14 @@ const {
           </p>
         )
       }
-      <h1 id={titleId} class="text-balance text-navy" data-reveal>
+      {
+        /* Line-break discipline (the high-end benchmark's #1 lesson: huge type
+          must break on 2-4 INTENTIONAL lines, never fragment). The framed hero's
+          text column is ~40rem at lg, so the global --text-h1 cap (4.75rem)
+          fragments "front-row seat" onto its own island; this hero-scoped clamp
+          is sized so the longest nowrap phrase fits the column at every width. */
+      }
+      <h1 id={titleId} class="text-[clamp(2.3rem,4.4vw,3.5rem)] text-balance text-navy" data-reveal>
         <slot name="title" />
       </h1>
       {
