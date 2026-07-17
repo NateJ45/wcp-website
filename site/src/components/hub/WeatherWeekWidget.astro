@@ -63,9 +63,28 @@ const empty = days.length === 0;
 </HomeWidgetCard>
 
 <style>
-  /* Thin, theme-aware scrollbar for the day strip — visible enough to hint
-     "more days over here" without fighting the card's quiet look. */
+  /* WCP-branded horizontal scrollbar for the phone day-strip (only scrolls
+     below sm — sm+ is a grid). A sky-blue pill thumb on a faint sky track:
+     hints "more days over here" in the brand's own blue instead of the OS
+     grey. Firefox uses scrollbar-color; Chromium/Safari the ::-webkit pseudos.
+     --color-sky already aliases correctly in dark mode, so one set of tokens
+     reads AA in both themes. */
   .wcp-week-scroll {
     scrollbar-width: thin;
+    scrollbar-color: var(--color-sky) color-mix(in oklab, var(--color-sky) 14%, transparent);
+  }
+  .wcp-week-scroll::-webkit-scrollbar {
+    height: 0.5rem;
+  }
+  .wcp-week-scroll::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--color-sky) 14%, transparent);
+    border-radius: 9999px;
+  }
+  .wcp-week-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-sky);
+    border-radius: 9999px;
+  }
+  .wcp-week-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-sky-ink);
   }
 </style>
