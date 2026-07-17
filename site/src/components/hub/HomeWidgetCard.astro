@@ -9,6 +9,7 @@
    already uses (border-border / bg-white dark:bg-surface).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -50,20 +51,14 @@ const {
     'hub-note group flex h-full flex-col rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface',
     'wcp-lift hover:shadow-md',
     postit && 'hub-note--postit',
-    watermark && 'relative overflow-hidden',
+    watermark && 'relative isolate overflow-hidden',
     className,
   )}
   data-reveal
 >
   {
     watermark && (
-      <span
-        class="pointer-events-none absolute -right-6 -bottom-8 rotate-6 opacity-[0.07] transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100"
-        style="color: var(--note-accent, var(--color-sky))"
-        aria-hidden="true"
-      >
-        <Icon name={icon} class="h-32 w-32" />
-      </span>
+      <HubWatermark icon={icon} colorStyle="color: var(--note-accent, var(--color-sky))" />
     )
   }
   <div class={cn('flex items-start justify-between gap-3', watermark && 'relative z-10')}>

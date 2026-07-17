@@ -1,0 +1,42 @@
+---
+/* ============================================================================
+   HubWatermark — the large faint topic-icon that overflows a card's bottom-right
+   corner: the hub's card "stamp". Decorative (aria-hidden).
+
+   Sits BEHIND the card's content via `-z-10`, so the card ROOT must establish a
+   stacking context — give it `relative isolate overflow-hidden`. That's what
+   lets it drop into ANY card (flex tiles, positioned heroes) without touching
+   the content's own stacking. On a `.group` card it scales gently on hover.
+
+   Colour: pass `colorStyle` (e.g. the card's `--note-accent`) for the tinted
+   look on white cards, or omit it to inherit the card's `currentColor` — white
+   on the navy tiles (greeting, store, social wall). Opacity is its own prop so
+   callers can dial it to the background.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+
+interface Props {
+  /** Lucide icon name — usually the card's own topic icon. */
+  icon: string;
+  /** Inline colour, e.g. "color: var(--note-accent, var(--color-sky))". Omit to
+      inherit the card's text colour (white on the navy tiles). */
+  colorStyle?: string;
+  /** Opacity utility, kept separate so it can be tuned per background. */
+  opacityClass?: string;
+  /** Extra classes (position/size overrides). */
+  class?: string;
+}
+const { icon, colorStyle, opacityClass = 'opacity-[0.07]', class: className } = Astro.props;
+---
+
+<span
+  class:list={[
+    'pointer-events-none absolute -right-6 -bottom-8 -z-10 rotate-6 transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100',
+    opacityClass,
+    className,
+  ]}
+  style={colorStyle}
+  aria-hidden="true"
+>
+  <Icon name={icon} class="h-32 w-32" />
+</span>

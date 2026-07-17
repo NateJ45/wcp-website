@@ -22,6 +22,7 @@
    ============================================================================ */
 import { env } from 'cloudflare:workers';
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { cached } from '@/lib/hub-cache';
 import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
@@ -112,7 +113,8 @@ if (tiles.length === 0) {
       data-reveal
       style="--reveal-delay: 60ms"
     >
-      <div class="wcp-wall relative overflow-hidden rounded-[var(--radius)] bg-navy text-white shadow-[0_24px_60px_-24px_rgba(11,58,90,0.65)] ring-1 ring-white/10">
+      <div class="wcp-wall relative isolate overflow-hidden rounded-[var(--radius)] bg-navy text-white shadow-[0_24px_60px_-24px_rgba(11,58,90,0.65)] ring-1 ring-white/10">
+        <HubWatermark icon="camera" opacityClass="opacity-[0.06]" />
         {/* Corkboard depth (all aria-hidden): warm + cool brand glows, a pinboard
             dot grid, and the hand-drawn doodle tile. */}
         <div

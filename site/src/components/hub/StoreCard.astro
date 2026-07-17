@@ -18,6 +18,7 @@
    without a store URL. Motion is reduced-motion-safe.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { getStoreProducts, getStoreCollections, getMerchStats } from '@/lib/fourthwall';
 
 interface Product {
@@ -101,7 +102,8 @@ const sized = (u?: string): string | undefined =>
       data-reveal
       style="--reveal-delay: 60ms"
     >
-      <div class="wcp-store relative overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-navy via-navy to-[#0d4d78] text-white shadow-[0_24px_60px_-24px_rgba(11,58,90,0.65)] ring-1 ring-white/10">
+      <div class="wcp-store relative isolate overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-navy via-navy to-[#0d4d78] text-white shadow-[0_24px_60px_-24px_rgba(11,58,90,0.65)] ring-1 ring-white/10">
+        <HubWatermark icon="shopping-bag" opacityClass="opacity-[0.06]" />
         {/* Decorative depth stack (all aria-hidden): brand glows, a lit-from-
             above highlight, a dot grid, the hand-drawn doodle tile, a slow
             shine sweep, and a couple of floating brand shapes. */}

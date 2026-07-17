@@ -32,6 +32,7 @@
    ink on a tint, see the CLAUDE.md dark-tint gotcha).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubStat from '@/components/hub/HubStat.astro';
 import HubRing from '@/components/hub/HubRing.astro';
@@ -155,9 +156,14 @@ const firstDayLabel =
 ---
 
 <div
-  class="flex h-full flex-col rounded-[var(--radius)] bg-gradient-to-br from-navy to-[#166fa8] p-6 text-white shadow-sm sm:p-8"
+  class="group relative isolate flex h-full flex-col overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-navy to-[#166fa8] p-6 text-white shadow-sm sm:p-8"
   data-reveal
 >
+  {
+    /* Card stamp — a faint sun watermark in the corner, matching every other hub
+      card. Inherits the tile's white text colour. */
+  }
+  <HubWatermark icon="sun" opacityClass="opacity-[0.08]" />
   <div class="flex items-start justify-between gap-6">
     <div class="min-w-0">
       {/* The greeting is the page h1 (Home uses HubShell `bare`, no navy band). */}

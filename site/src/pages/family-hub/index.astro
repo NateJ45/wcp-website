@@ -29,6 +29,7 @@ import HubWidgetSkeleton from '@/components/hub/HubWidgetSkeleton.astro';
 import StoreCard from '@/components/hub/StoreCard.astro';
 import SocialWallWidget from '@/components/hub/SocialWallWidget.astro';
 import HubGiggle from '@/components/hub/HubGiggle.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site, familyHandbookUrl } from '@/data/site';
@@ -276,9 +277,10 @@ const firstDay = settings?.firstDay === '2026-09-10' ? '2026-09-09' : settings?.
     <section aria-labelledby="hub-super-heading" class="mt-4" data-reveal>
       <a
         href="/family-hub/super-helper"
-        class="wcp-lift hub-note group flex flex-col items-start gap-4 rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 no-underline sm:flex-row sm:items-center dark:bg-amber/10"
+        class="wcp-lift hub-note group relative isolate flex flex-col items-start gap-4 overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 no-underline sm:flex-row sm:items-center dark:bg-amber/10"
         style="--note-accent: var(--color-amber)"
       >
+        <HubWatermark icon="star" colorStyle="color: var(--color-amber)" />
         <span
           class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
           aria-hidden="true"
@@ -317,8 +319,9 @@ const firstDay = settings?.firstDay === '2026-09-10' ? '2026-09-09' : settings?.
         href={familyHandbookUrl}
         target="_blank"
         rel="noopener"
-        class="wcp-lift hub-note group flex flex-col items-start gap-5 rounded-[var(--radius)] border border-border bg-white p-6 no-underline sm:flex-row sm:items-center dark:bg-surface"
+        class="wcp-lift hub-note group relative isolate flex flex-col items-start gap-5 overflow-hidden rounded-[var(--radius)] border border-border bg-white p-6 no-underline sm:flex-row sm:items-center dark:bg-surface"
       >
+        <HubWatermark icon="book-open" colorStyle="color: var(--note-accent, var(--color-sky))" />
         <img
           src={handbookCover.src}
           width={handbookCover.width}
