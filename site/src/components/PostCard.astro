@@ -2,12 +2,17 @@
 /* ============================================================================
    PostCard — one News post in a grid (index page + homepage "Latest news")
    ============================================================================
-   Cover photo (or a warm fallback band), category chip, date, title, and a
-   short excerpt. The whole card is a link to the post; `linkBase` keeps it
-   inside /preview/* in the Studio preview.
+   Cover photo, category chip, date, title, and a short excerpt. A coverless
+   post no longer shows the grey "WCP" gradient placeholder (it read as a
+   broken card on the homepage): it pulls a deterministic real classroom photo
+   from the build-time registry, keyed by the post slug so each post keeps its
+   photo across builds. The whole card is a link to the post; `linkBase` keeps
+   it inside /preview/* in the Studio preview.
    ============================================================================ */
 import SanityImage from '@/components/SanityImage.astro';
 import { withBase, formatDate } from '@/lib/utils';
+import { imageUrl, imageSrcSet } from '@/lib/image';
+import { photosFor } from '@/lib/photo-registry';
 import type { SanityImageSource, SanityImageValue } from '@/lib/image';
 
 export interface PostSummary {
@@ -31,6 +36,9 @@ const coverAlt = cover?.alt ?? post.title ?? 'News post';
 const categoryLabel = post.category
   ? post.category.charAt(0).toUpperCase() + post.category.slice(1)
   : '';
+// Registry fallback cover for coverless posts (null when the pool is empty,
+// which falls through to the plain grey band — never a broken image).
+const [fallbackCover] = cover?.asset ? [] : await photosFor(`news-cover-${post.slug}`, 1);
 ---
 
 <article
@@ -46,6 +54,16 @@ const categoryLabel = post.category
             widths={[400, 640, 960]}
             sizes="(max-width: 768px) 100vw, 400px"
             class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : fallbackCover ? (
+          <img
+            src={imageUrl(fallbackCover.image as never, 960)}
+            srcset={imageSrcSet(fallbackCover.image as never)}
+            sizes="(max-width: 768px) 100vw, 400px"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
           />
         ) : (
           <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky/15 to-amber/15">

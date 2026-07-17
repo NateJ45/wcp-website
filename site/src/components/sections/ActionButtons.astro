@@ -9,8 +9,9 @@ interface Props {
   size?: 'sm' | 'lg';
   /** Background the buttons sit on. On 'navy', the navy fills (accent/primary)
    *  and outlines are remapped to navy-visible variants so a button is never
-   *  invisible-until-hover on a navy CTA band. */
-  tone?: 'navy' | 'cream';
+   *  invisible-until-hover on a navy CTA band. 'amber' is the drench closer:
+   *  navy-fill buttons carry, orange 'accent' would vanish on amber. */
+  tone?: 'navy' | 'cream' | 'amber';
 }
 const { actions = [], linkBase = '', size = 'lg', tone } = Astro.props;
 
@@ -30,10 +31,21 @@ const forCream: Record<string, string> = {
   'on-navy': 'accent',
   ghost: 'outline',
 };
+// On the amber drench: orange 'accent' fills vanish into the amber, white
+// outlines wash out — everything strong maps to the navy fill (9.75 on white
+// label, and navy-on-amber edges read crisply), secondary styles to the
+// white-bg navy outline.
+const forAmber: Record<string, string> = {
+  accent: 'primary',
+  'on-navy': 'primary',
+  'outline-white': 'outline',
+  ghost: 'outline',
+};
 const variantFor = (style?: string) => {
   const s = style ?? 'accent';
   if (tone === 'navy') return forNavy[s] ?? s;
   if (tone === 'cream') return forCream[s] ?? s;
+  if (tone === 'amber') return forAmber[s] ?? s;
   return s;
 };
 ---

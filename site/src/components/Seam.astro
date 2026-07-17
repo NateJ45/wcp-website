@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 
 interface Props {
   /** The band's own background color (the scallop fills with this). */
-  color?: 'white' | 'grey' | 'cream' | 'navy';
+  color?: 'white' | 'grey' | 'cream' | 'navy' | 'amber';
   /** Edge shape. 'cloud' (default) is the gentle site-wide scallop; 'trim' is
       the die-cut bulletin-board border teachers staple around a display board
       (a real preschool-room object) — a row of tight half-circle bumps, used at
@@ -36,7 +36,11 @@ const fill: Record<string, string> = {
   grey: 'var(--color-grey)',
   cream: 'var(--color-cream)',
   navy: 'var(--color-navy)',
+  amber: 'var(--color-amber)',
 };
+// The trace line: orange everywhere except ON amber, where orange-on-amber
+// disappears — the amber drench band gets a navy trace instead (decorative).
+const stroke = color === 'amber' ? 'var(--color-navy)' : 'var(--color-orange)';
 
 // Gentle rolling scallop — the one cloud motif used site-wide, kept consistent.
 const cloud = 'M0,40 C160,22 320,22 480,40 C640,58 800,58 960,40 C1120,22 1280,22 1440,40';
@@ -64,6 +68,5 @@ const line = isTrim ? trim : cloud;
   aria-hidden="true"
 >
   <path d={`${line} L1440,60 L0,60 Z`} fill={fill[color]}></path>
-  <path d={line} fill="none" stroke="var(--color-orange)" stroke-width="4" stroke-linecap="round"
-  ></path>
+  <path d={line} fill="none" stroke={stroke} stroke-width="4" stroke-linecap="round"></path>
 </svg>

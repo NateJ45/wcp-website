@@ -42,12 +42,15 @@ const showWatermark = watermark && Boolean(icon);
 // http(s) links open in a new tab; mailto:/tel: stay in place.
 const external = href?.startsWith('http');
 
+// Boldness pass 2026-07: one step deeper fills so the chips read as color, not
+// pastel. The chips are decorative (aria-hidden icon inside), so the -ink icon
+// tone on the tint is not an AA text surface; the label below stays neutral.
 const chipClass: Record<string, string> = {
-  sky: 'bg-sky-soft text-sky-ink',
-  orange: 'bg-cream text-orange-ink',
-  amber: 'bg-amber/15 text-amber-ink',
-  green: 'bg-green/12 text-green-ink',
-  navy: 'bg-navy/8 text-heading',
+  sky: 'bg-sky/25 text-sky-ink',
+  orange: 'bg-orange/20 text-orange-ink',
+  amber: 'bg-amber/30 text-amber-ink',
+  green: 'bg-green/20 text-green-ink',
+  navy: 'bg-navy/10 text-heading',
 };
 ---
 
@@ -70,15 +73,15 @@ const chipClass: Record<string, string> = {
     icon && (
       <span
         class={cn(
-          'wcp-pop mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full',
+          'wcp-pop mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full',
           chipClass[chip],
         )}
       >
-        <Icon name={icon} class="h-7 w-7" />
+        <Icon name={icon} class="h-8 w-8" />
       </span>
     )
   }
-  <h3 class="text-heading">{title}</h3>
+  <h3 class="text-xl text-heading">{title}</h3>
   <div class="mt-2 leading-relaxed text-ink"><slot /></div>
   {
     href && (

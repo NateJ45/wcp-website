@@ -10,6 +10,8 @@
 import type { SectionData } from './section-helpers';
 import { effectiveBg, wantsSeam } from './section-helpers';
 import { deEmDashDeep } from '@/lib/portable-text';
+import PhotoStrip from '@/components/PhotoStrip.astro';
+import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -58,22 +60,52 @@ interface Props {
   /** Hub-only: render the faint corner watermark on card-grid cards. Public
       pages omit it, so marketing grids stay clean. Only CardGridSection reads it. */
   cardWatermark?: boolean;
+  /** Page slug — enables the code-owned photo moments (PhotoStrip bands from
+      the build-time registry, see src/lib/photo-moments.ts). Public [...slug]
+      passes it; hub/preview surfaces omit it and get no injected strips. */
+  pageSlug?: string;
 }
-const { sections: rawSections = [], linkBase = '', site, cardWatermark = false } = Astro.props;
+const {
+  sections: rawSections = [],
+  linkBase = '',
+  site,
+  cardWatermark = false,
+  pageSlug,
+} = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
 // is covered at once — the Board's Sanity copy can't be re-seeded while writes
 // are quota-blocked. A no-op once the content itself is em-dash-free.
 const sections = rawSections.map((s) => deEmDashDeep(s));
 
+// The code-owned photo moments for this page (empty for hub/preview surfaces
+// and unlisted pages). Indexed by "render after section i" for the loop below.
+const moments: PhotoMoment[] = pageSlug ? (PHOTO_MOMENTS[pageSlug] ?? []) : [];
+const momentsAfter = new Map<number, PhotoMoment[]>();
+for (const m of moments) {
+  const at = Math.max(-1, Math.min(m.after, sections.length - 1));
+  momentsAfter.set(at, [...(momentsAfter.get(at) ?? []), m]);
+}
+
 // Seams are computed here from adjacent band colours, NOT read from a volunteer
 // toggle (that field was removed from the schema — a page-builder shouldn't ask
 // a board member to hand-judge where a divider belongs). Walk the array once,
 // tracking the previous band's effective background, and set each section's
 // `seam` accordingly. The noticeBar is a thin strip, never a full band, so it
-// neither carries a seam nor counts as the band above the next section.
+// neither carries a seam nor counts as the band above the next section. An
+// injected PhotoStrip IS a band, so it joins the chain via its own bg.
+// The page's FINAL real band (notice bars excluded) — drives the closing-band
+// doctrine: a closing navy ctaSection renders as the amber drench (CtaSection
+// reads the isClosing prop below).
+let lastBandIndex = -1;
+for (const [i, s] of sections.entries()) {
+  if (s._type !== 'noticeBarSection') lastBandIndex = i;
+}
+
+// Seed with a leading strip's colour when a moment renders before everything.
 let prevBg: string | null = null;
-for (const section of sections) {
+for (const m of momentsAfter.get(-1) ?? []) prevBg = m.bg ?? 'cream';
+for (const [i, section] of sections.entries()) {
   if (section._type === 'noticeBarSection') {
     section.seam = false;
     continue;
@@ -81,6 +113,8 @@ for (const section of sections) {
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
   prevBg = bg;
+  // A strip after this section becomes the band the NEXT section sits under.
+  for (const m of momentsAfter.get(i) ?? []) prevBg = m.bg ?? 'cream';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -129,18 +163,36 @@ const MAP: Record<string, any> = {
 ---
 
 {
-  sections.map((section) => {
+  (momentsAfter.get(-1) ?? []).map((m) => (
+    <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+  ))
+}
+{
+  sections.map((section, i) => {
     const Comp = MAP[section._type];
-    if (!Comp) return null;
+    const strips = momentsAfter.get(i) ?? [];
+    if (!Comp && strips.length === 0) return null;
     // cardWatermark reaches only CardGridSection (the sole reader); every other
-    // bridge ignores the extra prop.
+    // bridge ignores the extra prop. Photo strips splice in AFTER their section.
     return (
-      <Comp
-        section={section}
-        linkBase={linkBase}
-        site={site}
-        cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
-      />
+      <>
+        {Comp && (
+          <Comp
+            section={section}
+            linkBase={linkBase}
+            site={site}
+            cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+            isClosing={
+              // Public pages only (they pass pageSlug): the hub keeps its navy
+              // closers; the amber drench is public-marketing doctrine.
+              section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
+            }
+          />
+        )}
+        {strips.map((m) => (
+          <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+        ))}
+      </>
     );
   })
 }

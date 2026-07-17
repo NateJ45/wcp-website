@@ -1,0 +1,62 @@
+---
+/* ============================================================================
+   PhotoStrip — a band of big taped classroom prints (the "picture areas" move)
+   ============================================================================
+   The boldness pass's photo lever: a full band of 3 large candid prints in the
+   scrapbook language (white frames, tape, capped tilt, hover-straighten), fed
+   by the build-time photo registry (already-public A Day gallery shots with
+   the Board's own alt text). Code-owned and injected per page by the
+   photo-moments map in SectionRenderer — no Sanity writes, no volunteer knobs.
+
+   Renders NOTHING when the registry returns no photos (a failed build-time
+   fetch degrades to the page as it was, never a broken frame). Decoratively
+   captioned in the display hand; captions are code-owned evergreen lines.
+   ============================================================================ */
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl, imageSrcSet } from '@/lib/image';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  /** Registry slot name — different slots pull different shots. */
+  slot: string;
+  /** Band background. Cream reads warmest under the prints. */
+  bg?: 'cream' | 'grey' | 'white';
+  /** Optional short captions, applied to prints in order (code-owned copy). */
+  captions?: string[];
+}
+const { slot, bg = 'cream', captions = [] } = Astro.props;
+const photos = await photosFor(slot, 3);
+
+const bgClass: Record<string, string> = {
+  cream: 'bg-cream',
+  grey: 'bg-grey',
+  white: 'bg-white dark:bg-surface',
+};
+---
+
+{
+  photos.length > 0 && (
+    <section class={cn('wcp-section', bgClass[bg])} aria-label="Photos from our classrooms">
+      <div class="wcp-container py-[var(--wcp-space-xl)]">
+        <ul class="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3" role="list">
+          {photos.map((p, i) => (
+            <li>
+              <figure class="wcp-print wcp-tape-tc relative" data-reveal="settle">
+                <img
+                  src={imageUrl(p.image as never, 900)}
+                  srcset={imageSrcSet(p.image as never)}
+                  sizes="(min-width: 1024px) 26rem, (min-width: 640px) 46vw, 92vw"
+                  alt={p.alt}
+                  loading="lazy"
+                  decoding="async"
+                  class="aspect-[4/3] w-full object-cover"
+                />
+                {captions[i] && <figcaption>{captions[i]}</figcaption>}
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

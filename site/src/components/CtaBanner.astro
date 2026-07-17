@@ -2,13 +2,17 @@
 /* ============================================================================
    CtaBanner — the closing call-to-action band
    ============================================================================
-   Two AA-safe tones: `navy` (dark, confident solid) or `cream` (warm light
-   with navy text). Put buttons in the `actions` slot; an optional `note` line
-   sits below (e.g. a phone number).
-   NOTE: no bright-orange tone (white text on it fails contrast). A single
-   soft, feathered brand glow sits behind the content to give the block the
-   depth of a lifted CTA card; it stays low-opacity and mostly off-canvas so
-   the text contrast is unchanged.
+   Three AA-safe tones: `navy` (dark, confident solid), `cream` (warm light
+   with navy text), and `amber` (boldness pass 2026-07 — the full-color DRENCH
+   closer the old Squarespace site ended every page with; every audit group
+   called for its return). Amber is a THEME-STABLE island: fixed ink #01203a
+   (8.31:1 on amber, measured) and navy-fill buttons, never theme-reactive
+   tokens (the documented trap). Put buttons in the `actions` slot; an optional
+   `note` line sits below (e.g. a phone number).
+   NOTE: still no bright-ORANGE tone (nothing readable passes 4.5 on #ff8c00
+   except near-black; amber is the drench that fits the palette). A single
+   soft, feathered brand glow gives the navy/cream blocks depth; the amber
+   drench carries the grain instead.
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
@@ -18,7 +22,7 @@ interface Props {
   title: string;
   titleId?: string;
   lead?: string;
-  tone?: 'navy' | 'cream';
+  tone?: 'navy' | 'cream' | 'amber';
   /** Cloud seam at the top. On by default — the closing CTA is always a color
       change from the content above. Set false when a same-color band (a navy
       Section) sits directly above, so we don't seam navy into navy. */
@@ -39,15 +43,18 @@ const {
   class: className,
 } = Astro.props;
 const isNavy = tone === 'navy';
+const isAmber = tone === 'amber';
 // Deterministic: callers pass rating={false} for a teacher sign-off CTA.
 // (Astro.slots.has() is unreliable for a slot passed inside a {cond && ...}.)
 const showRating = rating;
+const bandClass = isNavy
+  ? 'bg-navy text-white'
+  : isAmber
+    ? 'wcp-cta-amber' // fixed drench colors live in globals.css
+    : 'bg-cream text-heading';
 ---
 
-<section
-  class={cn('relative -mt-px', isNavy ? 'bg-navy text-white' : 'bg-cream text-heading', className)}
-  aria-labelledby={titleId}
->
+<section class={cn('relative -mt-px', bandClass, className)} aria-labelledby={titleId}>
   {seam && <Seam color={tone} variant="trim" />}
   {
     /* Warm brand glow — gives the closing CTA depth so it reads as a lifted
@@ -58,16 +65,19 @@ const showRating = rating;
       it's contained to the band without clipping the cloud Seam, which sits
       ABOVE the section on the public site. */
   }
-  <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-    <div
-      class={cn(
-        'wcp-glow wcp-glow-drift -top-24 -right-20 h-72 w-[30rem]',
-        isNavy ? 'wcp-glow-amber' : 'wcp-glow-orange',
-      )}
-      style="opacity: 0.35"
-    >
-    </div>
-  </div>
+  {
+    !isAmber && (
+      <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div
+          class={cn(
+            'wcp-glow wcp-glow-drift -top-24 -right-20 h-72 w-[30rem]',
+            isNavy ? 'wcp-glow-amber' : 'wcp-glow-orange',
+          )}
+          style="opacity: 0.35"
+        />
+      </div>
+    )
+  }
   <div class="wcp-container relative py-[var(--wcp-space-xl)] text-center">
     <h2
       id={titleId}
@@ -79,7 +89,11 @@ const showRating = rating;
     {
       lead && (
         <p
-          class={cn('mx-auto mt-4 max-w-xl text-lg leading-relaxed', isNavy && 'text-white/90')}
+          class={cn(
+            'mx-auto mt-4 max-w-xl text-lg leading-relaxed',
+            isNavy && 'text-white/90',
+            isAmber && 'wcp-drench-muted',
+          )}
           data-reveal
           style="--reveal-delay: 120ms"
         >
@@ -153,7 +167,11 @@ const showRating = rating;
         <p
           class={cn(
             'mt-5 text-sm [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-2',
-            isNavy ? 'text-white/70 [&_a]:text-white' : 'text-ink-muted [&_a]:text-navy',
+            isNavy
+              ? 'text-white/70 [&_a]:text-white'
+              : isAmber
+                ? 'wcp-drench-muted [&_a]:[color:#01203a]'
+                : 'text-ink-muted [&_a]:text-navy',
           )}
         >
           <slot name="note" />

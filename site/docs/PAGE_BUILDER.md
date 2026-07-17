@@ -158,6 +158,20 @@ renderer walks the sections once and sets each band's `seam` from the colours of
 band above (`effectiveBg`/`wantsSeam` in `section-helpers.ts`): a scallop/trim edge
 appears only entering a strong band (cream or navy) whose colour changed, so pages
 never become a layer-cake of dividers and no board member has to decide.
+
+Two more code-owned doctrines live in the renderer (boldness pass 2026-07, both
+public-only — gated on the `pageSlug` prop the hub never passes):
+
+- **Photo moments** ([`src/lib/photo-moments.ts`](../src/lib/photo-moments.ts)): a
+  per-page map splices `PhotoStrip` bands (3 big taped prints) between sections,
+  fed by the build-time photo registry
+  ([`src/lib/photo-registry.ts`](../src/lib/photo-registry.ts)) — deterministic
+  picks from the already-public A Day gallery, Board alt text included, zero
+  Sanity writes. A strip degrades to nothing if the build-time fetch fails.
+- **The amber closing drench**: when a page's FINAL band is a navy `ctaSection`,
+  it renders as the full amber drench (`CtaBanner tone="amber"`, fixed AA-measured
+  ink) — the warm full-color closer the old site ended every page with. Stored
+  tone is untouched; cream closers and mid-page navy CTAs are unaffected.
 `titleId` derives from the section `_key` and feeds both `Section labelledby` and
 `SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
 

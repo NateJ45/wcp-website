@@ -258,12 +258,16 @@
   --font-signature: 'Great Vibes', cursive;
 
   /* ---- Fluid heading scale (clamp so type scales with viewport) ---- */
+  /* Boldness pass 2026-07: the scale steps UP (old-Squarespace energy — big
+     confident display type was half its voice). h1 caps at 4.75rem (safely
+     under the 6rem display ceiling), h2 grows ~15% so section headings lead
+     their bands instead of whispering. Ratios stay ≥1.25 between steps. */
   --text-h6: 1rem;
-  --text-h5: clamp(1.125rem, 1.5vw, 1.25rem);
-  --text-h4: clamp(1.25rem, 2vw, 1.5rem);
-  --text-h3: clamp(1.5rem, 2.5vw, 2rem);
-  --text-h2: clamp(1.9rem, 4vw, 2.75rem);
-  --text-h1: clamp(2.4rem, 6vw, 4.25rem);
+  --text-h5: clamp(1.125rem, 1.5vw, 1.3rem);
+  --text-h4: clamp(1.3rem, 2vw, 1.65rem);
+  --text-h3: clamp(1.6rem, 2.6vw, 2.15rem);
+  --text-h2: clamp(2.1rem, 4.4vw, 3.15rem);
+  --text-h1: clamp(2.6rem, 6.4vw, 4.75rem);
 
   /* NOTE: the fluid spacing scale (--wcp-space-*) is defined as PLAIN CSS
      variables in :root below, NOT here. Named keys like `xl`/`2xl`/`xs` in
@@ -1327,31 +1331,65 @@ li:nth-child(4n + 4) > .hub-note {
   background-image: var(--wcp-grain);
 }
 
-/* Class-tinted paper surface (ClassCard). LIGHT MODE ONLY: the class color is
-   mixed ~7% toward white so ink/navy text stays AA on it. Dark mode resets to
-   the plain surface (the tint-over-dark path is the documented AA trap), and
-   class identity there rides the color dot + schedule line instead. */
+/* Class-card DRENCH (boldness pass 2026-07): the card IS the class color, the
+   old Squarespace site's strongest device brought back. These are THEME-STABLE
+   chrome islands (like the hub rail / rating slip), so every color here is a
+   FIXED hex, never a theme-reactive token — the documented -ink trap. Measured
+   AA on the full-strength fills: ink #01203a hits 7.09 (orange), 8.31 (amber),
+   6.45 (sky), 7.26 (green); white on navy 9.75. --drench-muted is the same ink
+   at 82% over the fill (stays comfortably above 4.5 on all four). The grain
+   tile keeps the paper feel on top of the color. */
+.wcp-drench {
+  color: var(--drench-ink);
+  background-image: var(--wcp-grain);
+}
+.wcp-drench :is(h3, h4, .font-display) {
+  color: var(--drench-ink);
+}
+.wcp-drench .wcp-drench-muted {
+  color: var(--drench-muted);
+}
 .wcp-cc-amber {
-  background-color: color-mix(in srgb, var(--color-amber) 8%, #fff);
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.82);
+  background-color: var(--color-amber);
 }
 .wcp-cc-green {
-  background-color: color-mix(in srgb, var(--color-green) 7%, #fff);
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.82);
+  background-color: var(--color-green);
 }
 .wcp-cc-orange {
-  background-color: color-mix(in srgb, var(--color-orange) 7%, #fff);
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.82);
+  background-color: var(--color-orange);
 }
 .wcp-cc-sky {
-  background-color: color-mix(in srgb, var(--color-sky) 8%, #fff);
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.82);
+  background-color: var(--color-sky);
 }
 .wcp-cc-navy {
-  background-color: color-mix(in srgb, var(--color-navy) 5%, #fff);
+  --drench-ink: #ffffff;
+  --drench-muted: rgba(255, 255, 255, 0.85);
+  background-color: var(--color-navy);
 }
-.dark .wcp-cc-amber,
-.dark .wcp-cc-green,
-.dark .wcp-cc-orange,
-.dark .wcp-cc-sky,
-.dark .wcp-cc-navy {
-  background-color: var(--color-surface);
+
+/* The amber drench CTA band (CtaBanner tone="amber") — the old site's
+   full-color closer. Theme-stable island: fixed ink on the amber fill (8.31:1
+   measured), headings included (they'd otherwise pick up the theme token). */
+.wcp-cta-amber {
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.82);
+  color: var(--drench-ink);
+  background-color: var(--color-amber);
+  background-image: var(--wcp-grain);
+}
+.wcp-cta-amber :is(h1, h2, h3) {
+  color: var(--drench-ink);
+}
+.wcp-cta-amber .wcp-drench-muted {
+  color: var(--drench-muted);
 }
 
 /* -- Parent note: stationery with faint ruled lines + grain, for testimonials.

@@ -2,13 +2,14 @@
 /* ============================================================================
    ClassCard — a class option summary (Twos, Threes, Pre-K AM/PM)
    ============================================================================
-   Restyled 2026-07-17 (Phase 2 "Fifty-Five Septembers"): the old border-top
-   color strip (a named AI-slop tell) is gone. Class identity now reads from a
-   faint class-tinted paper surface (light mode) + a class-color dot beside the
-   name + the class-tinted schedule line — the hub's surface-tint approach,
-   which is AA-verified in both themes because text stays navy/ink on a
-   near-white (light) or plain surface (dark) card. Grain gives the handmade
-   paper feel. Optional price, schedule, age, and a CTA button.
+   Boldness pass 2026-07: the card is a full class-color DRENCH — the old
+   Squarespace site's strongest device (its class cards WERE the class colors).
+   The .wcp-cc-* classes in globals.css own the fill and a FIXED, measured
+   AA-safe ink (#01203a on the four light colors 6.45-8.31:1, white on navy
+   9.75:1); the card is a theme-stable chrome island, so nothing inside uses a
+   theme-reactive token. Grain keeps the paper feel on the color. Optional
+   price, schedule, age, features, live availability, and a CTA button (navy
+   on light fills, amber on the navy fill).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
@@ -56,32 +57,28 @@ const Heading = headingAs;
 // to wrap between words instead of overflowing the card.
 const nameTokens = name.split(' ');
 
-// Faint class-color paper tint, LIGHT MODE ONLY (mixed toward white so text
-// stays AA); dark mode falls back to the plain surface (the .dark rule in
-// globals resets --cc-tint). Full literals so nothing is string-built.
-const tint: Record<string, string> = {
+// Full class-color DRENCH (boldness pass 2026-07, the old site's strongest
+// device). The drench classes in globals.css own the fill + FIXED AA-safe ink
+// (these are theme-stable chrome islands, so no theme-reactive tokens inside).
+// Full literals so nothing is string-built.
+const drench: Record<string, string> = {
   amber: 'wcp-cc-amber',
   green: 'wcp-cc-green',
   orange: 'wcp-cc-orange',
   sky: 'wcp-cc-sky',
   navy: 'wcp-cc-navy',
 };
-const dot: Record<string, string> = {
-  amber: 'bg-amber',
-  green: 'bg-green',
-  orange: 'bg-orange',
-  sky: 'bg-sky',
-  navy: 'bg-navy',
-};
+// The in-card CTA must stay visible ON the fill: navy button on the four light
+// class colors, amber-fill (on-navy) button on the navy card.
+const ctaVariant = color === 'navy' ? 'on-navy' : 'primary';
 ---
 
 <Tag
   class={cn(
-    'group wcp-paper-card flex h-full flex-col rounded-[var(--radius)] p-6 shadow-sm dark:border dark:border-border',
+    'group wcp-drench flex h-full flex-col rounded-[var(--radius)] p-6 shadow-md',
     'transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-xl',
-    'hover:ring-1 hover:ring-black/5 dark:hover:ring-white/10',
     'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
-    tint[color],
+    drench[color],
     className,
   )}
   data-reveal
@@ -91,8 +88,8 @@ const dot: Record<string, string> = {
       the name rather than squeezing the heading into mid-word breaks. */
   }
   <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-    <Heading class="flex items-center gap-2 text-heading"
-      ><span class={cn('h-2.5 w-2.5 shrink-0 rounded-full', dot[color])} aria-hidden="true"></span>{
+    <Heading class="text-2xl"
+      >{
         nameTokens.map((token: string, i: number) => (
           <>
             {i > 0 && ' '}
@@ -103,26 +100,32 @@ const dot: Record<string, string> = {
     >
     {
       price && (
-        <span class="font-display text-2xl whitespace-nowrap text-heading">
+        <span class="font-display text-3xl whitespace-nowrap">
           {price}
-          {cadence && <span class="text-sm font-normal text-ink-muted"> {cadence}</span>}
+          {cadence && <span class="wcp-drench-muted text-sm font-normal"> {cadence}</span>}
         </span>
       )
     }
   </div>
-  {schedule && <p class="mt-1 font-bold text-sky-ink">{schedule}</p>}
-  {age && <p class="mt-0.5 text-sm text-ink-muted">{age}</p>}
+  {schedule && <p class="mt-1 font-bold">{schedule}</p>}
+  {age && <p class="wcp-drench-muted mt-0.5 text-sm">{age}</p>}
   {
     /* Live availability, filled by src/scripts/availability.ts. Hidden until
        the fetch answers, and stays hidden when no sheet is configured or the
-       fetch fails — the card is complete without it. Colored DOT + neutral
-       text (never colored-text-on-tint — the dark-mode AA trap). */
+       fetch fails — the card is complete without it. On the drench fill the
+       label inherits the card's fixed ink; the dot rides a white backing disc
+       so its status color reads on any fill. */
     availabilitySlug && (
       <p
-        class="mt-2 hidden items-center gap-2 text-sm font-semibold text-ink"
+        class="mt-2 hidden items-center gap-2 text-sm font-semibold"
         data-availability={availabilitySlug}
       >
-        <span class="h-2.5 w-2.5 rounded-full" data-availability-dot aria-hidden="true" />
+        <span
+          class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/85"
+          aria-hidden="true"
+        >
+          <span class="h-2.5 w-2.5 rounded-full" data-availability-dot />
+        </span>
         <span data-availability-label />
       </p>
     )
@@ -132,8 +135,8 @@ const dot: Record<string, string> = {
     features.length > 0 && (
       <ul class="mt-4 flex-1 space-y-2">
         {features.map((f: string) => (
-          <li class="flex gap-2.5 text-ink">
-            <Icon name="check" class="mt-1 h-4 w-4 text-green-ink" />
+          <li class="flex gap-2.5">
+            <Icon name="check" class="mt-1 h-4 w-4" />
             <span class="leading-snug">{f}</span>
           </li>
         ))}
@@ -143,7 +146,7 @@ const dot: Record<string, string> = {
 
   {
     href && (
-      <Button href={href} variant="accent" class="mt-6 w-full">
+      <Button href={href} variant={ctaVariant as never} class="mt-6 w-full">
         {ctaLabel}
       </Button>
     )

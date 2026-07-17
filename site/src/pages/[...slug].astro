@@ -90,7 +90,7 @@ const faqJsonLd =
 
 <BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>
   {page?.hero && <PageHero hero={page.hero} />}
-  <SectionRenderer sections={page?.sections} site={siteData} />
+  <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
   {
     faqJsonLd && (
       <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
