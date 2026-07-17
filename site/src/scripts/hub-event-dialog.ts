@@ -1,14 +1,21 @@
 // ============================================================================
-// hub-event-dialog — the Calendar page's event / day details modal
+// hub-event-dialog — the event / day details modal (Calendar page + hub home)
 // ============================================================================
 // One native <dialog> (HubEventDialog.astro) reused by every trigger:
-//   - [data-event-id]  (agenda card, grid pill) → that single event
+//   - [data-event-id]  (agenda card, grid pill, home-widget row) → one event
 //   - [data-day-key]   (grid day cell)          → every event on that day
-// Data comes from the pre-formatted JSON blob the component embedded, so the
-// client never touches timezones and there's no per-event markup to duplicate.
+// Data comes from pre-formatted JSON blobs ([data-hub-events]), so the client
+// never touches timezones and there's no per-event markup to duplicate. Blobs
+// are collected LAZILY at click time, not at page load: the home dashboard's
+// Upcoming Events widget is a server:defer island whose blob streams in after
+// the initial scan would have run (the classic island one-shot-scan trap).
+// By the time a trigger inside it can be clicked, its blob is in the DOM.
 // User strings go in via textContent (never innerHTML), so a title/description
 // can't inject markup; icons are cloned from <template>s the component rendered.
-// No-JS visitors keep the agenda + grid as static info.
+// No-JS visitors keep the agenda + grid as static info, and link-based
+// triggers (the home widget rows) navigate to their href instead — the
+// preventDefault below only fires when the dialog can actually serve the
+// click.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
 import type { EventDetail } from '@/lib/hub-calendar';
@@ -80,18 +87,40 @@ function detailBlock(d: EventDetail, withDivider: boolean): HTMLElement {
 
 function wire(): void {
   const dialog = document.getElementById('hub-event-dialog') as HTMLDialogElement | null;
-  const raw = document.querySelector('[data-hub-events]')?.textContent;
-  if (!dialog || !raw || typeof dialog.showModal !== 'function') return;
+  if (!dialog || typeof dialog.showModal !== 'function') return;
 
-  let details: EventDetail[] = [];
-  try {
-    details = JSON.parse(raw) as EventDetail[];
-  } catch {
-    return;
-  }
-  const byId = new Map(details.map((d) => [d.id, d]));
+  // Event data, merged from every [data-hub-events] blob seen so far. Parsed
+  // lazily and re-scanned on a lookup miss, so blobs that stream in later
+  // (server islands) are picked up the first time one of their triggers is
+  // clicked.
+  const byId = new Map<string, EventDetail>();
   const byDay = new Map<string, EventDetail[]>();
-  for (const d of details) (byDay.get(d.dayKey) ?? byDay.set(d.dayKey, []).get(d.dayKey)!).push(d);
+  const parsedBlobs = new WeakSet<Element>();
+  const scanBlobs = () => {
+    for (const blob of document.querySelectorAll('script[data-hub-events]')) {
+      if (parsedBlobs.has(blob)) continue;
+      parsedBlobs.add(blob);
+      let details: EventDetail[] = [];
+      try {
+        details = JSON.parse(blob.textContent ?? '') as EventDetail[];
+      } catch {
+        continue;
+      }
+      for (const d of details) {
+        if (byId.has(d.id)) continue; // calendar + widget can carry the same event
+        byId.set(d.id, d);
+        (byDay.get(d.dayKey) ?? byDay.set(d.dayKey, []).get(d.dayKey)!).push(d);
+      }
+    }
+  };
+  const lookupId = (id: string) => {
+    if (!byId.has(id)) scanBlobs();
+    return byId.get(id);
+  };
+  const lookupDay = (key: string) => {
+    if (!byDay.has(key)) scanBlobs();
+    return byDay.get(key);
+  };
 
   const titleEl = dialog.querySelector('[data-dialog-title]') as HTMLElement | null;
   const body = dialog.querySelector('[data-dialog-body]') as HTMLElement | null;
@@ -107,7 +136,9 @@ function wire(): void {
     const t = e.target as Element | null;
     const evEl = t?.closest?.('[data-event-id]') as HTMLElement | null;
     if (evEl) {
-      const d = byId.get(evEl.dataset.eventId ?? '');
+      // Modified clicks on link triggers (new tab, etc.) keep native behavior.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const d = lookupId(evEl.dataset.eventId ?? '');
       if (d) {
         e.preventDefault();
         open([d]);
@@ -116,7 +147,7 @@ function wire(): void {
     }
     const dayEl = t?.closest?.('[data-day-key]') as HTMLElement | null;
     if (dayEl) {
-      const list = byDay.get(dayEl.dataset.dayKey ?? '');
+      const list = lookupDay(dayEl.dataset.dayKey ?? '');
       if (list?.length) open(list);
     }
   });

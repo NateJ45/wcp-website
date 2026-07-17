@@ -14,6 +14,8 @@ import {
   getUpcomingEvents,
   eventDate,
   eventType,
+  eventId,
+  toEventDetail,
   EVENT_TYPE_META,
   fmtEventMonth,
   fmtEventDay,
@@ -47,6 +49,14 @@ const events: HubEvent[] = (await getUpcomingEvents(feedUrl))
 // full list, so the cap is CSS-only (hidden lg:flex on the tail items).
 const MOBILE_CAP = 5;
 const foldedCount = Math.max(0, events.length - MOBILE_CAP);
+
+// Each row opens the shared HubEventDialog (rendered page-level in
+// index.astro), same as the Calendar page. This widget is a server:defer
+// island, so it ships its OWN [data-hub-events] blob with its markup —
+// hub-event-dialog.ts merges every blob it finds at click time (its load-time
+// scan would run before this island streams in). "<" escaped so a title can
+// never break out of the script context.
+const detailsJson = JSON.stringify(events.map(toEventDetail)).replace(/</g, '\\u003c');
 ---
 
 <HomeWidgetCard
@@ -64,24 +74,35 @@ const foldedCount = Math.max(0, events.length - MOBILE_CAP);
         // events green).
         const meta = EVENT_TYPE_META[eventType(e.title)];
         return (
-          <li class={`items-center gap-3 ${i < MOBILE_CAP ? 'flex' : 'hidden lg:flex'}`}>
-            <span
-              class={`flex w-11 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
+          <li class={i < MOBILE_CAP ? 'block' : 'hidden lg:block'}>
+            {/* A real link (calendar page = the no-JS/new-tab destination);
+                hub-event-dialog.ts upgrades a plain click to the details
+                dialog via data-event-id, exactly like the Calendar page's
+                agenda cards. Negative margin keeps the hover fill flush with
+                the card edge without shifting the resting layout. */}
+            <a
+              href="/family-hub/calendar"
+              data-event-id={eventId(e)}
+              class="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1 no-underline transition-colors hover:bg-grey/70 focus-visible:bg-grey/70 dark:hover:bg-white/5 dark:focus-visible:bg-white/5"
             >
-              <span class={`text-[0.62rem] font-bold uppercase ${meta.chipText}`}>
-                {fmtEventMonth(e)}
+              <span
+                class={`flex w-11 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
+              >
+                <span class={`text-[0.62rem] font-bold uppercase ${meta.chipText}`}>
+                  {fmtEventMonth(e)}
+                </span>
+                <span class="text-lg leading-tight font-extrabold text-heading">
+                  {fmtEventDay(e)}
+                </span>
               </span>
-              <span class="text-lg leading-tight font-extrabold text-heading">
-                {fmtEventDay(e)}
-              </span>
-            </span>
-            <div class="min-w-0">
-              <p class="line-clamp-2 font-semibold text-heading">{deEmDash(e.title)}</p>
-              <p class="text-sm text-ink-muted">
-                {fmtEventWeekday(e)} · {fmtEventTime(e)}
-                {e.location ? ` · ${e.location}` : ''}
-              </p>
-            </div>
+              <div class="min-w-0">
+                <p class="line-clamp-2 font-semibold text-heading">{deEmDash(e.title)}</p>
+                <p class="text-sm text-ink-muted">
+                  {fmtEventWeekday(e)} · {fmtEventTime(e)}
+                  {e.location ? ` · ${e.location}` : ''}
+                </p>
+              </div>
+            </a>
           </li>
         );
       })
@@ -100,4 +121,9 @@ const foldedCount = Math.max(0, events.length - MOBILE_CAP);
       )
     }
   </ul>
+  {
+    events.length > 0 && (
+      <script type="application/json" data-hub-events set:html={detailsJson} is:inline />
+    )
+  }
 </HomeWidgetCard>

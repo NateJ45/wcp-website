@@ -1,20 +1,26 @@
 ---
 /* ============================================================================
-   HubEventDialog — the shared "event / day details" modal for the Calendar page
+   HubEventDialog — the shared "event / day details" modal (Calendar + home)
    ============================================================================
-   One native <dialog> reused by both the agenda list and the month grid. It's
-   populated on click by hub-event-dialog.ts from the JSON blob below, so there's
+   One native <dialog> reused by every trigger on the page. It's populated on
+   click by hub-event-dialog.ts from [data-hub-events] JSON blobs, so there's
    a single source of event data and no per-instance detail markup.
 
    Triggers (wired on their own elements, not here):
-     - an agenda card / grid pill carrying data-event-id  → that one event
+     - an agenda card / grid pill / home-widget row with data-event-id → one event
      - a grid day cell carrying data-day-key              → every event that day
+
+   Render this ONCE per page, OUTSIDE any server island (the dialog script
+   only wires when the dialog exists at page load). The events prop may be
+   empty: triggers that live inside an island (the home Upcoming Events
+   widget) ship their OWN [data-hub-events] blob alongside their markup, and
+   the script merges every blob it finds at click time.
 
    The JSON is pre-formatted server-side (Eastern date + time strings, the
    per-event "add to Google Calendar" URL) so the client never touches
-   timezones. location/description are '' when the source doesn't carry them —
-   the Google feed sends neither; Sanity `event` docs do — and the dialog simply
-   omits the empty rows.
+   timezones. location/description are '' when the source doesn't carry them
+   (the Google feed carries both since 2026-07-17; Sanity `event` docs always
+   did) — the dialog simply omits the empty rows.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { toEventDetail, type HubEvent } from '@/lib/hub-calendar';
@@ -29,7 +35,7 @@ const details = events.map(toEventDetail);
 const json = JSON.stringify(details).replace(/</g, '\\u003c');
 ---
 
-<script type="application/json" data-hub-events set:html={json} />
+{details.length > 0 && <script type="application/json" data-hub-events set:html={json} is:inline />}
 
 {/* Icon sources the dialog script clones (avoids building SVG in JS). */}
 <template data-icon="clock"><Icon name="clock" class="h-4 w-4 shrink-0" /></template>
