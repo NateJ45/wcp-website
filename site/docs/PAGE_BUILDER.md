@@ -85,6 +85,21 @@ toggle: reference the shared doc (single source of truth) or hold one-off inline
 content. Callouts are an optional trailing field on content sections, not a
 standalone section (a standalone one would double the band padding).
 
+**Smart content formatting (no field, keyed off the text you type).** A couple
+of section bodies auto-adapt so a volunteer never has to fight the styling:
+
+- **`cardGridSection` card body → tap-to-call directory.** When a card body is a
+  run-on list of phone numbers (`Emergency 911 · Police (513) 777-2231 · …`,
+  middot/bullet/pipe separated), it renders as a scannable list of `label →
+tel: link` rows instead of a wrapping paragraph. Parser + rules live in
+  `src/lib/phone-list.ts` (needs 2+ numbers, so ordinary prose that mentions one
+  number is left alone); rendered by `PhoneList.astro`.
+- **`stepListSection` footnote → readable note when it's a sentence.** The
+  footnote is a short display-font sign-off ("Total time: ~2.5 hours"). Because
+  the display face is caps-only, a whole paragraph typed there becomes an
+  all-caps shout, so a footnote over ~70 chars drops the flourish and renders as
+  a left-aligned body-font note with an info icon (see `StepList.astro`).
+
 **Instagram "Life inside WCP".** `instagramSection` shows the school's Instagram as a
 pinned-photo bulletin board. It pulls the **live feed at build time** via
 `src/lib/instagram.ts` when the `INSTAGRAM_TOKEN` env var (a long-lived Instagram Graph

@@ -22,6 +22,14 @@ interface Props {
   class?: string;
 }
 const { steps, footnote, class: className } = Astro.props;
+
+// The footnote is styled as a short display-font sign-off (centered, e.g.
+// "Total time: ~2.5 hours"). Captain Comic is a caps-only face, so a WHOLE
+// paragraph typed there (a real heads-up, a policy reminder) renders as a
+// centered all-caps shout that's genuinely hard to read (2026-07-17 feedback).
+// When the footnote is really a sentence, drop the flourish and render it as a
+// readable left-aligned note in the body font instead.
+const longFootnote = (footnote?.trim().length ?? 0) > 70;
 ---
 
 <ol class={cn('relative mx-auto max-w-2xl', className)}>
@@ -60,9 +68,18 @@ const { steps, footnote, class: className } = Astro.props;
   }
 </ol>
 {
-  footnote && (
-    <p class="mx-auto mt-2 max-w-2xl text-center font-display text-lg text-heading" data-reveal>
-      {footnote}
-    </p>
-  )
+  footnote &&
+    (longFootnote ? (
+      <div
+        class="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-2xl bg-sky-soft px-4 py-3"
+        data-reveal
+      >
+        <Icon name="info" class="mt-0.5 h-5 w-5 shrink-0 text-sky-ink" />
+        <p class="min-w-0 leading-relaxed text-ink">{footnote}</p>
+      </div>
+    ) : (
+      <p class="mx-auto mt-2 max-w-2xl text-center font-display text-lg text-heading" data-reveal>
+        {footnote}
+      </p>
+    ))
 }

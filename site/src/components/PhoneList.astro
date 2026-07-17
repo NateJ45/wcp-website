@@ -1,0 +1,34 @@
+---
+/* ============================================================================
+   PhoneList — a run-on numbers card body rendered as a tap-to-call directory
+   ============================================================================
+   Fed by parsePhoneList() (src/lib/phone-list.ts): each row is a label + the
+   number as a real `tel:` link, on a thin divider so a parent can scan for the
+   one they need mid-incident. Numbers never wrap; the label yields first. The
+   link color is `-ink` text on a white/dark CARD (verified AA in both themes,
+   like the class prices) — the safe case, not colored-text-on-a-tint.
+   ============================================================================ */
+import type { PhoneEntry } from '@/lib/phone-list';
+
+interface Props {
+  entries: PhoneEntry[];
+  class?: string;
+}
+const { entries, class: className } = Astro.props;
+---
+
+<ul class:list={['mt-2 divide-y divide-border/70', className]}>
+  {
+    entries.map((e) => (
+      <li class="flex items-baseline justify-between gap-x-4 py-2">
+        {e.label && <span class="text-sm text-ink-muted">{e.label}</span>}
+        <a
+          href={`tel:${e.tel}`}
+          class="ml-auto font-bold whitespace-nowrap text-sky-ink hover:underline"
+        >
+          {e.display}
+        </a>
+      </li>
+    ))
+  }
+</ul>

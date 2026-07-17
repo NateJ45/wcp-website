@@ -2,11 +2,13 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
+import PhoneList from '@/components/PhoneList.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import { renderPortableText, deEmDash } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { safeIcon } from '@/lib/icons';
+import { parsePhoneList } from '@/lib/phone-list';
 import { cn } from '@/lib/utils';
 
 interface Card {
@@ -26,14 +28,22 @@ const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
 // Card icons are board-typed in the Studio — guard them so a typo (or an icon
 // missing from our hand-extracted set) falls back instead of 500-ing the page.
-const cards = ((section.cards as Card[] | undefined) ?? []).map((c) => ({
-  ...c,
-  icon: c.icon ? safeIcon(c.icon, 'sparkles') : undefined,
+const cards = ((section.cards as Card[] | undefined) ?? []).map((c) => {
   // House style: no em-dashes. Card title/body are plain strings (not Portable
   // Text), so strip them here the way renderPortableText does for prose.
-  title: deEmDash(c.title),
-  body: c.body ? deEmDash(c.body) : c.body,
-}));
+  const body = c.body ? deEmDash(c.body) : c.body;
+  return {
+    ...c,
+    icon: c.icon ? safeIcon(c.icon, 'sparkles') : undefined,
+    title: deEmDash(c.title),
+    body,
+    // A body that's really a run-on list of phone numbers ("Emergency 911 ·
+    // Police (513) 777-2231 · ...") renders as an unreadable wall of wrapping
+    // text — turn it into a tap-to-call directory instead. null for every
+    // other card, which renders its body as plain prose.
+    phones: parsePhoneList(body),
+  };
+});
 const columns = (section.columns as number | undefined) ?? 3;
 const layout = (section.layout as string | undefined) ?? 'card';
 const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
@@ -84,7 +94,11 @@ const chipTint: Record<string, string> = {
             )}
             <div>
               <h3 class="text-heading">{c.title}</h3>
-              {c.body && <p class="mt-1 leading-relaxed text-ink">{c.body}</p>}
+              {c.phones ? (
+                <PhoneList entries={c.phones} />
+              ) : (
+                c.body && <p class="mt-1 leading-relaxed text-ink">{c.body}</p>
+              )}
             </div>
           </li>
         ))}
@@ -100,8 +114,16 @@ const chipTint: Record<string, string> = {
             href={c.href}
             linkLabel={c.linkLabel}
           >
-            {c.statValue && <span class="font-display text-3xl text-heading">{c.statValue}</span>}
-            {c.statValue ? <span class="mt-1 block">{c.body}</span> : c.body}
+            {c.phones ? (
+              <PhoneList entries={c.phones} />
+            ) : (
+              <Fragment>
+                {c.statValue && (
+                  <span class="font-display text-3xl text-heading">{c.statValue}</span>
+                )}
+                {c.statValue ? <span class="mt-1 block">{c.body}</span> : c.body}
+              </Fragment>
+            )}
           </FeatureCard>
         ))}
       </ul>
