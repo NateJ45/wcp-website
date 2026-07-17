@@ -337,8 +337,11 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   an NWS severe-weather/closure alert (`hub-alerts.ts`) — plus a full-width "Week ahead"
   7-day forecast band (`WeatherWeekWidget`); all SWR-cached and each hides on failure. The
   ambient sources run LONG cache windows (8h fresh / 16h stale) because every refresh is a
-  CACHE-KV write against a near-capped free tier (see the KV write-budget gotcha above), so
-  the displayed temperature can lag a few hours; only the NWS alert keeps a short 1h window,
+  CACHE-KV write against a near-capped free tier (see the KV write-budget gotcha above).
+  The greeting chip shows the DAY'S HIGH (derived from `getWeekAheadForecast` day 0, so it
+  shares the forecast's one fetch/cache key and always agrees with the strip) rather than an
+  instantaneous reading, precisely so the long cache can't make it look wrong — a forecast
+  high for today doesn't drift through the day. Only the NWS alert keeps a short 1h window,
   since a sudden warning must catch up fast. Sign-up success fires a reduced-motion-safe
   confetti burst.
 - **Prose auto-links itself** (client enhancement, progressive): two scripts scan the

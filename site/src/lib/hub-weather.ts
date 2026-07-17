@@ -7,15 +7,19 @@
 // (chip/widget hidden) on any failure. Coordinates are the school's — West
 // Chester, OH.
 //
-// Both ride LONG cache windows (8h fresh / 16h stale) on purpose: this is an
-// ambient "is it a playground day" chip, not a live instrument, and every cache
-// refresh writes through to the CACHE KV namespace, whose free tier is ~1k
-// writes/day account-wide and already near the ceiling (see the KV write-budget
-// gotcha in CLAUDE.md). 8h fresh = ~3 writes/day/source instead of ~96 at the
-// old 15min. Trade-off: the displayed temperature can lag by up to 8h, which is
-// fine for the bucketed "Water-play hot / Playground day" line.
+// One fetch, ONE cache key: getWeather derives from getWeekAheadForecast's
+// day 0, so the greeting chip and the Week-ahead strip always agree and there's
+// only a single KV-writing key for both. It rides a LONG cache window (8h fresh
+// / 16h stale) on purpose: this is an ambient "is it a playground day" signal,
+// not a live instrument, and every cache refresh writes through to the CACHE KV
+// namespace, whose free tier is ~1k writes/day account-wide and already near the
+// ceiling (see the KV write-budget gotcha in CLAUDE.md). 8h fresh = ~3 writes/
+// day instead of ~96 at the old 15min. Crucially the chip shows the DAY'S HIGH,
+// not an instantaneous "right now" temperature — a forecast high for today
+// doesn't drift through the day, so the 8h cache can't make it look wrong (an
+// instantaneous reading would have gone stale by the afternoon).
 //
-// getWeather() — current conditions for the hub greeting chip.
+// getWeather() — today's high + a day line for the hub greeting chip.
 // getWeekAheadForecast() — the next 7 days for the "Week ahead" dashboard
 //   widget, flagging days that need a coat (low <= 45°F) or rain gear
 //   (>=50% precip chance).
@@ -26,10 +30,6 @@ export interface HubWeather {
   tempF: number;
   icon: 'sun' | 'cloud-sun' | 'cloud-rain' | 'snowflake';
   line: string;
-}
-
-interface OpenMeteo {
-  current?: { temperature_2m?: number; weather_code?: number };
 }
 
 /** WMO weather codes → chip icon + a playful line. */
@@ -47,29 +47,19 @@ function describe(tempF: number, code: number): Pick<HubWeather, 'icon' | 'line'
   return { icon, line: 'Bundle-up cold!' };
 }
 
-/** Current weather at the school, or null (chip hidden) on any failure. */
+/**
+ * Today's weather for the hub greeting chip: the day's HIGH plus a
+ * day-appropriate line/icon. Derived from getWeekAheadForecast's day 0, so it
+ * shares that one cached fetch (no separate API call or KV key) and can never
+ * disagree with the Week-ahead strip. `tempF` is the forecast HIGH, not an
+ * instantaneous reading — see the header for why that matters with the 8h
+ * cache. Null (chip hidden) when the forecast is unavailable; the underlying
+ * getWeekAheadForecast already swallows any failure and returns [].
+ */
 export async function getWeather(): Promise<HubWeather | null> {
-  try {
-    return await cached(
-      'weather:west-chester-oh',
-      28_800_000, // 8h fresh — ambient chip, keeps KV writes to ~3/day (see header)
-      async () => {
-        const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=39.3362&longitude=-84.4052&current=temperature_2m,weather_code&temperature_unit=fahrenheit',
-          { signal: AbortSignal.timeout(5000) },
-        );
-        if (!res.ok) throw new Error(`open-meteo ${res.status}`);
-        const data = (await res.json()) as OpenMeteo;
-        const tempF = Math.round(data.current?.temperature_2m ?? NaN);
-        const code = data.current?.weather_code ?? 3;
-        if (!Number.isFinite(tempF)) throw new Error('no temperature');
-        return { tempF, ...describe(tempF, code) };
-      },
-      { swrMs: 57_600_000 }, // +16h stale — entry survives a full quiet day (24h horizon)
-    );
-  } catch {
-    return null;
-  }
+  const today = (await getWeekAheadForecast())[0];
+  if (!today) return null;
+  return { tempF: today.high, icon: today.icon, line: today.line };
 }
 
 // =============================================================================
