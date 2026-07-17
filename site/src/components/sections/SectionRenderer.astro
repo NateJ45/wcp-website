@@ -182,6 +182,7 @@ const MAP: Record<string, any> = {
             linkBase={linkBase}
             site={site}
             cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+            pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
             isClosing={
               // Public pages only (they pass pageSlug): the hub keeps its navy
               // closers; the amber drench is public-marketing doctrine.

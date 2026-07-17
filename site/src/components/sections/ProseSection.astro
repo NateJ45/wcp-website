@@ -15,6 +15,12 @@ const titleId = titleIdFor(section);
 const html = renderPortableText(section.body as never, linkBase);
 const narrow = section.narrow !== false;
 const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
+// The "Front-Row Learning" signature band (seeded with the stable _key
+// "seed-signature" on home / why-wcp / co-op-life) renders as a STATEMENT:
+// display-scale heading, oversized centered body. It was the quietest band on
+// the boldness audit (1/5) for what is supposed to be the site's thesis line.
+// Code-keyed so no Sanity write is needed and volunteers see nothing new.
+const isSignature = section._key === 'seed-signature';
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -27,11 +33,17 @@ const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | und
         align={section.header.align}
         titleId={titleId}
         eyebrowTone={eyebrowTone(section.background)}
-        class="mb-8"
+        class={isSignature ? 'mb-8 max-w-4xl [&_h2]:text-[length:var(--text-h1)]' : 'mb-8'}
       />
     )
   }
-  <Prose class={narrow ? undefined : 'max-w-none'}><Fragment set:html={html} /></Prose>
+  <Prose
+    class={isSignature
+      ? 'mx-auto max-w-3xl text-center [&_p]:text-2xl [&_p]:leading-relaxed'
+      : narrow
+        ? undefined
+        : 'max-w-none'}><Fragment set:html={html} /></Prose
+  >
   {
     callout && (
       <Callout tone={callout.tone} class="mx-auto mt-8 max-w-2xl">

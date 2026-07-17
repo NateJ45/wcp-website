@@ -3,6 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Testimonial from '@/components/Testimonial.astro';
 import TestimonialWall from '@/components/TestimonialWall.astro';
+import { getTestimonials } from '@/lib/cms';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface Quote {
@@ -12,14 +13,26 @@ interface Quote {
 }
 interface Props {
   section: SectionData;
+  /** Page slug from SectionRenderer (public pages only). On /reviews the
+      section is FORCED to the full masonry wall regardless of stored layout —
+      the dedicated social-proof page showed 3 quotes while /why-wcp showed 24
+      (the audit's "thinner than its teaser" P1); a code override fixes it with
+      no Sanity write. */
+  pageSlug?: string;
 }
-const { section } = Astro.props;
+const { section, pageSlug } = Astro.props;
 const titleId = titleIdFor(section);
-const allItems = (section.items as Quote[] | undefined) ?? [];
+// On /reviews the dedicated social-proof page must show EVERY voice, not the
+// 3 its stored section selects — fetch the full set at build time (same
+// authenticated CDN read every page uses; no Sanity write involved).
+const allItems: Quote[] =
+  pageSlug === 'reviews'
+    ? ((await getTestimonials({}, [])) as Quote[])
+    : ((section.items as Quote[] | undefined) ?? []);
 // Apply the limit here (GROQ can't slice by a coalesced value). Manual picks
 // and walls show everything; featured/tag grids cap at the section's limit.
 const limit = typeof section.limit === 'number' ? section.limit : 3;
-const isWall = section.layout === 'wall';
+const isWall = section.layout === 'wall' || pageSlug === 'reviews';
 const items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
 const confetti = Boolean(section.confetti);
 ---

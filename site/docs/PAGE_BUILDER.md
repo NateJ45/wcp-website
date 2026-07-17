@@ -172,8 +172,8 @@ public-only — gated on the `pageSlug` prop the hub never passes):
   it renders as the full amber drench (`CtaBanner tone="amber"`, fixed AA-measured
   ink) — the warm full-color closer the old site ended every page with. Stored
   tone is untouched; cream closers and mid-page navy CTAs are unaffected.
-`titleId` derives from the section `_key` and feeds both `Section labelledby` and
-`SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
+  `titleId` derives from the section `_key` and feeds both `Section labelledby` and
+  `SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
 
 - **Images:** [`src/lib/image.ts`](../src/lib/image.ts) builds responsive URLs from
   Sanity's CDN via `@sanity/image-url`; `SanityImage.astro` emits `<img srcset>`. The
