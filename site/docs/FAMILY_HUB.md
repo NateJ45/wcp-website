@@ -548,12 +548,14 @@ payroll) with each line's this-year figure, last-year comparison, note, and a de
 It replaces the old "The Budget" prose section (which left a narrow reading-cap column with a
 dangling right gap — the table fills the full width). Update `budget.ts` each year at the vote.
 
-The content-heavy hub pages — **Co-op Jobs, Health & Safety, Tuition, Budget & Fundraising** — also
-run their Board-editable sections through `HubSectionedBody` (they used to render them as plain
-full-width `SectionRenderer` bands at the page tail). On Co-op Jobs / Tuition / Fundraising the
-fixed dashboard content stays full-width and the handbook sections follow as a card doc column
-with its own TOC ("dashboard above, handbook below"); Health swaps its fixed fallback for the doc
-column when the Board manages the page. This is what makes the two-level TOC pay off: the seed
+The content-heavy hub pages — **Co-op Jobs, Health & Safety, Tuition, Budget & Fundraising,
+Calendar** — also run their Board-editable sections through `HubSectionedBody` (they used to render
+them as plain full-width `SectionRenderer` bands at the page tail). On Co-op Jobs / Tuition /
+Fundraising / Calendar the fixed dashboard content stays full-width (on Calendar: the subscribe
+card, upcoming agenda, month grid, and weather note) and the Board sections follow as a card doc
+column with its own TOC ("dashboard above, handbook below") — on Calendar that's the "traditions"
+and "how field trips work" grids; Health swaps its fixed fallback for the doc column when the Board
+manages the page. This is what makes the two-level TOC pay off: the seed
 gives the long "Everything Else" (jobs / cleanings / meetings / safety), "Governance" (who we are
 / membership / the Board / money / changes), and "The Budget" (revenue / expenses / bottom line)
 sections real `h3` subheads, which `hub-doc.ts` promotes into nested TOC entries. When a section

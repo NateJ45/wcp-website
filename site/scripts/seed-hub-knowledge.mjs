@@ -780,8 +780,13 @@ const fundraisingSections = [
 // ─────────────────────────────────────────────────────────────────────────────
 const calendar = {
   sections: [
+    // Both calendar Board sections render through HubSectionedBody on the page
+    // (calendar.astro), so they read as hub document blocks (icon-card grids +
+    // an "on this page" TOC) like the class handbooks, not marketing bands. The
+    // `bleed` treatment there paints grey/white/cream bands transparent over the
+    // hub canvas, so `bg` here is effectively cosmetic; keep grey (the canvas).
     cardGrid({
-      bg: 'white',
+      bg: 'grey',
       header: sh(
         'A Year at WCP',
         'The traditions to look forward to',
@@ -814,21 +819,43 @@ const calendar = {
         ),
       ],
     }),
-    proseSection({
+    // How field trips work — a grid of policy cards (matching the class
+    // handbooks' arrival/dismissal cards) so it reads as a hub document block,
+    // not a bulleted marketing note. Icons: signed slip, the drive, meeting
+    // point, checkout + safety. columns:2 is what the class dismissal cards use;
+    // inside the hub doc column card grids cap to 2-up anyway.
+    cardGrid({
       bg: 'grey',
-      header: sh('Field Trips', 'How field trips work', undefined),
-      body: [
-        bullet(
-          'A signed permission slip is required for every trip — child’s name, date, timeframe, destination (including whether there’s water), signature, and date signed. No slip, no trip.',
+      columns: 2,
+      header: sh(
+        'Field Trips',
+        'How field trips work',
+        'A few rules make every field trip safe and simple.',
+      ),
+      cards: [
+        card(
+          'file-pen',
+          'sky',
+          'Permission slip',
+          'Every trip needs a signed slip: your child’s name, the date and timeframe, the destination (including whether there’s water), your signature, and the date. No slip, no trip.',
         ),
-        bullet(
-          'Families drive: transportation is by parents or parent-arranged carpools (WCP doesn’t arrange it). Tell the teacher whether your child is coming and how they’re getting there.',
+        card(
+          'users',
+          'sky',
+          'Getting there',
+          'Families provide the ride, by parent or parent-arranged carpool (the school doesn’t arrange it). Tell the teacher whether your child is coming and how they’re getting there.',
         ),
-        bullet(
-          'Meet the teacher at the location, on time — parents are fully responsible for their children for the whole outing.',
+        card(
+          'map-pin',
+          'sky',
+          'Meet on time',
+          'Meet the teacher at the location at the start time. Parents are fully responsible for their own children for the whole outing.',
         ),
-        bullet(
-          'Before leaving — with your own child or a carpool — check out with the teacher so attendance stays exact. A state-approved first aid kit and a first-aid-trained adult are on every trip, along with each child’s health records and emergency transportation forms.',
+        card(
+          'shield-check',
+          'sky',
+          'Check out before you leave',
+          'Check out with the teacher before heading home, with your own child or a carpool, so attendance stays exact. Every trip carries a state-approved first aid kit, a first-aid-trained adult, and each child’s health and emergency forms.',
         ),
       ],
     }),
