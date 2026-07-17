@@ -52,7 +52,7 @@ const pctOf = (t: number) => ((t - weekMin) / span) * 100;
        a 7-column grid so the days spread across the whole width. */
   }
   <ul
-    class="wcp-week-scroll mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-7 sm:overflow-x-visible sm:pb-0"
+    class="wcp-week-scroll mt-3 flex gap-2 overflow-x-auto pt-1 pb-1 sm:grid sm:grid-cols-7 sm:overflow-x-visible sm:pt-0 sm:pb-0"
   >
     {
       days.map((d, i) => {
@@ -63,7 +63,13 @@ const pctOf = (t: number) => ((t - weekMin) / span) * 100;
           <li
             class:list={[
               'flex w-[4.6rem] shrink-0 flex-col items-center gap-1.5 rounded-xl p-2.5 text-center transition-transform hover:-translate-y-0.5 hover:shadow-sm motion-reduce:hover:translate-y-0 sm:w-auto',
-              isToday ? 'bg-sky/10 ring-2 ring-sky/50 dark:bg-sky/15' : 'bg-grey dark:bg-navy/30',
+              // ring-inset: an OUTSIDE ring on the leftmost "today" tile gets
+              // clipped by the scroll strip's overflow (overflow-x-auto also
+              // clips the y axis); an inset ring draws inside the tile, so no
+              // edge is ever cut.
+              isToday
+                ? 'bg-sky/10 ring-2 ring-sky/50 ring-inset dark:bg-sky/15'
+                : 'bg-grey dark:bg-navy/30',
             ]}
           >
             <span
