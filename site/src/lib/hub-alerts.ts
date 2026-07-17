@@ -3,9 +3,12 @@
 // =============================================================================
 // api.weather.gov: free, keyless, but NWS policy requires an identifying
 // User-Agent on every request (unidentified traffic risks throttling). Cached
-// through the same window as hub-weather.ts (15min fresh, 1h stale-while-
-// revalidate) — short on purpose, since a warning can be issued suddenly and
-// families should see it catch up fast.
+// SHORTER than the weather/AQI chips (1h fresh, 3h stale-while-revalidate) on
+// purpose: unlike an ambient temperature reading, a severe-weather or closure
+// warning can be issued suddenly and families need it to catch up fast, so this
+// one keeps a responsive window even though it costs more KV writes (~24/day)
+// than the 8h ambient sources. Any shorter and it'd dominate the write budget;
+// any longer and an 8am tornado watch might not surface until afternoon.
 //
 // Only surfaces alerts likely to matter for school operations. NWS's raw feed
 // includes routine advisories (e.g. a Frost Advisory most fall mornings) that
@@ -41,7 +44,7 @@ export async function getActiveAlert(): Promise<HubAlert | null> {
   try {
     return await cached(
       'nws-alert:west-chester-oh',
-      900_000,
+      3_600_000, // 1h fresh — sudden warnings must catch up fast (see header)
       async () => {
         const res = await fetch('https://api.weather.gov/alerts/active?point=39.3362,-84.4052', {
           headers: { 'User-Agent': '(westchesterpreschool.org, wcp-website family hub)' },
@@ -62,7 +65,7 @@ export async function getActiveAlert(): Promise<HubAlert | null> {
           severity: relevant.properties.severity ?? 'Moderate',
         };
       },
-      { swrMs: 3_600_000 },
+      { swrMs: 10_800_000 }, // +3h stale — 4h horizon
     );
   } catch {
     return null;

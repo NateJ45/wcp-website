@@ -332,9 +332,15 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   (`.wcp-hub-emblem-plate`, a `--color-grey` disc one z-layer below it) fills the mark's own
   transparent gaps so the doodles don't read through the emblem. A warm glow sits behind the
   greeting and a
-  class-colored one behind each class page header, the greeting carries a live
-  weather chip (Open-Meteo via `hub-weather.ts`, SWR-cached, hides on failure), and
-  sign-up success fires a reduced-motion-safe confetti burst.
+  class-colored one behind each class page header, the greeting carries live ambient
+  chips — weather + air-quality (Open-Meteo, `hub-weather.ts` / `hub-air-quality.ts`) and
+  an NWS severe-weather/closure alert (`hub-alerts.ts`) — plus a full-width "Week ahead"
+  7-day forecast band (`WeatherWeekWidget`); all SWR-cached and each hides on failure. The
+  ambient sources run LONG cache windows (8h fresh / 16h stale) because every refresh is a
+  CACHE-KV write against a near-capped free tier (see the KV write-budget gotcha above), so
+  the displayed temperature can lag a few hours; only the NWS alert keeps a short 1h window,
+  since a sudden warning must catch up fast. Sign-up success fires a reduced-motion-safe
+  confetti burst.
 - **Prose auto-links itself** (client enhancement, progressive): two scripts scan the
   rendered hub content and turn plain text into links, because the copy is Board-editable
   Sanity content with no link marks and Sanity writes are quota-blocked (so it can't be

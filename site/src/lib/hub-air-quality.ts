@@ -2,7 +2,10 @@
 // Hub air-quality chip — current AQI at the school, with preschool copy
 // =============================================================================
 // Open-Meteo Air Quality API: free, keyless, same provider/coords/cache window
-// as hub-weather.ts. US AQI only — Open-Meteo's pollen fields are Europe-only
+// as hub-weather.ts (8h fresh / 16h stale — AQI drifts slowly and every refresh
+// is a KV write against a near-capped free tier; see hub-weather's header and
+// the KV write-budget gotcha in CLAUDE.md). US AQI only — the pollen fields are
+// Europe-only
 // (CAMS European model), so real US pollen would need a different provider
 // (e.g. Google's Pollen API, which needs a billed API key); left out on
 // purpose to keep this a zero-setup addition. See docs/FAMILY_HUB.md.
@@ -34,7 +37,7 @@ export async function getAirQuality(): Promise<HubAirQuality | null> {
   try {
     return await cached(
       'air-quality:west-chester-oh',
-      900_000,
+      28_800_000, // 8h fresh — slow-moving reading, ~3 KV writes/day (see header)
       async () => {
         const res = await fetch(
           'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=39.3362&longitude=-84.4052&current=us_aqi',
@@ -46,7 +49,7 @@ export async function getAirQuality(): Promise<HubAirQuality | null> {
         if (!Number.isFinite(aqi)) throw new Error('no aqi reading');
         return { aqi, ...describe(aqi) };
       },
-      { swrMs: 3_600_000 },
+      { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
     );
   } catch {
     return null;

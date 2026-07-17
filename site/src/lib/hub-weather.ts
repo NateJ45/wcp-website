@@ -7,13 +7,18 @@
 // (chip/widget hidden) on any failure. Coordinates are the school's — West
 // Chester, OH.
 //
-// getWeather() — current conditions for the hub greeting chip (15min fresh,
-//   1h stale-while-revalidate).
+// Both ride LONG cache windows (8h fresh / 16h stale) on purpose: this is an
+// ambient "is it a playground day" chip, not a live instrument, and every cache
+// refresh writes through to the CACHE KV namespace, whose free tier is ~1k
+// writes/day account-wide and already near the ceiling (see the KV write-budget
+// gotcha in CLAUDE.md). 8h fresh = ~3 writes/day/source instead of ~96 at the
+// old 15min. Trade-off: the displayed temperature can lag by up to 8h, which is
+// fine for the bucketed "Water-play hot / Playground day" line.
+//
+// getWeather() — current conditions for the hub greeting chip.
 // getWeekAheadForecast() — the next 7 days for the "Week ahead" dashboard
 //   widget, flagging days that need a coat (low <= 45°F) or rain gear
-//   (>=50% precip chance) — a multi-day forecast doesn't shift minute to
-//   minute, so this rides a longer 3h fresh / 6h stale window to keep KV
-//   writes low (see the KV write-budget gotcha in CLAUDE.md).
+//   (>=50% precip chance).
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
 
@@ -47,7 +52,7 @@ export async function getWeather(): Promise<HubWeather | null> {
   try {
     return await cached(
       'weather:west-chester-oh',
-      900_000,
+      28_800_000, // 8h fresh — ambient chip, keeps KV writes to ~3/day (see header)
       async () => {
         const res = await fetch(
           'https://api.open-meteo.com/v1/forecast?latitude=39.3362&longitude=-84.4052&current=temperature_2m,weather_code&temperature_unit=fahrenheit',
@@ -60,7 +65,7 @@ export async function getWeather(): Promise<HubWeather | null> {
         if (!Number.isFinite(tempF)) throw new Error('no temperature');
         return { tempF, ...describe(tempF, code) };
       },
-      { swrMs: 3_600_000 },
+      { swrMs: 57_600_000 }, // +16h stale — entry survives a full quiet day (24h horizon)
     );
   } catch {
     return null;
@@ -107,7 +112,7 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
   try {
     return await cached(
       'weather:west-chester-oh:week',
-      10_800_000, // 3h fresh — a multi-day forecast doesn't need 15min freshness
+      28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
       async () => {
         const res = await fetch(
           'https://api.open-meteo.com/v1/forecast?latitude=39.3362&longitude=-84.4052' +
@@ -139,7 +144,7 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
         }
         return days;
       },
-      { swrMs: 21_600_000 }, // 6h stale-while-revalidate — keeps KV writes low
+      { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
     );
   } catch {
     return [];
