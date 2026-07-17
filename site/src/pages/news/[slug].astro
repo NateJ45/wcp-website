@@ -34,8 +34,34 @@ const ogImage = shareImg?.asset
   : `/og/news/${slug}.jpg`;
 const title = post.seoTitle ?? `${post.title} — ${site.name}`;
 const description = post.seoDescription ?? post.excerpt;
+
+// BlogPosting JSON-LD so posts are eligible for article rich results.
+// `ogImage` is either an absolute Sanity CDN URL or the root-relative branded
+// card — new URL() absolutizes the latter and passes the former through. The
+// school Organization stands as author + publisher (posts are the school's
+// voice; the byline person still shows in the visible article). dateModified
+// rides Sanity's _updatedAt (any edit republish bumps it).
+const canonical = new URL(`/news/${slug}`, site.url).toString();
+const orgRef = { '@type': 'Organization', name: site.name, url: site.url };
+const blogJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  ...(description ? { description } : {}),
+  ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+  ...(post._updatedAt ? { dateModified: post._updatedAt } : {}),
+  image: new URL(ogImage, site.url).toString(),
+  mainEntityOfPage: canonical,
+  url: canonical,
+  author: orgRef,
+  publisher: {
+    ...orgRef,
+    logo: { '@type': 'ImageObject', url: new URL('/icon-512.png', site.url).toString() },
+  },
+};
 ---
 
 <BaseLayout title={title} description={description} ogImage={ogImage} ogType="article">
   <PostArticle post={post} />
+  <script type="application/ld+json" set:html={JSON.stringify(blogJsonLd)} is:inline />
 </BaseLayout>

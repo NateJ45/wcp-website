@@ -11,7 +11,7 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import PostCard, { type PostSummary } from '@/components/PostCard.astro';
 import { cmsFetch } from '@/lib/cms';
 import { LATEST_POSTS_QUERY } from '@/lib/queries';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { withBase } from '@/lib/utils';
 
 interface Props {
@@ -42,6 +42,7 @@ const posts = all.slice(0, limit);
         title={header?.title ?? 'Latest news'}
         lead={header?.lead}
         titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background ?? 'white')}
         as="h2"
       />
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -327,8 +327,11 @@ Two enrollment-funnel features ride on top of the builder:
   text (never colored-text-on-tint) and stay hidden on any failure. Contract covered by
   `tests/availability.spec.ts` (mocked API).
 - **JSON-LD**: every public page emits a `Preschool` (LocalBusiness) block from Site
-  Settings (`StructuredData.astro`), and every `faqSection` emits a `FAQPage` block from
-  its own Q&As — both for rich search results.
+  Settings + code-side identity facts (`StructuredData.astro`: geo, hours, priceRange,
+  hasMap, areaServed — Board-uneditable on purpose), and the page route aggregates every
+  `faqSection`'s Q&As into **one** `FAQPage` block per page (Google requires a single
+  block; the per-section emission was removed 2026-07-17). `/events` adds an `Event`
+  block per upcoming event and `/news/[slug]` a `BlogPosting` block.
 
 ## How a change goes live
 

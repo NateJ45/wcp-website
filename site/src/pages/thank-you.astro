@@ -3,6 +3,14 @@
    /thank-you — where the contact form lands after a no-JS submit
    ============================================================================
    (With JS the form shows an inline thank-you and never navigates here.)
+
+   TOPIC-AWARE: /api/contact's redirect carries the submitted form's topic as
+   a slug (?topic=tour-request), so tour conversions get their own URL — that
+   distinct URL is itself the analytics signal separating tour from enroll
+   from contact submissions. This page is PRERENDERED (it's in tests/routes.ts
+   as a static route), so it cannot read the query server-side at runtime; the
+   tiny script below reads location.search client-side and swaps in the
+   tour-specific copy. The generic copy in the markup is the no-JS default.
    ============================================================================ */
 export const prerender = true;
 
@@ -13,7 +21,11 @@ import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
 ---
 
-<BaseLayout title={`Thank you — ${site.name}`} description="Thanks for reaching out.">
+{
+  /* noindex: a form-landing page should never rank (it also keeps the ?topic=
+    analytics URLs out of the index). Pipe separator per the title convention. */
+}
+<BaseLayout title={`Thank you | ${site.name}`} description="Thanks for reaching out." noindex>
   <Hero
     title="Thank you"
     eyebrow="Message received"
@@ -22,7 +34,7 @@ import { site } from '@/data/site';
   />
   <Section bg="white">
     <div class="mx-auto max-w-xl text-center">
-      <p class="text-lg text-ink-muted">
+      <p class="text-lg text-ink-muted" data-thanks-note>
         A member of our volunteer board will get back to you as soon as we can. In the meantime,
         feel free to look around.
       </p>
@@ -33,3 +45,28 @@ import { site } from '@/data/site';
     </div>
   </Section>
 </BaseLayout>
+
+<script>
+  import { onPageLoad } from '@/scripts/_page-load';
+
+  // Tour-specific thank-you (progressive enhancement). The hero's eyebrow and
+  // lead are rendered by Hero.astro as the siblings around h1#hero-title
+  // (Hero's default titleId), so they're reached relationally; every hook is
+  // null-checked, making this a silent no-op if the Hero layout ever changes.
+  onPageLoad(() => {
+    const topic = new URLSearchParams(location.search).get('topic');
+    if (topic !== 'tour-request') return;
+
+    const title = document.getElementById('hero-title');
+    const eyebrow = title?.previousElementSibling;
+    const lead = title?.nextElementSibling;
+    if (eyebrow instanceof HTMLParagraphElement) eyebrow.textContent = 'Tour request received';
+    if (lead instanceof HTMLParagraphElement)
+      lead.textContent = 'Thank you! We will reach out about your visit within a day or two.';
+
+    const note = document.querySelector('[data-thanks-note]');
+    if (note)
+      note.textContent =
+        'A volunteer board member will email you soon to pick a time that works. We are excited to show you and your child around.';
+  });
+</script>

@@ -142,7 +142,24 @@ export default defineConfig({
       useCdn: false,
       studioBasePath: '/studio',
     }),
-    sitemap(),
+    sitemap({
+      // Keep non-content URLs out of the index: the gated hub and the Studio
+      // (SSR shells — mostly excluded already because the sitemap only walks
+      // prerendered routes, but the filter makes it explicit and future-proof),
+      // plus the search / thank-you utility pages and the 404. `page` is the
+      // full URL; static directory output means paths end in "/", so strip it
+      // before comparing.
+      filter: (page) => {
+        const path = new URL(page).pathname.replace(/\/+$/, '') || '/';
+        if (path === '/family-hub' || path.startsWith('/family-hub/')) return false;
+        if (path === '/studio' || path.startsWith('/studio/')) return false;
+        return !['/search', '/thank-you', '/404'].includes(path);
+      },
+      // Every deploy is a full rebuild (content publishes trigger one via the
+      // Sanity webhook), so the build moment is an honest lastmod for every
+      // entry — crawlers get a real freshness signal instead of none.
+      lastmod: new Date(),
+    }),
     partytown({ config: { forward: ['dataLayer.push'] } }),
     react(),
   ],

@@ -1,10 +1,13 @@
 // =============================================================================
-// Navigation — single source of truth for the header + footer + mobile menu
+// Navigation — the BUILD-TIME FALLBACK for the Sanity "Menus" doc
 // =============================================================================
-// Safe to edit these labels/links. Groups with `children` render as a dropdown
-// in the header and a labeled section in the mobile menu. `external: true`
-// links open in a new tab. (In the new stack this could move into Sanity
-// siteSettings later; for now it lives here.)
+// The live header/footer nav is Board-edited in Sanity (the Menus doc) and
+// resolved by src/lib/nav.ts; this file is only used when that doc is missing
+// or empty, so the site never loses its navigation. Keep it MIRRORING the live
+// Sanity nav (last synced against the deployed site 2026-07-17) — a stale
+// fallback silently drops pages the day the Menus doc fails to load.
+// Groups with `children` render as a dropdown in the header and a labeled
+// section in the mobile menu. `external: true` links open in a new tab.
 // =============================================================================
 
 export interface NavLink {
@@ -25,6 +28,7 @@ export function isGroup(item: NavItem): item is NavGroup {
 export const mainNav: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
+  { label: 'Safety', href: '/safety' },
   {
     label: 'Classes',
     children: [
@@ -45,6 +49,7 @@ export const mainNav: NavItem[] = [
     ],
   },
   { label: 'Contact', href: '/contact' },
+  { label: 'News', href: '/news' },
 ];
 
 // Footer link columns (a curated subset + a couple info links).
@@ -66,13 +71,18 @@ export const footerNav: NavGroup[] = [
       { label: 'Tuition & Fees', href: '/tuition' },
       { label: 'FAQ', href: '/faq' },
       { label: 'Enrolled Families', href: '/family-hub' },
+      { label: 'Safety & Wellness', href: '/safety' },
+      { label: 'What Families Say', href: '/reviews' },
     ],
   },
   {
     label: 'Get Started',
     children: [
       { label: 'Enroll', href: '/enroll' },
-      { label: 'Schedule a Tour', href: '/enroll' },
+      // Deep link to the tour-request form: `sec-` + the section's stable
+      // Sanity _key (see titleIdFor in section-helpers.ts) — the tour ask
+      // lands ON the form, not on /enroll.
+      { label: 'Schedule a Tour', href: '/virtual-tour#sec-pp-tour-form' },
       { label: 'Virtual Tour', href: '/virtual-tour' },
       { label: 'Contact', href: '/contact' },
     ],

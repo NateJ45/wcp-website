@@ -15,6 +15,9 @@
      teach   → the old /work-with-us  (experience, age groups, certification)
    Every field posts under a stable name; /api/contact folds the extras into
    the stored submission + email, so no schema change is needed per variant.
+   (2026-07 friction pass: the enroll variant no longer REQUIRES phone or the
+   child's birthdate — the fields stay, marked optional, because a hard gate
+   on either was stalling parents who just want to start the conversation.)
    ============================================================================ */
 interface Props {
   topic: string;
@@ -55,7 +58,10 @@ const VARIANTS: Record<string, Field[]> = {
   ],
   enroll: [
     { kind: 'text', name: 'childName', label: 'Child’s name', required: true },
-    { kind: 'date', name: 'childBirthdate', label: 'Child’s date of birth', required: true },
+    // Optional on purpose (2026-07 friction pass): the old form demanded a
+    // birthdate up front, which stalls a parent who just wants to start the
+    // conversation. The board can ask for it in the reply.
+    { kind: 'date', name: 'childBirthdate', label: 'Child’s date of birth', optionalNote: true },
     {
       kind: 'checkboxes',
       name: 'classInterest',
@@ -125,8 +131,6 @@ const VARIANTS: Record<string, Field[]> = {
   ],
 };
 const extraFields = VARIANTS[variant] ?? VARIANTS.general;
-// The old enroll form required a phone; the others treated it as optional.
-const phoneRequired = variant === 'enroll';
 
 const field =
   'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
@@ -190,19 +194,16 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       />
     </div>
     {
+      /* Phone is optional on EVERY variant (2026-07 friction pass). The old
+         enroll form hard-required it, but a required phone stalls a parent who
+         prefers email first — and /api/contact never required it server-side
+         anyway. Email (required above) is the reply channel. */
       showPhone && (
         <div>
           <label class={label} for={`${formId}-phone`}>
-            Phone {!phoneRequired && <span class="font-normal text-ink-muted">(optional)</span>}
+            Phone <span class="font-normal text-ink-muted">(optional)</span>
           </label>
-          <input
-            class={field}
-            id={`${formId}-phone`}
-            name="phone"
-            type="tel"
-            autocomplete="tel"
-            required={phoneRequired}
-          />
+          <input class={field} id={`${formId}-phone`} name="phone" type="tel" autocomplete="tel" />
         </div>
       )
     }

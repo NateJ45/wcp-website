@@ -4,15 +4,27 @@
    ============================================================================
    Emitted once per public page from BaseLayout's site chrome. Google reads
    this for the knowledge panel / local results: name, address, phone, URL,
-   social profiles. Data comes from Site Settings (merged over the static
-   fallback), so the board's edits flow through on the next rebuild.
+   social profiles, hours, price range, and the exact map pin. Data comes from
+   Site Settings (merged over the static fallback), so the board's edits flow
+   through on the next rebuild; the local-SEO extras (geo, hours, priceRange,
+   areaServed) are code-side fallbacks in src/data/site.ts.
    `Preschool` is a schema.org subtype of LocalBusiness — the most specific
    type that fits.
+   Deliberately NO aggregateRating: Google penalizes self-serving review
+   markup (ratings the site asserts about itself), so the 4.8 Google rating
+   stays visible copy only. Don't add it back.
    ============================================================================ */
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
 
 const site = await getSiteSettings(siteFallback);
+
+// The same Google Maps search URL the Contact page renders ("Open in Google
+// Maps", ContactDetailsSection.astro), so the JSON-LD and the visible site
+// agree on the destination.
+const mapQuery = encodeURIComponent(
+  `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.zip}`,
+);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -23,6 +35,9 @@ const jsonLd = {
   telephone: site.phone,
   email: site.email.general,
   foundingDate: String(site.founded),
+  // priceRange/hours/geo/areaServed live in src/data/site.ts (see the
+  // comments there for what each mirrors and what to keep in sync).
+  priceRange: site.priceRange,
   address: {
     '@type': 'PostalAddress',
     streetAddress: site.address.street,
@@ -31,6 +46,25 @@ const jsonLd = {
     postalCode: site.address.zip,
     addressCountry: 'US',
   },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: site.geo.lat,
+    longitude: site.geo.lng,
+  },
+  hasMap: `https://www.google.com/maps/search/?api=1&query=${mapQuery}`,
+  areaServed: { '@type': 'AdministrativeArea', name: site.areaServed },
+  openingHoursSpecification: site.hours.map((h) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: h.days,
+    opens: h.opens,
+    closes: h.closes,
+  })),
+  // image: the home page's build-generated share card (a real classroom photo
+  // under the branded overlay — see scripts/generate-og.mjs). A stable URL,
+  // unlike the content-hashed /_astro/ asset paths. logo: the committed PWA
+  // icon (512px, well over Google's 112px minimum), same stability reason.
+  image: new URL('/og/home.jpg', site.url).toString(),
+  logo: new URL('/icon-512.png', site.url).toString(),
   sameAs: [site.social.facebook, site.social.instagram].filter(Boolean),
 };
 ---

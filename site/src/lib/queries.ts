@@ -113,7 +113,7 @@ export const LATEST_POSTS_QUERY = `*[_type == "post" && defined(slug.current) &&
 
 /** One full post by slug (News article page + preview). */
 export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0]{
-  title, "slug": slug.current, publishedAt, category, excerpt, body, coverImage,
+  title, "slug": slug.current, publishedAt, _updatedAt, category, excerpt, body, coverImage,
   ogImage, seoTitle, seoDescription,
   "author": author->{ "name": name, honorific, role }
 }`;

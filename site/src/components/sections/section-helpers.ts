@@ -27,7 +27,16 @@ export function titleIdFor(section: SectionData): string | undefined {
   return section.header?.title ? `sec-${section._key}` : undefined;
 }
 
-/** Eyebrow ink tone by band: amber reads on navy, sky elsewhere (brand-lock). */
+/**
+ * AA-safe Eyebrow tone for a band's RESOLVED background. The Eyebrow default
+ * ("sky") is a dark -ink shade designed for light bands and is unreadable on
+ * navy; Section.astro's rule is that navy bands must pass eyebrowTone="amber"
+ * (4.89:1 on navy — see Eyebrow.astro's measured ratios). Every bridge feeds
+ * this the SAME value its <Section bg> resolves to — including the bridge's
+ * own default (e.g. countdown/instagram default to navy) — so a volunteer
+ * picking the Navy background radio can never ship a contrast failure.
+ * Non-navy returns "sky", which matches SectionHeader's own default.
+ */
 export function eyebrowTone(bg?: string): 'amber' | 'sky' {
   return bg === 'navy' ? 'amber' : 'sky';
 }

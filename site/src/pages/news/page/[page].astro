@@ -34,5 +34,13 @@ const pagePosts = posts.slice(start, start + NEWS_PAGE_SIZE);
   title={`News (page ${page}) — ${site.name}`}
   description="Announcements, updates, and stories from West Chester Preschool."
 >
+  {/* RSS autodiscovery — same feed link as /news (see index.astro). */}
+  <link
+    slot="head"
+    rel="alternate"
+    type="application/rss+xml"
+    href="/news/rss.xml"
+    title={`${site.name} — News`}
+  />
   <NewsListing posts={pagePosts} page={page} totalPages={totalPages} />
 </BaseLayout>

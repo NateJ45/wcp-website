@@ -5,7 +5,7 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ContactForm from '@/components/ContactForm.astro';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface Props {
   section: SectionData;
@@ -28,6 +28,7 @@ const formId = `form-${section._key}`;
     title={header?.title ?? 'Get in touch'}
     lead={header?.lead}
     titleId={titleId}
+    eyebrowTone={eyebrowTone(section.background ?? 'grey')}
     as="h2"
   />
   <div class="mt-8">

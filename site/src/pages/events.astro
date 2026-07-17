@@ -14,8 +14,9 @@ import EventsListing from '@/components/EventsListing.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY } from '@/lib/queries';
 import { site as siteFallback } from '@/data/site';
-import { expandRecurring } from '@/lib/events';
+import { expandRecurring, eventPlace, eventAddress, EVENT_TZ } from '@/lib/events';
 import type { EventDoc } from '@/lib/events';
+import { deEmDash } from '@/lib/portable-text';
 
 const [rawUpcoming, pastEvents] = await Promise.all([
   cmsFetch<EventDoc[]>(UPCOMING_EVENTS_QUERY, {}, []),
@@ -28,6 +29,60 @@ const site = await getSiteSettings(siteFallback);
 const fallbackLocation = [site.address.street, site.address.city, site.address.state]
   .filter(Boolean)
   .join(', ');
+
+// ---------------------------------------------------------------------------
+// Event JSON-LD — one schema.org Event per rendered upcoming event
+// ---------------------------------------------------------------------------
+// Makes open houses / tour days eligible for Google's event rich results.
+// Past events are visible history, not something to promote — upcoming only.
+
+/** schema.org start/end: a timed event passes its full ISO datetime through
+ *  untouched; an all-day event emits just the Eastern calendar day (a
+ *  schema.org Date — no time, no timezone ambiguity). Date-only strings are
+ *  anchored to NOON UTC before formatting, the site-wide convention (see
+ *  eventDate() in src/lib/hub-calendar.ts — not imported here because that
+ *  module pulls in the Worker-runtime Sanity client, which a prerendered page
+ *  must never load): `new Date('2026-07-20')` is UTC midnight, which formats
+ *  as July 19 Eastern, so the raw parse would shift all-day events a day. */
+function jsonLdDate(iso: string, allDay: boolean): string {
+  if (!allDay && iso.length > 10) return iso;
+  const d = iso.length === 10 ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
+  // en-CA formats as ISO "YYYY-MM-DD" — same trick as hub-calendar's easternYMD.
+  return d.toLocaleDateString('en-CA', { timeZone: EVENT_TZ });
+}
+
+const schoolAddress = {
+  '@type': 'PostalAddress',
+  streetAddress: site.address.street,
+  addressLocality: site.address.city,
+  addressRegion: site.address.state,
+  postalCode: site.address.zip,
+  addressCountry: 'US',
+};
+const organizer = { '@type': 'Organization', name: site.name, url: site.url };
+
+const eventsJsonLd = events.flatMap((e) => {
+  if (!e.title || !e.startDate) return [];
+  // Most events happen at the school, and those get the full PostalAddress.
+  // An event with its own venue or typed location (a field-trip spot) keeps
+  // that text instead — asserting the school's address there would be wrong.
+  const ownAddress = eventAddress(e, '');
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: deEmDash(e.title),
+      startDate: jsonLdDate(e.startDate, Boolean(e.allDay)),
+      ...(e.endDate ? { endDate: jsonLdDate(e.endDate, Boolean(e.allDay)) } : {}),
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: ownAddress
+        ? { '@type': 'Place', name: eventPlace(e, ''), address: ownAddress }
+        : { '@type': 'Place', name: site.name, address: schoolAddress },
+      organizer,
+      ...(e.description ? { description: deEmDash(e.description) } : {}),
+    },
+  ];
+});
 ---
 
 <BaseLayout
@@ -35,4 +90,9 @@ const fallbackLocation = [site.address.street, site.address.city, site.address.s
   description="Upcoming open houses, tours, and community events at West Chester Preschool."
 >
   <EventsListing events={events} pastEvents={pastEvents} fallbackLocation={fallbackLocation} />
+  {
+    eventsJsonLd.length > 0 && (
+      <script type="application/ld+json" set:html={JSON.stringify(eventsJsonLd)} is:inline />
+    )
+  }
 </BaseLayout>

@@ -40,6 +40,13 @@ interface Props {
   chrome?: 'site' | 'hub';
   /** Current page title, shown in the mobile HubTopBar when chrome='hub'. */
   hubTitle?: string;
+  /**
+   * Emit <meta name="robots" content="noindex"> — for public utility pages
+   * (/search) that crawlers can reach but should never rank. The preview
+   * surfaces carry their own tag (PreviewLayout) and the gated hub is covered
+   * by robots.txt; this prop is for pages that render inside THIS layout.
+   */
+  noindex?: boolean;
 }
 
 const {
@@ -49,6 +56,7 @@ const {
   ogType = 'website',
   chrome = 'site',
   hubTitle = 'Family Hub',
+  noindex = false,
 } = Astro.props;
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
@@ -86,6 +94,7 @@ const currentPath = Astro.url.pathname;
     <title>{title}</title>
     <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
 
     <!-- Every photo on the site serves from Sanity's CDN; warming the
          connection here saves DNS+TLS setup (~100-300ms on mobile) before the
@@ -195,6 +204,10 @@ const currentPath = Astro.url.pathname;
         document.documentElement.setAttribute('data-rail-collapsed', '');
       }
     </script>
+
+    <!-- Per-page <head> extras (e.g. the RSS autodiscovery <link> on the News
+         index pages). Most pages pass nothing and this renders empty. -->
+    <slot name="head" />
   </head>
 
   {

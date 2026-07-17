@@ -15,9 +15,14 @@ import Section from '@/components/Section.astro';
 import { site } from '@/data/site';
 ---
 
+{
+  /* noindex: a search shell has no content of its own to rank, and Google
+    treats indexable internal search pages as a spam signal. */
+}
 <BaseLayout
   title={`Search — ${site.name}`}
   description="Search the West Chester Preschool website."
+  noindex
 >
   <Hero
     title="Search"

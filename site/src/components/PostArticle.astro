@@ -23,6 +23,8 @@ interface Author {
 export interface PostDoc {
   title?: string;
   publishedAt?: string;
+  // Used by the route's BlogPosting JSON-LD (dateModified), not rendered here.
+  _updatedAt?: string;
   category?: string;
   excerpt?: string;
   body?: PortableTextBlock[];

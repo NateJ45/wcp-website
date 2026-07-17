@@ -3,7 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Faq from '@/components/faq/Faq.astro';
 import FaqItem from '@/components/faq/FaqItem.astro';
-import { renderPortableText, portableTextToPlain, deEmDash } from '@/lib/portable-text';
+import { renderPortableText, deEmDash } from '@/lib/portable-text';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface QA {
@@ -18,23 +18,12 @@ const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
 const items = (section.items as QA[] | undefined) ?? [];
 
-// FAQPage JSON-LD so these Q&As are eligible for rich results in search.
-// Plain-text answers (no markup), only pairs with both halves present.
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: items
-    .map((qa) => ({
-      question: qa.question,
-      answer: portableTextToPlain(qa.answer as never),
-    }))
-    .filter((qa) => qa.question && qa.answer)
-    .map((qa) => ({
-      '@type': 'Question',
-      name: qa.question,
-      acceptedAnswer: { '@type': 'Answer', text: qa.answer },
-    })),
-};
+// NO JSON-LD here, on purpose. Google allows at most ONE FAQPage entity per
+// page, and a page can hold several faqSections (/faq has four) — a per-
+// section script tag emitted four competing FAQPage blocks, which disquali-
+// fies the rich result. The public route ([...slug].astro) aggregates every
+// faqSection's Q&As into a single page-level FAQPage instead; hub renders of
+// this section are gated + noindex and need no markup at all.
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -59,9 +48,4 @@ const faqJsonLd = {
       ))
     }
   </Faq>
-  {
-    faqJsonLd.mainEntity.length > 0 && (
-      <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
-    )
-  }
 </Section>

@@ -10,7 +10,7 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { mapEmbedUrl, mapDirectionsUrl } from '@/lib/embeds';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface Props {
   section: SectionData;
@@ -39,6 +39,7 @@ const directions = mapDirectionsUrl(address);
         title={header?.title ?? ''}
         lead={header?.lead}
         titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background ?? 'white')}
         as="h2"
       />
     )

@@ -13,7 +13,7 @@ import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
 import { site as siteFallback } from '@/data/site';
 import { expandRecurring, type EventDoc } from '@/lib/events';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { withBase } from '@/lib/utils';
 
 interface Props {
@@ -48,6 +48,7 @@ const fallbackLocation = [siteData.address.street, siteData.address.city, siteDa
         title={header?.title ?? 'Upcoming events'}
         lead={header?.lead}
         titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background ?? 'white')}
         as="h2"
       />
       <div class="mt-10 grid gap-6 md:grid-cols-2">

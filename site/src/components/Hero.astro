@@ -8,16 +8,17 @@
    text always clears 4.5:1 no matter how light the image is.
 
    Media:
-     - `image` : background photo (also the video poster). Either a local
-                 asset import (src/assets/... — gets Astro's build-time Sharp
-                 optimization via <Image>) or a plain string path into
-                 /public (e.g. the pre-optimized hero-video poster). Omit for
-                 a labeled navy placeholder, so it's obvious media still
-                 needs to go in.
+     - `image` : background photo. Either a local asset import (src/assets/...
+                 — gets Astro's build-time Sharp optimization via <Image>) or
+                 a plain string path into /public (e.g. the pre-optimized
+                 hero-video poster image). Omit for a labeled navy
+                 placeholder, so it's obvious media still needs to go in.
+                 When a video is present, this <img> layer IS the poster —
+                 see the no-poster-attribute note below.
      - `video` : optional muted-loop video src (a /public path — video isn't
                  run through the image pipeline). Does NOT autoplay from
                  markup — hero-video.ts starts it only when the visitor has
-                 not requested reduced motion; everyone else sees the poster.
+                 not requested reduced motion; everyone else keeps the image.
      - Real media will come from Sanity (with responsive sizing + required alt).
 
    Layout is editorial/asymmetric by default (text anchored bottom-left), not
@@ -68,15 +69,14 @@ const heightClass =
 // width (then cap via max-width); items-start would shrink it to content.
 const alignClass = align === 'center' ? 'text-center' : 'text-left';
 
-// A <video poster> must be a plain URL string; a local asset import can't be
-// used directly there, so only pass it through when `image` is already a
-// string (the video pages always ship a /public poster for exactly this) or
-// when a Sanity image supplies the poster URL.
-const posterSrc = sanityImage
-  ? imageUrl(sanityImage, 1600)
-  : typeof image === 'string'
-    ? image
-    : undefined;
+// The <video> below deliberately carries NO poster attribute: the media-layer
+// <img> rendered under it IS the poster. The video sits on top at opacity-0
+// until hero-video.ts starts playback and fades it in, so the image shows
+// through in every pre-play state (and forever, for reduced-motion visitors).
+// A poster attribute made the browser fetch the same photo a SECOND time —
+// worst with a Sanity image, where the fixed-width poster URL never matched
+// the srcset candidate the <img> actually chose, so two full hero-sized
+// downloads competed for bandwidth at LCP time (removed 2026-07-17).
 ---
 
 <section
@@ -140,15 +140,15 @@ const posterSrc = sanityImage
         loop
         playsinline
         preload="none"
-        poster={posterSrc}
         data-hero-video
         aria-hidden="true"
       >
         {/* preload="none": the browser fetches nothing until hero-video.ts
             starts playback (deferred to idle-after-load), so nothing competes
-            with the LCP poster. The poster carries the hero until the video
-            fades in. Sources are ordered smallest-first: modern browsers take
-            the lighter WebM, everything else falls back to the MP4. */}
+            with the LCP image. That <img> layer carries the hero until the
+            video fades in — no poster attribute, see the note in the
+            frontmatter. Sources are ordered smallest-first: modern browsers
+            take the lighter WebM, everything else falls back to the MP4. */}
         {videoWebm && <source src={videoWebm} type="video/webm" />}
         <source src={video} type="video/mp4" />
       </video>

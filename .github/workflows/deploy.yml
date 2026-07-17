@@ -1,6 +1,6 @@
 name: Deploy
 
-# Two triggers:
+# The main triggers:
 #  - push to main: code changes go live automatically.
 #  - repository_dispatch (type "sanity-publish"): fired by a Sanity webhook
 #    whenever a document is published, so CMS edits go live too — see
@@ -14,6 +14,14 @@ on:
   # site up after an outage: dispatches that arrive while Actions is blocked
   # (e.g. the July 2026 quota exhaustion) are dropped, not queued.
   workflow_dispatch:
+  # Weekly freshness rebuild (Mondays 08:00 UTC): the static pages bake
+  # third-party data at build time — most critically the "Life inside WCP"
+  # Instagram tiles, which postbuild (scripts/rehost-instagram.mjs) re-hosts
+  # from signed CDN URLs that expire within days of being fetched. A scheduled
+  # rebuild caps how stale any baked data can get at 7 days, even when no code
+  # push or Sanity publish happens all week (e.g. summer break).
+  schedule:
+    - cron: '0 8 * * 1'
 
 # Coalesce webhook bursts. Sanity fires one dispatch per document change, so a
 # single Studio editing session can queue dozens of identical deploys back to
@@ -43,8 +51,10 @@ jobs:
     # control too: a dashboard filter is invisible and can silently drift, so this
     # is the belt-and-suspenders enforcement point. It reads client_payload.type,
     # which the webhook projection must send (see docs/SANITY.md). Backward-safe:
-    # push / workflow_dispatch (and the old typeless projection) have no
-    # client_payload.type, so the list never matches and the job runs as before.
+    # push / workflow_dispatch / schedule (and the old typeless projection) have
+    # no client_payload.type, so the list never matches and the job runs — which
+    # is exactly what the weekly cron needs: it must always reach a full deploy,
+    # or the re-hosted Instagram tiles would rot past their signatures.
     if: >-
       ${{ !contains(fromJSON('["coopRole", "update", "hubDocument", "directoryEntry", "celebration", "hubPage", "teacherNote", "presidentNote", "signupSheet", "signupEntry", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"]'), github.event.client_payload.type) }}
     steps:

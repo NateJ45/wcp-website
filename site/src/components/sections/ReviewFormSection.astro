@@ -8,7 +8,7 @@
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 const { section } = Astro.props as { section: SectionData };
 const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
@@ -33,6 +33,7 @@ const labelCls = 'block text-sm font-semibold text-heading';
     lead={header?.lead ??
       'We’d love to hear what your family thinks. With your OK, we may feature it on the site.'}
     titleId={titleId}
+    eyebrowTone={eyebrowTone(section.background ?? 'cream')}
     as="h2"
   />
 

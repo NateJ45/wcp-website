@@ -37,6 +37,15 @@ export const POST: APIRoute = async (context) => {
   const phone = clip(String(form.get('phone') ?? '').trim(), 60);
   let message = clip(String(form.get('message') ?? '').trim(), 5000);
   const topic = clip(String(form.get('topic') ?? 'Contact').trim(), 120);
+  // Slug of the topic for the no-JS thank-you redirect ("Tour request" →
+  // "tour-request"). The distinct URL lets /thank-you tailor its copy
+  // client-side AND is itself the analytics signal for WHICH form converted.
+  // Slugified server-side to [a-z0-9-] so raw user input never rides the URL.
+  const topicSlug = topic
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
 
   // Variant extras (see ContactForm's VARIANTS): fold every structured field
   // into the stored/emailed message so the board sees one complete note and
@@ -71,7 +80,7 @@ export const POST: APIRoute = async (context) => {
           status: 200,
           headers: { 'content-type': 'application/json' },
         })
-      : context.redirect('/thank-you', 303);
+      : context.redirect(topicSlug ? `/thank-you?topic=${topicSlug}` : '/thank-you', 303);
   const bad = (msg: string) =>
     wantsJson
       ? new Response(JSON.stringify({ ok: false, error: msg }), {

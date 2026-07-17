@@ -8,7 +8,7 @@
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import { titleIdFor, bandSize, type SectionData } from './section-helpers';
+import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { formatDate } from '@/lib/utils';
 
 interface Props {
@@ -43,6 +43,7 @@ const whenText = formatDate(target, {
         title={header?.title ?? ''}
         lead={header?.lead}
         titleId={titleId}
+        eyebrowTone={eyebrowTone(section.background ?? 'navy')}
         as="h2"
       />
     )

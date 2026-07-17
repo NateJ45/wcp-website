@@ -18,6 +18,7 @@ import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { site as siteFallback } from '@/data/site';
 import { PAGE_BY_SLUG_QUERY, ALL_PAGE_SLUGS_QUERY } from '@/lib/queries';
 import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
+import { portableTextToPlain, deEmDash } from '@/lib/portable-text';
 
 export async function getStaticPaths() {
   const slugs = await cmsFetch<string[]>(ALL_PAGE_SLUGS_QUERY, {}, []);
@@ -48,9 +49,51 @@ const title =
 const ogImage = page?.ogImage?.asset
   ? imageUrl(page.ogImage as SanityImageSource, 1200)
   : `/og/${slug}.jpg`;
+
+// ---------------------------------------------------------------------------
+// One FAQPage per page (Google's rich-result rule)
+// ---------------------------------------------------------------------------
+// FaqSection.astro renders the visible accordions but deliberately emits no
+// JSON-LD of its own — a page with several faqSections (/faq has four) would
+// otherwise ship several competing FAQPage entities, which disqualifies the
+// rich result. Aggregate every faqSection's Q&As here into one script tag
+// instead. The GROQ projection has already resolved BOTH sources (inline
+// items and referenced faqItem docs) into a flat `items` array of
+// { question, answer }, so this only has to collect. Static path (cms.ts, no
+// stega), so plain string handling is safe; deEmDash + portableTextToPlain
+// mirror exactly what FaqSection renders visibly (house style, plain text).
+interface FaqQA {
+  question?: string;
+  answer?: unknown;
+}
+const faqPairs = (page?.sections ?? [])
+  .filter((s) => s?._type === 'faqSection')
+  .flatMap((s) => (s.items as FaqQA[] | undefined) ?? [])
+  .map((qa) => ({
+    question: qa.question ? deEmDash(qa.question) : '',
+    answer: portableTextToPlain(qa.answer as never),
+  }))
+  .filter((qa) => qa.question && qa.answer);
+const faqJsonLd =
+  faqPairs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqPairs.map((qa) => ({
+          '@type': 'Question',
+          name: qa.question,
+          acceptedAnswer: { '@type': 'Answer', text: qa.answer },
+        })),
+      }
+    : null;
 ---
 
 <BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>
   {page?.hero && <PageHero hero={page.hero} />}
   <SectionRenderer sections={page?.sections} site={siteData} />
+  {
+    faqJsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
+    )
+  }
 </BaseLayout>

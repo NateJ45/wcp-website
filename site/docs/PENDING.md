@@ -47,6 +47,29 @@ shows the OLD content until you do):
 
 ## Waiting on a human (not quota-blocked)
 
+### Public-site transformation, Phase 0 (added 2026-07-17; see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
+
+- **DNS cutover** — www.westchesterpreschool.org still serves the old
+  Squarespace site; every canonical/og:url on the new site points there. This
+  is the single highest-leverage conversion item. Runbook:
+  [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). Verify a Search Console Domain
+  property (DNS TXT) BEFORE the flip so the sitemap submits the moment DNS
+  moves.
+- **Analytics env vars are unset — no analytics is live.** Create a Cloudflare
+  Web Analytics site for the domain and set `PUBLIC_CF_BEACON_TOKEN` in `.env`
+  AND the CI build workflows (ci/lighthouse/deploy pass build env); optionally
+  `PUBLIC_GADS_ID` if Google Ads ever run. `src/components/Analytics.astro`
+  renders nothing until then.
+- **Snapshot the July baseline from the forms-inbox Sheet** — count
+  tour-request and enrollment-inquiry rows to date. Sanity holds ZERO
+  submission docs (checked 2026-07-17 via CDN), so the Apps Script Sheet is the
+  only log. Needed so the tour-routing fix's effect is measurable.
+- **Fill the Availability sheet + set its Sheet ID in Site Settings** — the
+  scarcity badges (`/api/availability`) return `[]` in peak enrollment season;
+  hooks are live on home//enroll//classes/pre-k. Sheet ID needs the quota back.
+- **Supply the Google Business Profile review short URL** (g.page/r/...) for
+  the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
+
 - **Board sets the co-op hours goal** (Studio → Site Settings) — until then
   `/family-hub/hours` shows its designed empty state. Requires the quota back.
 - **Update the Sanity webhook filter in the dashboard** to match the 2026-07-17

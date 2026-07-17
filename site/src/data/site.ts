@@ -27,6 +27,35 @@ export const site = {
 
   phone: '(513) 202-6187',
 
+  // Map pin for the building — the SAME coordinates the Family Hub directory
+  // map centers on (src/pages/family-hub/directory.astro). Used by the
+  // LocalBusiness JSON-LD `geo` so search engines pin the school exactly,
+  // not wherever they geocode the street address to.
+  geo: { lat: 39.3143544, lng: -84.3750201 },
+
+  // The community the school draws from (LocalBusiness `areaServed`).
+  areaServed: 'West Chester Township, Ohio',
+
+  // Monthly tuition span across the four classes (LocalBusiness `priceRange`).
+  // Keep in sync with the class docs in Sanity if tuition changes.
+  priceRange: '$70-$200 /month',
+
+  // The public class schedule as machine-readable hours (LocalBusiness
+  // `openingHoursSpecification`): morning classes run Mon-Thu 9:15-12:00,
+  // the afternoon Pre-K PM class runs Mon-Wed 12:30-3:15.
+  hours: [
+    {
+      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+      opens: '09:15',
+      closes: '12:00',
+    },
+    {
+      days: ['Monday', 'Tuesday', 'Wednesday'],
+      opens: '12:30',
+      closes: '15:15',
+    },
+  ],
+
   email: {
     general: 'president@westchesterpreschool.org',
     admin: 'admin@westchesterpreschool.org',
