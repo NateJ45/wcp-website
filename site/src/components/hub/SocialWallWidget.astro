@@ -43,6 +43,7 @@ interface Tile {
   href: string;
   caption: string;
   isVideo: boolean;
+  videoUrl: string;
 }
 
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
@@ -54,10 +55,10 @@ const igToken = env.INSTAGRAM_TOKEN;
 if (igToken) {
   try {
     const live = await cached(
-      // ":v2" — the tile shape gained `caption` + `isVideo` (2026-07). Bump the
-      // key on a shape change so a deploy fetches the new fields fresh instead of
-      // serving the old-shape envelope for up to the 24h fresh window.
-      'ig:feed:v2',
+      // ":v3" — tile shape gained `caption`+`isVideo` (v2), then `videoUrl` (v3).
+      // Bump the key on a shape change so a deploy fetches the new fields fresh
+      // instead of serving the old-shape envelope for up to the 24h fresh window.
+      'ig:feed:v3',
       86_400_000, // 24h fresh — matches the Fourthwall store cadence
       () => fetchInstagram(8, igToken),
       { swrMs: 259_200_000 }, // serve stale up to 3 days while refreshing
@@ -68,6 +69,7 @@ if (igToken) {
       href: t.href,
       caption: t.caption,
       isVideo: t.isVideo,
+      videoUrl: t.videoUrl,
     }));
   } catch {
     tiles = [];
@@ -97,6 +99,7 @@ if (tiles.length === 0) {
       href: igProfile,
       caption: p.alt ?? '',
       isVideo: false,
+      videoUrl: '',
     }));
 }
 ---
@@ -187,6 +190,7 @@ if (tiles.length === 0) {
                   data-caption={t.caption}
                   data-href={t.href}
                   data-video={t.isVideo ? 'true' : 'false'}
+                  data-video-url={t.videoUrl}
                   aria-label={t.isVideo ? `Play video: ${t.alt}` : `View photo: ${t.alt}`}
                 >
                   <span class="wcp-wall-frame">
@@ -230,6 +234,17 @@ if (tiles.length === 0) {
         <figure class="wcp-wall-lb-fig">
           <span class="wcp-wall-lb-stage">
             <img data-wall-lb-img class="wcp-wall-lb-img" alt="" />
+            {/* Plays inline for video posts; if the (expiring) Instagram CDN URL
+                is dead, social-lightbox.ts falls back to the poster + this play
+                badge, and the "Watch on Instagram" link still works. */}
+            <video
+              data-wall-lb-video
+              class="wcp-wall-lb-video"
+              controls
+              playsinline
+              preload="metadata"
+              hidden
+            />
             <span data-wall-lb-play class="wcp-wall-lb-play" hidden aria-hidden="true">
               <Icon name="play" class="h-8 w-8" />
             </span>
@@ -480,6 +495,18 @@ if (tiles.length === 0) {
     max-height: min(66vh, 34rem);
     /* SHOW the whole image, uncropped — the point of the viewer (tiles crop). */
     object-fit: contain;
+  }
+  .wcp-wall-lb-video {
+    display: block;
+    width: 100%;
+    max-height: min(66vh, 34rem);
+    background: #000;
+  }
+  /* Explicit — the `.wcp-wall-lb-img/video { display: block }` above would
+     otherwise beat the UA `[hidden]` rule and both would show at once. */
+  .wcp-wall-lb-img[hidden],
+  .wcp-wall-lb-video[hidden] {
+    display: none;
   }
   .wcp-wall-lb-play {
     position: absolute;

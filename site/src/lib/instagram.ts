@@ -22,6 +22,9 @@ export interface InstaTile {
   caption: string;
   /** True for reels/videos — the tile shows a play badge; imgUrl is the frame. */
   isVideo: boolean;
+  /** Direct video file URL for VIDEO posts (Instagram CDN, signed/expiring);
+   *  '' for images. Lets the lightbox play inline, with the still as poster. */
+  videoUrl: string;
 }
 
 interface IgMediaItem {
@@ -50,7 +53,9 @@ export async function fetchInstagram(
     const items = Array.isArray(data.data) ? data.data : [];
     return items
       .map((m) => {
-        const imgUrl = m.media_type === 'VIDEO' ? (m.thumbnail_url ?? m.media_url) : m.media_url;
+        const isVideo = m.media_type === 'VIDEO';
+        // Poster is the thumbnail for videos, else the image itself.
+        const imgUrl = isVideo ? (m.thumbnail_url ?? m.media_url) : m.media_url;
         if (!imgUrl) return null;
         const caption = (m.caption ?? '').replace(/\s+/g, ' ').trim();
         return {
@@ -60,7 +65,9 @@ export async function fetchInstagram(
             ? caption.slice(0, 120)
             : 'A moment from West Chester Preschool on Instagram',
           caption,
-          isVideo: m.media_type === 'VIDEO',
+          isVideo,
+          // The playable file for videos (empty for images).
+          videoUrl: isVideo ? (m.media_url ?? '') : '',
         };
       })
       .filter((t): t is InstaTile => t !== null)
