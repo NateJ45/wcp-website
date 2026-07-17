@@ -24,7 +24,8 @@
     "test:hub": "playwright test -c playwright.hub.config.ts",
     "serve:dist": "http-server dist/client -p 4321 -s -c-1 --silent",
     "check:links": "linkinator ./dist/client --recurse --skip \"^(?!http://localhost)\" --skip \"wcp-hero[.](mp4|webm)\" --skip \"/family-hub\"",
-    "encode:hero": "node scripts/encode-hero.mjs"
+    "encode:hero": "node scripts/encode-hero.mjs",
+    "gen:curriculum": "node scripts/generate-curriculum.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.2",
