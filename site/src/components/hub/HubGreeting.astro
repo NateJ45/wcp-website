@@ -187,12 +187,9 @@ const firstDayLabel =
           {todayLabel}
         </li>
         {
-          weather && (
-            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
-              <Icon name={weather.icon} class="h-4 w-4" />
-              {weather.tempF}°F · {weather.line}
-            </li>
-          )
+          /* Weather moved from a top chip to the richer "today" ribbon at the
+             foot of this tile (below) — one weather element, more detail, and it
+             fills the tile's foot. AQI stays a chip (distinct info). */
         }
         {
           airQuality && (
@@ -309,24 +306,56 @@ const firstDayLabel =
   </div>
 
   {
-    /* Progress bar only once the year is actually under way — "0%" in July is
-       noise (the countdown stat already owns the pre-year story). */
-    yearPct !== null && yearPct > 0 && (
-      <div class="mt-auto max-w-xl pt-6">
-        <div class="flex items-center justify-between text-xs font-semibold text-white/90">
-          <span>School year progress</span>
-          <span>{yearPct}%</span>
-        </div>
-        <HubProgress
-          class="mt-1.5"
-          value={yearPct}
-          label="School year progress"
-          fill="bg-amber"
-          track="bg-white/20"
-        />
-      </div>
-    )
+    /* Foot of the hero tile: the school-year progress bar (in-season only —
+       "0%" in July is noise) sits above a "today" weather ribbon that fills the
+       foot year-round. The events tile beside this column makes the row taller
+       than the greeting's own text, so without a foot element the tile had a
+       big empty gap under the stats. */
   }
+  <div class="mt-auto pt-6">
+    {
+      yearPct !== null && yearPct > 0 && (
+        <div class="max-w-xl">
+          <div class="flex items-center justify-between text-xs font-semibold text-white/90">
+            <span>School year progress</span>
+            <span>{yearPct}%</span>
+          </div>
+          <HubProgress
+            class="mt-1.5"
+            value={yearPct}
+            label="School year progress"
+            fill="bg-amber"
+            track="bg-white/20"
+          />
+        </div>
+      )
+    }
+    {
+      weather && (
+        <div
+          class:list={[
+            'flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 pt-4 text-sm',
+            yearPct !== null && yearPct > 0 && 'mt-4',
+          ]}
+        >
+          <span class="inline-flex items-center gap-2">
+            <Icon name={weather.icon} class="h-5 w-5 text-amber" aria-hidden="true" />
+            <span class="text-xs font-bold tracking-wide text-white/70 uppercase">Today</span>
+            <span class="font-bold">
+              {weather.high}°<span class="font-semibold text-white/70">/{weather.low}°</span>
+            </span>
+          </span>
+          <span class="text-white/90">{weather.line}</span>
+          {weather.precipChance >= 10 && (
+            <span class="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
+              <Icon name="droplet" class="h-3.5 w-3.5 text-sky" aria-hidden="true" />
+              {weather.precipChance}% rain
+            </span>
+          )}
+        </div>
+      )
+    }
+  </div>
 </div>
 
 <style>

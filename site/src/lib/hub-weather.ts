@@ -8,58 +8,120 @@
 // Chester, OH.
 //
 // One fetch, ONE cache key: getWeather derives from getWeekAheadForecast's
-// day 0, so the greeting chip and the Week-ahead strip always agree and there's
-// only a single KV-writing key for both. It rides a LONG cache window (8h fresh
-// / 16h stale) on purpose: this is an ambient "is it a playground day" signal,
-// not a live instrument, and every cache refresh writes through to the CACHE KV
-// namespace, whose free tier is ~1k writes/day account-wide and already near the
-// ceiling (see the KV write-budget gotcha in CLAUDE.md). 8h fresh = ~3 writes/
-// day instead of ~96 at the old 15min. Crucially the chip shows the DAY'S HIGH,
-// not an instantaneous "right now" temperature — a forecast high for today
-// doesn't drift through the day, so the 8h cache can't make it look wrong (an
-// instantaneous reading would have gone stale by the afternoon).
+// day 0, so the greeting ribbon and the Week-ahead strip always agree and
+// there's only a single KV-writing key for both. It rides a LONG cache window
+// (8h fresh / 16h stale) on purpose: this is an ambient "is it a playground
+// day" signal, not a live instrument, and every cache refresh writes through to
+// the CACHE KV namespace, whose free tier is ~1k writes/day account-wide and
+// already near the ceiling (see the KV write-budget gotcha in CLAUDE.md). 8h
+// fresh = ~3 writes/day instead of ~96 at the old 15min. Crucially the ribbon
+// shows the DAY'S HIGH, not an instantaneous "right now" temperature — a
+// forecast high for today doesn't drift through the day, so the 8h cache can't
+// make it look wrong (an instantaneous reading would go stale by afternoon).
 //
-// getWeather() — today's high + a day line for the hub greeting chip.
+// getWeather() — today's high/low, condition, rain chance + pack flags for the
+//   hub greeting ribbon.
 // getWeekAheadForecast() — the next 7 days for the "Week ahead" dashboard
-//   widget, flagging days that need a coat (low <= 45°F) or rain gear
-//   (>=50% precip chance).
+//   widget: per day an icon + one-word label, high/low, rain chance, and coat
+//   (low <= 45°F) / rain-gear (>=50% precip) flags.
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
 
+/** The weather icons this module can return (all live in lucide-icons.ts). */
+export type WeatherIcon =
+  'sun' | 'cloud-sun' | 'cloud' | 'cloud-rain' | 'cloud-lightning' | 'cloud-fog' | 'snowflake';
+
 export interface HubWeather {
-  tempF: number;
-  icon: 'sun' | 'cloud-sun' | 'cloud-rain' | 'snowflake';
+  /** The day's forecast HIGH (not an instantaneous reading — see header). */
+  high: number;
+  low: number;
+  icon: WeatherIcon;
+  /** One-word condition ("Sunny", "Rain", "Snow") for compact tiles. */
+  label: string;
+  /** Warm preschool-voice sentence for the greeting ribbon / screen readers. */
+  line: string;
+  /** Max chance of precipitation for the day, 0-100. */
+  precipChance: number;
+  /** Low temp at/below 45°F — pack a warm coat. */
+  needsCoat: boolean;
+  /** Precip chance at/above 50% — pack rain/mud gear. */
+  needsRainGear: boolean;
+}
+
+interface Condition {
+  icon: WeatherIcon;
+  label: string;
   line: string;
 }
 
-/** WMO weather codes → chip icon + a playful line. */
-function describe(tempF: number, code: number): Pick<HubWeather, 'icon' | 'line'> {
-  if (code >= 71 && code <= 86 && code !== 80 && code !== 81 && code !== 82) {
-    return { icon: 'snowflake', line: 'Snow-play kind of day!' };
+/**
+ * WMO weather code (+ the day's high, for the temperature flavour on dry days)
+ * → an icon, a one-word condition label for the forecast tiles, and a warm
+ * preschool-voice line for the greeting ribbon and screen readers. Covers the
+ * full WMO table so snow / ice / thunder / fog each read distinctly rather than
+ * all collapsing to "rain".
+ */
+function describe(tempF: number, code: number): Condition {
+  // Thunderstorms (95, 96, 99).
+  if (code >= 95) {
+    return { icon: 'cloud-lightning', label: 'Storms', line: 'Thunderstorms, an indoor-play day' };
   }
-  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95) {
-    return { icon: 'cloud-rain', line: 'Splash-boot weather' };
+  // Freezing rain / freezing drizzle — the ice risk (56, 57, 66, 67).
+  if (code === 56 || code === 57 || code === 66 || code === 67) {
+    return { icon: 'snowflake', label: 'Icy', line: 'Icy mix, take extra care at drop-off' };
   }
-  const icon = code <= 1 ? 'sun' : 'cloud-sun';
-  if (tempF >= 85) return { icon, line: 'Water-play hot!' };
-  if (tempF >= 60) return { icon, line: 'Playground day!' };
-  if (tempF >= 40) return { icon, line: 'Light-jacket day' };
-  return { icon, line: 'Bundle-up cold!' };
+  // Snow, snow grains, snow showers (71-77, 85, 86).
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
+    return { icon: 'snowflake', label: 'Snow', line: 'Snow-play day! Bundle up warm' };
+  }
+  // Heavy rain / violent showers (65, 82).
+  if (code === 65 || code === 82) {
+    return { icon: 'cloud-rain', label: 'Rain', line: 'Rain gear day, coats and boots' };
+  }
+  // Drizzle, rain, showers (51-63, 80, 81).
+  if ((code >= 51 && code <= 63) || code === 80 || code === 81) {
+    return { icon: 'cloud-rain', label: 'Showers', line: 'Splash boots handy, showers around' };
+  }
+  // Fog (45, 48).
+  if (code === 45 || code === 48) {
+    return { icon: 'cloud-fog', label: 'Fog', line: 'Foggy start, take it slow at drop-off' };
+  }
+  // Dry: icon + label by cloud cover, the line by temperature.
+  const dry: Pick<Condition, 'icon' | 'label'> =
+    code === 3
+      ? { icon: 'cloud', label: 'Cloudy' }
+      : code === 2
+        ? { icon: 'cloud-sun', label: 'Partly' }
+        : { icon: 'sun', label: 'Sunny' };
+  const line =
+    tempF >= 90
+      ? 'Water-play hot! Sunscreen and water bottles'
+      : tempF >= 80
+        ? 'Warm and bright, hats on'
+        : tempF >= 60
+          ? 'Playground perfect!'
+          : tempF >= 45
+            ? 'Light-jacket day'
+            : tempF >= 32
+              ? 'Chilly, bundle up'
+              : 'Freezing, bundle up tight';
+  return { ...dry, line };
 }
 
 /**
- * Today's weather for the hub greeting chip: the day's HIGH plus a
- * day-appropriate line/icon. Derived from getWeekAheadForecast's day 0, so it
+ * Today's weather for the hub greeting ribbon: the day's HIGH/LOW, condition,
+ * rain chance, and pack flags. Derived from getWeekAheadForecast's day 0, so it
  * shares that one cached fetch (no separate API call or KV key) and can never
- * disagree with the Week-ahead strip. `tempF` is the forecast HIGH, not an
- * instantaneous reading — see the header for why that matters with the 8h
- * cache. Null (chip hidden) when the forecast is unavailable; the underlying
+ * disagree with the Week-ahead strip. The temperature is the forecast HIGH, not
+ * an instantaneous reading — see the header for why that matters with the 8h
+ * cache. Null (ribbon hidden) when the forecast is unavailable; the underlying
  * getWeekAheadForecast already swallows any failure and returns [].
  */
 export async function getWeather(): Promise<HubWeather | null> {
   const today = (await getWeekAheadForecast())[0];
   if (!today) return null;
-  return { tempF: today.high, icon: today.icon, line: today.line };
+  const { high, low, icon, label, line, precipChance, needsCoat, needsRainGear } = today;
+  return { high, low, icon, label, line, precipChance, needsCoat, needsRainGear };
 }
 
 // =============================================================================
@@ -71,11 +133,15 @@ export interface HubForecastDay {
   dayLabel: string;
   high: number;
   low: number;
-  icon: HubWeather['icon'] | 'cloud-sun';
+  icon: WeatherIcon;
+  /** One-word condition ("Sunny", "Rain", "Snow", ...) for the tile. */
+  label: string;
   line: string;
+  /** Max chance of precipitation for the day, 0-100 (rounded). */
+  precipChance: number;
   /** Low temp at/below 45°F — pack a warm coat. */
   needsCoat: boolean;
-  /** Max precipitation chance at/above 50% — pack rain/mud gear. */
+  /** Precip chance at/above 50% — pack rain/mud gear. */
   needsRainGear: boolean;
 }
 
@@ -101,7 +167,10 @@ const dayName = (dateISO: string): string =>
 export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
   try {
     return await cached(
-      'weather:west-chester-oh:week',
+      // ":v2" — the day shape gained `label` + `precipChance` (2026-07). Bump
+      // the key on any shape change so a deploy fetches the new fields fresh
+      // instead of serving the old-shape envelope for up to the 8h fresh window.
+      'weather:west-chester-oh:week:v2',
       28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
       async () => {
         const res = await fetch(
@@ -121,13 +190,14 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
           const low = Math.round(daily?.temperature_2m_min?.[i] ?? NaN);
           if (!Number.isFinite(high) || !Number.isFinite(low)) continue;
           const code = daily?.weather_code?.[i] ?? 3;
-          const precip = daily?.precipitation_probability_max?.[i] ?? 0;
+          const precip = Math.round(daily?.precipitation_probability_max?.[i] ?? 0);
           days.push({
             dateISO,
             dayLabel: i === 0 ? 'Today' : dayName(dateISO),
             high,
             low,
             ...describe(high, code),
+            precipChance: precip,
             needsCoat: low <= 45,
             needsRainGear: precip >= 50,
           });
