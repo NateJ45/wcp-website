@@ -35,6 +35,11 @@ interface Props {
    * or any value that isn't a bare number. Reduced-motion users see it static.
    */
   countUp?: boolean;
+  /**
+   * Ambient scale "breathing" on the figure (see .wcp-breathe). For the ONE
+   * hero number on a view only; reduced-motion users see it still.
+   */
+  breathe?: boolean;
   class?: string;
 }
 const {
@@ -46,6 +51,7 @@ const {
   tone = 'card',
   size = 'md',
   countUp = false,
+  breathe = false,
   class: className,
 } = Astro.props;
 
@@ -76,6 +82,7 @@ const deltaIconColor = onNavy
         'font-display tabular-nums',
         size === 'lg' ? 'text-4xl' : 'text-3xl',
         onNavy ? 'text-white' : 'text-heading',
+        breathe && 'wcp-breathe',
       )}>{value}</span
     >
     {

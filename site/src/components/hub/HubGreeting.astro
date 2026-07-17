@@ -240,14 +240,37 @@ const firstDayLabel =
       </ul>
     </div>
 
-    {/* Sun-and-cloud brand emblem — the hero's one decorative accent. */}
-    <img
-      src={wcpEmblem.src}
-      alt=""
-      width={wcpEmblem.width}
-      height={wcpEmblem.height}
-      class="wcp-float-slow hidden h-24 w-auto shrink-0 sm:block lg:h-28"
-    />
+    {
+      /* Sun-and-cloud brand emblem — the hero's one decorative accent. It bobs
+        gently (wcp-float-slow), with a few amber sparkles twinkling around it —
+        a small delight, capped at three so it never reads as a particle field.
+        Whole cluster is decorative + aria-hidden. */
+    }
+    <div class="relative hidden shrink-0 sm:block" aria-hidden="true">
+      <img
+        src={wcpEmblem.src}
+        alt=""
+        width={wcpEmblem.width}
+        height={wcpEmblem.height}
+        class="wcp-float-slow h-24 w-auto lg:h-28"
+      />
+      {
+        [
+          { cls: '-top-1 left-1', size: 14, delay: '0s' },
+          { cls: 'top-4 -right-1', size: 18, delay: '0.8s' },
+          { cls: '-bottom-1 left-8', size: 12, delay: '1.5s' },
+        ].map((s) => (
+          <span
+            class:list={['wcp-twinkle absolute text-amber', s.cls]}
+            style={`--twinkle-delay:${s.delay}`}
+          >
+            <svg width={s.size} height={s.size} viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2c.7 5.6 3.7 8.6 9.3 9.3-5.6.7-8.6 3.7-9.3 9.3-.7-5.6-3.7-8.6-9.3-9.3C8.3 10.6 11.3 7.6 12 2z" />
+            </svg>
+          </span>
+        ))
+      }
+    </div>
   </div>
 
   {/* Command-strip stats: every figure live, every stat a deep link. */}
@@ -258,6 +281,7 @@ const firstDayLabel =
           <HubStat
             tone="navy"
             countUp
+            breathe
             value={String(daysToFirstDay)}
             label={`day${daysToFirstDay === 1 ? '' : 's'} 'til school`}
           />

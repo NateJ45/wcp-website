@@ -276,6 +276,15 @@ const currentPath = Astro.url.pathname;
               empty band under the content. No footer — the hub is an app
               surface, not a marketing page. */}
           <div class="wcp-hub-canvas flex min-w-0 flex-1 flex-col bg-grey">
+            {/* Ambient brand-wash: three soft glows drifting slowly under every
+                card so the hub surface breathes instead of sitting flat once
+                loaded. Fixed + transform-only + aria-hidden; reduced-motion
+                users get it perfectly still (see .wcp-hub-wash in globals.css). */}
+            <div class="wcp-hub-wash" aria-hidden="true">
+              <span class="wash-a" />
+              <span class="wash-b" />
+              <span class="wash-c" />
+            </div>
             {/* Fixed emblem watermark: stays put as the page scrolls, sits above
                 the paper texture but below every card (z-index handled in
                 globals.css). Purely decorative. The plate is a page-grey disc

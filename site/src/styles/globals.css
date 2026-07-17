@@ -501,6 +501,91 @@
 .dark .wcp-hub-emblem {
   opacity: 0.07;
 }
+
+/* Hub ambient wash — a few brand glows drifting slowly under the cards, so the
+   whole hub surface breathes instead of sitting flat once loaded. Fixed = one
+   viewport-sized paint the browser can cache and just COMPOSITE as it moves
+   (the blur never re-runs per frame), and hidden tabs are throttled for free;
+   transform-only, aria-hidden, pointer-events:none. Lives inside the
+   .wcp-hub-canvas stacking context like the emblem, so z-index:-1 keeps it above
+   the paper texture but below every card. The blobs roam the MID-FIELD, not the
+   corners the baked canvas washes already hold, so nothing doubles up. */
+.wcp-hub-wash {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.wcp-hub-wash span {
+  position: absolute;
+  width: 44rem;
+  height: 38rem;
+  border-radius: 9999px;
+  filter: blur(74px);
+  opacity: 0.12;
+  -webkit-mask-image: radial-gradient(closest-side, #000 18%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 18%, transparent 100%);
+}
+.wcp-hub-wash .wash-a {
+  left: -6rem;
+  top: 22%;
+  background: radial-gradient(closest-side, rgba(1, 69, 126, 1), transparent 70%);
+}
+.wcp-hub-wash .wash-b {
+  right: -8rem;
+  top: 2%;
+  background: radial-gradient(closest-side, rgba(255, 140, 0, 1), transparent 70%);
+}
+.wcp-hub-wash .wash-c {
+  left: 28%;
+  bottom: -12rem;
+  background: radial-gradient(closest-side, rgba(64, 170, 237, 1), transparent 70%);
+}
+.dark .wcp-hub-wash span {
+  opacity: 0.15;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-hub-wash .wash-a {
+    animation: wcp-wash-a 21s ease-in-out infinite;
+    will-change: transform;
+  }
+  .wcp-hub-wash .wash-b {
+    animation: wcp-wash-b 27s ease-in-out infinite;
+    will-change: transform;
+  }
+  .wcp-hub-wash .wash-c {
+    animation: wcp-wash-c 33s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes wcp-wash-a {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(6%, 7%, 0) scale(1.12);
+    }
+  }
+  @keyframes wcp-wash-b {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-7%, 9%, 0) scale(1.1);
+    }
+  }
+  @keyframes wcp-wash-c {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(5%, -9%, 0) scale(1.15);
+    }
+  }
+}
 @media print {
   .wcp-hub-emblem {
     display: none;
@@ -1368,6 +1453,51 @@ li:nth-child(4n + 4) > .hub-note {
     }
     50% {
       transform: translate3d(4%, 5%, 0) scale(1.1);
+    }
+  }
+}
+
+/* Ambient breathing for the ONE hero figure on a view (days-'til-school,
+   dollars raised): a slow scale pulse that draws the eye without a hard
+   animation. Scale-only (no opacity, so text contrast is never touched) and
+   from the left edge, so a left-aligned number stays put. Use sparingly — one
+   per view — or it reads as a flicker, not a heartbeat. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-breathe {
+    display: inline-block;
+    transform-origin: left center;
+    animation: wcp-breathe 4.5s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes wcp-breathe {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.045);
+    }
+  }
+}
+
+/* Twinkle for a small decorative sparkle (scale + opacity), staggered via an
+   inline --twinkle-delay. A FEW of these around the sun emblem — never a field
+   of them (that's the fast lane to "AI slop"). aria-hidden decorative only. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-twinkle {
+    transform-origin: center;
+    animation: wcp-twinkle 2.6s ease-in-out infinite;
+    animation-delay: var(--twinkle-delay, 0s);
+  }
+  @keyframes wcp-twinkle {
+    0%,
+    100% {
+      transform: scale(0.5);
+      opacity: 0.2;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 }
