@@ -9,6 +9,7 @@
    safe.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -21,10 +22,23 @@ interface Props {
   /** Optional footer link (e.g. a Google Photos album or a ClassDojo invite). */
   href?: string;
   linkLabel?: string;
+  /** Faint corner-icon watermark (the hub card "stamp"). Opt-in — set only by
+      the Family Hub (HubSectionedBody), so public marketing cards stay clean. */
+  watermark?: boolean;
   class?: string;
 }
-const { icon, title, chip = 'sky', as = 'div', href, linkLabel, class: className } = Astro.props;
+const {
+  icon,
+  title,
+  chip = 'sky',
+  as = 'div',
+  href,
+  linkLabel,
+  watermark = false,
+  class: className,
+} = Astro.props;
 const Tag = as;
+const showWatermark = watermark && Boolean(icon);
 // http(s) links open in a new tab; mailto:/tel: stay in place.
 const external = href?.startsWith('http');
 
@@ -44,10 +58,12 @@ const chipClass: Record<string, string> = {
     'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-300 dark:border dark:border-border dark:bg-surface',
     'hover:-translate-y-1.5 hover:shadow-xl hover:ring-1 hover:ring-black/5 dark:hover:ring-white/10',
     'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    showWatermark && 'relative isolate overflow-hidden',
     className,
   )}
   data-reveal
 >
+  {showWatermark && icon && <HubWatermark icon={icon} colorStyle={`color: var(--color-${chip})`} />}
   {
     icon && (
       <span

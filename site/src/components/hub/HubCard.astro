@@ -25,6 +25,7 @@
    never per-row. Nested cards are banned — a HubCard never contains a HubCard.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -42,6 +43,9 @@ interface Props {
   postit?: boolean;
   /** Scroll-reveal entrance (geometry-based, visible-by-default). */
   reveal?: boolean;
+  /** Faint corner-icon watermark. Defaults ON for a titled icon card (icon +
+      title), matching the home widgets; pass `watermark={false}` to opt out. */
+  watermark?: boolean;
   class?: string;
   // Pass-through for target/rel/aria-*/data-* on the root element.
   [key: string]: unknown;
@@ -57,6 +61,7 @@ const {
   emptyText = 'Nothing here yet.',
   postit = false,
   reveal = true,
+  watermark,
   class: className,
   ...rest
 } = Astro.props;
@@ -65,6 +70,9 @@ const isLink = as === 'a' || Boolean(href);
 const isInteractive = interactive ?? isLink;
 const Tag = isLink ? 'a' : as;
 const hasHeader = Boolean(icon) || Boolean(title);
+// A titled icon card gets the corner "stamp" by default (like the home
+// widgets); link rows / list items (no title) never do.
+const showWatermark = watermark ?? Boolean(icon && title);
 
 // `hub-note` (globals.css) adds the paper-note look: grid texture + a rotating
 // brand-colour top tab. The utilities stay so per-card class overrides still win.
@@ -78,11 +86,22 @@ const interactiveClasses = isInteractive
 ---
 
 <Tag
-  class={cn(base, interactiveClasses, postit && 'hub-note--postit', className)}
+  class={cn(
+    base,
+    interactiveClasses,
+    postit && 'hub-note--postit',
+    showWatermark && 'relative isolate overflow-hidden',
+    className,
+  )}
   href={isLink ? href : undefined}
   data-reveal={reveal ? true : undefined}
   {...rest}
 >
+  {
+    showWatermark && icon && (
+      <HubWatermark icon={icon} colorStyle="color: var(--note-accent, var(--color-sky))" />
+    )
+  }
   {
     hasHeader && (
       <div class="flex items-start justify-between gap-3">

@@ -54,8 +54,11 @@ interface Props {
   sections?: SectionData[];
   linkBase?: string;
   site?: unknown;
+  /** Hub-only: render the faint corner watermark on card-grid cards. Public
+      pages omit it, so marketing grids stay clean. Only CardGridSection reads it. */
+  cardWatermark?: boolean;
 }
-const { sections: rawSections = [], linkBase = '', site } = Astro.props;
+const { sections: rawSections = [], linkBase = '', site, cardWatermark = false } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
 // is covered at once — the Board's Sanity copy can't be re-seeded while writes
@@ -111,6 +114,15 @@ const MAP: Record<string, any> = {
   sections.map((section) => {
     const Comp = MAP[section._type];
     if (!Comp) return null;
-    return <Comp section={section} linkBase={linkBase} site={site} />;
+    // cardWatermark reaches only CardGridSection (the sole reader); every other
+    // bridge ignores the extra prop.
+    return (
+      <Comp
+        section={section}
+        linkBase={linkBase}
+        site={site}
+        cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+      />
+    );
   })
 }

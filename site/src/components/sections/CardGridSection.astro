@@ -23,8 +23,11 @@ interface Card {
 interface Props {
   section: SectionData;
   linkBase?: string;
+  /** Faint corner-icon watermark on each card — set only by the Family Hub
+      (via SectionRenderer/HubSectionedBody); public marketing grids stay clean. */
+  cardWatermark?: boolean;
 }
-const { section, linkBase = '' } = Astro.props;
+const { section, linkBase = '', cardWatermark = false } = Astro.props;
 const titleId = titleIdFor(section);
 // Card icons are board-typed in the Studio — guard them so a typo (or an icon
 // missing from our hand-extracted set) falls back instead of 500-ing the page.
@@ -113,6 +116,7 @@ const chipTint: Record<string, string> = {
             title={c.title}
             href={c.href}
             linkLabel={c.linkLabel}
+            watermark={cardWatermark}
           >
             {c.phones ? (
               <PhoneList entries={c.phones} />
