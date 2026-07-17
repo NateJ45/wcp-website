@@ -1553,8 +1553,13 @@ li:nth-child(4n + 4) > .hub-note {
   --color-bg: #0d1219; /* page canvas */
   --color-bg-soft: #161f2c; /* alternating-section bg (was --color-grey's role) */
   --color-grey: #161f2c;
-  --color-surface: #1b2531; /* "white card" replacement — a touch lighter
-                                than the page canvas so cards read as raised */
+  --color-surface: #1b2531; /* "white card" replacement. Only ~5 rgb points off
+                                the #161f2c canvas, so on its own a borderless card
+                                vanishes in dark mode — cards read as raised via the
+                                --border edge below (bumped to .2), NOT a lighter
+                                fill (lifting the fill pushed the postit-note
+                                composite light enough that muted meta text dropped
+                                under AA — keep the fill dark, lean on the border) */
   --color-cream: #241a12; /* dark warm-tint surface (was the pale orange tint) */
   --color-sky-soft: #10222c; /* dark soft-sky tint */
 
@@ -1566,7 +1571,7 @@ li:nth-child(4n + 4) > .hub-note {
   --card-foreground: #e9edf2;
   --muted: #161f2c;
   --muted-foreground: #99a3b3;
-  --border: rgba(255, 255, 255, 0.14);
+  --border: rgba(255, 255, 255, 0.2);
   --input: rgba(255, 255, 255, 0.2);
   --ring: #40aaed;
   --destructive: #ff6b6b; /* 6.8:1 on the dark surface */

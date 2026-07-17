@@ -39,7 +39,9 @@ const chipClass: Record<string, string> = {
 
 <Tag
   class={cn(
-    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-300 dark:bg-surface',
+    // dark:border — the card leans on a shadow to separate from the page, but
+    // shadows don't read on a dark canvas, so in dark mode add a real edge.
+    'group rounded-[var(--radius)] bg-white p-6 shadow-sm transition-[transform,box-shadow] duration-300 dark:border dark:border-border dark:bg-surface',
     'hover:-translate-y-1.5 hover:shadow-xl hover:ring-1 hover:ring-black/5 dark:hover:ring-white/10',
     'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
     className,
