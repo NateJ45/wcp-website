@@ -1,0 +1,25 @@
+---
+/* ============================================================================
+   HubGiggle — a tiny "giggle of the day" at the foot of the hub home
+   ============================================================================
+   Deliberately inconspicuous: a small, muted, centered line at the very bottom
+   of the dashboard, a little reward for scrolling all the way down. Curated +
+   deterministic (src/data/hub/giggles.ts) — zero external fetches, zero KV.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { todaysGiggle } from '@/data/hub/giggles';
+
+const g = todaysGiggle();
+---
+
+<p class="mt-8 flex items-center justify-center gap-2 px-4 text-center text-xs text-ink-muted">
+  <Icon name="smile" class="h-4 w-4 shrink-0 text-amber" aria-hidden="true" />
+  <span>
+    {
+      /* One string with a LEADING space, so neither the gap after the label nor
+        the one between setup and punchline can collapse when JSX trims lines. */
+    }
+    <span class="font-semibold">Giggle of the day:</span>
+    {` ${g.setup} ${g.punchline}`}
+  </span>
+</p>

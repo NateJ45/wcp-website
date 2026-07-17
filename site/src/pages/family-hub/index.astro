@@ -28,6 +28,7 @@ import FundraisingWidget from '@/components/hub/FundraisingWidget.astro';
 import HubWidgetSkeleton from '@/components/hub/HubWidgetSkeleton.astro';
 import StoreCard from '@/components/hub/StoreCard.astro';
 import SocialWallWidget from '@/components/hub/SocialWallWidget.astro';
+import HubGiggle from '@/components/hub/HubGiggle.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
 import { site, familyHandbookUrl } from '@/data/site';
@@ -365,6 +366,9 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
         (not an island): its one album read rides the authenticated CDN cache. */
     }
     <SocialWallWidget />
+
+    {/* A tiny giggle for anyone who scrolled all the way down. */}
+    <HubGiggle />
   </Section>
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}

@@ -100,12 +100,14 @@ const pctOf = (t: number) => ((t - weekMin) / span) * 100;
               )}
               {d.needsCoat && <Icon name="shirt" class="h-3.5 w-3.5 text-orange-ink" />}
               {d.needsRainGear && <Icon name="umbrella" class="h-3.5 w-3.5 text-sky-ink" />}
+              {d.needsSunscreen && <Icon name="sun" class="h-3.5 w-3.5 text-amber" />}
             </div>
             <span class="sr-only">
               {d.dayLabel}: {d.line}
               {d.precipChance >= 10 && ` ${d.precipChance}% chance of rain.`}
               {d.needsCoat && ' Pack a warm coat.'}
               {d.needsRainGear && ' Pack rain gear.'}
+              {d.needsSunscreen && ' High UV, pack sun protection.'}
             </span>
           </li>
         );

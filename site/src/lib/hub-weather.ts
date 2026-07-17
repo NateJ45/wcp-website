@@ -19,11 +19,12 @@
 // forecast high for today doesn't drift through the day, so the 8h cache can't
 // make it look wrong (an instantaneous reading would go stale by afternoon).
 //
-// getWeather() — today's high/low, condition, rain chance + pack flags for the
-//   hub greeting ribbon.
+// getWeather() — today's high/low, condition, rain chance, UV + pack flags for
+//   the hub greeting ribbon.
 // getWeekAheadForecast() — the next 7 days for the "Week ahead" dashboard
-//   widget: per day an icon + one-word label, high/low, rain chance, and coat
-//   (low <= 45°F) / rain-gear (>=50% precip) flags.
+//   widget: per day an icon + one-word label, high/low, rain chance, peak UV,
+//   and coat (low <= 45°F) / rain-gear (>=50% precip) / sunscreen (UV >= 6)
+//   flags. All from ONE Open-Meteo daily call (no extra fetch or KV key).
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
 
@@ -42,10 +43,14 @@ export interface HubWeather {
   line: string;
   /** Max chance of precipitation for the day, 0-100. */
   precipChance: number;
+  /** Peak EPA UV index for the day (0-11+). */
+  uvMax: number;
   /** Low temp at/below 45°F — pack a warm coat. */
   needsCoat: boolean;
   /** Precip chance at/above 50% — pack rain/mud gear. */
   needsRainGear: boolean;
+  /** UV index at/above 6 (EPA "high") — hats and sunscreen. */
+  needsSunscreen: boolean;
 }
 
 interface Condition {
@@ -120,8 +125,30 @@ function describe(tempF: number, code: number): Condition {
 export async function getWeather(): Promise<HubWeather | null> {
   const today = (await getWeekAheadForecast())[0];
   if (!today) return null;
-  const { high, low, icon, label, line, precipChance, needsCoat, needsRainGear } = today;
-  return { high, low, icon, label, line, precipChance, needsCoat, needsRainGear };
+  const {
+    high,
+    low,
+    icon,
+    label,
+    line,
+    precipChance,
+    uvMax,
+    needsCoat,
+    needsRainGear,
+    needsSunscreen,
+  } = today;
+  return {
+    high,
+    low,
+    icon,
+    label,
+    line,
+    precipChance,
+    uvMax,
+    needsCoat,
+    needsRainGear,
+    needsSunscreen,
+  };
 }
 
 // =============================================================================
@@ -139,10 +166,14 @@ export interface HubForecastDay {
   line: string;
   /** Max chance of precipitation for the day, 0-100 (rounded). */
   precipChance: number;
+  /** Peak EPA UV index for the day (0-11+, rounded). */
+  uvMax: number;
   /** Low temp at/below 45°F — pack a warm coat. */
   needsCoat: boolean;
   /** Precip chance at/above 50% — pack rain/mud gear. */
   needsRainGear: boolean;
+  /** UV index at/above 6 (EPA "high") — hats and sunscreen. */
+  needsSunscreen: boolean;
 }
 
 interface OpenMeteoForecast {
@@ -152,6 +183,7 @@ interface OpenMeteoForecast {
     temperature_2m_max?: number[];
     temperature_2m_min?: number[];
     precipitation_probability_max?: number[];
+    uv_index_max?: number[];
   };
 }
 
@@ -167,15 +199,16 @@ const dayName = (dateISO: string): string =>
 export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
   try {
     return await cached(
-      // ":v2" — the day shape gained `label` + `precipChance` (2026-07). Bump
-      // the key on any shape change so a deploy fetches the new fields fresh
-      // instead of serving the old-shape envelope for up to the 8h fresh window.
-      'weather:west-chester-oh:week:v2',
+      // ":v3" — the day shape gained `label`/`precipChance` (v2) then `uvMax`/
+      // `needsSunscreen` (v3). Bump the key on any shape change so a deploy
+      // fetches the new fields fresh instead of serving the old-shape envelope
+      // for up to the 8h fresh window.
+      'weather:west-chester-oh:week:v3',
       28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
       async () => {
         const res = await fetch(
           'https://api.open-meteo.com/v1/forecast?latitude=39.3362&longitude=-84.4052' +
-            '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+            '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max' +
             '&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7',
           { signal: AbortSignal.timeout(5000) },
         );
@@ -191,6 +224,7 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
           if (!Number.isFinite(high) || !Number.isFinite(low)) continue;
           const code = daily?.weather_code?.[i] ?? 3;
           const precip = Math.round(daily?.precipitation_probability_max?.[i] ?? 0);
+          const uv = Math.round(daily?.uv_index_max?.[i] ?? 0);
           days.push({
             dateISO,
             dayLabel: i === 0 ? 'Today' : dayName(dateISO),
@@ -198,8 +232,10 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
             low,
             ...describe(high, code),
             precipChance: precip,
+            uvMax: uv,
             needsCoat: low <= 45,
             needsRainGear: precip >= 50,
+            needsSunscreen: uv >= 6,
           });
         }
         return days;

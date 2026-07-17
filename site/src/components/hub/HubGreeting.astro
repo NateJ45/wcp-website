@@ -43,6 +43,7 @@ import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/h
 import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
 import { getFundraisers } from '@/lib/gsheets';
 import { getWeather } from '@/lib/hub-weather';
+import { todaysFunDay } from '@/data/hub/fun-days';
 import { getAirQuality } from '@/lib/hub-air-quality';
 import { getActiveAlert } from '@/lib/hub-alerts';
 import { sanityFetch } from '@/lib/sanity';
@@ -70,6 +71,9 @@ const todayLabel = now.toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+
+// A playful "Today is ..." observance (curated, Eastern date), or null.
+const funDay = todaysFunDay(now);
 
 const daysToFirstDay = daysUntil(firstDay, now);
 const daysToYearEnd = daysUntil(yearEnd, now);
@@ -186,6 +190,16 @@ const firstDayLabel =
           <Icon name="calendar-days" class="h-4 w-4" />
           {todayLabel}
         </li>
+        {
+          /* A little "Today is ..." delight — only on days the curated list has
+             an entry, so it's an occasional treat, not a fixture. */
+          funDay && (
+            <li class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold">
+              <Icon name="party-popper" class="h-4 w-4 text-amber" />
+              Today is {funDay}!
+            </li>
+          )
+        }
         {
           /* Weather moved from a top chip to the richer "today" ribbon at the
              foot of this tile (below) — one weather element, more detail, and it
@@ -350,6 +364,12 @@ const firstDayLabel =
             <span class="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
               <Icon name="droplet" class="h-3.5 w-3.5 text-sky" aria-hidden="true" />
               {weather.precipChance}% rain
+            </span>
+          )}
+          {weather.needsSunscreen && (
+            <span class="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
+              <Icon name="sun" class="h-3.5 w-3.5 text-amber" aria-hidden="true" />
+              High UV, hats and sunscreen
             </span>
           )}
         </div>
