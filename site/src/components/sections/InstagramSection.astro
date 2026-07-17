@@ -44,6 +44,8 @@ if (tiles.length === 0) {
           imgUrl: imageUrl(fig.image as never, 600),
           href: igProfile,
           alt: fig.alt ?? 'A moment from West Chester Preschool',
+          caption: fig.alt ?? '',
+          isVideo: false,
         };
       });
   }

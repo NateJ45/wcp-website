@@ -16,7 +16,12 @@
 export interface InstaTile {
   imgUrl: string;
   href: string;
+  /** Short alt for the <img> (truncated caption, or a generic fallback). */
   alt: string;
+  /** Fuller caption for the lightbox (may be '' when the post has none). */
+  caption: string;
+  /** True for reels/videos — the tile shows a play badge; imgUrl is the frame. */
+  isVideo: boolean;
 }
 
 interface IgMediaItem {
@@ -54,6 +59,8 @@ export async function fetchInstagram(
           alt: caption
             ? caption.slice(0, 120)
             : 'A moment from West Chester Preschool on Instagram',
+          caption,
+          isVideo: m.media_type === 'VIDEO',
         };
       })
       .filter((t): t is InstaTile => t !== null)

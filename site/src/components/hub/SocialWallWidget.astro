@@ -41,6 +41,8 @@ interface Tile {
   imgUrl: string;
   alt: string;
   href: string;
+  caption: string;
+  isVideo: boolean;
 }
 
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
@@ -52,12 +54,21 @@ const igToken = env.INSTAGRAM_TOKEN;
 if (igToken) {
   try {
     const live = await cached(
-      'ig:feed',
+      // ":v2" — the tile shape gained `caption` + `isVideo` (2026-07). Bump the
+      // key on a shape change so a deploy fetches the new fields fresh instead of
+      // serving the old-shape envelope for up to the 24h fresh window.
+      'ig:feed:v2',
       86_400_000, // 24h fresh — matches the Fourthwall store cadence
       () => fetchInstagram(8, igToken),
       { swrMs: 259_200_000 }, // serve stale up to 3 days while refreshing
     );
-    tiles = live.map((t) => ({ imgUrl: t.imgUrl, alt: t.alt, href: t.href }));
+    tiles = live.map((t) => ({
+      imgUrl: t.imgUrl,
+      alt: t.alt,
+      href: t.href,
+      caption: t.caption,
+      isVideo: t.isVideo,
+    }));
   } catch {
     tiles = [];
   }
@@ -81,9 +92,11 @@ if (tiles.length === 0) {
     .filter((p) => (p as { image?: { asset?: unknown } })?.image?.asset)
     .slice(0, 8)
     .map((p) => ({
-      imgUrl: imageUrl(p.image as never, 400),
+      imgUrl: imageUrl(p.image as never, 800),
       alt: p.alt ?? 'A moment from West Chester Preschool',
       href: igProfile,
+      caption: p.alt ?? '',
+      isVideo: false,
     }));
 }
 ---
@@ -159,24 +172,109 @@ if (tiles.length === 0) {
             community.
           </p>
 
-          <ul class="wcp-wall-grid">
+          <ul class="wcp-wall-grid" data-wall>
             {tiles.map((t) => (
               <li class="wcp-wall-tile">
-                <a href={t.href} target="_blank" rel="noopener">
-                  <img
-                    src={t.imgUrl}
-                    alt={t.alt}
-                    loading="lazy"
-                    decoding="async"
-                    width="400"
-                    height="400"
-                  />
+                {/* A real link (opens the post) with no JS; the lightbox script
+                    intercepts the click to open the in-page viewer instead. */}
+                <a
+                  href={t.href}
+                  target="_blank"
+                  rel="noopener"
+                  class="wcp-wall-photo"
+                  data-wall-item
+                  data-full={t.imgUrl}
+                  data-caption={t.caption}
+                  data-href={t.href}
+                  data-video={t.isVideo ? 'true' : 'false'}
+                  aria-label={t.isVideo ? `Play video: ${t.alt}` : `View photo: ${t.alt}`}
+                >
+                  <span class="wcp-wall-frame">
+                    {/* alt="" on purpose: the visible caption strip below is the
+                        image's text alternative, and the link is named by its
+                        aria-label — a descriptive alt here would be redundant
+                        (axe image-redundant-alt). */}
+                    <img
+                      src={t.imgUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      width="400"
+                      height="500"
+                    />
+                    {t.isVideo && (
+                      <span class="wcp-wall-play" aria-hidden="true">
+                        <Icon name="play" class="h-5 w-5" />
+                      </span>
+                    )}
+                  </span>
+                  {t.caption ? (
+                    <span class="wcp-wall-cap">{t.caption}</span>
+                  ) : (
+                    <span class="wcp-wall-cap wcp-wall-cap--stamp" aria-hidden="true">
+                      @westchesterpreschool
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
           </ul>
         </div>
       </div>
+
+      {/* In-page viewer — full (uncropped) image + caption, so the designed
+          posts (schedules, teacher thank-yous) are readable and reels are
+          obviously videos. Native <dialog> = top layer + focus trap + Esc; the
+          tiles still link to Instagram with no JS. */}
+      <dialog data-wall-lightbox class="wcp-wall-lb" aria-label="Photo viewer">
+        <figure class="wcp-wall-lb-fig">
+          <span class="wcp-wall-lb-stage">
+            <img data-wall-lb-img class="wcp-wall-lb-img" alt="" />
+            <span data-wall-lb-play class="wcp-wall-lb-play" hidden aria-hidden="true">
+              <Icon name="play" class="h-8 w-8" />
+            </span>
+            <button
+              type="button"
+              data-wall-close
+              class="wcp-wall-lb-btn wcp-wall-lb-close"
+              aria-label="Close viewer"
+            >
+              <Icon name="x" class="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              data-wall-prev
+              class="wcp-wall-lb-btn wcp-wall-lb-prev"
+              aria-label="Previous"
+            >
+              <Icon name="chevron-left" class="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              data-wall-next
+              class="wcp-wall-lb-btn wcp-wall-lb-next"
+              aria-label="Next"
+            >
+              <Icon name="chevron-right" class="h-6 w-6" />
+            </button>
+          </span>
+          <figcaption class="wcp-wall-lb-cap">
+            <p data-wall-lb-caption class="wcp-wall-lb-text" />
+            <a
+              data-wall-lb-link
+              href={igProfile}
+              target="_blank"
+              rel="noopener"
+              class="wcp-wall-lb-link"
+            >
+              <Icon name="instagram" class="h-4 w-4" aria-hidden="true" />
+              <span data-wall-lb-linktext>View on Instagram</span>
+            </a>
+          </figcaption>
+        </figure>
+      </dialog>
+
+      <script>import '@/scripts/social-lightbox';</script>
     </section>
   )
 }
@@ -206,12 +304,15 @@ if (tiles.length === 0) {
     margin: 1.75rem 0 0;
     padding: 4px 4px 8px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /* minmax(0,1fr), not 1fr: a nowrap caption's min-content would otherwise
+       widen its own column and make the tiles uneven. This keeps columns equal
+       and lets the caption truncate. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
   @media (min-width: 640px) {
     .wcp-wall-grid {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
   .wcp-wall-tile {
@@ -221,7 +322,7 @@ if (tiles.length === 0) {
     display: block;
     position: relative;
     background: #fff;
-    padding: 7px 7px 22px;
+    padding: 7px 7px 9px;
     border-radius: 4px;
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.35),
@@ -230,6 +331,11 @@ if (tiles.length === 0) {
       transform 0.25s ease,
       box-shadow 0.25s ease;
     will-change: transform;
+    cursor: pointer;
+  }
+  .wcp-wall-frame {
+    display: block;
+    position: relative;
   }
   .wcp-wall-tile img {
     display: block;
@@ -238,6 +344,41 @@ if (tiles.length === 0) {
     aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 2px;
+  }
+  /* Play badge on reels/videos — a translucent navy disc with a white glyph. */
+  .wcp-wall-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 9999px;
+    background: rgba(1, 69, 126, 0.72);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+  /* Caption on the polaroid's white strip — a real photo-caption, not dead
+     space. Dark ink on the white frame, one clean line. */
+  .wcp-wall-cap {
+    display: block;
+    margin-top: 6px;
+    padding: 0 3px;
+    font-size: 0.6rem;
+    line-height: 1.25;
+    color: #46536a;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wcp-wall-cap--stamp {
+    color: #9aa5b1;
+    font-weight: 600;
+    letter-spacing: 0.01em;
   }
   /* Gentle alternating tilt — the "snapshots dropped on a board" look. */
   .wcp-wall-tile:nth-child(3n + 1) a {
@@ -301,5 +442,117 @@ if (tiles.length === 0) {
       transition: none;
       transform: none !important;
     }
+  }
+
+  /* ---- In-page viewer (native <dialog>) ---- */
+  .wcp-wall-lb {
+    /* Center in the viewport (a global reset zeroes the dialog's default
+       auto margins). */
+    margin: auto;
+    width: auto;
+    max-width: min(94vw, 42rem);
+    max-height: 92vh;
+    border: none;
+    padding: 0;
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-heading);
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  }
+  .wcp-wall-lb::backdrop {
+    background: rgba(1, 30, 55, 0.74);
+    backdrop-filter: blur(2px);
+  }
+  .wcp-wall-lb-fig {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .wcp-wall-lb-stage {
+    position: relative;
+    display: block;
+    background: #0b1622;
+  }
+  .wcp-wall-lb-img {
+    display: block;
+    width: 100%;
+    max-height: min(66vh, 34rem);
+    /* SHOW the whole image, uncropped — the point of the viewer (tiles crop). */
+    object-fit: contain;
+  }
+  .wcp-wall-lb-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    pointer-events: none;
+  }
+  .wcp-wall-lb-play svg {
+    padding: 0.9rem;
+    box-sizing: content-box;
+    border-radius: 9999px;
+    background: rgba(1, 69, 126, 0.82);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+  }
+  /* Overlay controls — all inside the stage, so they never fall off-screen. */
+  .wcp-wall-lb-btn {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-navy);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .wcp-wall-lb-btn:hover {
+    background: #fff;
+  }
+  .wcp-wall-lb-close {
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+  .wcp-wall-lb-prev,
+  .wcp-wall-lb-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .wcp-wall-lb-prev {
+    left: 0.6rem;
+  }
+  .wcp-wall-lb-next {
+    right: 0.6rem;
+  }
+  .wcp-wall-lb-cap {
+    padding: 0.85rem 1.1rem 1.1rem;
+  }
+  .wcp-wall-lb-text {
+    margin: 0 0 0.55rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+  .wcp-wall-lb-text[hidden] {
+    display: none;
+  }
+  .wcp-wall-lb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-sky-ink);
+    text-decoration: none;
+  }
+  .wcp-wall-lb-link:hover {
+    text-decoration: underline;
   }
 </style>

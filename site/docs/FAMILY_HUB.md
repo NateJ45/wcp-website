@@ -626,12 +626,18 @@ unavailable the stat hides. The card hides entirely without a `storeUrl`.
 the hub home on a human note — a navy bulletin board of pinned snapshots (white polaroid frames,
 brand-colour pushpins, a gentle random tilt, hover-straighten; a dot grid + doodle texture behind),
 the hub-home twin of the public "Life inside WCP." section and the old Squarespace bulletin board.
-It reads the **same Board-curated album the public section falls back to** — `album-life-inside-wcp`
-(Studio → **Photo albums** → "Life inside WCP"; seeded by `node scripts/add-instagram-home.mjs`), at
-request time through the cached authenticated client (`BOARD_CONTENT_CACHE`), so editing that one
-album updates **both** the public home and the hub home. No Instagram token is needed. Images are
-requested at 400px (2x for the ~190px tiles, no over-fetch); the widget renders nothing when the
-album is empty. Motion is reduced-motion-safe. It's rendered **inline** (not a `server:defer`
+Source is the **live Instagram feed** (`fetchInstagram`, cached 24h under `ig:feed:v2` — bump on any
+tile-shape change) when the `INSTAGRAM_TOKEN` Worker secret is set, else the **same Board-curated
+album the public section falls back to** — `album-life-inside-wcp` (Studio → **Photo albums** →
+"Life inside WCP"), at request time through the cached authenticated client (`BOARD_CONTENT_CACHE`).
+Each polaroid carries a **caption on its white strip** (the img's `alt` is empty so it isn't
+redundant with the visible caption — axe `image-redundant-alt`), and reels get a **play badge**.
+Clicking a tile opens an **in-page lightbox** (`social-lightbox.ts`, native `<dialog>`) showing the
+FULL uncropped image + caption + a "View / Watch on Instagram" link, with prev/next and arrow keys —
+so the designed posts (playdate schedules, teacher thank-yous) are readable rather than cover-cropped
+to nothing. Progressive: with no JS the tiles are plain links to the post. Grid uses
+`minmax(0,1fr)` columns so a nowrap caption can't widen its own tile. The widget renders nothing when
+empty. Motion is reduced-motion-safe. It's rendered **inline** (not a `server:defer`
 island) — the single album read rides the CDN cache, below the cost of an extra island round-trip.
 
 | Hub page                               | Fixed widget (locked)                                                                                                                                                                                                                                   | Already editable elsewhere                         |
