@@ -67,13 +67,19 @@ const hasTabs = tabs.length > 1;
 
 // CSS-only category switching: hide every panel, show the one whose radio is
 // checked (:has on the wrapper). One tab → always show the single panel.
+// The hide + reveal pair lives inside @supports selector(:has(*)): a bare
+// `display:none` here left the ENTIRE product area empty in :has()-less
+// browsers (Firefox ESR 115, Safari <=15.3), since only a :has() rule ever
+// showed a panel. Without support, every rail simply renders stacked —
+// content over choreography.
 const panelCss = hasTabs
-  ? '.wcp-store-panel{display:none}\n' +
+  ? '@supports selector(:has(*)){\n.wcp-store-panel{display:none}\n' +
     tabs
       .map(
         (_, i) => `.wcp-store-tabs:has(#wcp-cat-${i}:checked) [data-panel="${i}"]{display:block}`,
       )
-      .join('\n')
+      .join('\n') +
+    '\n}'
   : '.wcp-store-panel{display:block}';
 
 const salesLine =
@@ -297,6 +303,15 @@ const sized = (u?: string): string | undefined =>
     background: var(--color-amber);
     color: var(--color-navy);
   }
+  /* Windows High Contrast strips backgrounds — without this the selected
+     category is indistinguishable. Outline (kept by forced colors) marks it
+     with no layout shift. */
+  @media (forced-colors: active) {
+    .wcp-store-radio:checked + .wcp-store-tab {
+      outline: 2px solid SelectedItem;
+      outline-offset: -2px;
+    }
+  }
   .wcp-store-radio:focus-visible + .wcp-store-tab {
     outline: 3px solid #fff;
     outline-offset: 2px;
@@ -408,10 +423,16 @@ const sized = (u?: string): string | undefined =>
     background-size: 300px;
     opacity: 0.6;
   }
-  @media (prefers-reduced-motion: no-preference) {
+  /* The shine animates background-position — paint work every frame, not a
+     compositor transform — so like .wcp-hub-wash it only runs on pointer:fine
+     devices; phones keep the gradient painted once, static. The floats are
+     transform-only and stay on everywhere motion is allowed. */
+  @media (prefers-reduced-motion: no-preference) and (pointer: fine) {
     .wcp-store-shine {
       animation: wcp-store-shine 6s ease-in-out infinite;
     }
+  }
+  @media (prefers-reduced-motion: no-preference) {
     .wcp-store-float {
       animation: wcp-store-float 7s ease-in-out infinite;
     }

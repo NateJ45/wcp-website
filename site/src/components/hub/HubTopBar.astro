@@ -356,9 +356,14 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
   data-hub-topstrip
   class="relative z-30 flex items-center gap-1.5 border-b border-white/10 bg-navy px-4 py-2.5 text-white lg:hidden"
 >
+  {
+    /* h-10 visual, but a 44px HIT area (after:-inset-0.5): four adjacent 40px
+      targets in one strip is where small-iPhone mis-taps happen. -inset-0.5
+      stays inside the strip's gap-1.5, so neighboring hit areas never overlap. */
+  }
   <button
     type="button"
-    class="inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+    class="relative inline-flex h-10 w-10 items-center justify-center rounded-md text-white after:absolute after:-inset-0.5 after:content-[''] hover:bg-white/10"
     aria-label="Open menu"
     aria-controls="hub-drawer"
     aria-expanded="false"
@@ -369,7 +374,7 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
   <span class="truncate font-bold">{title}</span>
   <button
     type="button"
-    class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+    class="relative ml-auto inline-flex h-10 w-10 items-center justify-center rounded-md text-white after:absolute after:-inset-0.5 after:content-[''] hover:bg-white/10"
     aria-label="Search the Family Hub"
     data-hub-search-open
   >

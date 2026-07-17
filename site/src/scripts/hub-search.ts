@@ -71,6 +71,15 @@ function resultLink(hit: Entry): HTMLLIElement {
 onPageLoad(() => {
   const dialog = document.getElementById('hub-search') as HTMLDialogElement | null;
   if (!dialog) return;
+  // No <dialog> support (iOS <=15.3): opening would throw a TypeError on a
+  // visible, always-rendered affordance. Hide the triggers instead — same
+  // guard hub-event-dialog.ts and social-lightbox.ts already carry.
+  if (typeof dialog.showModal !== 'function') {
+    for (const trigger of document.querySelectorAll<HTMLElement>('[data-hub-search-open]')) {
+      trigger.hidden = true;
+    }
+    return;
+  }
   const input = dialog.querySelector<HTMLInputElement>('#hub-search-input')!;
   const list = dialog.querySelector<HTMLUListElement>('#hub-search-results')!;
   const emptyNote = dialog.querySelector<HTMLElement>('#hub-search-empty')!;

@@ -42,6 +42,19 @@
    below to key off that class instead of the OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Declare the page's color-scheme explicitly. Samsung Internet's "Dark mode"
+   and Chrome Android's auto-dark heuristically INVERT pages that show no
+   dark-scheme signal — mangling the navy chrome, the theme-stable islands,
+   and every measured contrast pair. A declared scheme opts out of that
+   inversion (our own .dark class is the only dark path), and `dark` on .dark
+   also flips UA form controls/scrollbars to match the chosen theme. */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
 /* Cross-document View Transitions: the graceful cross-fade between page loads
    (Chrome 126+, Safari 18.2+; others — e.g. Firefox — just do a normal instant
    load). This replaced Astro's <ClientRouter /> in the 2026-07 performance pass
@@ -497,6 +510,15 @@
   .wcp-hub-emblem-plate {
     display: none;
   }
+  /* Fixed elements repeat on EVERY printed sheet (Firefox especially): with
+     "print backgrounds" on, the ambient wash stamped three blurred color
+     blobs onto each page of a printed calendar/handbook. The body::before
+     grain is background-image (usually skipped) but hiding it is cheap
+     insurance for the same reason. */
+  .wcp-hub-wash,
+  body::before {
+    display: none !important;
+  }
 }
 .dark .wcp-hub-emblem {
   opacity: 0.07;
@@ -703,6 +725,9 @@
 }
 .wcp-event-dialog::backdrop {
   background: rgba(1, 24, 46, 0.45);
+  /* Hand-written rule, so the -webkit- twin is on us (Safari <=17 needs it;
+     Tailwind's backdrop-blur utilities emit their own). */
+  -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
 .wcp-event-dialog__panel {
@@ -1445,6 +1470,31 @@ li:nth-child(4n + 4) > .hub-note {
   }
 }
 
+/* Windows High Contrast (forced-colors) strips background fills, which turned
+   every progress bar into an empty track and hid the phone tab bar's active
+   indicator. Borders and underlines survive forcing; the fill keeps a SYSTEM
+   color (tracks the user's own palette) via forced-color-adjust: none. */
+@media (forced-colors: active) {
+  [role='progressbar'] {
+    border: 1px solid;
+  }
+  .wcp-progress-fill {
+    forced-color-adjust: none;
+    background: SelectedItem;
+  }
+  [data-hub-tabbar] a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  /* My-classes picker: pressed state was navy-fill only (plus a border-color
+     shift that forcing collapses); a doubled outline survives. */
+  [data-my-class-pick][aria-pressed='true'] {
+    outline: 2px solid SelectedItem;
+    outline-offset: -2px;
+  }
+}
+
 /* Ambient breathing for a decorative .wcp-glow: a slow positional drift + scale,
    TRANSFORM ONLY so the per-theme glow opacity (0.55 light / 0.16 dark) is left
    untouched and contrast never shifts. aria-hidden decorative use only. */
@@ -1843,6 +1893,18 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
    sticky TOC, the copy-link anchors), collapse the two-column grid to one, and
    keep each card whole across page breaks on a plain white ground. (This is the
    web page itself; the separate downloadable PDF is unaffected.) */
+/* iOS Safari ignores overflow:hidden on the root for TOUCH scrolling (the
+   drawer's scroll lock in hub-drawer.ts), so the page could rubber-band and
+   drift behind an open drawer. Containing overscroll inside the drawer and
+   swallowing touches on the backdrop keeps the page put without the heavier
+   fixed-body pattern. */
+#hub-drawer {
+  overscroll-behavior: contain;
+}
+#hub-drawer-backdrop {
+  touch-action: none;
+}
+
 @media print {
   .hub-rail-aside,
   #hub-drawer,

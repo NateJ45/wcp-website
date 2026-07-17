@@ -6,7 +6,17 @@ import { onPageLoad } from './_page-load';
 onPageLoad(() => {
   document.querySelectorAll<HTMLElement>('[data-alert]').forEach((banner) => {
     const key = banner.dataset.alertKey;
-    if (key && localStorage.getItem(key) === '1') {
+    // Guarded read: under Safari "Block All Cookies" / Firefox cookie blocking
+    // localStorage ACCESS throws, and an unguarded throw here aborted the whole
+    // loop before the dismiss button below was ever wired — the banner became
+    // permanently un-dismissable for those users.
+    let dismissed = false;
+    try {
+      dismissed = !!key && localStorage.getItem(key) === '1';
+    } catch {
+      /* storage blocked — treat as not dismissed */
+    }
+    if (dismissed) {
       banner.hidden = true;
       return;
     }

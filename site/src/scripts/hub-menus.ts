@@ -14,7 +14,12 @@ const menus = () => document.querySelectorAll<HTMLDetailsElement>('details[data-
 onPageLoad(() => {
   if (!document.querySelector('details[data-hub-menu]')) return;
 
-  document.addEventListener('click', (e) => {
+  // pointerdown, not click: iOS Safari only synthesizes a bubbling click for
+  // taps on "clickable" targets (interactive elements or cursor:pointer), so a
+  // document-level click listener never fires when a parent taps blank canvas
+  // to dismiss — the panel stayed open. pointerdown fires for every touch on
+  // every element (iOS 13+), and closing on press-down feels snappier anyway.
+  document.addEventListener('pointerdown', (e) => {
     for (const menu of menus()) {
       if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
     }

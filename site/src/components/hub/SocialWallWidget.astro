@@ -468,7 +468,11 @@ if (tiles.length === 0) {
     margin: auto;
     width: auto;
     max-width: min(94vw, 42rem);
+    /* vh first as the fallback line, then dvh (matches the other modals): with
+       the iOS toolbar expanded, 92vh is taller than the visible viewport and a
+       tall portrait post pushed the caption row under the toolbar. */
     max-height: 92vh;
+    max-height: 92dvh;
     border: none;
     padding: 0;
     border-radius: var(--radius);
@@ -479,6 +483,8 @@ if (tiles.length === 0) {
   }
   .wcp-wall-lb::backdrop {
     background: rgba(1, 30, 55, 0.74);
+    /* Hand-written rule, so the -webkit- twin is on us (Safari <=17). */
+    -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
   }
   .wcp-wall-lb-fig {

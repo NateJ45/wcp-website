@@ -68,4 +68,12 @@ function init() {
 onPageLoad(init);
 onBeforeSwap(clearTimers);
 
+// BFCACHE: onBeforeSwap (pagehide) cleared the timers, and a Back/Forward
+// restore does not re-fire onPageLoad — the countdown sat frozen at stale
+// numbers forever. Rebuild on a persisted restore (init clears timers first,
+// so this is safe to run repeatedly).
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) init();
+});
+
 export {};

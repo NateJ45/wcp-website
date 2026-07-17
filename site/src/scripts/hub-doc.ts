@@ -250,6 +250,34 @@ function scrollspy(nav: HTMLElement): void {
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
-  window.addEventListener('scrollend', unpin, { passive: true });
+  // Precise release when the click's smooth scroll settles. Safari has no
+  // `scrollend`, so there we watch the scroll stream instead: while pinned,
+  // each scroll event pushes a short settle timer, and ~150ms of silence means
+  // the scroll finished → unpin. (Without this, Safari relied on the 1s
+  // pinTimer alone; a long smooth scroll still in flight at 1s re-ran pick()
+  // and could re-highlight the PREVIOUS section — the exact bug the pin
+  // exists to prevent.) The 1s pinTimer stays as the shared backstop for a
+  // click that causes no scroll at all.
+  // Boolean first: a bare `'onscrollend' in window` check narrows `window` to
+  // `never` in the else branch (lib.dom types always declare it).
+  const hasScrollEnd = 'onscrollend' in window;
+  if (hasScrollEnd) {
+    window.addEventListener('scrollend', unpin, { passive: true });
+  } else {
+    let settleTimer = 0;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!pinned) return;
+        // Real scrolling observed: the settle timer takes over the release, so
+        // push the 1s backstop out of the way (it would otherwise still fire
+        // mid-flight on a long smooth scroll — the very bug being fixed).
+        clearTimeout(pinTimer);
+        clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(unpin, 150);
+      },
+      { passive: true },
+    );
+  }
   update();
 }

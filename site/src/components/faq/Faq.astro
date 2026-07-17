@@ -5,7 +5,10 @@
    Holds a list of <FaqItem>s. The open/close animation is pure CSS
    (grid-template-rows 0fr -> 1fr, the modern way to transition to height:auto),
    keyed off each item's button[aria-expanded] via :has(). JS (faq.ts, colocated
-   below) only flips aria-expanded + inert. With no JS, all answers are visible.
+   below) only flips aria-expanded + inert. The COLLAPSED state is double-gated
+   below (.js + @supports :has()) so that with no JS, or in a browser without
+   :has() (Firefox ESR 115, Safari <=15.3), every answer stays visible and
+   interactive — content never depends on JS or modern CSS to appear.
 
    The styles are `is:global` so they reach the separate FaqItem component, but
    they only ship on pages that render an <Faq> (Astro bundles component styles
@@ -30,17 +33,24 @@ const { class: className } = Astro.props;
 <style is:global>
   .wcp-faq-panel {
     display: grid;
-    grid-template-rows: 0fr;
     transition: grid-template-rows 0.3s ease;
   }
   .wcp-faq-panel-inner {
     overflow: hidden;
   }
-  /* Open state: the item whose trigger is expanded gets a full-height panel and
-     a flipped chevron. :has() is well supported in current browsers; where it
-     is not, the panel simply stays open (content is never hidden). */
-  [data-faq-item]:has([data-faq-trigger][aria-expanded='true']) .wcp-faq-panel {
-    grid-template-rows: 1fr;
+  /* Collapse + open state, gated TWICE: `.js` (only faq.ts ever flips
+     aria-expanded) and `@supports :has()` (only the :has() rule ever expands a
+     panel). If either is missing the collapse never applies, so answers are
+     always visible — a bare `grid-template-rows: 0fr` here once hid every
+     answer permanently for no-JS visitors and :has()-less browsers. faq.ts
+     mirrors the same @supports check before making collapsed panels inert. */
+  @supports selector(:has(*)) {
+    .js .wcp-faq-panel {
+      grid-template-rows: 0fr;
+    }
+    .js [data-faq-item]:has([data-faq-trigger][aria-expanded='true']) .wcp-faq-panel {
+      grid-template-rows: 1fr;
+    }
   }
   [data-faq-item]:has([data-faq-trigger][aria-expanded='true']) .wcp-faq-chevron {
     transform: rotate(180deg);

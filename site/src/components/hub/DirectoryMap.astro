@@ -109,6 +109,20 @@ const mapData = JSON.stringify({ families, preschool });
     map?.remove();
     map = undefined;
   });
+
+  // BFCACHE: onBeforeSwap (pagehide) destroyed the map, but a Back/Forward
+  // restore fires `pageshow persisted` without re-running anything — so a
+  // family who had the Map view open came back to an empty 480px box until
+  // they toggled List -> Map (same bug class as reveal.ts, fixed 2026-07-17).
+  // Rebuild only when the map container is actually visible (offsetParent
+  // check): if the List view is active the container is display:none and
+  // Leaflet would size against a 0x0 box; the wcp:showmap handler above
+  // covers that path as usual.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    const mapEl = document.getElementById('wcp-dirmap');
+    if (mapEl && mapEl.offsetParent !== null) initMap();
+  });
 </script>
 
 <style is:global>

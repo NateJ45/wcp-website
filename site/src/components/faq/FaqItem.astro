@@ -3,9 +3,12 @@
    FaqItem — one accessible question/answer
    ============================================================================
    Real semantics: the question is a <button aria-expanded aria-controls> inside
-   a heading; the answer is a region (role=region aria-labelledby) that is
-   `inert` while collapsed so its links aren't keyboard-reachable. This replaces
-   the old Squarespace checkbox-toggle hack entirely.
+   a heading; the answer is a region (role=region aria-labelledby) that faq.ts
+   makes `inert` while collapsed so its links aren't keyboard-reachable. inert
+   is applied by JS at init, never server-rendered: with no JS the panels stay
+   visible (see Faq.astro's gated collapse), and a server-rendered inert would
+   leave those visible answers un-clickable. This replaces the old Squarespace
+   checkbox-toggle hack entirely.
 
    Put the answer in the default slot:
      <FaqItem question="...">Answer text, may include <a>links</a>.</FaqItem>
@@ -57,13 +60,7 @@ const panelId = `faqp-${slug}`;
       </svg>
     </button>
   </Heading>
-  <div
-    id={panelId}
-    class="wcp-faq-panel"
-    role="region"
-    aria-labelledby={btnId}
-    inert={!defaultOpen}
-  >
+  <div id={panelId} class="wcp-faq-panel" role="region" aria-labelledby={btnId}>
     <div class="wcp-faq-panel-inner">
       <div class="pb-5 leading-relaxed text-ink"><slot /></div>
     </div>

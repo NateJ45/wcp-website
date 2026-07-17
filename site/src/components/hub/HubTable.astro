@@ -26,9 +26,16 @@ interface Props {
 const { label, columns, class: className } = Astro.props;
 ---
 
+{
+  /* overflow-CLIP, not hidden: overflow-hidden makes this wrapper the sticky
+    containing scroll box, which silently disabled the th's sticky headers
+    everywhere (they clamped to a container that never scrolls). clip rounds
+    the corners identically but creates no scroll container, so the headers
+    stick to the viewport/topbar as designed. */
+}
 <div
   class={cn(
-    'wcp-hub-table overflow-hidden rounded-[var(--radius)] md:border md:border-border md:bg-white md:shadow-sm md:dark:bg-surface',
+    'wcp-hub-table overflow-clip rounded-[var(--radius)] md:border md:border-border md:bg-white md:shadow-sm md:dark:bg-surface',
     className,
   )}
 >

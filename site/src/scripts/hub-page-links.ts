@@ -85,8 +85,13 @@ function linkifyPageRefs(root: ParentNode, currentRoute: string): void {
   const active = TARGETS.filter(([, slug]) => slug !== currentRoute);
   if (active.length === 0) return;
   const groupSlug = new Map(active.map(([group, slug]) => [group, slug]));
+  // Leading boundary is a captured (^|\W), not a (?<!\w) lookbehind: lookbehind
+  // only reached Safari in 16.4, and `new RegExp` with one THROWS at construction
+  // on older iOS — which silently killed this whole module there. The boundary
+  // char (if any) is re-emitted as plain text before the link below. Lookahead
+  // ((?!\w), (?=\))) is fine everywhere.
   const combined = new RegExp(
-    '(?<!\\w)(?:' + active.map(([group, , src]) => `(?<${group}>${src})`).join('|') + ')(?!\\w)',
+    '(^|\\W)(?:' + active.map(([group, , src]) => `(?<${group}>${src})`).join('|') + ')(?!\\w)',
     'g',
   );
 
@@ -110,7 +115,9 @@ function linkifyPageRefs(root: ParentNode, currentRoute: string): void {
     let last = 0;
     let frag: DocumentFragment | null = null;
     for (const m of text.matchAll(combined)) {
-      const idx = m.index ?? 0;
+      const lead = m[1] ?? ''; // the captured boundary char, kept as plain text
+      const idx = (m.index ?? 0) + lead.length;
+      const matched = m[0].slice(lead.length);
       const group = m.groups && Object.keys(m.groups).find((k) => m.groups?.[k] !== undefined);
       const slug = group ? groupSlug.get(group) : undefined;
       if (!slug || used.has(slug)) continue; // unknown, or already linked once
@@ -119,10 +126,10 @@ function linkifyPageRefs(root: ParentNode, currentRoute: string): void {
       if (idx > last) frag.append(text.slice(last, idx));
       const a = document.createElement('a');
       a.href = `/family-hub/${slug}`;
-      a.textContent = m[0];
+      a.textContent = matched;
       a.className = 'wcp-hub-pagelink';
       frag.append(a);
-      last = idx + m[0].length;
+      last = idx + matched.length;
     }
     if (frag) {
       if (last < text.length) frag.append(text.slice(last));

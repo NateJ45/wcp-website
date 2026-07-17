@@ -13,8 +13,19 @@ import { onPageLoad } from '@/scripts/_page-load';
 
 const KEY = 'wcp-updates-seen';
 
-onPageLoad(() => {
+function init() {
   if (!location.pathname.startsWith('/family-hub')) return;
+
+  // Re-runnable (bfcache restores re-enter here): drop everything a previous
+  // pass rendered, then recompute against the CURRENT seen-time — otherwise a
+  // Back-restored page keeps showing "New" pills for items the family just
+  // read on the Updates page.
+  document
+    .querySelectorAll<HTMLElement>('[data-fresh-pill], [data-fresh-badge]')
+    .forEach((el) => el.remove());
+  document.querySelectorAll<HTMLElement>('[data-bell-badge]').forEach((slot) => {
+    slot.replaceChildren();
+  });
 
   let seen: string | null = null;
   try {
@@ -90,6 +101,8 @@ onPageLoad(() => {
   // Opening a bell marks everything seen: badges and pills clear on the next
   // page rather than mid-look (yanking rows a reader is scanning is worse).
   for (const bell of document.querySelectorAll<HTMLDetailsElement>('details[data-hub-bell]')) {
+    if (bell.dataset.freshBound) continue; // init re-runs on bfcache restore
+    bell.dataset.freshBound = '1';
     bell.addEventListener('toggle', () => {
       if (!bell.open) return;
       try {
@@ -120,6 +133,14 @@ onPageLoad(() => {
     badge.appendChild(sr);
     link.appendChild(badge);
   }
+}
+
+onPageLoad(init);
+
+// BFCACHE: a Back/Forward restore skips onPageLoad, so the restored page kept
+// its pre-visit pills and badge counts. Recompute (init cleans up first).
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) init();
 });
 
 export {};

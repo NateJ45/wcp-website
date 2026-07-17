@@ -58,9 +58,13 @@ const metaLine = (item: BellItem) =>
 ---
 
 <details class="relative" data-hub-bell data-hub-menu>
+  {
+    /* h-10 visual + 44px hit area via after:-inset-0.5, matching the phone
+      strip's other buttons (see HubTopBar). */
+  }
   <summary
     class={cn(
-      'inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-md transition-colors [&::-webkit-details-marker]:hidden',
+      'relative inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-md transition-colors after:absolute after:-inset-0.5 after:content-[""] [&::-webkit-details-marker]:hidden',
       tone === 'navy'
         ? 'text-white hover:bg-white/10'
         : 'text-ink hover:bg-navy/5 dark:hover:bg-white/10',

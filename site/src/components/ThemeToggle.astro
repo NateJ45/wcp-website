@@ -35,7 +35,9 @@ const toneClass =
   aria-pressed="false"
   aria-label="Switch to dark mode"
   class={cn(
-    'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors',
+    // h-10 visual + 44px hit area (after:-inset-0.5) — sits beside other 40px
+    // buttons in the hub phone strip; see HubTopBar.
+    'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors after:absolute after:-inset-0.5 after:content-[""]',
     toneClass,
     className,
   )}

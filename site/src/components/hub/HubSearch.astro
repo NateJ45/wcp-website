@@ -7,6 +7,10 @@
    src/scripts/hub-search.ts. Opens from the keyboard shortcut and any
    [data-hub-search-open] trigger (top bar + rail). Progressive: without JS
    the triggers do nothing and the hub works exactly as before.
+
+   Positioning: top-anchored on phones (mt-14 + mb-auto), centered from sm up.
+   A vertically centered dialog sits half under the iOS software keyboard the
+   moment the input focuses — the results list was invisible while typing.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 ---
@@ -14,7 +18,7 @@ import Icon from '@/components/Icon.astro';
 <dialog
   id="hub-search"
   aria-label="Search the Family Hub"
-  class="m-auto w-[min(92vw,34rem)] rounded-[var(--radius)] bg-white p-0 shadow-2xl backdrop:bg-black/50 dark:bg-surface"
+  class="mx-auto mt-14 mb-auto w-[min(92vw,34rem)] rounded-[var(--radius)] bg-white p-0 shadow-2xl backdrop:bg-black/50 sm:my-auto dark:bg-surface"
 >
   <div class="flex items-center gap-2 border-b border-border px-4">
     <Icon name="search" class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />

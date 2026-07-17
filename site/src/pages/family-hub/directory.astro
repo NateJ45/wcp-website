@@ -121,6 +121,15 @@ const letterFor = (f: DirEntry) => {
   return firstOfLetter.get(l) === f._id ? l : null;
 };
 
+// Contact-chip label: the first REAL name word. Teachers are listed with an
+// honorific ("Mrs. Lisa Cortez"), and a bare split(' ')[0] rendered that chip
+// as "MRS." (2026-07-17 audit). Skip leading honorifics; a name that is ONLY
+// an honorific falls back to its first word.
+const firstName = (name?: string): string => {
+  const parts = (name ?? '').trim().split(/\s+/);
+  return parts.find((w) => !/^(?:mr|mrs|ms|miss|mx|dr)\.?$/i.test(w)) ?? parts[0] ?? '';
+};
+
 // Families with a geocoded pin, for the map (filter applies here too).
 const mapFamilies = shown
   .filter(
@@ -393,13 +402,13 @@ const intro =
                                   Short names keep the aligned column; long ones take
                                   the room they need and the buttons wrap below. */}
                               <span class="min-w-14 text-xs font-semibold tracking-wide whitespace-nowrap text-ink-muted uppercase">
-                                {p.name?.split(' ')[0]}
+                                {firstName(p.name)}
                               </span>
                               {p.email && (
                                 <a
                                   href={`mailto:${p.email}`}
                                   data-copy={p.email}
-                                  data-copy-label={`${p.name?.split(' ')[0]}’s email`}
+                                  data-copy-label={`${firstName(p.name)}’s email`}
                                   aria-label={`Email ${p.name} (${p.email}) — also copies the address`}
                                   class="inline-flex items-center gap-1.5 rounded-full bg-amber px-3 py-1.5 text-sm font-bold text-black transition hover:brightness-95"
                                 >
@@ -410,7 +419,7 @@ const intro =
                                 <a
                                   href={`tel:${p.phone}`}
                                   data-copy={p.phone}
-                                  data-copy-label={`${p.name?.split(' ')[0]}’s number`}
+                                  data-copy-label={`${firstName(p.name)}’s number`}
                                   aria-label={`Call ${p.name} (${p.phone}) — also copies the number`}
                                   class="inline-flex items-center gap-1.5 rounded-full bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:bg-navy/90"
                                 >

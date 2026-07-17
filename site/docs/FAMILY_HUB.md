@@ -593,7 +593,9 @@ image through **wsrv.nl** (a free resizing proxy) to ~400px webp (~17KB) — `hu
 back to the full Fourthwall image if the proxy ever errors. The tabs are pure CSS (radio inputs +
 `:has()`) so they work
 with **no JS inside the server island** — the card is a `server:defer` island so its external
-fetches never block the dashboard. Categories, products, and the stat come **live from Fourthwall**
+fetches never block the dashboard. The panel-hiding is gated behind
+`@supports selector(:has(*))`, so a `:has()`-less browser (Firefox ESR 115, Safari ≤15.3) sees
+every rail stacked instead of an empty product area. Categories, products, and the stat come **live from Fourthwall**
 via `src/lib/fourthwall.ts` (cached, SWR):
 
 - `getStoreCollections()` — the Storefront API: the store's real categories, one tab each
