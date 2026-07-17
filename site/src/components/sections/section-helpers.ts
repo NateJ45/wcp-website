@@ -45,6 +45,41 @@ export function bandSize(section: SectionData): 'compact' | 'default' {
   return section.compact ? 'compact' : 'default';
 }
 
+// The per-type default background for the bridges that don't default to white
+// (mirror of each bridge's own `section.background ?? '<x>'`). Kept here so the
+// renderer can compute a section's effective background without importing every
+// bridge. ctaSection is special: it uses `tone`, not `background`.
+const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'navy'> = {
+  countdownSection: 'navy',
+  instagramSection: 'navy',
+  formSection: 'grey',
+  quickFactsSection: 'grey',
+  newsletterSignupSection: 'cream',
+  reviewFormSection: 'cream',
+};
+
+/** A section's rendered background, resolving the per-type default. */
+export function effectiveBg(section: SectionData): 'white' | 'grey' | 'cream' | 'navy' {
+  if (section._type === 'ctaSection') {
+    return (section.tone as 'navy' | 'cream' | undefined) ?? 'navy';
+  }
+  return section.background ?? BG_DEFAULT[section._type] ?? 'white';
+}
+
+/**
+ * Whether a band should carry the scallop/trim seam at its top — computed from
+ * the adjacent backgrounds, NOT a volunteer toggle (that was a design knob the
+ * page-builder shouldn't expose; removed from the schema 2026-07-17). The rule
+ * is deliberately sparing so the page never becomes a layer-cake of edges: a
+ * seam appears only when entering a STRONG band (cream or navy) whose colour
+ * actually differs from the band above. Subtle white↔grey alternations get no
+ * seam; navy↔navy (a CTA under a navy section) gets none either.
+ */
+export function wantsSeam(thisBg: string, prevBg: string | null): boolean {
+  if (prevBg === null) return false; // first section: the hero sits above it
+  return (thisBg === 'cream' || thisBg === 'navy') && thisBg !== prevBg;
+}
+
 /** Resolve a page slug to a root-relative href ("home" → "/"). */
 export function slugHref(slug: string | undefined, linkBase = ''): string {
   const path = !slug || slug === 'home' ? '/' : `/${slug}`;

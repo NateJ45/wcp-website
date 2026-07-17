@@ -8,6 +8,7 @@
    keeps in-section links inside preview mode; `site` feeds the contact block.
    ============================================================================ */
 import type { SectionData } from './section-helpers';
+import { effectiveBg, wantsSeam } from './section-helpers';
 import { deEmDashDeep } from '@/lib/portable-text';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
@@ -64,6 +65,23 @@ const { sections: rawSections = [], linkBase = '', site, cardWatermark = false }
 // is covered at once — the Board's Sanity copy can't be re-seeded while writes
 // are quota-blocked. A no-op once the content itself is em-dash-free.
 const sections = rawSections.map((s) => deEmDashDeep(s));
+
+// Seams are computed here from adjacent band colours, NOT read from a volunteer
+// toggle (that field was removed from the schema — a page-builder shouldn't ask
+// a board member to hand-judge where a divider belongs). Walk the array once,
+// tracking the previous band's effective background, and set each section's
+// `seam` accordingly. The noticeBar is a thin strip, never a full band, so it
+// neither carries a seam nor counts as the band above the next section.
+let prevBg: string | null = null;
+for (const section of sections) {
+  if (section._type === 'noticeBarSection') {
+    section.seam = false;
+    continue;
+  }
+  const bg = effectiveBg(section);
+  section.seam = wantsSeam(bg, prevBg);
+  prevBg = bg;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MAP: Record<string, any> = {

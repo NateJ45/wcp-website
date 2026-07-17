@@ -206,14 +206,10 @@ export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy
       options: { list: BACKGROUND_OPTIONS, layout: 'radio' },
       initialValue: defaultBackground,
     }),
-    defineField({
-      name: 'seam',
-      title: 'Cloud seam at top',
-      type: 'boolean',
-      description:
-        'Adds the soft cloud divider at the top of this band. Use only where the background colour changes from the section above.',
-      initialValue: false,
-    }),
+    // NOTE: the "cloud seam at top" toggle was removed 2026-07-17. The divider
+    // is now placed automatically by the site (SectionRenderer computes it from
+    // the colours of adjacent bands), so it always lands in the right spot and
+    // is never a knob a board member has to reason about. Nothing to do here.
     defineField({
       name: 'compact',
       title: 'Tighter spacing',

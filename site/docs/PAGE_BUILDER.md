@@ -137,9 +137,11 @@ this repo with "Secrets: write" and "Actions: write" permissions.
 
 Shared building blocks live in
 [`src/sanity/schemaTypes/objects/_shared.ts`](../src/sanity/schemaTypes/objects/_shared.ts):
-`bandFields()` (background `white|grey|cream|navy` + seam + compact only),
-`iconField()` (a **validated dropdown** of allowed icon names, so a typo can never
-break the build), required `alt` on every image, and constrained Portable Text.
+`bandFields()` (background `white|grey|cream|navy` + compact only — the divider/"seam"
+between bands is placed automatically by the renderer from adjacent band colours, not a
+volunteer toggle, since 2026-07-17), `iconField()` (a **validated dropdown** of allowed
+icon names, so a typo can never break the build), required `alt` on every image, and
+constrained Portable Text.
 
 There are **no** color, font, spacing, or layout fields anywhere, by design. A
 volunteer chooses _what_ and _what order_ and fills in words and photos; the styling
@@ -151,7 +153,11 @@ design controls to section schemas.**
 [`src/components/sections/SectionRenderer.astro`](../src/components/sections/SectionRenderer.astro)
 is a dispatch table keyed on `_type`. Each section type has one thin **bridge**
 component (e.g. `CardGridSection.astro`) that unpacks Sanity fields into the existing
-component's props and wraps it in `<Section bg seam size labelledby={titleId}>`.
+component's props and wraps it in `<Section bg seam size labelledby={titleId}>`. The
+renderer walks the sections once and sets each band's `seam` from the colours of the
+band above (`effectiveBg`/`wantsSeam` in `section-helpers.ts`): a scallop/trim edge
+appears only entering a strong band (cream or navy) whose colour changed, so pages
+never become a layer-cake of dividers and no board member has to decide.
 `titleId` derives from the section `_key` and feeds both `Section labelledby` and
 `SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
 
