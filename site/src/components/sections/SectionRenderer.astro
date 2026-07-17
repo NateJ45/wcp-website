@@ -11,7 +11,10 @@ import type { SectionData } from './section-helpers';
 import { effectiveBg, wantsSeam } from './section-helpers';
 import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
+import Interlude from '@/components/Interlude.astro';
+import TuitionOpener from '@/components/TuitionOpener.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
+import { SECTION_HOIST, SECTION_APPEND } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -76,7 +79,22 @@ const {
 // (headers, step descriptions, schedule text, prose, ...) so every section type
 // is covered at once — the Board's Sanity copy can't be re-seeded while writes
 // are quota-blocked. A no-op once the content itself is em-dash-free.
-const sections = rawSections.map((s) => deEmDashDeep(s));
+let sections = rawSections.map((s) => deEmDashDeep(s));
+
+// Page doctrine (public pages only): hoist named sections to the front (the
+// Visit page's tour form was 7th of 8) and append synthetic sections (the
+// Visit page's contact details). Runs BEFORE the seam computation so edges
+// follow the rendered order. Stopgaps registered in docs/PENDING.md.
+if (pageSlug) {
+  const hoistKeys = SECTION_HOIST[pageSlug] ?? [];
+  if (hoistKeys.length > 0) {
+    const hoisted = hoistKeys
+      .map((k) => sections.find((s) => s._key === k))
+      .filter((s): s is SectionData => Boolean(s));
+    sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
+  }
+  sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+}
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces
 // and unlisted pages). Indexed by "render after section i" for the loop below.
@@ -102,9 +120,14 @@ for (const [i, s] of sections.entries()) {
   if (s._type !== 'noticeBarSection') lastBandIndex = i;
 }
 
-// Seed with a leading strip's colour when a moment renders before everything.
+// A moment's effective band colour for the seam chain: strips and the tuition
+// opener are cream paper; a full-bleed interlude is a photograph (neutral, so
+// the next strong band gets its seam).
+const momentBg = (m: PhotoMoment): string => (m.kind === 'interlude' ? 'white' : (m.bg ?? 'cream'));
+
+// Seed with a leading moment's colour when one renders before everything.
 let prevBg: string | null = null;
-for (const m of momentsAfter.get(-1) ?? []) prevBg = m.bg ?? 'cream';
+for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
 for (const [i, section] of sections.entries()) {
   if (section._type === 'noticeBarSection') {
     section.seam = false;
@@ -113,8 +136,8 @@ for (const [i, section] of sections.entries()) {
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
   prevBg = bg;
-  // A strip after this section becomes the band the NEXT section sits under.
-  for (const m of momentsAfter.get(i) ?? []) prevBg = m.bg ?? 'cream';
+  // A moment after this section becomes the band the NEXT section sits under.
+  for (const m of momentsAfter.get(i) ?? []) prevBg = momentBg(m);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,9 +186,15 @@ const MAP: Record<string, any> = {
 ---
 
 {
-  (momentsAfter.get(-1) ?? []).map((m) => (
-    <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
-  ))
+  (momentsAfter.get(-1) ?? []).map((m) =>
+    m.kind === 'interlude' ? (
+      <Interlude slot={m.slot} caption={m.caption ?? ''} />
+    ) : m.kind === 'tuition-opener' ? (
+      <TuitionOpener />
+    ) : (
+      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+    ),
+  )
 }
 {
   sections.map((section, i) => {
@@ -190,9 +219,15 @@ const MAP: Record<string, any> = {
             }
           />
         )}
-        {strips.map((m) => (
-          <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
-        ))}
+        {strips.map((m) =>
+          m.kind === 'interlude' ? (
+            <Interlude slot={m.slot} caption={m.caption ?? ''} />
+          ) : m.kind === 'tuition-opener' ? (
+            <TuitionOpener />
+          ) : (
+            <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+          ),
+        )}
       </>
     );
   })

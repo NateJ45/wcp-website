@@ -1,0 +1,49 @@
+---
+/* ============================================================================
+   Interlude — one unscrimmed photograph owning a full viewport band
+   ============================================================================
+   The high-end benchmark's missing move (Dalton/Exeter): after the boldness
+   pass every photo on the site sits in a frame; nowhere does a single image
+   own the page. This band is one edge-to-edge registry photo (~62vh) with a
+   single caption sentence. The IMAGE stays unscrimmed — only a local bottom
+   gradient sits behind the caption text so it holds AA over any photo, fading
+   to nothing above. Injected per page by the moments map (code-owned); renders
+   nothing when the registry is empty.
+   ============================================================================ */
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl, imageSrcSet } from '@/lib/image';
+
+interface Props {
+  /** Registry slot name — different slots pull different shots. */
+  slot: string;
+  /** The one caption sentence (code-owned, evergreen, site voice). */
+  caption: string;
+}
+const { slot, caption } = Astro.props;
+const [photo] = await photosFor(slot, 1);
+---
+
+{
+  photo && (
+    <section class="relative" aria-label={caption}>
+      <img
+        src={imageUrl(photo.image as never, 1920)}
+        srcset={imageSrcSet(photo.image as never)}
+        sizes="100vw"
+        alt={photo.alt}
+        loading="lazy"
+        decoding="async"
+        class="h-[min(62vh,34rem)] w-full object-cover"
+      />
+      {/* Caption strip: gradient is LOCAL to the text zone, the photo above it
+          stays untouched (the unscrimmed doctrine). White on the .55 navy floor
+          of the gradient holds AA; text sits at the strip's darkest edge. */}
+      <p
+        class="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(1,32,58,0.72),rgba(1,32,58,0.35)_60%,transparent)] px-6 pt-14 pb-5 text-center font-display text-xl text-white sm:text-2xl"
+        aria-hidden="true"
+      >
+        {caption}
+      </p>
+    </section>
+  )
+}

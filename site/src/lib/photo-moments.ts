@@ -16,20 +16,45 @@
 
 export interface PhotoMoment {
   after: number;
+  /** What renders: a 3-print strip (default), a full-bleed unscrimmed
+      interlude (one photo owning the viewport, benchmark move), or the
+      code-owned tuition opener statement. */
+  kind?: 'strip' | 'interlude' | 'tuition-opener';
   slot: string;
   bg?: 'cream' | 'grey' | 'white';
   captions?: string[];
+  /** Interlude only: the single caption sentence. */
+  caption?: string;
 }
 
 export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
+  home: [
+    // The full-bleed interlude (benchmark move): one unscrimmed photo owning
+    // a viewport, placed late in the page as the emotional beat before the
+    // closing sections.
+    {
+      after: 7,
+      kind: 'interlude',
+      slot: 'home-interlude',
+      caption: 'Some mornings you just have to be there for.',
+    },
+  ],
   'why-wcp': [
     {
       after: 0,
       slot: 'why-wcp-strip',
       captions: ['Hands-on, every morning', 'Friends by September', 'Real classrooms, real mess'],
     },
+    {
+      after: 4,
+      kind: 'interlude',
+      slot: 'why-wcp-interlude',
+      caption: 'Every child known by name. Every parent in the room.',
+    },
   ],
   tuition: [
+    // The values-led opener leads the page (before every section).
+    { after: -1, kind: 'tuition-opener', slot: 'tuition-opener' },
     {
       after: 1,
       slot: 'tuition-strip',
