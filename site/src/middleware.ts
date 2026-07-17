@@ -36,17 +36,6 @@ const HUB_OPEN = true;
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname.replace(/\/+$/, '') || '/';
-
-  // The embedded Sanity Studio (/studio, injected by @sanity/astro from
-  // node_modules, prerender=false so this middleware DOES run for it) has no
-  // page-level robots meta and must never be indexed. The sitemap filter
-  // already excludes it; this header closes the indexing side. Editing the
-  // injected route isn't durable, so the header lives here.
-  if (path === '/studio' || path.startsWith('/studio/')) {
-    const res = await next();
-    res.headers.set('X-Robots-Tag', 'noindex');
-    return res;
-  }
   const inHub = path === HUB_PREFIX || path.startsWith(`${HUB_PREFIX}/`);
   // Server-island endpoints (/_server-islands/<Component>) render hub widgets
   // OUTSIDE the /family-hub prefix — every island on the site today is gated
