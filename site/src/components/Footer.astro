@@ -13,7 +13,7 @@ import SeasonalAccent from '@/components/SeasonalAccent.astro';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings, getNavigation, getSeason } from '@/lib/cms';
 import { withBase } from '@/lib/utils';
-import { isValidAdsId } from '@/lib/consent-state';
+import { isValidGtagId, isValidMetaPixelId } from '@/lib/consent-state';
 
 interface Props {
   /** '' in production, '/preview' inside the Presentation preview. */
@@ -33,9 +33,14 @@ const season = await getSeason();
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
 // Mirrors CookieConsent.astro's render condition so the "Cookie choices"
-// opener never exists without the card it opens.
-const consentGadsId = (import.meta.env.PUBLIC_GADS_ID as string | undefined) ?? '';
-const consentEnabled = consentGadsId !== '' && isValidAdsId(consentGadsId);
+// opener never exists without the card it opens: any configured optional
+// tracker (GA4, Google Ads tag, Meta Pixel) enables both.
+const consentEnv = import.meta.env;
+const consentEnabled =
+  (typeof consentEnv.PUBLIC_GA_ID === 'string' && isValidGtagId(consentEnv.PUBLIC_GA_ID)) ||
+  (typeof consentEnv.PUBLIC_GADS_ID === 'string' && isValidGtagId(consentEnv.PUBLIC_GADS_ID)) ||
+  (typeof consentEnv.PUBLIC_META_PIXEL_ID === 'string' &&
+    isValidMetaPixelId(consentEnv.PUBLIC_META_PIXEL_ID));
 ---
 
 {

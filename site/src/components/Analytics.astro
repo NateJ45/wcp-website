@@ -11,11 +11,12 @@
         in the Cloudflare dash under Analytics → Web Analytics and paste its
         token into the env.
 
-   The Google Ads gtag.js conversion tag (PUBLIC_GADS_ID) is NOT emitted here
-   anymore: it sets a real tracking cookie, so it is CONSENT-GATED. Setting
-   the env var renders the CookieConsent card (BaseLayout, public pages) and
-   src/scripts/consent.ts injects the tag — still through Partytown — only
-   after the visitor allows it. Nothing Google loads before that.
+   The cookie-setting trackers are NOT emitted here: GA4 (PUBLIC_GA_ID), the
+   Google Ads tag (PUBLIC_GADS_ID), and the Meta Pixel (PUBLIC_META_PIXEL_ID)
+   are all CONSENT-GATED. Setting any of those env vars renders the
+   CookieConsent card (BaseLayout, public pages) and src/scripts/consent.ts
+   injects only the granted categories — still through Partytown. Nothing
+   Google or Meta loads before a grant.
 
    The IDs are NOT hardcoded — they come from environment variables so they can
    differ per environment (real in production, empty in previews) and are never

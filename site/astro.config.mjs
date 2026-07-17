@@ -63,10 +63,12 @@ const cmsRedirects = await fetchCmsRedirects();
 //
 // Integrations:
 //   - sitemap   : emits sitemap-index.xml + sitemap-0.xml at build time
-//   - partytown : runs Google Ads gtag.js in a web worker, off the main
-//                 thread, so third-party tracking never drags down the
-//                 Performance score. `forward: ['dataLayer.push']` proxies
-//                 gtag() calls from the main thread into the worker.
+//   - partytown : runs the consent-gated trackers (gtag.js, Meta Pixel) in a
+//                 web worker, off the main thread, so third-party tracking
+//                 never drags down the Performance score. `forward` proxies
+//                 main-thread gtag()/fbq() calls (e.g. a future conversion
+//                 event on a form submit) into the worker. Injection itself
+//                 happens post-consent in src/scripts/consent.ts.
 //   - react     : enables React islands (used for interactive bits like the
 //                 FAQ accordion, testimonial effects, and the family map)
 //
@@ -160,7 +162,7 @@ export default defineConfig({
       // entry — crawlers get a real freshness signal instead of none.
       lastmod: new Date(),
     }),
-    partytown({ config: { forward: ['dataLayer.push'] } }),
+    partytown({ config: { forward: ['dataLayer.push', 'fbq'] } }),
     react(),
   ],
 

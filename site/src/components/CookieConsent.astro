@@ -1,25 +1,49 @@
 ---
 /* ============================================================================
-   CookieConsent — the consent card for the site's ONE optional cookie
+   CookieConsent — the consent card for the site's optional trackers
    ============================================================================
-   Renders only when PUBLIC_GADS_ID is set (there is nothing to consent to
+   Renders when ANY tracker env var is set (there is nothing to consent to
    otherwise — the Cloudflare beacon is cookieless, embeds are click-to-load
-   on the nocookie host, and theme/hub-login storage is essential). Ships
-   `hidden`; src/scripts/consent.ts reveals it on a first visit, persists the
-   choice, and loads the ads tag only after "Allow". No JS → no tag can load,
-   so the card correctly never appears.
+   on the nocookie host, and theme/hub-login storage is essential):
 
-   Deliberately NOT the three-toggle wall of the generic consent widgets: with
-   a single optional category, the two equal-prominence buttons ARE the
-   choice, and the expandable list carries the full inventory transparency.
+     PUBLIC_GA_ID          → the Analytics toggle (Google Analytics 4)
+     PUBLIC_GADS_ID        → the Advertising toggle (Google Ads tag)
+     PUBLIC_META_PIXEL_ID  → the Advertising toggle (Meta Pixel)
+
+   Ships `hidden`; src/scripts/consent.ts reveals it on a first visit,
+   persists the choice, and loads ONLY the granted categories. No JS → no
+   tracker can load, so the card correctly never appears. Both toggles
+   default OFF: "Save choices" untouched is the one-click decline (equal
+   prominence with "Accept all"), and a toggle row only renders when its
+   category actually has a configured tracker — no dead switches.
    Copy is code-owned (brand voice, no volunteer knob).
    ============================================================================ */
 import Button from '@/components/ui/Button.astro';
 import { withBase } from '@/lib/utils';
-import { isValidAdsId } from '@/lib/consent-state';
+import { isValidGtagId, isValidMetaPixelId } from '@/lib/consent-state';
 
-const gadsId = (import.meta.env.PUBLIC_GADS_ID as string | undefined) ?? '';
-const enabled = gadsId !== '' && isValidAdsId(gadsId);
+const env = import.meta.env;
+const gaId =
+  typeof env.PUBLIC_GA_ID === 'string' && isValidGtagId(env.PUBLIC_GA_ID) ? env.PUBLIC_GA_ID : '';
+const gadsId =
+  typeof env.PUBLIC_GADS_ID === 'string' && isValidGtagId(env.PUBLIC_GADS_ID)
+    ? env.PUBLIC_GADS_ID
+    : '';
+const pixelId =
+  typeof env.PUBLIC_META_PIXEL_ID === 'string' && isValidMetaPixelId(env.PUBLIC_META_PIXEL_ID)
+    ? env.PUBLIC_META_PIXEL_ID
+    : '';
+
+const hasAnalytics = gaId !== '';
+const hasMarketing = gadsId !== '' || pixelId !== '';
+const enabled = hasAnalytics || hasMarketing;
+
+const marketingLabel =
+  gadsId && pixelId
+    ? 'Google and Meta cookies that measure our ads.'
+    : pixelId
+      ? 'A Meta cookie that measures our ads.'
+      : 'A Google cookie that measures our ads.';
 ---
 
 {
@@ -27,38 +51,66 @@ const enabled = gadsId !== '' && isValidAdsId(gadsId);
     <section
       aria-label="Cookie choices"
       data-consent-banner
+      data-ga-id={gaId}
       data-gads-id={gadsId}
+      data-meta-pixel-id={pixelId}
       hidden
       class="wcp-consent-card wcp-paper-card fixed inset-x-3 bottom-3 z-40 rounded-xl border border-navy/15 p-5 shadow-xl sm:right-4 sm:bottom-4 sm:left-auto sm:max-w-sm dark:border-white/15"
     >
       <h2 class="font-display text-lg text-heading">A quick cookie question</h2>
       <p class="mt-2 text-sm leading-relaxed text-ink">
-        We would like to set one optional Google cookie that tells us when an ad brought a family
-        here. Say no and the site works exactly the same.
+        A few optional cookies help us see how families find the site. Choose what you are
+        comfortable with; everything works the same either way.
       </p>
-      <details class="mt-3 text-sm text-ink">
-        <summary class="cursor-pointer font-bold text-sky-ink">What the site stores</summary>
-        <ul class="mt-2 space-y-1.5 pl-4">
+      <ul class="mt-3 space-y-2.5 text-sm text-ink">
+        <li class="flex items-baseline justify-between gap-3">
+          <span>
+            <strong>Essential</strong>
+            <span class="block text-ink-muted">
+              Your theme choice and the Family Hub sign-in. On your device, never shared.
+            </span>
+          </span>
+          <span class="shrink-0 font-bold text-ink-muted">Always on</span>
+        </li>
+        {hasAnalytics && (
           <li>
-            <strong>Essential:</strong> your theme choice and the Family Hub sign-in. On your
-            device, never shared.
+            <label class="flex cursor-pointer items-start justify-between gap-3">
+              <span>
+                <strong>Analytics</strong>
+                <span class="block text-ink-muted">
+                  Google Analytics counts visits and popular pages.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                data-consent-toggle="analytics"
+                class="mt-0.5 h-6 w-6 shrink-0 accent-navy dark:accent-heading"
+              />
+            </label>
           </li>
+        )}
+        {hasMarketing && (
           <li>
-            <strong>Visit counts:</strong> Cloudflare tallies page views with no cookies and no
-            personal data.
+            <label class="flex cursor-pointer items-start justify-between gap-3">
+              <span>
+                <strong>Advertising</strong>
+                <span class="block text-ink-muted">{marketingLabel}</span>
+              </span>
+              <input
+                type="checkbox"
+                data-consent-toggle="marketing"
+                class="mt-0.5 h-6 w-6 shrink-0 accent-navy dark:accent-heading"
+              />
+            </label>
           </li>
-          <li>
-            <strong>Advertising:</strong> one Google cookie that measures our ads. Off unless you
-            allow it.
-          </li>
-        </ul>
-      </details>
+        )}
+      </ul>
       <div class="mt-4 flex flex-wrap items-center gap-3">
-        <Button type="button" variant="outline" size="sm" data-consent-deny>
-          No thanks
+        <Button type="button" variant="outline" size="sm" data-consent-save>
+          Save choices
         </Button>
-        <Button type="button" variant="primary" size="sm" data-consent-allow>
-          Allow cookies
+        <Button type="button" variant="primary" size="sm" data-consent-accept-all>
+          Accept all
         </Button>
         <a
           href={withBase('/privacy')}

@@ -39,7 +39,12 @@ export default defineConfig({
           localStorage: [
             {
               name: 'wcp-consent',
-              value: JSON.stringify({ v: 1, ads: 'denied', at: '2026-01-01T00:00:00.000Z' }),
+              value: JSON.stringify({
+                v: 2,
+                analytics: 'denied',
+                marketing: 'denied',
+                at: '2026-01-01T00:00:00.000Z',
+              }),
             },
           ],
         },
@@ -64,9 +69,15 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    // A syntactically-valid fake ads id so the consent card renders in test
-    // builds and its suite (consent.spec.ts) can cover it. The tag itself
-    // never loads in tests that don't click "Allow cookies".
-    env: { ...(process.env as Record<string, string>), PUBLIC_GADS_ID: 'AW-0000TEST00' },
+    // Syntactically-valid fake tracker ids so the consent card renders with
+    // BOTH toggle rows in test builds and its suite (consent.spec.ts) can
+    // cover the per-category behavior. No tracker loads in tests that don't
+    // grant a category.
+    env: {
+      ...(process.env as Record<string, string>),
+      PUBLIC_GA_ID: 'G-0000TEST00',
+      PUBLIC_GADS_ID: 'AW-0000TEST00',
+      PUBLIC_META_PIXEL_ID: '1234567890123456',
+    },
   },
 });
