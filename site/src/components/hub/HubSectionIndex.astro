@@ -16,10 +16,13 @@
        second left-hand nav column. Hidden below xl.
      - `inline`: a collapsed <details> "On this page" jump list shown ONLY
        below xl, placed above the doc column — the phone answer to a 10,000px
-       handbook with no way to skip ahead (2026-07-16 audit). Collapsed by
-       default so it costs one row; closes itself after a jump. No scrollspy
-       (that stays a sidebar affordance), so no data-hub-toc here — hub-doc.ts
-       must keep binding the sidebar.
+       handbook with no way to skip ahead (2026-07-16 audit). STICKY below xl
+       (2026-07-17) so it stays reachable however far down the page you are:
+       pins near the top (clearing the floating desktop topbar on lg, same
+       offset story as HubTable's sticky headers). Collapsed by default so it
+       costs one row; the open list caps to the viewport and scrolls; closes
+       itself after a jump. No scrollspy (that stays a sidebar affordance), so
+       no data-hub-toc here — hub-doc.ts must keep binding the sidebar.
    Pure links otherwise (shareable, no-JS-safe).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
@@ -58,17 +61,32 @@ const entries = (sections ?? [])
 
 {
   entries.length > 1 && variant === 'inline' && (
-    <nav aria-label={label} class="mb-6 xl:hidden">
+    /* Sticky on phones/tablet so it stays reachable however far down a 10k px
+       handbook you are (2026-07-17). Below lg the phone strip is `relative`
+       (scrolls away) so it pins near the very top; on lg (1024–1280px) the
+       floating desktop topbar is `sticky top-0` (~56px), so clear it there —
+       same offset story HubTable's sticky headers use (`lg:top-14`). Collapsed
+       by default → a single pinned row; the script below closes it after a jump
+       so it never sits open over the content it navigated to. z-20 keeps the
+       open list above the doc cards; print drops it as chrome (below). */
+    <nav
+      data-hub-toc-inline-nav
+      aria-label={label}
+      class="sticky top-2 z-20 mb-6 lg:top-16 xl:hidden"
+    >
       <details
         data-hub-toc-inline
-        class="rounded-[var(--radius)] border border-border bg-white dark:bg-surface"
+        class="rounded-[var(--radius)] border border-border bg-white shadow-sm dark:bg-surface"
       >
         <summary class="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-bold text-heading [&::-webkit-details-marker]:hidden">
           <Icon name="list" class="h-4 w-4 shrink-0 text-sky-ink" />
           On this page
           <Icon name="chevron-down" class="ml-auto h-4 w-4 shrink-0 text-ink-muted" />
         </summary>
-        <ul class="border-t border-border px-2 py-2">
+        {/* Cap the open list to the viewport (minus the fixed tab bar) and let
+            it scroll internally — a pinned details with 10+ entries would
+            otherwise run off the bottom of the screen. */}
+        <ul class="max-h-[70dvh] overflow-y-auto border-t border-border px-2 py-2">
           {entries.map((e) => (
             <li>
               <a

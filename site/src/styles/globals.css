@@ -1913,6 +1913,7 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
   [data-hub-tabbar],
   #hub-search,
   .hub-toc,
+  [data-hub-toc-inline-nav],
   .hub-anchor {
     display: none !important;
   }
