@@ -86,4 +86,15 @@ onBeforeSwap(() => {
   mo = null;
 });
 
+// BFCACHE: onBeforeSwap (pagehide) tears the observers down, but a Back/Forward
+// restore fires `pageshow` with persisted=true and does NOT re-fire
+// DOMContentLoaded — so onPageLoad's setup never re-runs, and every below-fold
+// [data-reveal] element stays stuck at opacity:0 with no observer to reveal it
+// (the Updates list "went blank" after opening an entry and hitting Back —
+// only the already-revealed cards survived, 2026-07-17). Re-run setup on a
+// persisted restore to rebuild the observers and reveal/observe what's pending.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) setup();
+});
+
 export {};
