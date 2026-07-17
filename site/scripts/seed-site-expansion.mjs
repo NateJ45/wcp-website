@@ -107,7 +107,7 @@ async function safetyPage() {
       lead: 'The specifics behind the peace of mind. Here is exactly how we keep your child secure, healthy, and known, every single day.',
       mediaType: 'none',
       height: 'medium',
-      actions: [B.act('Schedule a Tour', 'accent', { pageSlug: 'enroll' })],
+      actions: [B.act('Schedule a Tour', 'accent', { url: '/virtual-tour#sec-pp-tour-form' })],
     }),
     sections: [
       trustBand(),
@@ -185,7 +185,7 @@ async function safetyPage() {
         title: 'The best way to know is to see it.',
         lead: 'Walk the classrooms, meet the teachers, and see the day for yourself.',
         actions: [
-          B.act('Schedule a Tour', 'accent', { pageSlug: 'enroll' }),
+          B.act('Schedule a Tour', 'accent', { url: '/virtual-tour#sec-pp-tour-form' }),
           B.act('Read our Google reviews', 'outline-white', { url: GOOGLE_REVIEWS }),
         ],
       }),

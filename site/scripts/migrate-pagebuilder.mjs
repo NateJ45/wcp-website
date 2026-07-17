@@ -73,7 +73,7 @@ P(
     videoWebmId: A.heroWebm,
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -147,7 +147,7 @@ P(
       lead: "The best way to know if WCP is right for your family is to walk through the door. Reach out and we'll be in touch within a day or two.",
       actions: [
         B.act('Enroll Now', 'accent', { url: '/enroll' }),
-        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
       ],
       note: CALL_NOTE,
     }),
@@ -256,7 +256,7 @@ P(
     B.cta({
       title: 'Ready to see it in person?',
       lead: 'Meet the teachers, walk through the classrooms, and let your child spend some time in the space.',
-      actions: [B.act('Schedule a Tour', 'accent', { url: '/enroll' })],
+      actions: [B.act('Schedule a Tour', 'accent', { url: '/virtual-tour#sec-pp-tour-form' })],
       note: CALL_NOTE,
     }),
   ],
@@ -494,7 +494,7 @@ P(
       'A teacher reads to a class of children sitting together on the classroom rug during circle time',
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -731,7 +731,7 @@ P(
       title: 'Want to see it in person?',
       lead: 'Come for a tour and watch a real session in action. Meet the teachers, see the space, and let your child spend time in the classroom.',
       actions: [
-        B.act('Schedule a Tour', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'accent', { url: '/virtual-tour#sec-pp-tour-form' }),
         B.act('Enroll Now', 'outline-white', { url: '/enroll' }),
       ],
       note: CALL_NOTE,
@@ -910,7 +910,7 @@ P(
       lead: 'Enrollment for 2026-27 is open. Come for a tour, meet the teachers, and see the co-op in action.',
       actions: [
         B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
       ],
       note: CALL_NOTE,
     }),
@@ -932,7 +932,7 @@ P(
       'A WCP teacher and a small group of children examining something together outdoors during a nature exploration activity',
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -1089,7 +1089,7 @@ P(
       title: 'Come see it for yourself.',
       lead: 'The best way to know if WCP is right for your family is to walk through the door. Meet the teachers, see the classrooms, and let your child spend time in the space.',
       actions: [
-        B.act('Schedule a Tour', 'accent', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'accent', { url: '/virtual-tour#sec-pp-tour-form' }),
         B.act('View Tuition', 'outline-white', { url: '/tuition' }),
       ],
       note: CALL_NOTE,
@@ -1471,7 +1471,7 @@ P(
       'Two Twos-class children exploring a sensory bin filled with beans and toy animals together',
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -1641,7 +1641,7 @@ P(
       lead: 'Enrollment for 2026-27 is open now. Send us a message and we will be in touch within a day or two.',
       actions: [
         B.act('Enroll Now', 'accent', { url: '/enroll' }),
-        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
       ],
       note: CALL_NOTE,
     }),
@@ -1663,7 +1663,7 @@ P(
       'A Threes-class group exploring a creek with a parent volunteer during an outdoor nature walk',
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -1838,7 +1838,7 @@ P(
       lead: 'Enrollment for 2026-27 is open now. Reach out and we will get back to you within a day or two.',
       actions: [
         B.act('Enroll Now', 'accent', { url: '/enroll' }),
-        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
       ],
       note: CALL_NOTE,
     }),
@@ -1860,7 +1860,7 @@ P(
       'A Pre-K teacher reads to the class during circle time, with a second teacher assisting',
     actions: [
       B.act('Enroll Your Child', 'accent', { url: '/enroll' }),
-      B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+      B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
     ],
   }),
   [
@@ -2007,7 +2007,7 @@ P(
       lead: 'Enrollment for 2026-27 Pre-K is open now. AM and PM spots fill up, so reach out soon.',
       actions: [
         B.act('Enroll Now', 'accent', { url: '/enroll' }),
-        B.act('Schedule a Tour', 'outline-white', { url: '/enroll' }),
+        B.act('Schedule a Tour', 'outline-white', { url: '/virtual-tour#sec-pp-tour-form' }),
       ],
       note: CALL_NOTE,
     }),
