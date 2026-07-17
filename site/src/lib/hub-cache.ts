@@ -13,6 +13,16 @@
 //        miniflare-simulated KV automatically; if the binding is absent the
 //        cache silently degrades to L1-only.
 //
+// OPT OUT OF L2 with `{ kv: false }`. Every KV write counts against the free
+// tier's ~1k writes/day cap (account-wide — see the KV write-budget gotcha in
+// CLAUDE.md), and L2 only earns that cost when the origin is SLOW enough that a
+// first-visitor-after-recycle read would hurt (the 1.5-3s Apps Script calendar,
+// the gviz sheets). For a FAST origin like Sanity's authenticated CDN
+// (~100-300ms), the durability isn't worth a write: kv:false keeps the L1 Map
+// (repeat navigations still skip the round-trip) but never touches KV, so
+// board content costs ZERO writes. Freshness is unchanged — the TTL just
+// governs how often a warm isolate re-reads the fast origin.
+//
 // FRESHNESS MODEL (per call site): `ttlMs` is the fresh window; an optional
 // `swrMs` extends it as a stale-while-revalidate window. Within ttl → serve.
 // Within ttl+swr → serve the stale value INSTANTLY and refresh in the
@@ -46,20 +56,27 @@ interface Envelope {
 const store = new Map<string, Envelope>();
 const inflight = new Map<string, Promise<unknown>>();
 
-async function refresh<T>(key: string, horizonMs: number, fn: () => Promise<T>): Promise<T> {
+async function refresh<T>(
+  key: string,
+  horizonMs: number,
+  fn: () => Promise<T>,
+  writeKv: boolean,
+): Promise<T> {
   const running = inflight.get(key);
   if (running) return running as Promise<T>;
   const p = fn()
     .then(async (v) => {
       const envl: Envelope = { v, at: Date.now() };
       store.set(key, envl);
-      try {
-        // KV expiry = the swr horizon: anything readable is servable.
-        await env.CACHE?.put(`hub2:${key}`, JSON.stringify(envl), {
-          expirationTtl: Math.max(60, Math.round(horizonMs / 1000)),
-        });
-      } catch {
-        /* cache write failure is not an error */
+      if (writeKv) {
+        try {
+          // KV expiry = the swr horizon: anything readable is servable.
+          await env.CACHE?.put(`hub2:${key}`, JSON.stringify(envl), {
+            expirationTtl: Math.max(60, Math.round(horizonMs / 1000)),
+          });
+        } catch {
+          /* cache write failure is not an error */
+        }
       }
       return v;
     })
@@ -78,13 +95,14 @@ export async function cached<T>(
   key: string,
   ttlMs: number,
   fn: () => Promise<T>,
-  opts: { swrMs?: number } = {},
+  opts: { swrMs?: number; kv?: boolean } = {},
 ): Promise<T> {
   const horizon = ttlMs + (opts.swrMs ?? 0);
+  const useKv = opts.kv !== false; // default on; kv:false = L1-only, zero writes
 
   let hit = store.get(key);
-  if (!hit) {
-    // L2: KV survives isolate recycling.
+  if (!hit && useKv) {
+    // L2: KV survives isolate recycling (skipped for L1-only callers).
     try {
       const kvHit = await env.CACHE?.get(`hub2:${key}`, 'text');
       if (kvHit != null) {
@@ -101,10 +119,10 @@ export async function cached<T>(
     if (age < ttlMs) return hit.v as T;
     if (age < horizon) {
       // Stale but servable: answer now, refresh behind the response.
-      keepAlive(refresh(key, horizon, fn));
+      keepAlive(refresh(key, horizon, fn, useKv));
       return hit.v as T;
     }
   }
 
-  return refresh(key, horizon, fn);
+  return refresh(key, horizon, fn, useKv);
 }

@@ -237,23 +237,26 @@ export function toEventDetail(e: HubEvent): EventDetail {
 
 /**
  * All events from the Google Calendar feed, sorted soonest-first, NO date
- * filter. Rides hub-cache's long stale-while-revalidate window (30 min fresh,
- * then up to 24h serve-stale-and-refresh-behind-the-response), so visitors
- * never wait on the 1.5-3s Apps Script execution and an edit still shows within
- * minutes of the next visit. Returns null (not []) when the feed is
- * unreachable or empty, so callers know to fall back to Sanity.
+ * filter. Rides hub-cache's long stale-while-revalidate window (12h fresh, then
+ * up to 24h serve-stale-and-refresh-behind-the-response), so visitors never
+ * wait on the 1.5-3s Apps Script execution. The window is long because the
+ * school calendar is set weeks ahead (and every refresh is a KV write against a
+ * near-capped free tier — see CLAUDE.md); an edit still shows within ~12h on the
+ * next visit, or immediately after the publish→deploy webhook cold-starts the
+ * isolate. Returns null (not []) when the feed is unreachable or empty, so
+ * callers know to fall back to Sanity.
  */
 async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
   try {
     const raw = await cached(
       `calfeed:${feedUrl}`,
-      1_800_000, // 30 min fresh — the calendar changes ~daily; keeps KV writes low
+      43_200_000, // 12h fresh — the school calendar is set weeks ahead; ~2 KV writes/day
       async () => {
         const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) throw new Error(`feed ${res.status}`);
         return (await res.json()) as HubEvent[];
       },
-      { swrMs: 86_400_000 },
+      { swrMs: 86_400_000 }, // +24h stale — 36h horizon, survives a quiet weekend
     );
     const events = (raw ?? [])
       .filter((e) => e && e.title && e.start)

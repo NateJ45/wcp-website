@@ -23,16 +23,25 @@ import { cached } from '@/lib/hub-cache';
 /**
  * Cache tuning for BOARD-EDITED content (hubPage docs, Site Settings): fresh
  * for 5 minutes, then up to 30 minutes of serve-stale-instantly-and-refresh-
- * behind-the-response. Each refresh writes through to the CACHE KV namespace,
- * and this key set is large (a hubPage doc per page, plus settings), so a short
- * TTL under real traffic burns the free KV WRITE budget (1k/day) fast — 5 min
- * keeps it well clear while staying plenty fresh, since a publish also fires
- * the deploy webhook (fresh isolates) so edits never wait on this cache.
- * NEVER use for PII queries (directory entries, health details) — this path
- * writes through to KV, and family data doesn't belong in a second store. And
- * never for read-after-write surfaces (sign-ups).
+ * behind-the-response.
+ *
+ * L1-ONLY (`kv: false`): this tier deliberately does NOT write through to the
+ * CACHE KV namespace. The key set is large (a hubPage doc per page, per-page
+ * supporting queries, the always-rendered topbar) and used on nearly every hub
+ * view, so at KV cost it was the dominant consumer of the free ~1k-writes/day
+ * budget (see the KV write-budget gotcha in CLAUDE.md). KV's only benefit is
+ * sparing the first-visitor-after-recycle from a SLOW origin — but Sanity's
+ * authenticated CDN (~100-300ms) is fast enough that a one-time first-touch
+ * read per isolate is invisible, so the durability isn't worth a write. The L1
+ * Map still absorbs repeat navigations within an isolate, and freshness is
+ * unchanged (5 min); a publish also fires the deploy webhook (fresh isolate) so
+ * edits never wait on this cache. Board content now costs ZERO KV writes.
+ *
+ * Still NEVER use for PII queries (directory entries, health details) — even
+ * L1-only, family data shouldn't sit in a shared module cache; those reads pass
+ * no `cache` at all. And never for read-after-write surfaces (sign-ups).
  */
-export const BOARD_CONTENT_CACHE = { ttlMs: 300_000, swrMs: 1_800_000 };
+export const BOARD_CONTENT_CACHE = { ttlMs: 300_000, swrMs: 1_800_000, kv: false };
 
 export function getSanityClient(opts: { fresh?: boolean } = {}): SanityClient {
   return createClient({
@@ -56,12 +65,12 @@ export function getSanityClient(opts: { fresh?: boolean } = {}): SanityClient {
 export async function sanityFetch<T>(
   query: string,
   params: Record<string, unknown> = {},
-  opts: { fresh?: boolean; cache?: { ttlMs: number; swrMs: number } } = {},
+  opts: { fresh?: boolean; cache?: { ttlMs: number; swrMs: number; kv?: boolean } } = {},
 ): Promise<T> {
   const run = () => getSanityClient(opts).fetch<T>(query, params);
   if (opts.cache && !opts.fresh) {
     const key = `groq:${query}:${JSON.stringify(params)}`;
-    return cached(key, opts.cache.ttlMs, run, { swrMs: opts.cache.swrMs });
+    return cached(key, opts.cache.ttlMs, run, { swrMs: opts.cache.swrMs, kv: opts.cache.kv });
   }
   return run();
 }
