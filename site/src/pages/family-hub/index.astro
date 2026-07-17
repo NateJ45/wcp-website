@@ -119,15 +119,6 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
       <h2 id="hub-dashboard-heading" class="sr-only">Your dashboard</h2>
 
       {
-        /* Full-width strip right under the hero — the "what to pack" answer is
-          time-sensitive enough to earn top billing, not get buried below the
-          fold with the smaller accent widgets. */
-      }
-      <div class="lg:col-span-12" style="--reveal-delay: 30ms">
-        <WeatherWeekWidget />
-      </div>
-
-      {
         /* The three Google-backed widgets (calendar feed, treasurer's sheet)
           are SERVER ISLANDS (server:defer): the dashboard shell paints
           immediately and they stream in behind a matching skeleton. This is
@@ -207,6 +198,22 @@ const familyCount = settings?.familyCount ?? liveFamilyCount;
           </button>
         </div>
         <ClassHelperRow />
+      </div>
+
+      {
+        /* Week-ahead forecast — a full-width planning band directly under the
+          hero block (greeting + events + class tiles). It MUST sit on a fresh
+          12-col row: the hero's events tile is row-span-2, so rows 1-2 are
+          spoken for on the right, and dropping a col-span-12 into row 2 left a
+          top-right gap and knocked the whole bento out of alignment. This is
+          the first clean full-width slot, and it keeps the grid a perfect
+          rectangle (48 → 60 cells = 5 tidy rows). The 7-day strip fills the
+          band's width on sm+ (see WeatherWeekWidget), so the card is never
+          half-empty. No `order-*`: it keeps its source position (order-0,
+          after the class tiles) in the phone stack, before the ordered cards. */
+      }
+      <div class="lg:col-span-12" style="--reveal-delay: 150ms">
+        <WeatherWeekWidget />
       </div>
 
       {

@@ -25,13 +25,19 @@ const empty = days.length === 0;
   emptyText="The 7-day forecast isn't available right now."
   watermark={false}
 >
-  <p class="text-sm text-ink-muted">
-    Plan ahead for outdoor play — coats, boots, and all.
-  </p>
-  <ul class="wcp-week-scroll mt-3 flex gap-2 overflow-x-auto pb-1">
+  <p class="text-sm text-ink-muted">Plan ahead for outdoor play, coats, boots, and all.</p>
+  {
+    /* Phone: a horizontal scroll strip (fixed-width chips, shrink-0) so it
+       stays clean down to 320px. sm+ (where this card is a full-width band):
+       a 7-column grid so the days spread across the whole width instead of
+       clustering at the left with an empty right half. */
+  }
+  <ul
+    class="wcp-week-scroll mt-3 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-7 sm:overflow-x-visible sm:pb-0"
+  >
     {
       days.map((d) => (
-        <li class="flex w-[4.5rem] shrink-0 flex-col items-center gap-1 rounded-lg bg-grey p-2.5 text-center dark:bg-navy/30">
+        <li class="flex w-[4.5rem] shrink-0 flex-col items-center gap-1 rounded-lg bg-grey p-2.5 text-center sm:w-auto dark:bg-navy/30">
           <span class="text-[0.68rem] font-bold tracking-wide text-ink-muted uppercase">
             {d.dayLabel}
           </span>
@@ -39,14 +45,12 @@ const empty = days.length === 0;
           <span class="text-sm font-bold text-heading">
             {d.high}°<span class="font-semibold text-ink-muted">/{d.low}°</span>
           </span>
-          {
-            (d.needsCoat || d.needsRainGear) && (
-              <span class="flex items-center gap-1" aria-hidden="true">
-                {d.needsCoat && <Icon name="shirt" class="h-3.5 w-3.5 text-orange-ink" />}
-                {d.needsRainGear && <Icon name="cloud-rain" class="h-3.5 w-3.5 text-sky-ink" />}
-              </span>
-            )
-          }
+          {(d.needsCoat || d.needsRainGear) && (
+            <span class="flex items-center gap-1" aria-hidden="true">
+              {d.needsCoat && <Icon name="shirt" class="h-3.5 w-3.5 text-orange-ink" />}
+              {d.needsRainGear && <Icon name="cloud-rain" class="h-3.5 w-3.5 text-sky-ink" />}
+            </span>
+          )}
           <span class="sr-only">
             {d.line}
             {d.needsCoat && ' Pack a warm coat.'}
