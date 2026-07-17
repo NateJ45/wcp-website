@@ -22,7 +22,6 @@ const limit = typeof section.limit === 'number' ? section.limit : 3;
 const isWall = section.layout === 'wall';
 const items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
 const confetti = Boolean(section.confetti);
-const accents = ['orange', 'sky', 'green'] as const;
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -45,13 +44,12 @@ const accents = ['orange', 'sky', 'green'] as const;
       </div>
     ) : (
       <ul class="mt-12 grid gap-6 md:grid-cols-3">
-        {items.map((t, i) => (
+        {items.map((t) => (
           <li class="h-full">
             <Testimonial
               quote={t.quote}
               author={t.author ?? ''}
               context={t.role}
-              accent={accents[i % accents.length]}
               confetti={confetti}
             />
           </li>

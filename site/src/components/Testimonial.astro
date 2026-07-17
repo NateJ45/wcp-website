@@ -1,10 +1,19 @@
 ---
 /* ============================================================================
-   Testimonial — a family quote card
+   Testimonial — a family quote, styled as a real parent note
    ============================================================================
-   A <figure> with an accessible star rating (visual stars are hidden from
-   assistive tech; a text equivalent is announced instead), the quote, and the
-   attribution. A thin accent top-border ties it to a class color.
+   Restyled 2026-07-17 (Phase 2 "Fifty-Five Septembers"): the old flat white
+   card with a border-top color strip (a named AI-slop tell) is now a stationery
+   PARENT NOTE — ruled paper + grain, one tape strip, a small capped tilt, a
+   hand-drawn star row, and the author signed in the Great Vibes hand. The realest
+   asset a 55-year co-op has (real parents' words) should read as handwritten,
+   not as a review-site card. Public-only component, so the scrapbook look is not
+   scoped (it never renders in the hub).
+
+   Accessibility unchanged: the star SVG is aria-hidden with an sr-only text
+   equivalent; the quote/attribution keep their <figure>/<blockquote>/<figcaption>
+   semantics and ink-on-near-white contrast. The signature is real selectable
+   text at a generous size (decorative register only, per the brand rule).
 
    `confetti` opts the card into the hover burst (src/scripts/confetti.ts) — it
    is purely decorative, hover-only, cooldown-limited, and skipped under
@@ -17,52 +26,47 @@ interface Props {
   author: string;
   context?: string;
   rating?: number;
-  accent?: 'orange' | 'sky' | 'amber' | 'green' | 'navy';
   confetti?: boolean;
   class?: string;
 }
-const {
-  quote,
-  author,
-  context,
-  rating = 5,
-  accent = 'orange',
-  confetti = false,
-  class: className,
-} = Astro.props;
+const { quote, author, context, rating = 5, confetti = false, class: className } = Astro.props;
 
-const accentBorder: Record<string, string> = {
-  orange: 'border-t-orange',
-  sky: 'border-t-sky',
-  amber: 'border-t-amber',
-  green: 'border-t-green',
-  navy: 'border-t-navy',
-};
+// A hand-drawn 5-star row (amber fill, amber-ink outline) instead of the glyph
+// run — warmer, and it holds its shape at any size. Decorative; the sr-only
+// line below carries the rating for assistive tech.
+const STAR = 'M10 1.6l2.4 5.2 5.7.5-4.3 3.8 1.3 5.6-5.1-3-5.1 3 1.3-5.6L1.9 7.3l5.7-.5z';
 ---
 
 <figure
   class={cn(
-    'flex h-full flex-col rounded-[var(--radius)] border-t-4 bg-white p-6 shadow-sm dark:bg-surface',
-    'transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-md',
-    'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
-    accentBorder[accent],
+    'wcp-testi wcp-tape-tc wcp-note-paper relative flex h-full flex-col rounded-[var(--radius)] px-6 pt-8 pb-5',
+    'shadow-[0_1px_2px_rgba(1,32,58,0.14),0_8px_18px_rgba(1,32,58,0.12)] dark:border dark:border-border',
     className,
   )}
-  data-reveal
+  data-reveal="settle"
   data-confetti={confetti ? '' : undefined}
 >
-  <div class="text-amber" aria-hidden="true">
-    {'★'.repeat(rating)}
+  <div class="flex gap-0.5" aria-hidden="true">
+    {
+      Array.from({ length: rating }).map(() => (
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="var(--color-amber)">
+          <path d={STAR} stroke="var(--color-amber-ink)" stroke-width="0.8" />
+        </svg>
+      ))
+    }
   </div>
   <span class="sr-only">{rating} out of 5 stars</span>
-  <blockquote class="mt-3 flex-1 leading-relaxed text-ink italic">{quote}</blockquote>
-  <figcaption class="mt-4 font-bold text-heading not-italic">
-    {author}
-    {context && <span class="mt-0.5 block text-sm font-normal text-ink-muted">{context}</span>}
+  <blockquote class="mt-3 flex-1 leading-relaxed text-ink">{quote}</blockquote>
+  <figcaption class="mt-4">
+    <span class="wcp-signature block text-3xl leading-none text-navy dark:text-heading"
+      >{author}</span
+    >
+    {context && <span class="mt-1 block text-sm text-ink-muted">{context}</span>}
   </figcaption>
 </figure>
 
-{/* Colocated: the confetti JS only ships on pages that render a Testimonial. */}
+{/* Colocated: confetti + the on-demand signature font ship only where a Testimonial renders. */}
 <script>
   import '@/scripts/confetti';
+  import '@/scripts/signature-font';
 </script>

@@ -2,10 +2,13 @@
 /* ============================================================================
    ClassCard — a class option summary (Twos, Threes, Pre-K AM/PM)
    ============================================================================
-   White card with a bright class-color top accent (decorative), navy heading,
-   and a checkmarked feature list. The bright class color is used only as the
-   accent rule — all text stays navy/ink on white for AA. Optional price,
-   schedule, age, and a CTA button.
+   Restyled 2026-07-17 (Phase 2 "Fifty-Five Septembers"): the old border-top
+   color strip (a named AI-slop tell) is gone. Class identity now reads from a
+   faint class-tinted paper surface (light mode) + a class-color dot beside the
+   name + the class-tinted schedule line — the hub's surface-tint approach,
+   which is AA-verified in both themes because text stays navy/ink on a
+   near-white (light) or plain surface (dark) card. Grain gives the handmade
+   paper feel. Optional price, schedule, age, and a CTA button.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
@@ -53,22 +56,32 @@ const Heading = headingAs;
 // to wrap between words instead of overflowing the card.
 const nameTokens = name.split(' ');
 
-const accent: Record<string, string> = {
-  amber: 'border-t-amber',
-  green: 'border-t-green',
-  orange: 'border-t-orange',
-  sky: 'border-t-sky',
-  navy: 'border-t-navy',
+// Faint class-color paper tint, LIGHT MODE ONLY (mixed toward white so text
+// stays AA); dark mode falls back to the plain surface (the .dark rule in
+// globals resets --cc-tint). Full literals so nothing is string-built.
+const tint: Record<string, string> = {
+  amber: 'wcp-cc-amber',
+  green: 'wcp-cc-green',
+  orange: 'wcp-cc-orange',
+  sky: 'wcp-cc-sky',
+  navy: 'wcp-cc-navy',
+};
+const dot: Record<string, string> = {
+  amber: 'bg-amber',
+  green: 'bg-green',
+  orange: 'bg-orange',
+  sky: 'bg-sky',
+  navy: 'bg-navy',
 };
 ---
 
 <Tag
   class={cn(
-    'group flex h-full flex-col rounded-[var(--radius)] border-t-4 bg-white p-6 shadow-sm dark:bg-surface',
+    'group wcp-paper-card flex h-full flex-col rounded-[var(--radius)] p-6 shadow-sm dark:border dark:border-border',
     'transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-xl',
     'hover:ring-1 hover:ring-black/5 dark:hover:ring-white/10',
     'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
-    accent[color],
+    tint[color],
     className,
   )}
   data-reveal
@@ -78,8 +91,8 @@ const accent: Record<string, string> = {
       the name rather than squeezing the heading into mid-word breaks. */
   }
   <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-    <Heading class="text-heading"
-      >{
+    <Heading class="flex items-center gap-2 text-heading"
+      ><span class={cn('h-2.5 w-2.5 shrink-0 rounded-full', dot[color])} aria-hidden="true"></span>{
         nameTokens.map((token: string, i: number) => (
           <>
             {i > 0 && ' '}

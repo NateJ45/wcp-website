@@ -1212,6 +1212,235 @@ li:nth-child(4n + 4) > .hub-note {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
+/* ============================================================================
+   Scrapbook layer (Phase 2, "Fifty-Five Septembers") — PUBLIC ONLY
+   ============================================================================
+   The co-op has taped kids' years to these walls since 1969, so the public
+   marketing surface becomes the co-op's scrapbook: paper artifacts, tape,
+   prints, parent notes, all snapped to the container grid. Everything here is
+   scoped under `.wcp-site-paper` (public <body>) so the hub's own .hub-note /
+   .wcp-hub-canvas system is never touched. Anti-kitsch budget (enforced here,
+   not by taste): tilt capped at 2deg, artifacts only on warm/paper surfaces,
+   dense data (tables/forms/FAQ) stays clean. All texture is CSS + inline SVG,
+   no runtime filters, no new fonts. Motion is opt-in and reduced-motion-safe.
+   Tokens: reuse --wcp-grain, --color-*, --radius from above.
+   ---------------------------------------------------------------------------- */
+
+/* -- Tape strip: a semi-opaque warm-white piece of tape. A pseudo-element the
+   caller positions (.wcp-tape-tl / -tr / -tc helpers place the common ones).
+   Decorative; the element carrying it must be position:relative. --------------*/
+.wcp-tape::before,
+.wcp-tape-tc::before,
+.wcp-tape-tl::before,
+.wcp-tape-tr::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  width: 4.6rem;
+  height: 1.35rem;
+  background: linear-gradient(rgba(255, 252, 235, 0.62), rgba(250, 246, 225, 0.5));
+  border: 1px solid rgba(1, 69, 126, 0.06);
+  box-shadow: 0 1px 2px rgba(1, 32, 58, 0.05);
+  pointer-events: none;
+}
+.wcp-tape-tc::before {
+  top: -0.7rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(1.6deg);
+}
+.wcp-tape-tl::before {
+  top: -0.65rem;
+  left: -1.4rem;
+  transform: rotate(-32deg);
+}
+.wcp-tape-tr::before {
+  top: -0.65rem;
+  right: -1.4rem;
+  transform: rotate(28deg);
+}
+.dark .wcp-tape-tc::before,
+.dark .wcp-tape-tl::before,
+.dark .wcp-tape-tr::before {
+  background: linear-gradient(rgba(255, 250, 228, 0.16), rgba(240, 232, 205, 0.12));
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* -- Print: a photo treated as a physical print (white frame + double shadow +
+   a capped, alternating tilt). Straightens on hover/focus. Put on a <figure>
+   wrapping an <img>; the caption is the frame's white lower lip. ------------- */
+.wcp-print {
+  --print-tilt: -1.4deg;
+  position: relative;
+  background: #fff;
+  padding: 0.6rem 0.6rem 0.7rem;
+  box-shadow:
+    0 1px 2px rgba(1, 32, 58, 0.14),
+    0 8px 18px rgba(1, 32, 58, 0.13);
+  transform: rotate(var(--print-tilt));
+}
+.wcp-print img {
+  display: block;
+  width: 100%;
+}
+.wcp-print figcaption {
+  padding-top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-navy);
+  text-align: center;
+}
+/* Alternating tilt across a row (capped at 2deg), reset on the "straighten"
+   interactions. nth-of-type so caption text nodes don't shift the count. */
+.wcp-print:nth-of-type(3n + 1) {
+  --print-tilt: -1.4deg;
+}
+.wcp-print:nth-of-type(3n + 2) {
+  --print-tilt: 1.1deg;
+}
+.wcp-print:nth-of-type(3n + 3) {
+  --print-tilt: -0.5deg;
+}
+.dark .wcp-print {
+  background: var(--color-surface);
+}
+.dark .wcp-print figcaption {
+  color: var(--color-heading);
+}
+
+/* -- Paper card: the public sibling of the hub's .hub-note, GRAIN ONLY (no
+   graph grid, no rotating accent tint — those are hub app-identity). A soft
+   handmade surface under otherwise-normal card content. Applied to the shared
+   FeatureCard/ClassCard/Testimonial ONLY on public pages via .wcp-site-paper
+   scoping in the components. --------------------------------------------------*/
+.wcp-paper-card {
+  background-color: #fff;
+  background-image: var(--wcp-grain);
+}
+.dark .wcp-paper-card {
+  background-color: var(--color-surface);
+}
+/* FeatureCard is shared with the hub (card-grid sections), so its paper grain
+   is applied HERE, scoped to the public body, leaving hub card grids plain. The
+   grain URI is neutral noise that reads on both the white and dark surfaces, so
+   one rule covers both themes. */
+.wcp-site-paper .wcp-feature-card {
+  background-image: var(--wcp-grain);
+}
+
+/* Class-tinted paper surface (ClassCard). LIGHT MODE ONLY: the class color is
+   mixed ~7% toward white so ink/navy text stays AA on it. Dark mode resets to
+   the plain surface (the tint-over-dark path is the documented AA trap), and
+   class identity there rides the color dot + schedule line instead. */
+.wcp-cc-amber {
+  background-color: color-mix(in srgb, var(--color-amber) 8%, #fff);
+}
+.wcp-cc-green {
+  background-color: color-mix(in srgb, var(--color-green) 7%, #fff);
+}
+.wcp-cc-orange {
+  background-color: color-mix(in srgb, var(--color-orange) 7%, #fff);
+}
+.wcp-cc-sky {
+  background-color: color-mix(in srgb, var(--color-sky) 8%, #fff);
+}
+.wcp-cc-navy {
+  background-color: color-mix(in srgb, var(--color-navy) 5%, #fff);
+}
+.dark .wcp-cc-amber,
+.dark .wcp-cc-green,
+.dark .wcp-cc-orange,
+.dark .wcp-cc-sky,
+.dark .wcp-cc-navy {
+  background-color: var(--color-surface);
+}
+
+/* -- Parent note: stationery with faint ruled lines + grain, for testimonials.
+   The ruled lines are ~5% navy (well below the AA text floor) and sit UNDER the
+   ink quote. -----------------------------------------------------------------*/
+.wcp-note-paper {
+  background-color: #fffdf7;
+  background-image:
+    repeating-linear-gradient(transparent 0 1.68rem, var(--wcp-note-line) 1.68rem 1.75rem),
+    var(--wcp-grain);
+}
+.dark .wcp-note-paper {
+  background-color: color-mix(in srgb, var(--color-surface) 92%, #fff 8%);
+}
+
+/* Parent-note tilt: a small capped rotation that alternates across the grid /
+   wall (the <figure> sits inside an <li>, so vary by the li's position), and
+   straightens on hover/focus. Motion-gated; reduced-motion users get a still,
+   already-tilted note. */
+.wcp-testi {
+  --testi-tilt: -1deg;
+  transform: rotate(var(--testi-tilt));
+}
+li:nth-child(3n + 1) .wcp-testi {
+  --testi-tilt: -1.1deg;
+}
+li:nth-child(3n + 2) .wcp-testi {
+  --testi-tilt: 0.8deg;
+}
+li:nth-child(3n + 3) .wcp-testi {
+  --testi-tilt: -0.4deg;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-testi {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .wcp-testi:hover,
+  .wcp-testi:focus-within {
+    transform: rotate(0deg);
+  }
+}
+
+/* -- Chapter edge SVGs (Seam family): the component sets the fill; these just
+   place/size the absolutely-positioned <svg> at a band's top. Torn + bulletin
+   variants; the cloud scallop keeps living in Seam.astro. -------------------- */
+.wcp-edge {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  width: 100%;
+  display: block;
+  pointer-events: none;
+}
+.wcp-edge svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* -- Scrapbook motion: "settle" — a print/note drops a few px and corrects a
+   little extra rotation into its resting tilt, once, on scroll-in. Rides the
+   existing data-reveal .is-visible toggle; reduced-motion users get it already
+   at rest (the @media gate below owns the hidden state). --------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal='settle'] {
+    opacity: 0;
+    transform: translateY(0.55rem) rotate(calc(var(--print-tilt, 0deg) - 2deg));
+  }
+  .js [data-reveal='settle'].is-visible {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s ease,
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+/* Hover/focus straighten for prints — transform-only, paired with a
+   reduced-motion no-op. The resting tilt lives in --print-tilt so hover just
+   goes to 0. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-print {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .wcp-print:hover,
+  .wcp-print:focus-within {
+    transform: rotate(0deg) scale(1.015);
+  }
+}
+
 /* Soft radial glows — the warm wash behind the hub greeting / class headers.
    Decorative divs (aria-hidden, pointer-events-none); color per class via the
    variants. Very low alpha so they tint the paper, never fight text. */

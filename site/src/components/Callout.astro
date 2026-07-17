@@ -3,8 +3,10 @@
    Callout — a highlighted info panel
    ============================================================================
    Used for asides like "All curriculum is based on Ohio's Early Learning
-   Standards." Soft sky tint with a sky left-border. `tone="warm"` gives the
-   cream/orange variant.
+   Standards." Restyled 2026-07-17: the old border-LEFT-4 side stripe is a named
+   AI-slop tell, so it's now a soft-tinted paper panel with a FULL hairline
+   border and grain. `tone="warm"` gives the cream/orange variant; `sky` is the
+   default cool tint. Text stays ink on a near-white tint (AA-safe both themes).
    ============================================================================ */
 import { cn } from '@/lib/utils';
 
@@ -13,9 +15,9 @@ interface Props {
   class?: string;
 }
 const { tone = 'sky', class: className } = Astro.props;
-const toneClass = tone === 'warm' ? 'border-orange bg-cream' : 'border-sky bg-sky-soft';
+const toneClass = tone === 'warm' ? 'border-orange/25 bg-cream' : 'border-sky/30 bg-sky-soft';
 ---
 
-<div class={cn('rounded-r-lg border-l-4 p-5', toneClass, className)}>
+<div class={cn('wcp-callout rounded-[var(--radius)] border p-5', toneClass, className)}>
   <div class="leading-relaxed text-ink"><slot /></div>
 </div>

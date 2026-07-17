@@ -1,12 +1,23 @@
 ---
 /* ============================================================================
-   Eyebrow — the small uppercase label above a heading
+   Eyebrow — the small label above a heading
    ============================================================================
-   Tone picks an AA-safe color for the background it sits on:
+   Restyled 2026-07-17 (Phase 2 "Fifty-Five Septembers"): the old tiny-uppercase
+   wide-tracked kicker is a named AI-slop tell (it opened nearly every section
+   on every page). It now reads as a small hand-annotated label: natural case,
+   normal tracking, preceded by a short orange crayon-stroke tick — the same
+   accent language as Underline. The change is purely typographic; the AA-safe
+   tone colors are unchanged, so contrast (and the Lighthouse-100 gate) is
+   untouched. Zero content edits: the stored label text just stops being
+   force-uppercased.
+
+   Tone picks an AA-safe TEXT color for the background it sits on:
      - sky    : sky-INK, for light backgrounds (5.4:1 on white/grey)   [default]
      - amber  : amber, for navy backgrounds (4.89:1 on navy)
      - orange : orange-INK, warm accent on light (5.4:1)
      - white  : plain white, on dark photo/colored backgrounds
+   The crayon tick is decorative (aria-hidden) and always orange, which reads on
+   every one of those backgrounds.
    ============================================================================ */
 import { cn } from '@/lib/utils';
 
@@ -26,10 +37,17 @@ const toneClass: Record<string, string> = {
 
 <p
   class={cn(
-    'wcp-eyebrow mb-2 text-sm font-bold tracking-[0.14em] uppercase',
+    'wcp-eyebrow mb-2 flex items-center gap-2 text-sm font-bold',
     toneClass[tone],
     className,
   )}
 >
-  <slot />
+  <svg class="wcp-eyebrow-tick h-2 w-6 shrink-0" viewBox="0 0 28 8" fill="none" aria-hidden="true">
+    <path
+      d="M1.5 5.5 C 7 3.5, 13 6.5, 18 4.5 S 25 3.5, 26.5 5"
+      stroke="var(--color-orange)"
+      stroke-width="3"
+      stroke-linecap="round"></path>
+  </svg>
+  <span><slot /></span>
 </p>
