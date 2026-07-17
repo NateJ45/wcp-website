@@ -23,6 +23,7 @@ const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, li
   lead={section.lead as string | undefined}
   tone={(section.tone as 'navy' | 'cream') ?? 'navy'}
   seam={section.seam as boolean}
+  rating={!teacherSlug}
   titleId={`sec-${section._key}`}
 >
   <Fragment slot="actions">

@@ -77,6 +77,17 @@ export const site = {
   // School year follows the Lakota Local School District calendar (Sept–May).
   calendar: 'Follows the Lakota Local School District calendar (September–May).',
 
+  // Google Business Profile rating — surfaced as a trust slip on the closing
+  // CTA band (and available to any component). Update the numbers when the
+  // Board refreshes them; `url` is the public listing (Maps "share" link, an
+  // anyone-with-link resource so it's fine to commit). The dedicated
+  // write-a-review short URL (g.page/r/...) is a separate PENDING human task.
+  google: {
+    rating: '4.8',
+    reviews: 19,
+    url: 'https://maps.app.goo.gl/Em2P6kyt6u8Se4G26',
+  },
+
   // Social links (fallback). The real source is Sanity Site Settings → Social,
   // which the header/footer read via getSiteSettings; these are the build-time
   // fallback so the icons still render if that read ever fails. The header/footer

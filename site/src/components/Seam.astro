@@ -22,9 +22,14 @@ import { cn } from '@/lib/utils';
 interface Props {
   /** The band's own background color (the scallop fills with this). */
   color?: 'white' | 'grey' | 'cream' | 'navy';
+  /** Edge shape. 'cloud' (default) is the gentle site-wide scallop; 'trim' is
+      the die-cut bulletin-board border teachers staple around a display board
+      (a real preschool-room object) — a row of tight half-circle bumps, used at
+      a real "chapter" break like the closing CTA. */
+  variant?: 'cloud' | 'trim';
   class?: string;
 }
-const { color = 'navy', class: className } = Astro.props;
+const { color = 'navy', variant = 'cloud', class: className } = Astro.props;
 
 const fill: Record<string, string> = {
   white: '#ffffff',
@@ -34,7 +39,19 @@ const fill: Record<string, string> = {
 };
 
 // Gentle rolling scallop — the one cloud motif used site-wide, kept consistent.
-const wave = 'M0,40 C160,22 320,22 480,40 C640,58 800,58 960,40 C1120,22 1280,22 1440,40';
+const cloud = 'M0,40 C160,22 320,22 480,40 C640,58 800,58 960,40 C1120,22 1280,22 1440,40';
+
+// Bulletin-board trim: a repeating row of half-circle bumps (48px pitch, 60 of
+// them across the 1440 viewBox). Built here so the SVG stays a single path.
+const bump = 24; // radius
+let trim = 'M0,40';
+for (let x = 0; x < 1440; x += bump * 2) {
+  // each bump is a half-circle arc rising to y≈16 then back to the 40 baseline
+  trim += ` A${bump},${bump} 0 0 1 ${x + bump * 2},40`;
+}
+
+const isTrim = variant === 'trim';
+const line = isTrim ? trim : cloud;
 ---
 
 <svg
@@ -46,7 +63,7 @@ const wave = 'M0,40 C160,22 320,22 480,40 C640,58 800,58 960,40 C1120,22 1280,22
   )}
   aria-hidden="true"
 >
-  <path d={`${wave} L1440,60 L0,60 Z`} fill={fill[color]}></path>
-  <path d={wave} fill="none" stroke="var(--color-orange)" stroke-width="4" stroke-linecap="round"
+  <path d={`${line} L1440,60 L0,60 Z`} fill={fill[color]}></path>
+  <path d={line} fill="none" stroke="var(--color-orange)" stroke-width="4" stroke-linecap="round"
   ></path>
 </svg>

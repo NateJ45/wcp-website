@@ -12,6 +12,7 @@
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
+import { site } from '@/data/site';
 
 interface Props {
   title: string;
@@ -22,6 +23,10 @@ interface Props {
       change from the content above. Set false when a same-color band (a navy
       Section) sits directly above, so we don't seam navy into navy. */
   seam?: boolean;
+  /** Show the Google-rating trust slip below the actions. On by default so the
+      4.8 rating rides every closing CTA (home / tuition / enroll — the pages
+      the audit flagged as missing it). Set false for a teacher sign-off CTA. */
+  rating?: boolean;
   class?: string;
 }
 const {
@@ -30,16 +35,20 @@ const {
   lead,
   tone = 'navy',
   seam = true,
+  rating = true,
   class: className,
 } = Astro.props;
 const isNavy = tone === 'navy';
+// Deterministic: callers pass rating={false} for a teacher sign-off CTA.
+// (Astro.slots.has() is unreliable for a slot passed inside a {cond && ...}.)
+const showRating = rating;
 ---
 
 <section
   class={cn('relative -mt-px', isNavy ? 'bg-navy text-white' : 'bg-cream text-heading', className)}
   aria-labelledby={titleId}
 >
-  {seam && <Seam color={tone} />}
+  {seam && <Seam color={tone} variant="trim" />}
   {
     /* Warm brand glow — gives the closing CTA depth so it reads as a lifted
       card, not a flat block. Decorative + aria-hidden; feathered and mostly
@@ -85,6 +94,46 @@ const isNavy = tone === 'navy';
     >
       <slot name="actions" />
     </div>
+    {
+      /* Google-rating trust slip — a small torn-edge paper slip carrying the
+        4.8/19 rating, linked to the listing. This is how the rating finally
+        reaches home / tuition / enroll (their closing CTA), per the audit. The
+        star + number stay high-contrast on both tones; only the slip fill and
+        the "on Google" label shift per tone. Decorative torn edge via clip-path
+        with a rounded fallback for no-clip-path browsers. */
+      showRating && (
+        <a
+          href={site.google.url}
+          target="_blank"
+          rel="noopener"
+          class={cn(
+            'wcp-rating-slip group mt-6 inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm no-underline shadow-sm transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0',
+            isNavy ? 'bg-white/95 text-navy' : 'bg-white text-navy',
+          )}
+        >
+          <svg
+            class="h-4 w-4 shrink-0"
+            viewBox="0 0 20 20"
+            fill="var(--color-amber)"
+            aria-hidden="true"
+          >
+            <path
+              d="M10 1.6l2.4 5.2 5.7.5-4.3 3.8 1.3 5.6-5.1-3-5.1 3 1.3-5.6L1.9 7.3l5.7-.5z"
+              stroke="var(--color-amber-ink)"
+              stroke-width="0.8"
+            />
+          </svg>
+          <span class="font-display text-base">{site.google.rating}</span>
+          <span class="text-ink-muted">on Google, {site.google.reviews} reviews</span>
+          <span
+            aria-hidden="true"
+            class="text-sky-ink transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+          >
+            →
+          </span>
+        </a>
+      )
+    }
     {
       /* Optional teacher signature — a headshot + Email / Call-or-text pills
         that turn the closing CTA into a signed sign-off card (class hub pages).
