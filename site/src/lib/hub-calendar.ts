@@ -1,10 +1,12 @@
 // =============================================================================
 // Hub calendar feed — live events from the school Google Calendar
 // =============================================================================
-// A school-run Google Apps Script serves the Google Calendar as a JSON array
-// of { title, start, allDay } covering a rolling 12 months. Erin/admins edit
-// the calendar in Google; the hub picks changes up automatically — no
-// duplicate data entry in Sanity. Fetched SERVER-SIDE behind the hub gate.
+// A school-run Google Apps Script (source committed at
+// scripts/apps-script/calendar-feed.gs) serves the Google Calendar as a JSON
+// array of { title, start, allDay, end?, location?, description? } covering a
+// rolling 12 months. Erin/admins edit the calendar in Google; the hub picks
+// changes up automatically — no duplicate data entry in Sanity. Fetched
+// SERVER-SIDE behind the hub gate.
 //
 // Falls back to the Sanity `event` docs (the public Events page's source)
 // when the feed is unreachable, so the widgets degrade gracefully:
@@ -27,11 +29,11 @@ export interface HubEvent {
   title: string;
   /** ISO datetime, or date-only "YYYY-MM-DD" for all-day events. */
   start: string;
-  /** ISO end datetime (Sanity events only; the feed doesn't carry one). */
+  /** ISO end datetime (Sanity events + the feed's timed events since 2026-07-17). */
   end?: string;
   allDay?: boolean;
   location?: string;
-  /** Long text (Sanity events only; the Google feed doesn't carry one). */
+  /** Long text (Sanity events + the feed since 2026-07-17, plain-text capped). */
   description?: string;
 }
 

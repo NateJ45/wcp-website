@@ -36,11 +36,16 @@ const SHARED_TOKEN = 'CHANGE-ME-to-a-long-random-string'; // must match FORMS_WE
 const DIGEST_TO = ''; // e.g. 'families@westchesterpreschool.org' — blank = off
 const SITE_URL = 'https://wcp-website.nathanjnixon86.workers.dev'; // no trailing slash
 
-// One tab per submission kind, created on first use.
+// One tab per submission kind, created on first use. `hours` and `photo` are
+// FYI/backup rows from the hub (the source of truth is Sanity — hoursLog and
+// photoSubmission docs); without these entries they were silently coerced
+// into the contact tab (2026-07-17 docs audit).
 const SHEETS = {
   contact: ['When', 'Topic', 'Name', 'Email', 'Phone', 'Message', 'From page'],
   newsletter: ['When', 'Name', 'Email', 'From page'],
   signup: ['When', 'Sheet', 'Slot', 'Name', 'Note'],
+  hours: ['When', 'Family', 'Hours', 'Category', 'Activity', 'Date'],
+  photo: ['When', 'Family', 'Caption'],
 };
 
 function doPost(e) {
@@ -77,6 +82,19 @@ function doPost(e) {
         data.name || '',
         data.note || '',
       ]);
+    } else if (kind === 'hours') {
+      // Co-op hours FYI (site/src/pages/family-hub/api/log-hours.ts).
+      sheet.appendRow([
+        when,
+        data.name || '',
+        data.hours || '',
+        data.category || '',
+        data.activity || '',
+        data.date || '',
+      ]);
+    } else if (kind === 'photo') {
+      // Photo-wall moderation nudge (site/src/pages/family-hub/api/photo-submit.ts).
+      sheet.appendRow([when, data.name || '', data.caption || '']);
     } else {
       sheet.appendRow([
         when,
@@ -116,6 +134,29 @@ function doPost(e) {
           '\n\n' +
           'All responses: the "signup" tab of this Sheet, or the Studio inbox\n' +
           '(Family Hub -> Sign-up responses).',
+      });
+    } catch (err) {
+      console.error('mail failed: ' + err);
+    }
+  }
+  if (kind === 'photo') {
+    // A moderation nudge: a photo is sitting in the Studio queue. Hours rows
+    // stay email-silent on purpose (one per logged hour would be noisy; the
+    // tab is the backup).
+    try {
+      MailApp.sendEmail({
+        to: NOTIFY_EMAIL,
+        subject: '[WCP hub] Photo waiting for review — ' + (data.name || 'a family'),
+        body:
+          'A family submitted a photo for the hub photo wall:\n\n' +
+          'From:    ' +
+          (data.name || '-') +
+          '\n' +
+          (data.caption ? 'Caption: ' + data.caption + '\n' : '') +
+          'When:    ' +
+          when +
+          '\n\n' +
+          'Review it in the Studio: Family Hub -> Photo submissions.',
       });
     } catch (err) {
       console.error('mail failed: ' + err);
