@@ -140,6 +140,27 @@ All idempotent scripts, all registered in docs/PENDING.md before they run, with 
 - **Performance budget:** render-blocking CSS <= 28KB gz, LCP <= 2.5s on audited routes, per-page image transfer cap; add the assertion to lighthouse.yml before the first texture PR.
 - **Docs-in-sync:** CLAUDE.md porting rules, PAGE_BUILDER.md section-treatment notes, and the in-Studio volunteer guide entry for any changed editing surface land in the same PR. Any visitor-facing copy that ships in code while Sanity is frozen gets a PENDING.md close-out row in the same PR (definition of done).
 
+### Benchmark-adopted backlog (added 2026-07-17 after the high-end audit)
+
+From docs/superpowers/2026-07-17-highend-benchmark.md (Avenues / Exeter /
+Dalton habits worth adopting into our register). All code-only, gate-safe:
+
+1. **Single header CTA.** "Schedule a Tour" alone in the header chrome;
+   "Enroll" demoted to the nav. Aligns the elite one-CTA pattern with our
+   tour-first funnel doctrine. (Header.astro; both desktop bars + mobile.)
+2. **The full-bleed interlude.** One unscrimmed edge-to-edge photograph
+   owning a viewport (photo registry, code-owned) with a single caption
+   sentence; once on home, once on /why-wcp. The one elite move the scrapbook
+   register currently lacks (every photo we show sits in a frame).
+3. **Values-led /tuition opener.** The transparency moat as the page's
+   HEADLINE in display type ("Every fee, published. On purpose.") above the
+   table, Exeter-style; the table stays clean below.
+4. **A quiet band.** Let the signature statement band breathe more; resist
+   filling every gap with artifacts. One whitespace-heavy single-sentence
+   moment per key page.
+5. (Human, already in PENDING.md) The one-morning professional-adjacent shot
+   list remains the biggest ceiling-raiser this benchmark surfaced.
+
 ### Phase 3: content and assets (Nathan/board, parallel and ongoing)
 
 - **One-morning shot list:** Door 5 entry sequence, per-class teacher portraits in their rooms, the materials/snack table, the sign-in clipboard, 5-10 real paper artifacts (cubby label, snack calendar, kid painting with permission).
