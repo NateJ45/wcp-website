@@ -46,7 +46,7 @@ jobs:
     # push / workflow_dispatch (and the old typeless projection) have no
     # client_payload.type, so the list never matches and the job runs as before.
     if: >-
-      ${{ !contains(fromJSON('["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"]'), github.event.client_payload.type) }}
+      ${{ !contains(fromJSON('["coopRole", "update", "hubDocument", "directoryEntry", "celebration", "hubPage", "teacherNote", "presidentNote", "signupSheet", "signupEntry", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"]'), github.event.client_payload.type) }}
     steps:
       - uses: actions/checkout@v7
 

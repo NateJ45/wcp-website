@@ -32,10 +32,14 @@ Every `/family-hub/*` page renders inside `HubShell` → `BaseLayout chrome="hub
 draws the hub's persistent chrome:
 
 - **Desktop (≥ `lg`):** a sticky left navigation **rail** (`HubRail.astro`), built from the
-  single grouped nav config in `src/data/hub-nav.ts` — Home, News & Events, Resources,
-  Money, Community, Classes — with the active page highlighted, a light/dark `ThemeToggle`,
-  and Sign out.
-- **Mobile (< `lg`):** a top bar (`HubTopBar.astro`, the page title + menu button) that opens
+  single grouped nav config in `src/data/hub-nav.ts` — Home, Classes, News & Events,
+  Resources (Getting Started, Become a Super Helper), Money, Community (incl. the external
+  Store link), each group with its own accent color — the active page highlighted, a
+  light/dark `ThemeToggle`, and Sign out. The rail collapses to an icon rail
+  (`hub-rail.ts` persists the choice in localStorage; BaseLayout sets the attribute early
+  so there's no flash).
+- **Mobile (< `lg`):** a navy top strip (`HubTopBar.astro`: menu button, page title,
+  search icon, bell, theme toggle, logo) whose menu button opens
   the same nav as a slide-in **drawer** (`HubRail` rendered a second time as the drawer's
   contents). `src/scripts/hub-drawer.ts` handles open/close, a focus trap, Esc-to-close, a
   backdrop tap, and body-scroll lock — progressive enhancement over inert markup already in
@@ -61,16 +65,28 @@ The dashboard reads real school data server-side behind the gate, carried over f
 Squarespace hub. Each source's link/id is **Board-editable in Sanity**, with the current
 working values as per-field fallbacks in `src/data/hub/live-links.ts`:
 
-| Widget / feature                     | Live source                                                      | Edited at                                                                       |
-| ------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Class helper-schedule tiles          | Per-class Google Sheets                                          | each `class` doc → **Helper schedule link**                                     |
-| Class Photos                         | Google Photos albums                                             | each `class` doc → **Class photo album link**                                   |
-| Budget Snapshot                      | Budget Sheet "Budget" tab (gviz, `src/lib/gsheets.ts`)           | Site Settings → **Budget Google Sheet ID**                                      |
-| Fundraising (widget + page totals)   | Budget Sheet "Fundraising" tab                                   | same sheet id; treasurer edits the sheet                                        |
-| Upcoming Events (widget + Calendar)  | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs       |
-| Calendar subscribe buttons           | built from `googleCalendarId`                                    | Site Settings → **Google Calendar ID**                                          |
-| President's note (first-visit modal) | `presidentNote` singleton (live read)                            | Family Hub → **President's note** (bump the version stamp to re-show)           |
-| "What we've raised together" band    | past-year grand totals (Fundraising page navy band)              | Site Settings → **Past fundraising totals** (add the just-ended year each fall) |
+| Widget / feature                    | Live source                                                      | Edited at                                                                 |
+| ----------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Class helper-schedule tiles         | Per-class Google Sheets                                          | each `class` doc → **Helper schedule link**                               |
+| Class Photos                        | Google Photos albums                                             | each `class` doc → **Class photo album link**                             |
+| Budget Snapshot                     | Budget Sheet "Budget" tab (gviz, `src/lib/gsheets.ts`)           | Site Settings → **Budget Google Sheet ID**                                |
+| Fundraising (widget + page totals)  | Budget Sheet "Fundraising" tab                                   | same sheet id; treasurer edits the sheet                                  |
+| Upcoming Events (widget + Calendar) | Google Calendar via Apps Script feed (`src/lib/hub-calendar.ts`) | Site Settings → **Calendar feed link**; falls back to Sanity `event` docs |
+
+> The feed's Apps Script source is committed at
+> [`scripts/apps-script/calendar-feed.gs`](../scripts/apps-script/calendar-feed.gs) (full setup
+> steps in its header), so the web app can be redeployed from ANY Google account that can at
+> least SEE the school calendar — it is not tied to the account that first created it (that
+> account was lost in 2026-07; ownership map in [GOOGLE.md](GOOGLE.md)). Redeploying means:
+> subscribe to the calendar, paste the file into an Apps Script project, deploy as a web app,
+> run `setupTriggers` once (daily watchdog email + weekly Drive JSON backup), and update the
+> Calendar feed link in Site Settings (queued right now — see [PENDING.md](PENDING.md)).
+> Since 2026-07-17 the feed also serves `end` + `description`, which light up the event
+> dialog's time ranges and details automatically.
+
+| Calendar subscribe buttons | built from `googleCalendarId` | Site Settings → **Google Calendar ID** |
+| President's note (first-visit modal) | `presidentNote` singleton (live read) | Family Hub → **President's note** (bump the version stamp to re-show) |
+| "What we've raised together" band | past-year grand totals (Fundraising page navy band) | Site Settings → **Past fundraising totals** (add the just-ended year each fall) |
 
 Every fetch is try/catch'd with a short timeout — a failed source degrades to the designed
 empty state, never a broken card. Seed/refresh the letter with
@@ -89,7 +105,7 @@ them, unlike the Directory import.
 ### The app-surface layout (every section page)
 
 Every inner section page (Updates, Calendar, Documents, Directory, Health, Tuition,
-Fundraising, Co-op Jobs, the four class pages) is laid out as **one app surface**, matching
+Fundraising, Co-op Jobs, the two merged class pages) is laid out as **one app surface**, matching
 the Home dashboard rather than a marketing page stacked in the shell. The pattern:
 
 - `HubShell` with the **`bare`** prop — no navy title band. The page opens on the grey app
@@ -182,7 +198,7 @@ details out of the public GitHub repo entirely.
 
 ## Section pages — current status
 
-All twelve section pages are **built with their real layouts** from the current live hub
+All section pages are **built with their real layouts** from the current live hub
 (tuition rates + pay buttons, the document library, class facts, co-op role descriptions,
 health/illness policy, event-type legend, and so on), and every page's heading, intro, and
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
@@ -265,13 +281,24 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 
 ## The app layer (2026-07 "feel like an app" pass)
 
-- **Bottom tab bar on phones** (`HubTabBar`, < md): Home / Calendar / Sign-ups /
+- **Bottom tab bar on phones** (`HubTabBar`, < md): Home / Calendar / Documents /
   Updates / More (More opens the drawer). Theme-stable navy island; BaseLayout pads
   `main` so content clears it.
+- **Event details dialog everywhere** — the Calendar page's `HubEventDialog` is shared
+  with the home dashboard: Upcoming Events widget rows are real links to the Calendar
+  page that `hub-event-dialog.ts` upgrades to open the details dialog in place. The
+  widget is a server island, so it ships its own `[data-hub-events]` JSON blob and the
+  script collects blobs LAZILY at click time (the island streams in after the load-time
+  scan) — keep that pattern for any new island-hosted dialog trigger.
+- **bfcache + cross-browser hardening (2026-07-17)** — scripts that tear down on
+  `pagehide` rebuild on `pageshow persisted` (`hub-fresh`, `countdown`, `DirectoryMap`,
+  `reveal`); menus close on `pointerdown`; the full rules live in CLAUDE.md's
+  "Colors, dates & cross-browser" gotchas.
 - **Search (Cmd/Ctrl+K)** — `HubSearch` dialog + `hub-search.ts`, fed by the gated
   `/family-hub/api/search-index` (hub pages from `hub-nav.ts`, updates, documents,
-  open sign-up sheets). Triggers: the rail's Search row, the phone strip's icon, and
-  the desktop topbar's search field.
+  open sign-up sheets). Triggers: the phone strip's icon and the desktop topbar's
+  search field (top-anchored on phones so the iOS keyboard can't cover the results;
+  the triggers hide themselves on browsers without `<dialog>`).
 - **Desktop topbar** (2026-07-14 app-elevation Track A, in `HubTopBar.astro` alongside
   the phone strip): a floating sticky bar (`h-10` + `m-2` gutter, ~56px total) over the
   content column. On the left, a row of quick links to the things a parent wants on any
@@ -282,7 +309,8 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   title is `min-w-0` so it shows in full when the bar has room and truncates only on a
   narrow desktop). On the right, a visible search-field affordance for the palette and
   the what's-new **bell**. The dropdown menus are native `<details data-hub-menu>` —
-  usable with no JS — and `hub-menus.ts` adds outside-click/Escape closing. `HubTable`'s
+  usable with no JS — and `hub-menus.ts` adds outside-tap (pointerdown — iOS Safari
+  doesn't synthesize document-level clicks on non-clickable targets) / Escape closing. `HubTable`'s
   sticky column headers offset by `lg:top-14` to slide under this bar.
 - **The bell** (`HubBell.astro`): server-renders the recent feed (updates + newest
   documents, one `BOARD_CONTENT_CACHE`-tier query fetched once in `HubTopBar` and shared
@@ -403,6 +431,15 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   2026-07-15 `phone` field); phone falls back to `teacherPhoneFallback` (`live-links.ts`)
   until the Studio field is filled — the numbers were already public in each handbook's
   closing note. Erin signs Twos & Threes; Mrs. Lisa signs Pre-K.
+- **Curriculum guide PDFs.** The class-page header action row carries the handbook pill
+  (`handbookUrl` from the class's `hubPage` doc) plus a **"Curriculum guide (PDF)"** pill
+  linking a static, brand-styled PDF in `public/curriculum/` (`twos-` / `threes-` /
+  `pre-k-curriculum.pdf`; the Twos & Threes page shows one per class since the objectives
+  differ, Pre-K shows one shared guide). These are NOT CMS-editable: the objectives + the
+  layout are the SOURCE OF TRUTH in `scripts/generate-curriculum.mjs` (`npm run
+gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined). Edit the
+  content there and regenerate; the originals were plain Word exports that still used the
+  school's old name.
 
 ## Updates / meeting blog
 
@@ -418,7 +455,7 @@ hub's what's-new bell with an "Important" tag until unchecked), and a full
 
 Re-run the one-time import any time with `node scripts/migrate-hub-updates.mjs` — it reads
 the Squarespace JSON view (`/blog?format=json`), converts each post's HTML body to Portable
-Text, uploads inline flyer images, and `createOrReplace`s `hubUpdate-<slug>` docs
+Text, uploads inline flyer images, and `createOrReplace`s `hubUpdate-<urlId>` docs
 (idempotent). Going forward the Board just adds `update` docs in the Studio.
 
 ## Directory & map

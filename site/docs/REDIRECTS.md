@@ -4,6 +4,10 @@ When the real domain is pointed at this site, **old Squarespace URLs will 404** 
 redirect them. Search engines and anyone who bookmarked or linked an old page should land
 on the right new page, and Google should carry the ranking over.
 
+**Status: the mechanism is live in production** — the launch map in `astro.config.mjs`,
+the board-editable `redirect` docs, and the designed 404 all ship today; what remains for
+cutover is the per-post `/blog/<slug>` sweep (see the launch checklist).
+
 ## Already done (pulled from the old sitemap, 2026-07)
 
 The old public URLs were read straight from `westchesterpreschool.org/sitemap.xml`, and the
@@ -53,7 +57,7 @@ is for adding more later.
 **The board can do this themselves now** — no code change. In the Studio, switch to the
 **Everything** workspace → **Site setup** → **Redirects** → **＋** and fill in the old path
 and where it should go. On Publish, the next rebuild (which the publish itself triggers)
-turns it into a real 301. `astro.config.mjs` reads these `redirect` documents at build via
+turns it into a real 301 (or a 302, if the board unchecks the doc's "permanent" box). `astro.config.mjs` reads these `redirect` documents at build via
 `fetchCmsRedirects()` and folds them into the `redirects` map alongside the launch ones
 below. Fully fail-safe: if Sanity is unreachable at build the CMS redirects are skipped and
 the build still succeeds on the static launch redirects.
@@ -91,8 +95,6 @@ the homepage (`'/old-thing': '/'`) so it never 404s.
 
 ## Notes
 
-- A couple of friendly aliases are already in place (`/blog` → `/news`,
-  `/calendar` → `/events`) so those common guesses work regardless.
 - Redirect only **paths that changed**. If an old URL is identical to a new one (e.g.
   `/about`), you don't need a redirect.
 - The **launch** redirects here are developer-edited because they're a one-time SEO-critical

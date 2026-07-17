@@ -32,52 +32,56 @@ page {
 
 ## The section palette
 
-36 body section types + the hero. Registered in
-[`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts);
-each maps 1:1 to an existing presentational component. Some are **pull-based**:
+**40 body section types + the hero** — the registry in
+[`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts)
+is the source of truth for the count; each maps 1:1 to an existing presentational
+component. Some are **pull-based**:
 they hold only config (heading + band) and fetch their content from a collection
 at build time, hiding the whole band when there's nothing to show.
 
-| Section type              | Renders through                   | Used for                                                                                               |
-| ------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `heroObject` (page field) | `Hero.astro`                      | every page's top banner (incl. home video + `<Underline>` accent word)                                 |
-| `proseSection`            | `Prose.astro`                     | body copy; legal pages use the rich-prose variant (h2/h3/lists)                                        |
-| `cardGridSection`         | `FeatureCard.astro` grid          | every feature-card grid                                                                                |
-| `statBandSection`         | `StatBlock.astro`                 | navy stat bands (home, why-wcp)                                                                        |
-| `ctaSection`              | `CtaBanner.astro`                 | every call-to-action banner                                                                            |
-| `testimonialSection`      | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                                                    |
-| `teacherSection`          | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                                                   |
-| `classCardsSection`       | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                                                             |
-| `faqSection`              | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                                                    |
-| `schoolYearSection`       | `SchoolYear.astro`                | school-year timeline                                                                                   |
-| `tuitionTableSection`     | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                                                  |
-| `scheduleSection`         | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                                                      |
-| `stepListSection`         | `StepList.astro`                  | numbered steps (co-op helper day)                                                                      |
-| `compareSection`          | `CompareTable.astro`              | comparison table (why-wcp)                                                                             |
-| `tabsSection`             | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)                                    |
-| `accordionSection`        | `AccordionSection.astro`          | collapsible rows (native `<details>`, no-JS)                                                           |
-| `quickFactsSection`       | `QuickFactsSection.astro`         | icon + value + label facts (hours, ages, ratios)                                                       |
-| `pullQuoteSection`        | `PullQuoteSection.astro`          | one large statement / philosophy quote                                                                 |
-| `videoSection`            | `VideoSection.astro`              | YouTube/Vimeo, **click-to-load** (no iframe until clicked)                                             |
-| `mapSection`              | `MapSection.astro`                | Google Map + directions, **click-to-load**                                                             |
-| `countdownSection`        | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                                                    |
-| `gallerySection`          | `PhotoGallery.astro`              | photo galleries                                                                                        |
-| `storyTimelineSection`    | `StoryTimelineSection.astro`      | scroll-revealed "day in the life" moments along a dashed spine (A Day at WCP)                          |
-| `splitMediaSection`       | split image+text rows             | virtual-tour alternating rows                                                                          |
-| `noticeBarSection`        | cream announcement strip          | home announcement                                                                                      |
-| `contactDetailsSection`   | contact block                     | contact page (reads Site Settings)                                                                     |
-| `latestPostsSection`      | `PostCard.astro` grid             | **pull** — newest News posts                                                                           |
-| `upcomingEventsSection`   | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                                                           |
-| `formSection`             | `ContactForm.astro`               | tour / contact / inquiry forms                                                                         |
-| `newsletterSignupSection` | `NewsletterForm.astro`            | email signup                                                                                           |
-| `programCardsSection`     | card grid                         | **pull** — Program docs (enrichment / summer offerings)                                                |
-| `boardMembersSection`     | people grid                       | **pull** — Board / leadership docs                                                                     |
-| `logoStripSection`        | logo row                          | **pull** — Partners **or** Accreditations (config picks which)                                         |
-| `campaignSection`         | progress bar                      | **pull** — the one active Fundraising campaign                                                         |
-| `jobsSection`             | posting list                      | **pull** — open Job postings (shows an empty-message when none)                                        |
-| `downloadsSection`        | resource list                     | **pull** — Resource docs (optionally one category)                                                     |
-| `albumSection`            | `PhotoGallery.astro`              | a referenced Photo album                                                                               |
-| `instagramSection`        | `InstagramSection.astro`          | "Life inside WCP" bulletin-board gallery — **live IG feed** (build-time) with a curated fallback album |
+| Section type               | Renders through                   | Used for                                                                                               |
+| -------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `heroObject` (page field)  | `Hero.astro`                      | every page's top banner (incl. home video + `<Underline>` accent word)                                 |
+| `proseSection`             | `Prose.astro`                     | body copy; legal pages use the rich-prose variant (h2/h3/lists)                                        |
+| `cardGridSection`          | `FeatureCard.astro` grid          | every feature-card grid                                                                                |
+| `statBandSection`          | `StatBlock.astro`                 | navy stat bands (home, why-wcp)                                                                        |
+| `ctaSection`               | `CtaBanner.astro`                 | every call-to-action banner                                                                            |
+| `testimonialSection`       | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                                                    |
+| `teacherSection`           | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                                                   |
+| `classCardsSection`        | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                                                             |
+| `faqSection`               | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                                                    |
+| `schoolYearSection`        | `SchoolYear.astro`                | school-year timeline                                                                                   |
+| `tuitionTableSection`      | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                                                  |
+| `scheduleSection`          | `ScheduleTimeline.astro`          | a-day-at-wcp, class day schedules                                                                      |
+| `stepListSection`          | `StepList.astro`                  | numbered steps (co-op helper day)                                                                      |
+| `compareSection`           | `CompareTable.astro`              | comparison table (why-wcp)                                                                             |
+| `tabsSection`              | `TabsSection.astro`               | accessible tabbed content (ARIA tabs, keyboard-nav, no-JS fallback)                                    |
+| `accordionSection`         | `AccordionSection.astro`          | collapsible rows (native `<details>`, no-JS)                                                           |
+| `quickFactsSection`        | `QuickFactsSection.astro`         | icon + value + label facts (hours, ages, ratios)                                                       |
+| `pullQuoteSection`         | `PullQuoteSection.astro`          | one large statement / philosophy quote                                                                 |
+| `videoSection`             | `VideoSection.astro`              | YouTube/Vimeo, **click-to-load** (no iframe until clicked)                                             |
+| `mapSection`               | `MapSection.astro`                | Google Map + directions, **click-to-load**                                                             |
+| `countdownSection`         | `CountdownSection.astro`          | live countdown (aria-hidden ticker + date fallback)                                                    |
+| `gallerySection`           | `PhotoGallery.astro`              | photo galleries                                                                                        |
+| `storyTimelineSection`     | `StoryTimelineSection.astro`      | scroll-revealed "day in the life" moments along a dashed spine (A Day at WCP)                          |
+| `splitMediaSection`        | split image+text rows             | virtual-tour alternating rows                                                                          |
+| `noticeBarSection`         | cream announcement strip          | home announcement                                                                                      |
+| `contactDetailsSection`    | contact block                     | contact page (reads Site Settings)                                                                     |
+| `latestPostsSection`       | `PostCard.astro` grid             | **pull** — newest News posts                                                                           |
+| `upcomingEventsSection`    | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                                                           |
+| `formSection`              | `ContactForm.astro`               | tour / contact / inquiry forms                                                                         |
+| `newsletterSignupSection`  | `NewsletterSignup.astro`          | email signup                                                                                           |
+| `tuitionCalculatorSection` | `TuitionCalculatorSection.astro`  | interactive monthly-cost estimator                                                                     |
+| `enrollmentCtaSection`     | `EnrollmentCtaSection.astro`      | enrollment steps + CTA band                                                                            |
+| `reviewFormSection`        | `ReviewFormSection.astro`         | families submit a review/testimonial                                                                   |
+| `programCardsSection`      | card grid                         | **pull** — Program docs (enrichment / summer offerings)                                                |
+| `boardMembersSection`      | people grid                       | **pull** — Board / leadership docs                                                                     |
+| `logoStripSection`         | logo row                          | **pull** — Partners **or** Accreditations (config picks which)                                         |
+| `campaignSection`          | progress bar                      | **pull** — every active Fundraising campaign                                                           |
+| `jobsSection`              | posting list                      | **pull** — open Job postings (shows an empty-message when none)                                        |
+| `downloadsSection`         | resource list                     | **pull** — Resource docs (optionally one category)                                                     |
+| `albumSection`             | `PhotoGallery.astro`              | a referenced Photo album                                                                               |
+| `instagramSection`         | `InstagramSection.astro`          | "Life inside WCP" bulletin-board gallery — **live IG feed** (build-time) with a curated fallback album |
 
 **Reference vs. inline.** Sections that can pull from existing docs
 (`testimonial`, `staff`, `class`, `faqItem`, `schoolYearEvent`) offer a `source`
@@ -105,10 +109,12 @@ pinned-photo bulletin board. It pulls the **live feed at build time** via
 `src/lib/instagram.ts` when the `INSTAGRAM_TOKEN` env var (a long-lived Instagram Graph
 API token, from the **Instagram API with Instagram Login** product in a Meta developer
 app — not oEmbed, which can't list an account's recent media) is set. It's read via
-`import.meta.env`, so it only needs to exist at build time — set it as a **GitHub Actions
-repo secret** (`gh secret set INSTAGRAM_TOKEN`); no Cloudflare secret needed. Until it's
-set (or if a fetch fails) the section shows its **fallback album**
-(`album-life-inside-wcp`), so the home is never empty. No token, no third-party script
+`import.meta.env` for the STATIC sections at build time — set it as a **GitHub Actions
+repo secret** (`gh secret set INSTAGRAM_TOKEN`) AND a Cloudflare Worker secret
+(`wrangler secret put INSTAGRAM_TOKEN`): the hub's social wall reads it at request time,
+and `refresh-instagram-token.yml` pushes the refreshed token to both. Until it's
+set (or if a fetch fails) the section shows the album picked in its **Fallback album**
+field, so the home is never empty. No token, no third-party script
 hits a visitor's browser.
 
 Getting the token: the Instagram account must be a Business/Creator account linked to a
@@ -120,7 +126,7 @@ produce a long-lived (60-day) token.
 Because the site is static, both the feed content and the token need periodic rebuilds/
 refreshing — both automated: `.github/workflows/refresh-instagram-token.yml` runs weekly,
 refreshes the long-lived token via `graph.instagram.com/refresh_access_token` every 50
-days (tracked in `.github/instagram-token-refreshed-at`, since GitHub cron can't express
+days (tracked in `.github/instagram-token-refreshed-at`, created on the first real refresh, since GitHub cron can't express
 "every N days" directly), writes the new token back to the `INSTAGRAM_TOKEN` secret, and
 triggers a `deploy.yml` rebuild so it — and any new posts — go live immediately. That
 refresh/rebuild step needs a **PAT** (not the default `GITHUB_TOKEN`, which can't write
@@ -295,16 +301,18 @@ node scripts/migrate-pagebuilder.mjs
 
 ## Drag-to-reorder (orderable lists)
 
-`class`, `testimonial`, `schoolYearEvent`, and `coopRole` use
+`class`, `testimonial`, `schoolYearEvent`, `coopRole`, `faqItem`, `hubDocument`,
+`program`, `boardMember`, `partner`, `credential`, `jobPosting`, and `resource` use
 [`@sanity/orderable-document-list`](https://www.sanity.io/plugins/orderable-document-list):
 their Studio lists have drag handles, and the site renders them in that order. Each
 schema has `orderRankField()` + `orderRankOrdering`, their old `order` number field is
 hidden, `structure.ts` uses `orderableDocumentListDeskItem`, and the site queries sort by
-`order(orderRank)`. Existing docs were seeded from the old `order` values via
+`order(orderRank)` (FAQs drag-order within their category grouping — `FAQ_ITEMS_QUERY`
+sorts by `coalesce(orderRank, "~")` inside each category). Existing docs were seeded from
+the old `order` values via
 [`scripts/seed-order-ranks.mjs`](../scripts/seed-order-ranks.mjs) (LexoRank, idempotent),
 so ordering was preserved with no downtime — **run that script once after adding a new
-orderable type.** `faqItem` is deliberately **not** orderable: it groups by category, so a
-flat drag list would be misleading; it keeps its `order` field.
+orderable type.**
 
 ## Live availability badges & structured data
 

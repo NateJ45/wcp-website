@@ -10,7 +10,7 @@ product
 
 Parents and caregivers of enrolled families at West Chester Preschool, a volunteer-run cooperative. They are busy, non-technical, often on a phone one-handed between drop-off and work. Secondary users: volunteer Board members (also parents) who run the co-op and edit content through Sanity Studio. The sole code maintainer is Nathan Nixon (Publicity Chair/Secretary); everyone else touches only content.
 
-Jobs to be done in the hub: check the calendar and what's new, find another family in the directory, log/track co-op hours, look up tuition and budget/fundraising status, read class pages (Twos / Threes / Pre-K AM / Pre-K PM), find documents and health/emergency info, sign up for jobs and events.
+Jobs to be done in the hub: check the calendar and what's new, find another family in the directory, log/track co-op hours, look up tuition and budget/fundraising status, read the class pages (Twos & Threes / Pre-K), find documents and health/emergency info, sign up for jobs and events, share and browse family photos, see celebrations, get certified as a Super Helper, work through Getting Started as a new family, and buy WCP gear from the store card.
 
 ## Product Purpose
 
@@ -32,7 +32,7 @@ Warm, handmade, trustworthy. A cooperative run by real parents, not a SaaS produ
 2. **Phone-first, one-handed.** Parents check this at drop-off. Tab bar for phones, thumb-reachable actions, 320px reflow is a hard gate.
 3. **Honest data, designed empties.** Live data (sheets, calendar) always degrades to a designed empty state, never a broken widget. Sparklines and stats only show honest series.
 4. **Volunteers control content, never design.** Brand-lock: no color/font/layout knobs in the CMS. This is what keeps the surface coherent.
-5. **Progressive enhancement.** Every page works with no JS; localStorage personalization (my classes, seen-state, theme) layers on top.
+5. **Progressive enhancement.** Every page works with no JS (the three Google-backed home widgets keep their skeletons — the one accepted trade); localStorage personalization (my classes, seen-state, theme) layers on top.
 
 ## Accessibility & Inclusion
 

@@ -54,7 +54,7 @@ the moment to weigh Growth (Editor role) or Enterprise (custom roles).
 ## Good habits
 
 - Keep **Administrators** to one or two people.
-- Give new volunteers **Viewer** first; promote to **Editor** once they are comfortable.
+- Give new volunteers **Viewer** first; promote to **Administrator** (or Editor, once on the Growth plan) when they are comfortable.
 - Review the member list once a year (start of the school year is a natural time) and
   remove anyone who has rolled off the board.
 

@@ -1,16 +1,25 @@
 # Website forms — how submissions flow, and the one-time Google setup
 
+> Two Apps Scripts live in `scripts/apps-script/`: **`forms-inbox.gs`** (this doc — the
+> submissions Sheet, board emails, weekly digest) and **`calendar-feed.gs`** (a separate
+> project + deployment serving the calendar JSON feed; see [GOOGLE.md](GOOGLE.md)).
+> "The script" below always means forms-inbox; each has its own /exec URL and its own
+> update procedure. If the checked-in copy here gains features (e.g. the `hours`/`photo`
+> tabs added 2026-07-17), the DEPLOYED script must be re-pasted per "Updating the script
+> later" below to pick them up.
+
 Any page can carry a form: in the page builder add a **Contact form** section, set its
 _topic_, and pick its **Form fields** variant. The variants reproduce the old Squarespace
 forms field-for-field (see the VARIANTS map in
 [`ContactForm.astro`](../src/components/ContactForm.astro)):
 
-| Variant   | Used on       | Asks for                                                                |
-| --------- | ------------- | ----------------------------------------------------------------------- |
-| `general` | /contact      | First + last name, email, subject, message                              |
-| `enroll`  | /enroll       | Parent + child name, child's birthdate, phone, class checkboxes, extras |
-| `tour`    | /virtual-tour | Child info, class checkboxes, preferred dates/times                     |
-| `teach`   | /work-with-us | Experience, age groups, ECE certification, about-you                    |
+| Variant    | Used on       | Asks for                                                                |
+| ---------- | ------------- | ----------------------------------------------------------------------- |
+| `general`  | /contact      | First + last name, email, subject, message                              |
+| `enroll`   | /enroll       | Parent + child name, child's birthdate, phone, class checkboxes, extras |
+| `tour`     | /virtual-tour | Child info, class checkboxes, preferred dates/times                     |
+| `teach`    | /work-with-us | Experience, age groups, ECE certification, about-you                    |
+| `waitlist` | waitlist CTAs | Child name + birthdate, hoped-for class, preferred start                |
 
 The **Newsletter sign-up** section (first name, last name, email) posts to
 [`/api/subscribe`](../src/pages/api/subscribe.ts); everything else posts to
@@ -105,7 +114,9 @@ landing.)
 digest, because Workers can't send email on the free tier. The site exposes a
 token-protected feed at `/api/newsletter?token=…` (matches `FORMS_WEBHOOK_TOKEN`; 404s
 without it) that returns the latest published issue as a compact teaser — subject,
-summary, cover image, and the public URL. A `sendNewsletter()` Apps Script function
+summary, cover image, and the public URL. To enable sending, add a `sendNewsletter()`
+function to the Apps Script (NOT yet in the checked-in `forms-inbox.gs` — write it when
+the board first wants this) that
 fetches that, emails the subscriber/families list a short "new issue is up" note linking
 to the page, and the board runs it (or adds a trigger) when an issue is ready. Pass
 `&slug=<slug>` to send a specific older issue instead of the latest. After sending, the
@@ -123,9 +134,10 @@ unanswered messages, unpublished drafts) and things coming up in the next two we
 `src/lib/reminders.ts` (unit-tested) and is shared with the Studio **Checkup** tool's
 "Coming up" section, so the emailed list and the in-Studio view never drift.
 
-To email it, add an Apps Script `boardReminders()` daily trigger (same mailer/token as
-the digest): fetch the feed, and if `reminders` is non-empty, email the board a short
-bulleted list. Set a **Time-driven → Day timer → 7–8am** trigger. Nothing due → nothing
+To email it, add a `boardReminders()` function + daily trigger to the Apps Script (same
+mailer/token as the digest; NOT yet in the checked-in `forms-inbox.gs` — write it when
+the board first wants this): fetch the feed, and if `reminders` is non-empty, email the
+board a short bulleted list. Set a **Time-driven → Day timer → 7–8am** trigger. Nothing due → nothing
 sent. Sending runs on the Google side because Workers can't send email on the free tier;
 a Cloudflare cron would still have to hand off to the same mailer, so the Apps Script
 trigger is the whole mechanism.

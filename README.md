@@ -57,10 +57,10 @@ You will need a `.env` (build-time Sanity token) and `.dev.vars` (Worker runtime
 ## Common commands (run in `site/`)
 
 ```sh
-npm run build        # static build → dist/
+npm run build        # hybrid build → dist/client (static) + dist/server (Worker)
 npm run check        # types (astro check) + lint (oxlint)
-npm test             # Playwright: smoke + accessibility + 320px reflow
-npm run deploy       # build + deploy to Cloudflare
+npm test             # Playwright: smoke + accessibility + reflow at 320/768/1024/1440 (Chromium + WebKit-iPhone)
+npm run deploy       # build + deploy to Cloudflare (uses the adapter's wrangler config)
 ```
 
 ## Deploy
@@ -73,6 +73,10 @@ Pushes to `main` deploy automatically. Publishing in the Sanity Studio also trig
 - [`site/docs/PAGE_BUILDER.md`](site/docs/PAGE_BUILDER.md) — how the public site is composed from CMS sections.
 - [`site/docs/SANITY.md`](site/docs/SANITY.md) — the CMS project, the Studio, secrets, the auto-deploy webhook.
 - [`site/docs/FAMILY_HUB.md`](site/docs/FAMILY_HUB.md) — the gated family area and its password gate.
+- [`site/docs/TESTING.md`](site/docs/TESTING.md) — which test suite covers what.
+- [`site/docs/GOOGLE.md`](site/docs/GOOGLE.md) — the Google-side dependencies (calendar, Apps Scripts, sheets) and who owns them.
+- [`site/docs/PENDING.md`](site/docs/PENDING.md) — the live registry of queued/stopgapped work.
+- Plus [`FORMS.md`](site/docs/FORMS.md), [`ROLES.md`](site/docs/ROLES.md), [`REDIRECTS.md`](site/docs/REDIRECTS.md), and [`LAUNCH_CHECKLIST.md`](site/docs/LAUNCH_CHECKLIST.md) in the same folder.
 
 ---
 

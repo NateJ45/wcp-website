@@ -7,12 +7,14 @@ Nothing here is needed for workers.dev preview deploys — this is for the real 
 
 ## 1. Route & redirect inventory (before touching DNS)
 
-- [ ] Crawl the LIVE Squarespace site and export every route (linkinator or Screaming
-      Frog against westchesterpreschool.org — include `/blog/*` post slugs).
-- [ ] Map every old route to its new home. Known moves so far: `/families` → `/family-hub`,
-      `/blog/<slug>` → `/family-hub/updates/<slug>`, `/tuition` (public) stays.
-- [ ] Add 301s for every mapped route (Astro redirects config / `_redirects`), and a
-      designed 404 for anything intentionally dropped.
+- [x] ~~Map the old sitemap's routes and add 301s~~ — DONE: the launch map in
+      `astro.config.mjs` covers every old-sitemap path, board-editable redirects exist,
+      and a designed `404.astro` ships (see [REDIRECTS.md](REDIRECTS.md)). (Note: 301s
+      live in the Astro redirects config only — `_redirects` is a Cloudflare Pages
+      mechanism and does not apply to this Worker deploy.)
+- [ ] Crawl the LIVE Squarespace site for `/blog/*` POST slugs (linkinator or Screaming
+      Frog) and add per-post redirects `/blog/<slug>` → `/family-hub/updates/<slug>` —
+      the one redirect family not yet mapped.
 - [ ] Re-run `npm run check:links` against the built site with the redirects in place.
 
 ## 2. Assets & third parties
@@ -23,7 +25,14 @@ Nothing here is needed for workers.dev preview deploys — this is for the real 
       `squarespace-cdn`); re-upload any stragglers to Sanity.
 - [ ] PayPal buttons hit the right account in production (buy a $1 test or verify ids).
 - [ ] Google Calendar feed (Apps Script), budget/helper Google Sheets, and Google Photos
-      albums all load from the new domain (referrer restrictions, if any).
+      albums all load from the new domain (referrer restrictions, if any). The feed was
+      redeployed 2026-07-17 under the maintainer's account — ownership map in
+      [GOOGLE.md](GOOGLE.md); the Site Settings URL switch is queued in
+      [PENDING.md](PENDING.md).
+- [ ] Analytics & verification env vars set in production (`PUBLIC_GADS_ID`,
+      `PUBLIC_CF_BEACON_TOKEN`, `PUBLIC_GSC_VERIFICATION` — all consumed by
+      `src/components/Analytics.astro`), and the Search Console property moved to the
+      new domain.
 
 ## 3. Quality gates (all must pass on the release build)
 
@@ -49,7 +58,9 @@ Nothing here is needed for workers.dev preview deploys — this is for the real 
       Domains) and confirm the cert issues.
 - [ ] Point `www` + apex at Cloudflare; keep the Squarespace site reachable at a
       temporary subdomain until confident.
-- [ ] Update `site.url` / canonical URLs, re-run the build, redeploy.
+- [ ] Confirm apex vs `www` (astro.config.mjs `site` is already
+      `https://www.westchesterpreschool.org` with a TODO), fix if needed, re-run the
+      build, redeploy.
 - [ ] Submit the new sitemap in Google Search Console; verify the old property 301s.
 
 ## 6. Post-launch watch (first week)

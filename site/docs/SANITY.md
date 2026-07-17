@@ -14,7 +14,7 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 - **Project ID:** `niemhgev` · **Dataset:** `production` (private) · **API version:** `2025-01-01`
 - **Studio config:** [sanity.config.ts](../sanity.config.ts) · schemas in [src/sanity/schemaTypes/](../src/sanity/schemaTypes/)
 - **Workspaces:** the Studio is TWO views of the same dataset — **Everyday edits** (`/studio/#/everyday`, where `/studio` lands: ONLY the publish-something-now jobs — alert, Money & payments, News, Events, Pages, Family Hub, inboxes) and **Everything** (`/studio/#/everything`: adds School info — classes/staff/FAQs/testimonials/school-year events — plus Community & content, Site Settings, Menus, and the Link Checker). Class docs stay reachable in Everyday via Money & payments → "Class tuition (open a class)". The `#` is because the embedded Studio on a static build uses hash routing (verified live 2026-07-13). Switch via the workspace name in the top-left. The trim is menu-only comfort, not permission (see [ROLES.md](ROLES.md)). Both are defined by one shared `workspace()` factory in `sanity.config.ts`; the left-nav structures live in [src/sanity/structure.ts](../src/sanity/structure.ts) (`structure` + `everydayStructure`), organized by task-frequency bands (Everyday edits / School info / Family Hub / Site setup / Inboxes) with a **Money & payments** folder gathering the fee schedule, class tuition, and campaigns.
-- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), `sanity-plugin-media` (the "Media" library), `sanity-plugin-documents-pane` (a "Used on" tab), `@sanity/orderable-document-list` (drag-to-reorder — Classes, Testimonials, School-Year Events, FAQs, hub Documents & Forms, and the Community collections), and `sanity-plugin-link-checker` (the "Link Checker" tool, Everything workspace only). Custom panes: a **Welcome** launcher (task cards deep-linking to tuition/alert/news/etc. + recent edits) and an **SEO preview** tab (Google + social card) — both free, added via `defaultDocumentNode` in `sanity.config.ts`. Growth-plan features (AI Assist, Comments/Tasks) are **not** enabled — see the note below.
+- **Studio plugins:** `structureTool`, `presentationTool` (click-to-edit), `sanity-plugin-media` (the "Media" library), `sanity-plugin-documents-pane` (a "Used on" tab), `@sanity/orderable-document-list` (drag-to-reorder — Classes, Testimonials, School-Year Events, FAQs, Co-op Roles, hub Documents & Forms, and the Community collections), and `sanity-plugin-link-checker` (the "Link Checker" tool, Everything workspace only). Custom panes: a **Welcome** launcher (task cards deep-linking to tuition/alert/news/etc. + recent edits; a structure pane in `structure.ts`) and an **SEO preview** tab (Google + social card; added via `defaultDocumentNode` in `sanity.config.ts`). Growth-plan features (AI Assist, Comments/Tasks) are **not** enabled — see the note below.
 - **Soft delete / "Recently deleted":** Sanity has no built-in trash, so board-authored **content** types (`ARCHIVABLE_TYPES` in `schemaTypes/index.ts`) have their destructive **Delete** action swapped for **Archive** (`src/sanity/actions/archive.tsx`): it snapshots the whole document (its JSON) into a `trashedItem` and removes the original, so it leaves both the Studio lists and the public site. **Recently deleted** (in both workspaces) lists them; **Restore** rebuilds the original from the snapshot (`createOrReplace` to the same id, so references re-resolve), **Delete forever** empties it (with a confirm). Archive is blocked (with a toast) when other docs still reference the item, mirroring the native delete guard. Nothing auto-purges — it's kept until the board empties it (safer than a timed delete). Pure round-trip logic in `src/lib/trash.ts` (unit-tested). Machine/inbox types (submissions, subscribers, sign-up & hours entries, moderated photos) keep the normal Delete — the **Clean up** tool bulk-empties those. `trashedItem` is Studio-only (never public, excluded from the deploy webhook).
 - **Self-service extras (board independence):** a `redirect` document type (Everything → Site setup → Redirects) whose entries are read at build by `astro.config.mjs`'s `fetchCmsRedirects()` and folded into the `redirects` map — so the board fixes old/renamed links without the developer (see [REDIRECTS.md](REDIRECTS.md)). Four Studio tools in the Everything workspace: **Export** (`ExportTool.tsx`) downloads subscribers / submissions / directory as CSV client-side (off-boarding); **Clean up** (`CleanupTool.tsx`) bulk-deletes old handled messages / past sign-up responses with a count preview + typed confirmation (free-plan bulk delete); **Checkup** (`HealthTool.tsx`) is a read-only "what needs attention?" report (banner left on, old messages, stale pages, class gaps); and **Start of year** (`SetupWizard.tsx`) is a read-only guided checklist for the annual rollover (year label, key dates, tuition, co-op hours goal, events, content refresh) that jumps you to each thing to update. All four are read-only or self-confirming and free-plan safe. `update.showUntil` lets a pinned announcement drop off the hub home on its own.
 - **Announcements (bars + popups):** `announcement` docs (Everyday edits → Announcements) render site-wide public bars (stacked, priority-ordered, dismissible) + one popup, via `AnnouncementBars.astro` / `AnnouncementModal.astro` in BaseLayout (public chrome only). On/off + optional `showFrom`/`showUntil`; scheduling + dismissal + the waitlist auto-message run client-side (`scripts/announcement-bars.ts` reads `/api/availability`; `announcement-modal.ts` frequency-caps popups). Pre-built "＋ New" starting points live in `announcementTemplates.ts`. Pure logic (in-window, placement, waitlist message) in `lib/announcements.ts`, unit-tested. The urgent snow-day **Alert banner** (`closureAlert`) stays a separate singleton, always on top. Design spec: `docs/superpowers/specs/2026-07-13-announcements-design.md`.
@@ -33,6 +33,7 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Page**              | Every public page, as a hero + a stack of sections (the page builder)                                                                |
 | **News post**         | The News/blog feed (/news) — title, cover, summary, rich body, category                                                              |
+| **Newsletter issue**  | The public newsletter web archive (/newsletter) — composed in Studio, emailed via Apps Script                                        |
 | **Event**             | The public Events page (/events) — dated open houses, tours, closures                                                                |
 | **Alert banner**      | Site-wide banner for snow days / urgent notices (singleton; toggle + message)                                                        |
 | **Announcement**      | Board-managed bars + popups (waitlist/open-house/fundraiser/etc.), on/off, scheduled, stacked; separate from the urgent Alert banner |
@@ -54,7 +55,7 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 | **Board / leadership**      | Public officers and leaders, separate from teaching Staff (Board section)                |
 | **Partner / sponsor**       | Community partner logos (Logo strip section, "Partners")                                 |
 | **Accreditation / license** | Trust badges — accreditation, license, membership (Logo strip section, "Accreditations") |
-| **Fundraising campaign**    | The active campaign + goal/raised (Fundraising progress section, one active at a time)   |
+| **Fundraising campaign**    | All active campaigns + goal/raised (Fundraising progress section)                        |
 | **Job posting**             | Open teaching / board positions (Open positions section)                                 |
 | **Resource / download**     | Handbook, calendar, forms — uploaded file or link (Downloads section)                    |
 | **Photo album**             | A reusable set of photos shown as a gallery (Photo album section)                        |
@@ -66,7 +67,14 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 | ------------------------- | --------------------------------------------------------------------------------------------- |
 | **Update**                | School Updates feed (pin to surface on the hub home; target a class or all)                   |
 | **Document / Form**       | Documents & Forms (link or uploaded file, grouped by category incl. meeting minutes)          |
-| **Class Note**            | Per-class notes on each class hub page                                                        |
+| **Hub page**              | Each hub route's heading/intro + Board-added sections (`hubPage`, keyed by route)             |
+| **Teacher welcome note**  | The class-page sign-off card per class (`teacherNote`, incl. the call/text phone)             |
+| **President's note**      | The first-visit welcome letter modal (singleton; bump the version stamp to re-show)           |
+| **Celebration**           | Birthdays, shout-outs, welcomes on /family-hub/celebrations                                   |
+| **Co-op role**            | The who-does-what role directory on Co-op Jobs (drag-orderable)                               |
+| **Sign-up sheet / entry** | Sign-ups & RSVPs — board creates sheets, family responses arrive as entries (**PII**)         |
+| **Hours log**             | Co-op-hours ledger rows logged from /family-hub/hours (**PII**; created by the site)          |
+| **Photo submission**      | Moderated family-photo queue for the photo wall (**PII** until approved)                      |
 | **Directory — Family**    | Family Directory (**PII**; only entries marked "Show in directory" appear)                    |
 | **Form submission**       | Messages sent through website contact forms (**PII**; created by the site, read-only)         |
 | **Newsletter subscriber** | Newsletter sign-ups (**PII**; created by the site; also pushed to your email provider if set) |
@@ -236,8 +244,10 @@ when Sanity tells it a document was published.
      **Skip the document types that only feed Family Hub pages (or inboxes).** Every
      Family Hub route has `prerender = false` (session-gated, reads Sanity live on
      every request — see `src/pages/family-hub/*.astro`), so publishing a `coopRole`,
-     `update`, `hubDocument`, `directoryEntry`, `classNote`, or `celebration` document
-     already shows up immediately with no rebuild. The submission inboxes
+     `update`, `hubDocument`, `directoryEntry`, or `celebration` document
+     already shows up immediately with no rebuild — same for `hubPage`,
+     `teacherNote`, `presidentNote`, and the sign-up types (`signupSheet`,
+     `signupEntry`), which only ever render behind the gate. The submission inboxes
      (`testimonialSubmission`, the general `submission` from form posts, the
      `hoursLog` co-op-hours ledger, and `photoSubmission` family photos) are
      Studio-only or hub-only and never render on the public site, so they don't need
@@ -250,7 +260,7 @@ when Sanity tells it a document was published.
      Combined filter:
 
      ```
-     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "classNote", "celebration", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"])
+     !(_id in path("drafts.**")) && !(_type in ["coopRole", "update", "hubDocument", "directoryEntry", "celebration", "hubPage", "teacherNote", "presidentNote", "signupSheet", "signupEntry", "testimonialSubmission", "submission", "hoursLog", "photoSubmission", "trashedItem"])
      ```
 
      If a new document type is added later, decide which bucket it belongs to by
