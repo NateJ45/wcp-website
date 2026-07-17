@@ -1212,6 +1212,27 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-site-paper section.bg-navy {
   background-image: var(--wcp-doodles-dark);
 }
+
+/* Hero drench (2026-07-17, Nathan: "all heroes ... deep navy bg and the low
+   opacity svgs"): THE hero surface — brand navy deepening toward the edges,
+   with the white classroom doodles floating at ~5%. Theme-stable like every
+   navy band (the drench does not flip in dark mode). Used by HeroFramed's
+   band and Hero.astro's no-media placeholder; full-bleed photo heroes get the
+   doodle layer via their scrim instead so the photography stays the star.
+   The darker top zone doubles as the contrast bed for the transparent overlay
+   header (which replaced HeroFramed's old lg-only masthead hack). */
+.wcp-hero-drench {
+  background-color: var(--color-navy);
+  background-image:
+    var(--wcp-doodles-dark),
+    linear-gradient(
+      to bottom,
+      rgba(1, 32, 58, 0.6),
+      rgba(1, 32, 58, 0.12) 34%,
+      rgba(1, 32, 58, 0.05) 62%,
+      rgba(1, 32, 58, 0.5)
+    );
+}
 .dark .wcp-site-paper section.bg-cream {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }

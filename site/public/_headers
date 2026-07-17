@@ -16,11 +16,24 @@
 #                                failed with "Failed to load iframe due to
 #                                X-Frame-Options: SAMEORIGIN".
 # Every other origin is still blocked from framing the site (the clickjacking
-# risk). This CSP sets ONLY frame-ancestors, so it does not restrict scripts,
-# styles, etc.
+# risk).
+#
+# script-src (2026-07-17 DevTools audit): a HOST-LIST policy, deliberately not
+# a nonce-strict one — this static site ships real inline scripts (the theme
+# snippet, speculation rules, JSON-LD data blocks are exempt anyway) and
+# Partytown executes tracker code via eval INSIDE its self-hosted worker, so
+# 'unsafe-inline' + 'unsafe-eval' are required for the site to function. The
+# wins that remain real: scripts can only LOAD from 'self' + the three
+# consent-gated tracker hosts + the Cloudflare beacon (an injected external
+# <script src> to anywhere else is blocked), object-src 'none' kills plugin
+# injection, base-uri 'self' kills <base> hijacking. blob: covers the Studio's
+# web workers. Trusted Types was evaluated and skipped: it needs a sitewide
+# DOM-sink refactor (Sanity Studio included) for a Chrome-only hardening.
+# preload on HSTS: workers.dev is already on the browser preload list; the
+# directive makes the policy carry to the custom domain at DNS cutover.
 /*
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: frame-ancestors 'self' https://*.sanity.io https://sanity.io https://*.sanity.studio
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Security-Policy: script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com https://www.googletagmanager.com https://connect.facebook.net; object-src 'none'; base-uri 'self'; frame-ancestors 'self' https://*.sanity.io https://sanity.io https://*.sanity.studio
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Cross-Origin-Opener-Policy: same-origin

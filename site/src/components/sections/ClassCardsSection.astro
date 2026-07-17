@@ -55,6 +55,7 @@ const pageSlugFor = (slug?: string) =>
           age={c.age}
           features={[c.studentFee ? `Student fee ${c.studentFee}` : ''].filter(Boolean)}
           href={c.slug ? slugHref(`classes/${pageSlugFor(c.slug)}`, linkBase) : undefined}
+          ctaLabel={`See the ${c.name} class`}
           availabilitySlug={c.slug}
         />
       ))

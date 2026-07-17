@@ -123,13 +123,10 @@ const alignClass = align === 'center' ? 'text-center' : 'text-left';
         decoding="async"
       />
     ) : (
-      /* No media: a clean navy field with a faint diagonal texture (a small
-         tactile touch, not a glow). Real photos/video come via Sanity. */
-      <div
-        class="absolute inset-0 -z-10 bg-navy"
-        aria-hidden="true"
-        style="background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 14px, transparent 14px 28px);"
-      />
+      /* No media: the navy doodle drench (2026-07-17 hero doctrine) — deep
+         navy with the low-opacity classroom doodles, the same family as the
+         framed home hero. Real photos/video come via Sanity. */
+      <div class="wcp-hero-drench absolute inset-0 -z-10" aria-hidden="true" />
     )
   }
   {
@@ -155,13 +152,19 @@ const alignClass = align === 'center' ? 'text-center' : 'text-left';
     )
   }
 
-  {/* --- Scrim: guarantees text contrast over any image --------------------- */}
+  {
+    /* --- Scrim: guarantees text contrast over any image ---------------------
+      The doodle tile rides ON the scrim (topmost layer) so photo heroes join
+      the navy-doodle hero family: the white strokes read faintly in the
+      scrim's heavy corner and all but vanish over the photo's bright areas —
+      unification without defacing the photography. */
+  }
   <div
     class={cn(
       'absolute inset-0 -z-10',
       align === 'center'
-        ? 'bg-[linear-gradient(to_top,rgba(1,32,58,.82),rgba(1,32,58,.5)_45%,rgba(1,32,58,.55))]'
-        : 'bg-[linear-gradient(to_top,rgba(1,32,58,.85),rgba(1,32,58,.35)_55%,transparent),linear-gradient(to_right,rgba(1,32,58,.7),transparent_65%)]',
+        ? 'bg-[image:var(--wcp-doodles-dark),linear-gradient(to_top,rgba(1,32,58,.82),rgba(1,32,58,.5)_45%,rgba(1,32,58,.55))]'
+        : 'bg-[image:var(--wcp-doodles-dark),linear-gradient(to_top,rgba(1,32,58,.85),rgba(1,32,58,.35)_55%,transparent),linear-gradient(to_right,rgba(1,32,58,.7),transparent_65%)]',
     )}
     aria-hidden="true"
   >

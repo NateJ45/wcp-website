@@ -3,8 +3,8 @@
    HeroFramed — the "living photograph" hero (Phase 2, variant B, Nathan-approved)
    ============================================================================
    The scrapbook home hero: the ambient school film lives in a taped polaroid
-   frame BESIDE the headline on cream paper, not full-bleed behind it. Why this
-   over full-bleed (the hero doctrine, 2026-07-17):
+   frame BESIDE the headline, not full-bleed behind it. Why this over
+   full-bleed (the hero doctrine, 2026-07-17):
      - the ~half-width render downsamples the encode 2-3x, so webm compression
        artifacts disappear (they magnify when a small clip is stretched full-
        bleed);
@@ -15,12 +15,18 @@
    Interior pages keep the full-bleed photo Hero (stills compress fine); this
    component is selected by PageHero ONLY when the hero has a video.
 
-   LCP: the headline is navy text on cream — it paints immediately, with no wait
+   Band surface (2026-07-17, Nathan): the DEEP NAVY DRENCH with the low-opacity
+   doodle layer (.wcp-hero-drench in globals.css) — the cream paper band was
+   judged too quiet next to the interior navy heroes. The white polaroid frame
+   pops harder on navy, and the transparent overlay header reads on it without
+   the old lg-only masthead gradient (removed with the cream).
+
+   LCP: the headline is white text on navy — it paints immediately, with no wait
    on any image. The poster <img> in the frame is the largest image but is ~half
    the pixels of a full-bleed hero. The video carries NO poster attribute (the
    <img> under it is the poster) and only downloads once hero-video.ts starts it
-   after load — same contract as Hero.astro. Navy-on-cream and ink captions are
-   high-contrast (AA holds in both themes).
+   after load — same contract as Hero.astro. White-on-navy (9.75:1) and the
+   frame captions hold AA in both themes (the drench is theme-stable).
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import { imageUrl, imageSrcSet, type SanityImageSource } from '@/lib/image';
@@ -51,23 +57,9 @@ const {
 ---
 
 <section
-  class={cn('wcp-hero-framed relative overflow-hidden bg-cream', className)}
+  class={cn('wcp-hero-framed wcp-hero-drench relative overflow-hidden', className)}
   aria-labelledby={titleId}
 >
-  {
-    /* Masthead: at lg+, the site header is a TRANSPARENT overlay with white
-      logo/nav authored for the old dark full-bleed hero — white text is
-      unreadable on cream. This navy band sits behind the header zone and
-      dissolves into the cream just below it, so the overlay header stays
-      readable without darkening the hero itself. Only at lg+ (the mobile
-      header is a solid in-flow bar, so the cream starts clean below it).
-      Decorative, aria-hidden, below content. */
-  }
-  <div
-    class="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-56 bg-[linear-gradient(to_bottom,rgba(1,32,58,0.92),rgba(1,32,58,0.72)_38%,transparent)] lg:block"
-    aria-hidden="true"
-  >
-  </div>
   <div
     class="wcp-container grid items-center gap-x-10 gap-y-8 py-[var(--wcp-space-xl)] lg:grid-cols-[1.02fr_0.98fr] lg:pt-56"
   >
@@ -76,13 +68,13 @@ const {
       {
         eyebrow && (
           <p
-            class="wcp-eyebrow mb-3 flex items-center gap-2 text-sm font-bold text-orange-ink"
+            class="wcp-eyebrow mb-3 flex items-center gap-2 text-sm font-bold text-amber"
             data-reveal="fade"
           >
             <svg class="h-2 w-6 shrink-0" viewBox="0 0 28 8" fill="none" aria-hidden="true">
               <path
                 d="M1.5 5.5 C 7 3.5, 13 6.5, 18 4.5 S 25 3.5, 26.5 5"
-                stroke="var(--color-orange)"
+                stroke="var(--color-amber)"
                 stroke-width="3"
                 stroke-linecap="round"
               />
@@ -98,13 +90,17 @@ const {
           fragments "front-row seat" onto its own island; this hero-scoped clamp
           is sized so the longest nowrap phrase fits the column at every width. */
       }
-      <h1 id={titleId} class="text-[clamp(2.3rem,4.4vw,3.5rem)] text-balance text-navy" data-reveal>
+      <h1
+        id={titleId}
+        class="text-[clamp(2.3rem,4.4vw,3.5rem)] text-balance text-white"
+        data-reveal
+      >
         <slot name="title" />
       </h1>
       {
         lead && (
           <p
-            class="mt-4 max-w-xl text-lg leading-relaxed text-ink"
+            class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
             data-reveal
             style="--reveal-delay: 150ms"
           >

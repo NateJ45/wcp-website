@@ -48,10 +48,12 @@ const titleFragment =
     ? { before, tokens: word.split(' '), after, color: hero.accentColor ?? 'amber' }
     : null;
 
-// Hero doctrine (2026-07-17): a VIDEO hero renders the framed "living
-// photograph" (HeroFramed) — the film in a taped polaroid beside the navy
-// headline on cream. Photo / no-media heroes keep the full-bleed Hero (stills
-// compress fine). Selected here by content, no Sanity design knob.
+// Hero doctrine (2026-07-17): every hero lives on the navy doodle drench
+// (.wcp-hero-drench). A VIDEO hero renders the framed "living photograph"
+// (HeroFramed) — the film in a taped polaroid beside the white headline on
+// the drench. Photo / no-media heroes keep the full-bleed Hero (stills
+// compress fine; photo heroes carry the doodles in their scrim, no-media
+// heroes get the full drench). Selected here by content, no Sanity design knob.
 const framed = isVideo && Boolean(hero.videoFile?.url);
 ---
 
@@ -85,7 +87,9 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
       </Fragment>
       {actions.length > 0 && (
         <Fragment slot="actions">
-          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="cream" />
+          {/* The framed hero's band is the navy drench now — remap the seeded
+              action styles for a dark surface (amber fills, white outlines). */}
+          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
         </Fragment>
       )}
     </HeroFramed>
@@ -120,7 +124,10 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
       </Fragment>
       {actions.length > 0 && (
         <Fragment slot="actions">
-          <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+          {/* Every hero surface is the navy family now (drench or navy-scrimmed
+              photo) — remap navy-invisible action styles (a seeded `primary`
+              rendered navy-on-navy on the tuition drench, caught 2026-07-17). */}
+          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
         </Fragment>
       )}
     </Hero>
