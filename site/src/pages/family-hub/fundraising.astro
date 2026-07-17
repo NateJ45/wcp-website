@@ -109,6 +109,10 @@ const storeGoal = storeProfit
 const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0) + storeGoal;
 const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0) + storeNet;
 const totalPct = totalGoal > 0 ? Math.round((totalRaised / totalGoal) * 100) : 0;
+// Year goal reached — the "we did it together" moment. A one-time confetti
+// burst fires the first time a family sees it (per goal, so a new year's goal
+// earns a fresh one); see the marker on the year-total card + hub-celebrate.ts.
+const yearGoalMet = totalGoal > 0 && totalRaised >= totalGoal;
 
 // Status pills from the hub's shared vocabulary (HubPill) — same mapping the
 // home Fundraising widget uses: live → open, coming → waitlist, finished →
@@ -254,7 +258,12 @@ const fmtDeadline = (iso: string) =>
                   only when the sheet has goal-based fundraisers; the live Store
                   Sales card below carries its own net-profit figure. */}
               {shownFundraisers.length > 0 && (
-                <HubCard class="mt-6">
+                <HubCard
+                  class="mt-6"
+                  {...(yearGoalMet
+                    ? { 'data-celebrate': '', 'data-celebrate-once': `fund-year-${totalGoal}` }
+                    : {})}
+                >
                   <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
                     <HubRing
                       value={totalRaised}
@@ -392,3 +401,7 @@ const fmtDeadline = (iso: string) =>
     </div>
   </Section>
 </HubShell>
+
+<script>
+  import '@/scripts/hub-celebrate';
+</script>

@@ -140,8 +140,16 @@ const inputClass =
 
             {family ? (
               <>
-                {/* Progress against the yearly goal */}
-                <HubCard class="mb-6">
+                {/* Progress against the yearly goal. When this family has met
+                    the goal, the card fires a one-time confetti burst the first
+                    time they see it (per family + goal, so it never nags and a
+                    new year's goal earns a fresh celebration). */}
+                <HubCard
+                  class="mb-6"
+                  {...(summary.met
+                    ? { 'data-celebrate': '', 'data-celebrate-once': `hours-${family}-${goal}` }
+                    : {})}
+                >
                   <div class="flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="font-display text-xl text-heading">The {family} Family</h2>
                     <p class="text-sm font-semibold text-ink-muted">
@@ -346,4 +354,5 @@ const inputClass =
 
 <script>
   import '@/scripts/hours';
+  import '@/scripts/hub-celebrate';
 </script>
