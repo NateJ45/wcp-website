@@ -2,6 +2,7 @@
 /* Renders a page's hero object through Hero.astro, including the optional
    crayon-underlined accent word and the action buttons. */
 import Hero from '@/components/Hero.astro';
+import HeroFramed from '@/components/HeroFramed.astro';
 import Underline from '@/components/Underline.astro';
 import ActionButtons from './ActionButtons.astro';
 import type { ActionData } from './section-helpers';
@@ -37,36 +38,72 @@ const idx = word ? hero.title.indexOf(word) : -1;
 const before = idx >= 0 ? hero.title.slice(0, idx) : hero.title;
 const after = idx >= 0 ? hero.title.slice(idx + (word?.length ?? 0)) : '';
 const actions = hero.actions ?? [];
+
+// The accent-word title fragment, shared by both hero layouts.
+const titleFragment =
+  idx >= 0 && word ? { before, word, after, color: hero.accentColor ?? 'amber' } : null;
+
+// Hero doctrine (2026-07-17): a VIDEO hero renders the framed "living
+// photograph" (HeroFramed) — the film in a taped polaroid beside the navy
+// headline on cream. Photo / no-media heroes keep the full-bleed Hero (stills
+// compress fine). Selected here by content, no Sanity design knob.
+const framed = isVideo && Boolean(hero.videoFile?.url);
 ---
 
-<Hero
-  eyebrow={hero.eyebrow}
-  title={hero.title}
-  lead={hero.lead}
-  height={hero.height ?? 'medium'}
-  sanityImage={hasImage ? (hero.image as never) : undefined}
-  imageAlt={hero.imageAlt}
-  video={isVideo ? hero.videoFile?.url : undefined}
-  videoWebm={isVideo ? hero.videoWebm?.url : undefined}
->
-  <Fragment slot="title">
-    {
-      idx >= 0 && word ? (
-        <>
-          {before}
-          <Underline color={hero.accentColor ?? 'amber'}>{word}</Underline>
-          {after}
-        </>
-      ) : (
-        hero.title
-      )
-    }
-  </Fragment>
-  {
-    actions.length > 0 && (
-      <Fragment slot="actions">
-        <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+{
+  framed ? (
+    <HeroFramed
+      eyebrow={hero.eyebrow}
+      lead={hero.lead}
+      sanityImage={hasImage ? (hero.image as never) : undefined}
+      imageAlt={hero.imageAlt}
+      video={hero.videoFile?.url}
+      videoWebm={hero.videoWebm?.url}
+    >
+      <Fragment slot="title">
+        {titleFragment ? (
+          <>
+            {titleFragment.before}
+            <Underline color={titleFragment.color}>{titleFragment.word}</Underline>
+            {titleFragment.after}
+          </>
+        ) : (
+          hero.title
+        )}
       </Fragment>
-    )
-  }
-</Hero>
+      {actions.length > 0 && (
+        <Fragment slot="actions">
+          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="cream" />
+        </Fragment>
+      )}
+    </HeroFramed>
+  ) : (
+    <Hero
+      eyebrow={hero.eyebrow}
+      title={hero.title}
+      lead={hero.lead}
+      height={hero.height ?? 'medium'}
+      sanityImage={hasImage ? (hero.image as never) : undefined}
+      imageAlt={hero.imageAlt}
+      video={isVideo ? hero.videoFile?.url : undefined}
+      videoWebm={isVideo ? hero.videoWebm?.url : undefined}
+    >
+      <Fragment slot="title">
+        {titleFragment ? (
+          <>
+            {titleFragment.before}
+            <Underline color={titleFragment.color}>{titleFragment.word}</Underline>
+            {titleFragment.after}
+          </>
+        ) : (
+          hero.title
+        )}
+      </Fragment>
+      {actions.length > 0 && (
+        <Fragment slot="actions">
+          <ActionButtons actions={actions} linkBase={linkBase} size="lg" />
+        </Fragment>
+      )}
+    </Hero>
+  )
+}

@@ -1,0 +1,161 @@
+---
+/* ============================================================================
+   HeroFramed — the "living photograph" hero (Phase 2, variant B, Nathan-approved)
+   ============================================================================
+   The scrapbook home hero: the ambient school film lives in a taped polaroid
+   frame BESIDE the headline on cream paper, not full-bleed behind it. Why this
+   over full-bleed (the hero doctrine, 2026-07-17):
+     - the ~half-width render downsamples the encode 2-3x, so webm compression
+       artifacts disappear (they magnify when a small clip is stretched full-
+       bleed);
+     - no scrim sits over the film, so it plays at full brightness;
+     - the first fold gains the editorial asymmetry the audit asked for;
+     - the reduced-motion / data-saver / pre-buffer fallback is a visually
+       identical still in the same frame (the <img> poster).
+   Interior pages keep the full-bleed photo Hero (stills compress fine); this
+   component is selected by PageHero ONLY when the hero has a video.
+
+   LCP: the headline is navy text on cream — it paints immediately, with no wait
+   on any image. The poster <img> in the frame is the largest image but is ~half
+   the pixels of a full-bleed hero. The video carries NO poster attribute (the
+   <img> under it is the poster) and only downloads once hero-video.ts starts it
+   after load — same contract as Hero.astro. Navy-on-cream and ink captions are
+   high-contrast (AA holds in both themes).
+   ============================================================================ */
+import { cn } from '@/lib/utils';
+import { imageUrl, imageSrcSet, type SanityImageSource } from '@/lib/image';
+
+interface Props {
+  eyebrow?: string;
+  titleId?: string;
+  lead?: string;
+  sanityImage?: SanityImageSource;
+  imageAlt?: string;
+  video?: string;
+  videoWebm?: string;
+  /** Frame caption; evergreen + code-owned (no Sanity design knob). */
+  caption?: string;
+  class?: string;
+}
+const {
+  eyebrow,
+  titleId = 'hero-title',
+  lead,
+  sanityImage,
+  imageAlt = '',
+  video,
+  videoWebm,
+  caption = 'A morning at WCP',
+  class: className,
+} = Astro.props;
+---
+
+<section
+  class={cn('wcp-hero-framed relative overflow-hidden bg-cream', className)}
+  aria-labelledby={titleId}
+>
+  {
+    /* Masthead: at lg+, the site header is a TRANSPARENT overlay with white
+      logo/nav authored for the old dark full-bleed hero — white text is
+      unreadable on cream. This navy band sits behind the header zone and
+      dissolves into the cream just below it, so the overlay header stays
+      readable without darkening the hero itself. Only at lg+ (the mobile
+      header is a solid in-flow bar, so the cream starts clean below it).
+      Decorative, aria-hidden, below content. */
+  }
+  <div
+    class="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-56 bg-[linear-gradient(to_bottom,rgba(1,32,58,0.92),rgba(1,32,58,0.72)_38%,transparent)] lg:block"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    class="wcp-container grid items-center gap-x-10 gap-y-8 py-[var(--wcp-space-xl)] lg:grid-cols-[1.02fr_0.98fr] lg:pt-56"
+  >
+    {/* --- Text column ------------------------------------------------------- */}
+    <div class="max-w-[40rem]">
+      {
+        eyebrow && (
+          <p
+            class="wcp-eyebrow mb-3 flex items-center gap-2 text-sm font-bold text-orange-ink"
+            data-reveal="fade"
+          >
+            <svg class="h-2 w-6 shrink-0" viewBox="0 0 28 8" fill="none" aria-hidden="true">
+              <path
+                d="M1.5 5.5 C 7 3.5, 13 6.5, 18 4.5 S 25 3.5, 26.5 5"
+                stroke="var(--color-orange)"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span>{eyebrow}</span>
+          </p>
+        )
+      }
+      <h1 id={titleId} class="text-balance text-navy" data-reveal>
+        <slot name="title" />
+      </h1>
+      {
+        lead && (
+          <p
+            class="mt-4 max-w-xl text-lg leading-relaxed text-ink"
+            data-reveal
+            style="--reveal-delay: 150ms"
+          >
+            {lead}
+          </p>
+        )
+      }
+      <div class="mt-8 flex flex-wrap gap-4" data-reveal style="--reveal-delay: 300ms">
+        <slot name="actions" />
+      </div>
+    </div>
+
+    {/* --- Framed living photograph ------------------------------------------ */}
+    <figure class="wcp-print wcp-tape-tc relative mx-auto w-full max-w-[34rem] justify-self-center">
+      <div class="relative isolate overflow-hidden bg-navy" style="aspect-ratio: 16 / 10;">
+        {
+          sanityImage && (
+            <img
+              src={imageUrl(sanityImage, 1100)}
+              srcset={imageSrcSet(sanityImage)}
+              sizes="(min-width: 1024px) 34rem, 92vw"
+              alt={imageAlt}
+              class="absolute inset-0 h-full w-full object-cover"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+            />
+          )
+        }
+        {
+          video && (
+            <video
+              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1200ms] ease-out motion-reduce:transition-none"
+              muted
+              loop
+              playsinline
+              preload="none"
+              data-hero-video
+              aria-hidden="true"
+            >
+              {videoWebm && <source src={videoWebm} type="video/webm" />}
+              <source src={video} type="video/mp4" />
+            </video>
+          )
+        }
+      </div>
+      <figcaption class="flex items-baseline justify-center gap-2 pt-3">
+        <span class="font-display text-base text-navy">{caption}</span>
+        <span class="wcp-signature text-xl leading-none text-orange-ink"
+          >filmed by our families</span
+        >
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+{/* Colocated: hero-video autoplay (reduced-motion-aware) + the on-demand signature font. */}
+<script>
+  import '@/scripts/hero-video';
+  import '@/scripts/signature-font';
+</script>

@@ -21,9 +21,20 @@ const forNavy: Record<string, string> = {
   ghost: 'outline-white',
   outline: 'outline-white',
 };
+// On a light (cream) band, swap the white outlines/on-navy fills that were
+// authored for the old dark full-bleed hero — a white outline is invisible on
+// cream. Used by the framed living-photograph hero, whose actions were seeded
+// for the dark layout.
+const forCream: Record<string, string> = {
+  'outline-white': 'outline',
+  'on-navy': 'accent',
+  ghost: 'outline',
+};
 const variantFor = (style?: string) => {
   const s = style ?? 'accent';
-  return tone === 'navy' ? (forNavy[s] ?? s) : s;
+  if (tone === 'navy') return forNavy[s] ?? s;
+  if (tone === 'cream') return forCream[s] ?? s;
+  return s;
 };
 ---
 
