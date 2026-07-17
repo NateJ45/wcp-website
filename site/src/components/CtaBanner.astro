@@ -123,11 +123,15 @@ const showRating = rating;
               stroke-width="0.8"
             />
           </svg>
-          <span class="font-display text-base">{site.google.rating}</span>
-          <span class="text-ink-muted">on Google, {site.google.reviews} reviews</span>
+          {/* The slip is a THEME-STABLE white card, so its text must use FIXED
+              dark colors, never the theme-reactive -ink/-muted tokens (which
+              flip light in dark mode and would fail contrast on this white bg —
+              the documented CLAUDE.md trap; it bit this slip in CI). */}
+          <span class="font-display text-base [color:#01457e]">{site.google.rating}</span>
+          <span class="[color:#4c5866]">on Google, {site.google.reviews} reviews</span>
           <span
             aria-hidden="true"
-            class="text-sky-ink transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+            class="[color:#166fa8] transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
           >
             →
           </span>
