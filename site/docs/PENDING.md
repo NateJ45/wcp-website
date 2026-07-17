@@ -92,7 +92,12 @@ Earlier stopgaps:
   Web Analytics site for the domain and set `PUBLIC_CF_BEACON_TOKEN` in `.env`
   AND the CI build workflows (ci/lighthouse/deploy pass build env); optionally
   `PUBLIC_GADS_ID` if Google Ads ever run. `src/components/Analytics.astro`
-  renders nothing until then.
+  renders nothing until then. NOTE (2026-07-17): setting `PUBLIC_GADS_ID` now
+  ALSO turns on the cookie-consent card sitewide (CookieConsent.astro) — the
+  ads tag is consent-gated and only loads after a visitor clicks Allow. When
+  that day comes, also refresh the /privacy page's cookie wording in the
+  Studio (one optional Google advertising cookie, plus the always-on
+  essentials; quota permitting).
 - **Snapshot the July baseline from the forms-inbox Sheet** — count
   tour-request and enrollment-inquiry rows to date. Sanity holds ZERO
   submission docs (checked 2026-07-17 via CDN), so the Apps Script Sheet is the

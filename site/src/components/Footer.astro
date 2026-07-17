@@ -13,6 +13,7 @@ import SeasonalAccent from '@/components/SeasonalAccent.astro';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings, getNavigation, getSeason } from '@/lib/cms';
 import { withBase } from '@/lib/utils';
+import { isValidAdsId } from '@/lib/consent-state';
 
 interface Props {
   /** '' in production, '/preview' inside the Presentation preview. */
@@ -31,6 +32,10 @@ const season = await getSeason();
 
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
+// Mirrors CookieConsent.astro's render condition so the "Cookie choices"
+// opener never exists without the card it opens.
+const consentGadsId = (import.meta.env.PUBLIC_GADS_ID as string | undefined) ?? '';
+const consentEnabled = consentGadsId !== '' && isValidAdsId(consentGadsId);
 ---
 
 {
@@ -144,6 +149,22 @@ const year = new Date().getFullYear();
               {link.label}
             </a>
           ))
+        }
+        {
+          /* Reopens the consent card so a past cookie decision can be changed.
+             Rendered only when the site HAS an optional cookie (the ads tag);
+             ships hidden — consent.ts un-hides it, so no-JS visitors never see
+             a dead button. */
+          consentEnabled && (
+            <button
+              type="button"
+              data-consent-open
+              hidden
+              class="cursor-pointer text-white/70 hover:text-white hover:underline"
+            >
+              Cookie choices
+            </button>
+          )
         }
       </nav>
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

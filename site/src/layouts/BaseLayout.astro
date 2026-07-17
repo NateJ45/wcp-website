@@ -17,6 +17,7 @@ import HubSearch from '@/components/hub/HubSearch.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import AnnouncementBars from '@/components/AnnouncementBars.astro';
 import AnnouncementModal from '@/components/AnnouncementModal.astro';
+import CookieConsent from '@/components/CookieConsent.astro';
 import StructuredData from '@/components/StructuredData.astro';
 import { site } from '@/data/site';
 import { getClosureAlert, getAnnouncements } from '@/lib/cms';
@@ -354,6 +355,7 @@ const currentPath = Astro.url.pathname;
           {announcements.length > 0 && (
             <AnnouncementModal announcements={announcements} currentPath={currentPath} />
           )}
+          <CookieConsent />
         </>
       )
     }
@@ -363,6 +365,7 @@ const currentPath = Astro.url.pathname;
          other client scripts). Re-runs on every ClientRouter navigation. -->
     <script>
       import '@/scripts/reveal';
+      import '@/scripts/consent';
       import '@/scripts/hub-drawer';
       import '@/scripts/hub-rail';
       import '@/scripts/theme';

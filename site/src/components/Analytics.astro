@@ -6,23 +6,22 @@
    dev and preview builds stay clean:
 
      1. Search-console / Bing verification <meta> (PUBLIC_GSC_VERIFICATION)
-     2. Google Ads gtag.js conversion tag (PUBLIC_GADS_ID, e.g. AW-16817798038)
-     3. Cloudflare Web Analytics beacon (PUBLIC_CF_BEACON_TOKEN) — free,
+     2. Cloudflare Web Analytics beacon (PUBLIC_CF_BEACON_TOKEN) — free,
         privacy-first (no cookies, no consent banner needed). Create the site
         in the Cloudflare dash under Analytics → Web Analytics and paste its
         token into the env.
+
+   The Google Ads gtag.js conversion tag (PUBLIC_GADS_ID) is NOT emitted here
+   anymore: it sets a real tracking cookie, so it is CONSENT-GATED. Setting
+   the env var renders the CookieConsent card (BaseLayout, public pages) and
+   src/scripts/consent.ts injects the tag — still through Partytown — only
+   after the visitor allows it. Nothing Google loads before that.
 
    The IDs are NOT hardcoded — they come from environment variables so they can
    differ per environment (real in production, empty in previews) and are never
    baked into a component. Set them in site/.env (see .env.example) and in the
    Cloudflare project settings for production.
-
-   gtag runs through Partytown (type="text/partytown"), which moves it OFF the
-   main thread — third-party tracking then can't drag down the Lighthouse
-   Performance score. The partytown integration in astro.config forwards
-   dataLayer.push so gtag() calls still reach the worker.
    ============================================================================ */
-const gadsId = import.meta.env.PUBLIC_GADS_ID;
 const gscToken = import.meta.env.PUBLIC_GSC_VERIFICATION;
 const cfBeacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 ---
@@ -37,26 +36,5 @@ const cfBeacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
       src="https://static.cloudflareinsights.com/beacon.min.js"
       data-cf-beacon={JSON.stringify({ token: cfBeacon })}
     />
-  )
-}
-
-{
-  gadsId && (
-    <>
-      <script
-        type="text/partytown"
-        is:inline
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${gadsId}`}
-      />
-      <script type="text/partytown" is:inline define:vars={{ gadsId }}>
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){ dataLayer.push(arguments); }
-          gtag('js', new Date());
-          gtag('config', gadsId);
-        `}
-      </script>
-    </>
   )
 }

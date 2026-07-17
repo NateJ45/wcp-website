@@ -25,6 +25,26 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    // The webServer build below enables the cookie-consent card (a test-only
+    // PUBLIC_GADS_ID). On a fresh profile it would overlay every page and
+    // perturb the 200-odd existing tests, so the general suites run with a
+    // pre-stored "denied" decision — the normal browsing state once a visitor
+    // has answered. consent.spec.ts opts back out (empty storageState) to
+    // exercise the card itself, including its own axe light+dark scans.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: baseURL,
+          localStorage: [
+            {
+              name: 'wcp-consent',
+              value: JSON.stringify({ v: 1, ads: 'denied', at: '2026-01-01T00:00:00.000Z' }),
+            },
+          ],
+        },
+      ],
+    },
   },
   // Chromium + a real WebKit iPhone profile (borrowed from GovSoft's
   // go-for-launch playbook): most WCP parents browse on iPhones, and Safari's
@@ -44,5 +64,9 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // A syntactically-valid fake ads id so the consent card renders in test
+    // builds and its suite (consent.spec.ts) can cover it. The tag itself
+    // never loads in tests that don't click "Allow cookies".
+    env: { ...(process.env as Record<string, string>), PUBLIC_GADS_ID: 'AW-0000TEST00' },
   },
 });
