@@ -174,17 +174,18 @@ registered in PENDING.md, volunteer guide carries a paused note).
 From docs/superpowers/2026-07-17-highend-benchmark.md (Avenues / Exeter /
 Dalton habits worth adopting into our register). All code-only, gate-safe:
 
-1. **Single header CTA.** "Schedule a Tour" alone in the header chrome;
-   "Enroll" demoted to the nav. Aligns the elite one-CTA pattern with our
-   tour-first funnel doctrine. (Header.astro; both desktop bars + mobile.)
-2. **The full-bleed interlude.** One unscrimmed edge-to-edge photograph
-   owning a viewport (photo registry, code-owned) with a single caption
-   sentence; once on home, once on /why-wcp. The one elite move the scrapbook
-   register currently lacks (every photo we show sits in a frame).
-3. **Values-led /tuition opener.** The transparency moat as the page's
-   HEADLINE in display type ("Every fee, published. On purpose.") above the
-   table, Exeter-style; the table stays clean below.
-4. **A quiet band.** Let the signature statement band breathe more; resist
+1. **Single header CTA.** SHIPPED 2026-07-17. "Schedule a Tour" alone in the
+   header chrome; "Enroll" demoted to the nav. Aligns the elite one-CTA
+   pattern with our tour-first funnel doctrine. (Header.astro; all bars.)
+2. **The full-bleed interlude.** SHIPPED 2026-07-17 (Interlude.astro via the
+   photo-moments map). One unscrimmed edge-to-edge photograph owning a
+   viewport (photo registry, code-owned) with a single caption sentence;
+   once on home, once on /why-wcp.
+3. **Values-led /tuition opener.** SHIPPED 2026-07-17 (TuitionOpener.astro).
+   The transparency moat as the page's HEADLINE in display type ("Every fee,
+   published. On purpose.") above the table, Exeter-style; the table stays
+   clean below.
+4. **A quiet band.** (Open.) Let the signature statement band breathe more; resist
    filling every gap with artifacts. One whitespace-heavy single-sentence
    moment per key page.
 5. (Human, already in PENDING.md) The one-morning professional-adjacent shot
