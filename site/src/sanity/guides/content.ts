@@ -274,6 +274,12 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'callout',
+        tone: 'caution',
+        title: 'Paused during the site redesign (July 2026).',
+        text: 'The site is temporarily using a simplified navigation set in code while the pages are reorganized, so edits made here will NOT show on the site right now. If a menu link needs to change, ask Nathan. This page will say when menu editing is back on.',
+      },
+      {
+        kind: 'callout',
         tone: 'positive',
         title: 'One place for every menu.',
         text: 'The top navigation bar, the footer columns, and the small legal links at the very bottom all come from **Menus (header & footer)**. Change a link once here and it updates everywhere that menu shows.',

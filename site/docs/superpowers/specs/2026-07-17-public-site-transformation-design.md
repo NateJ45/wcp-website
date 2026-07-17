@@ -140,6 +140,35 @@ All idempotent scripts, all registered in docs/PENDING.md before they run, with 
 - **Performance budget:** render-blocking CSS <= 28KB gz, LCP <= 2.5s on audited routes, per-page image transfer cap; add the assertion to lighthouse.yml before the first texture PR.
 - **Docs-in-sync:** CLAUDE.md porting rules, PAGE_BUILDER.md section-treatment notes, and the in-Studio volunteer guide entry for any changed editing surface land in the same PR. Any visitor-facing copy that ships in code while Sanity is frozen gets a PENDING.md close-out row in the same PR (definition of done).
 
+### The IA doctrine (added 2026-07-17, Nathan: "lots of pages, nav overwhelming")
+
+**The header nav is the funnel, not a filing cabinet.** Five items in the
+parent's decision order + one CTA (was ~9 items + 2 competing CTAs):
+
+| Item      | Stage                   | Contents                                                                 |
+| --------- | ----------------------- | ------------------------------------------------------------------------ |
+| Classes ▾ | Is it right for my kid? | Twos, Threes, Pre-K, A Day at WCP                                        |
+| Why WCP ▾ | Can I trust it?         | Why Families Choose Us, Co-op Life, Safety & Wellness, What Families Say |
+| Tuition   | Can I afford it?        | top-level, the moat                                                      |
+| Visit     | Let me see it           | /virtual-tour now; the merged "Visit Us" page later                      |
+| Enroll    | Commit                  | /enroll                                                                  |
+| CTA       | —                       | ONE: "Schedule a Tour" → the tour form (mobile pill: "Tour")             |
+
+Home is the logo. About / Contact / News leave the header (reachable in the
+footer, which stays the full sitemap). Family Hub becomes a utility link
+(header utility row + mobile panel + footer), out of the funnel.
+
+**Page consolidation (target ~12 core marketing pages from 16):** merge
+`/about` → `/why-wcp`; merge `/contact` + `/virtual-tour` → one "Visit Us"
+page (tour form first, virtual tour + contact details below). Both merges are
+Sanity content work — queued in PENDING.md behind the quota. Utility surfaces
+(news, events, newsletter, legal, search, packet, work-with-us, donate) stay
+footer-only. Every core page keeps ONE job and ends at the amber tour closer.
+
+**Ownership:** the nav is code-owned for now (resolveNavigation serves the
+doctrine and bypasses the frozen Sanity Menus doc; stopgap + reconcile options
+registered in PENDING.md, volunteer guide carries a paused note).
+
 ### Benchmark-adopted backlog (added 2026-07-17 after the high-end audit)
 
 From docs/superpowers/2026-07-17-highend-benchmark.md (Avenues / Exeter /

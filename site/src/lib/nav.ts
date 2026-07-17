@@ -49,6 +49,27 @@ function toLink(link: RawLink): NavLink {
 }
 
 export function resolveNavigation(doc: unknown): SiteNavigation {
+  // ==========================================================================
+  // STOPGAP (2026-07-17 IA redesign): the code doctrine in src/data/nav.ts is
+  // served UNCONDITIONALLY and the Sanity Menus doc is bypassed. The header
+  // nav was restructured into the five-item funnel (a design decision, like
+  // the computed seams) while Sanity writes are quota-frozen, so the stored
+  // Menus doc is stale and must not override it. Reconcile path is registered
+  // in docs/PENDING.md: either patch the Menus doc to the doctrine and restore
+  // the resolution below, or retire the Menus editing surface entirely (a
+  // Nathan decision). The in-Studio "Edit the menus" guide carries a matching
+  // note so a volunteer editing menus knows why nothing changes.
+  // ==========================================================================
+  void doc;
+  return {
+    mainNav: mainNavFallback,
+    footerNav: footerNavFallback,
+    legalNav: legalNavFallback,
+  };
+}
+
+/** The original Sanity-doc resolution, kept for the reconcile (see above). */
+export function resolveNavigationFromDoc(doc: unknown): SiteNavigation {
   const nav = doc as RawNavDoc | null;
   if (!nav || !Array.isArray(nav.mainNav) || nav.mainNav.length === 0) {
     return {
