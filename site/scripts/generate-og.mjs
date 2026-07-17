@@ -73,16 +73,27 @@ function pickPhoto(name) {
 }
 
 const photoCache = new Map();
+// Transient CDN blips (a dropped TLS socket mid-transfer) have failed real CI
+// builds, and the weekly freshness cron builds unattended, so one flaky photo
+// download must not kill a deploy: retry twice with a short backoff before
+// giving up for real.
+async function fetchWithRetry(url, tries = 3) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+      if (!r.ok) throw new Error(`photo ${r.status}`);
+      return Buffer.from(await r.arrayBuffer());
+    } catch (err) {
+      if (attempt >= tries) throw err;
+      console.warn(`[og] retry ${attempt}/${tries - 1} after: ${err.message ?? err}`);
+      await new Promise((res) => setTimeout(res, 1000 * attempt));
+    }
+  }
+}
 async function fetchPhoto(baseUrl) {
   if (!photoCache.has(baseUrl)) {
     const url = `${baseUrl}?w=1200&h=630&fit=crop&auto=format&q=80`;
-    photoCache.set(
-      baseUrl,
-      fetch(url).then(async (r) => {
-        if (!r.ok) throw new Error(`photo ${r.status}`);
-        return Buffer.from(await r.arrayBuffer());
-      }),
-    );
+    photoCache.set(baseUrl, fetchWithRetry(url));
   }
   return photoCache.get(baseUrl);
 }
