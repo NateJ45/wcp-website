@@ -565,9 +565,12 @@ mounts `HubSectionedBody` INSIDE the same `<Section bg="grey"> → max-w-6xl` co
 left/right rail (previously the body was a full-width sibling and floated at a different width —
 the "TOC far to the left, nothing aligned" bug). On xl+ the column is paired with a sticky "On
 this page" TOC (`HubSectionIndex`) on the **right** (GitBook/Notion-style, off the hub rail's
-side); below xl the sticky TOC hides and a collapsed "On this page" `<details>` jump list
-(`HubSectionIndex variant="inline"`, self-closing after a jump) sits above the column instead —
-a 10k-px handbook on a phone needs a way to skip ahead (2026-07-16 audit). Grid + card CSS lives
+side); below xl the sidebar TOC hides and a collapsed "On this page" `<details>` jump list
+(`HubSectionIndex variant="inline"`, self-closing after a jump) takes over — a 10k-px handbook on
+a phone needs a way to skip ahead (2026-07-16 audit). That inline list is itself **sticky** below
+xl (2026-07-17): it pins near the top of the viewport as you scroll (clearing the floating desktop
+topbar on lg, the same offset story as `HubTable`'s sticky headers), so the jump nav stays one tap
+away however far down the page you are; the open list caps to the viewport and scrolls internally. Grid + card CSS lives
 in the "Handbook document column" block of `globals.css`, keyed off `.hub-doc-grid` /
 `.hub-doc-block`.
 
