@@ -503,13 +503,20 @@
 }
 
 /* Hub ambient wash — a few brand glows drifting slowly under the cards, so the
-   whole hub surface breathes instead of sitting flat once loaded. Fixed = one
-   viewport-sized paint the browser can cache and just COMPOSITE as it moves
-   (the blur never re-runs per frame), and hidden tabs are throttled for free;
+   whole hub surface breathes instead of sitting flat once loaded. Fixed,
    transform-only, aria-hidden, pointer-events:none. Lives inside the
    .wcp-hub-canvas stacking context like the emblem, so z-index:-1 keeps it above
    the paper texture but below every card. The blobs roam the MID-FIELD, not the
-   corners the baked canvas washes already hold, so nothing doubles up. */
+   corners the baked canvas washes already hold, so nothing doubles up.
+
+   MOBILE PERF (2026-07-17): animating a large blurred FIXED layer is a GPU trap
+   — a big blur is costly to raster and, because the layer is fixed, some mobile
+   browsers repaint everything overlapping it every frame (stutter + visible
+   card flashing). So the DRIFT ANIMATION runs only on `(pointer: fine)` devices
+   (desktop/mouse) — see the gated block below. Touch devices (phones/tablets)
+   get the wash STATIC: painted once, no per-frame cost, still a soft brand tint.
+   The blur is also kept modest, and will-change lives only inside the animated
+   block so the static layer is never needlessly promoted. */
 .wcp-hub-wash {
   position: fixed;
   inset: 0;
@@ -519,10 +526,10 @@
 }
 .wcp-hub-wash span {
   position: absolute;
-  width: 44rem;
-  height: 38rem;
+  width: 42rem;
+  height: 36rem;
   border-radius: 9999px;
-  filter: blur(74px);
+  filter: blur(44px);
   opacity: 0.12;
   -webkit-mask-image: radial-gradient(closest-side, #000 18%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 18%, transparent 100%);
@@ -545,7 +552,7 @@
 .dark .wcp-hub-wash span {
   opacity: 0.15;
 }
-@media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) and (pointer: fine) {
   .wcp-hub-wash .wash-a {
     animation: wcp-wash-a 21s ease-in-out infinite;
     will-change: transform;
@@ -1441,7 +1448,9 @@ li:nth-child(4n + 4) > .hub-note {
 /* Ambient breathing for a decorative .wcp-glow: a slow positional drift + scale,
    TRANSFORM ONLY so the per-theme glow opacity (0.55 light / 0.16 dark) is left
    untouched and contrast never shifts. aria-hidden decorative use only. */
-@media (prefers-reduced-motion: no-preference) {
+/* Gated to `(pointer: fine)` too: an animated large blur is a mobile GPU trap
+   (see the .wcp-hub-wash note). Touch devices get the glow static. */
+@media (prefers-reduced-motion: no-preference) and (pointer: fine) {
   .wcp-glow-drift {
     animation: wcp-glow-drift 16s ease-in-out infinite;
     will-change: transform;
