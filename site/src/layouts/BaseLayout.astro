@@ -47,6 +47,13 @@ interface Props {
    * by robots.txt; this prop is for pages that render inside THIS layout.
    */
   noindex?: boolean;
+  /**
+   * RSS autodiscovery link for feed-bearing pages (the News index pages point
+   * readers at /news/rss.xml). A PROP instead of a named head slot on purpose:
+   * a <slot> inside <head> breaks the Astro prettier plugin's parse of the
+   * whole file (hit 2026-07-17), and head extras stay auditable in one place.
+   */
+  rssFeed?: { href: string; title: string };
 }
 
 const {
@@ -57,6 +64,7 @@ const {
   chrome = 'site',
   hubTitle = 'Family Hub',
   noindex = false,
+  rssFeed,
 } = Astro.props;
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
@@ -95,6 +103,16 @@ const currentPath = Astro.url.pathname;
     <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
+    {
+      rssFeed && (
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          href={rssFeed.href}
+          title={rssFeed.title}
+        />
+      )
+    }
 
     <!-- Every photo on the site serves from Sanity's CDN; warming the
          connection here saves DNS+TLS setup (~100-300ms on mobile) before the
@@ -204,10 +222,6 @@ const currentPath = Astro.url.pathname;
         document.documentElement.setAttribute('data-rail-collapsed', '');
       }
     </script>
-
-    <!-- Per-page <head> extras (e.g. the RSS autodiscovery <link> on the News
-         index pages). Most pages pass nothing and this renders empty. -->
-    <slot name="head" />
   </head>
 
   {

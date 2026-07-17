@@ -18,19 +18,9 @@ const pagePosts = posts.slice(0, NEWS_PAGE_SIZE);
 ---
 
 <BaseLayout
+  rssFeed={{ href: '/news/rss.xml', title: `${site.name} News` }}
   title={`News — ${site.name}`}
   description="Announcements, updates, and stories from West Chester Preschool."
 >
-  {
-    /* RSS autodiscovery: feed readers pointed at /news find the prerendered
-      feed (src/pages/news/rss.xml.ts) without hunting for the URL. */
-  }
-  <link
-    slot="head"
-    rel="alternate"
-    type="application/rss+xml"
-    href="/news/rss.xml"
-    title={`${site.name} — News`}
-  />
   <NewsListing posts={pagePosts} page={1} totalPages={totalPages} />
 </BaseLayout>
