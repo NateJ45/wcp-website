@@ -160,6 +160,25 @@ const firstDayLabel =
   data-reveal
 >
   {
+    /* The hand-drawn doodle tile — the SAME one .wcp-hub-canvas lays under the
+      page, so this card reads as part of the same paper rather than a flat
+      panel dropped on it. Intrinsic tile size and default repeat, matching the
+      canvas (which sets no size/repeat overrides either).
+
+      The `-dark` variant (white strokes) because this card is navy in BOTH
+      themes — it's a theme-stable island, like the hub rail, so it must not
+      follow the light/dark doodle switch the canvas uses.
+
+      Decorative and aria-hidden; sits behind the content via -z-10, which the
+      card root already supports (`relative isolate overflow-hidden`, there for
+      the watermark). The tile bakes its own 5% stroke opacity, well below text,
+      so contrast is unchanged. Rendered BEFORE the watermark so the corner sun
+      still stamps on top of the texture. */
+  }
+  <span
+    class="pointer-events-none absolute inset-0 -z-10 bg-[image:var(--wcp-doodles-dark)]"
+    aria-hidden="true"></span>
+  {
     /* Card stamp — a faint sun watermark in the corner, matching every other hub
       card. Inherits the tile's white text colour. */
   }
