@@ -1,13 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import {
-  HUB_PAGE_ROUTES,
+  HUB_PAGE_DENY,
   extractStrings,
+  hubPageRoute,
+  hubRoutesFromNav,
   pageEntries,
   sectionText,
   highlightParts,
   matchesWords,
   snippet,
 } from './hub-search-index';
+
+// The real nav shape, trimmed to what route resolution needs.
+const NAV = [
+  { links: [{ href: '/family-hub' }, { href: '/family-hub/health' }] },
+  {
+    links: [
+      { href: '/family-hub/twos-threes' },
+      { href: '/family-hub/tuition' },
+      { href: 'https://store.example.com', external: true },
+    ],
+  },
+];
+const ROUTES = hubRoutesFromNav(NAV);
 
 const proseSection = () => ({
   _type: 'proseSection',
@@ -87,7 +102,9 @@ describe('sectionText', () => {
 
 describe('pageEntries', () => {
   it('deep-links to the section anchor when it has a heading', () => {
-    const [entry] = pageEntries('twos', 'Twos & Threes Classroom', [proseSection()]);
+    const [entry] = pageEntries('/family-hub/twos-threes', 'Twos & Threes Classroom', [
+      proseSection(),
+    ]);
     expect(entry.href).toBe('/family-hub/twos-threes#sec-k12');
     expect(entry.title).toBe('What to pack');
     expect(entry.sub).toBe('Twos & Threes Classroom');
@@ -98,23 +115,55 @@ describe('pageEntries', () => {
     // HubSectionedBody only emits id="sec-…" when a header title exists, so a
     // deep link here would scroll to nothing.
     const headless = { _type: 'proseSection', _key: 'k7', body: 'Just some words here' };
-    const [entry] = pageEntries('health', 'Health & Safety', [headless]);
+    const [entry] = pageEntries('/family-hub/health', 'Health & Safety', [headless]);
     expect(entry.href).toBe('/family-hub/health');
     expect(entry.title).toBe('Health & Safety');
   });
 
   it('drops sections with no words', () => {
     const decorative = { _type: 'spacerSection', _key: 'k8', background: 'grey' };
-    expect(pageEntries('health', 'Health & Safety', [decorative])).toEqual([]);
+    expect(pageEntries('/family-hub/health', 'Health & Safety', [decorative])).toEqual([]);
   });
 
-  it('returns nothing for a hubKey with no rendered route', () => {
-    // `threes` is a real doc that NO page renders (twos-threes reads the twos
-    // doc), and `directory` is PII. Both must stay out of the index.
-    expect(pageEntries('threes', 'Threes Classroom', [proseSection()])).toEqual([]);
-    expect(pageEntries('directory', 'Family Directory', [proseSection()])).toEqual([]);
-    expect(HUB_PAGE_ROUTES.threes).toBeUndefined();
-    expect(HUB_PAGE_ROUTES.directory).toBeUndefined();
+  it('returns nothing without a route', () => {
+    expect(pageEntries('', 'Nowhere', [proseSection()])).toEqual([]);
+  });
+});
+
+describe('hubPageRoute', () => {
+  it('indexes a NEW page by convention, with no registry to update', () => {
+    // The whole point: a page added later must index itself. Adding
+    // /family-hub/health to the nav is all it takes.
+    expect(hubPageRoute('health', ROUTES)).toBe('/family-hub/health');
+    expect(hubPageRoute('tuition', ROUTES)).toBe('/family-hub/tuition');
+  });
+
+  it('honours the routes that do not match the convention', () => {
+    // Both classes share one merged page; the dashboard renders `home`.
+    expect(hubPageRoute('twos', ROUTES)).toBe('/family-hub/twos-threes');
+    expect(hubPageRoute('home', ROUTES)).toBe('/family-hub');
+  });
+
+  it('NEVER indexes the denied keys, even though the nav has their routes', () => {
+    // /family-hub/directory is a real nav route — the deny list is what keeps
+    // family PII out, so convention must not be able to override it.
+    const withDirectory = hubRoutesFromNav([
+      { links: [{ href: '/family-hub/directory' }, { href: '/family-hub/threes' }] },
+    ]);
+    expect(hubPageRoute('directory', withDirectory)).toBeNull();
+    expect(hubPageRoute('threes', withDirectory)).toBeNull();
+    expect(HUB_PAGE_DENY.has('directory')).toBe(true);
+    expect(HUB_PAGE_DENY.has('threes')).toBe(true);
+  });
+
+  it('returns null when the doc has no page to land on', () => {
+    // A doc whose route was deleted, or that was created before its page.
+    expect(hubPageRoute('ghost-page', ROUTES)).toBeNull();
+    expect(hubPageRoute('', ROUTES)).toBeNull();
+  });
+
+  it('ignores external nav links — the store is not a hub page', () => {
+    expect(ROUTES.has('https://store.example.com')).toBe(false);
   });
 });
 

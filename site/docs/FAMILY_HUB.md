@@ -312,10 +312,15 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   - **Only sections with a heading get a `#sec-` deep link**, because
     `HubSectionedBody` only emits that id when a header title exists. Linking to
     an absent anchor scrolls nowhere.
-  - **`HUB_PAGE_ROUTES` is the allow-list**, and it is not 1:1 with hub-nav:
-    `twos` renders at `/family-hub/twos-threes`, and the `threes` doc is rendered
-    by NO page (twos-threes reads the twos doc for both classes), so indexing it
-    would yield hits that lead nowhere.
+  - **Routes resolve by CONVENTION, not a registry.** `hubPageRoute()` takes
+    `/family-hub/<hubKey>` when hub-nav says that page exists, so a hub page
+    added later indexes itself. Two escape hatches: `HUB_PAGE_OVERRIDES` for the
+    routes that don't match (`twos` → `/family-hub/twos-threes`, `home` →
+    `/family-hub`), and `HUB_PAGE_DENY` for docs that must never be indexed
+    (`directory` = PII, `threes` = a doc NO page renders, since twos-threes
+    reads the twos doc for both classes). Deny always wins over convention.
+    This replaced a hardcoded allow-list that failed silently — add a page,
+    forget to register it, and search omitted it forever.
 
   Payload: ~61KB raw / ~20KB gzipped, fetched once per 5 min via
   `Cache-Control: private, max-age=300`. That header matters because the site has

@@ -32,7 +32,9 @@ import { applyHubStopgaps } from '@/lib/hub-stopgaps';
 import { getCalendarEvents, eventDate } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import {
-  HUB_PAGE_ROUTES,
+  HUB_PAGE_DENY,
+  hubPageRoute,
+  hubRoutesFromNav,
   pageEntries,
   sectionText,
   type SearchEntry,
@@ -57,11 +59,12 @@ export const GET: APIRoute = async () => {
 
   try {
     const [pages, updates, documents, sheets] = await Promise.all([
-      // Only the keys that map to a rendered route (HUB_PAGE_ROUTES omits the
-      // unrendered `threes` duplicate and the PII-bearing directory).
+      // EVERY hub page except the denied ones, so a page the Board gains later
+      // indexes itself instead of waiting for someone to remember a registry.
+      // hubPageRoute() below still has the final say on where each one links.
       sanityFetch<HubPageRow[]>(
-        `*[_type == "hubPage" && hubKey in $keys]{ hubKey, heading, sections }`,
-        { keys: Object.keys(HUB_PAGE_ROUTES) },
+        `*[_type == "hubPage" && !(hubKey in $denied)]{ hubKey, heading, sections }`,
+        { denied: [...HUB_PAGE_DENY] },
         { cache: BOARD_CONTENT_CACHE },
       ),
       sanityFetch<{ title?: string; slug?: string; date?: string; body?: any }[]>(
@@ -85,14 +88,20 @@ export const GET: APIRoute = async () => {
       ),
     ]);
 
+    const knownRoutes = hubRoutesFromNav(hubNav);
     for (const page of pages) {
       if (!page.hubKey) continue;
+      // Null when the doc has no page to land on — a deleted route, or a doc
+      // created before its page exists. Better silent than hits that go
+      // nowhere.
+      const href = hubPageRoute(page.hubKey, knownRoutes);
+      if (!href) continue;
       // Run the SAME stopgaps the pages render through, or code-side content
       // (the class-pet section, the corrected curriculum months, the Pre-K
       // sign-off split) would be on the page but unfindable. `twos` needs its
       // page key for the stopgaps that ADD sections.
       const sections = applyHubStopgaps(page.sections, page.hubKey);
-      entries.push(...pageEntries(page.hubKey, page.heading ?? 'Family Hub', sections));
+      entries.push(...pageEntries(href, page.heading ?? 'Family Hub', sections));
     }
 
     for (const u of updates) {

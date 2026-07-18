@@ -30,27 +30,58 @@ export interface SearchEntry {
   text?: string;
 }
 
-/**
- * hubKey → the route that actually RENDERS that doc.
- *
- * Deliberately not derived from hub-nav: the mapping isn't 1:1. `twos` renders
- * at /family-hub/twos-threes (both classes share Erin's handbook), and the
- * `threes` doc is NOT rendered anywhere — twos-threes.astro reads the twos doc
- * as the source for both. Indexing `threes` would return hits whose deep links
- * point at sections that exist in no page, so it is omitted here on purpose.
- * `directory` is omitted too: its entries are family PII and never get cached.
- */
-export const HUB_PAGE_ROUTES: Record<string, string> = {
-  calendar: '/family-hub/calendar',
-  'coop-jobs': '/family-hub/coop-jobs',
-  documents: '/family-hub/documents',
-  fundraising: '/family-hub/fundraising',
-  'getting-started': '/family-hub/getting-started',
-  health: '/family-hub/health',
-  'pre-k': '/family-hub/pre-k',
-  tuition: '/family-hub/tuition',
+// =============================================================================
+// hubKey → the route that actually RENDERS that doc
+// =============================================================================
+// Resolved by CONVENTION with two escape hatches, rather than a hardcoded
+// allow-list. The allow-list version failed silently: add a hub page, forget to
+// register it, and search omits it forever with nothing to catch the omission.
+// Now a page that follows the convention indexes itself.
+
+/** Never indexed, whatever the nav says. */
+export const HUB_PAGE_DENY = new Set([
+  // Rendered by NO page: twos-threes.astro reads the `twos` doc for both
+  // classes, so every deep link into `threes` would land on an absent anchor.
+  'threes',
+  // Family names, emails, phones. This response is cached; PII is not.
+  'directory',
+]);
+
+/** The routes that don't match `/family-hub/<hubKey>`. */
+export const HUB_PAGE_OVERRIDES: Record<string, string> = {
+  // Both classes share Erin's handbook on one merged page.
   twos: '/family-hub/twos-threes',
+  // The dashboard renders the `home` doc's sections through SectionRenderer.
+  home: '/family-hub',
 };
+
+/** Hub routes that exist, taken from the nav the rail is already built from. */
+export function hubRoutesFromNav(
+  nav: { links: { href: string; external?: boolean }[] }[],
+): Set<string> {
+  const out = new Set<string>();
+  for (const group of nav) {
+    for (const link of group.links) {
+      if (!link.external) out.add(link.href);
+    }
+  }
+  return out;
+}
+
+/**
+ * The route for a hub doc, or null when it should not be indexed.
+ *
+ * Order: deny wins, then an explicit override, then `/family-hub/<hubKey>` if
+ * the nav says that page exists. The nav check is what stops a doc whose page
+ * was deleted (or never built) from producing hits that lead nowhere.
+ */
+export function hubPageRoute(hubKey: string, knownRoutes: Set<string>): string | null {
+  if (!hubKey || HUB_PAGE_DENY.has(hubKey)) return null;
+  const override = HUB_PAGE_OVERRIDES[hubKey];
+  if (override) return knownRoutes.has(override) ? override : null;
+  const convention = `/family-hub/${hubKey}`;
+  return knownRoutes.has(convention) ? convention : null;
+}
 
 // Keys whose values are machinery, not prose: ids, refs, icon/enum tokens, and
 // anything URL-shaped. `alt` is deliberately NOT here — alt text is content.
@@ -133,11 +164,10 @@ const sectionTitle = (section: Section, pageHeading: string): string =>
  * dropped — a decorative band is not a search result.
  */
 export function pageEntries(
-  hubKey: string,
+  href: string,
   pageHeading: string,
   sections: Section[] | undefined,
 ): SearchEntry[] {
-  const href = HUB_PAGE_ROUTES[hubKey];
   if (!href) return [];
   const entries: SearchEntry[] = [];
   for (const section of sections ?? []) {
