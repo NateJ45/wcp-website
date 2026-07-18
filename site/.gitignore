@@ -2,3 +2,10 @@ PreK parent handbook for nathan 2627.pdf
 # Source PDFs for the hub knowledge base — gated content (hub password,
 # phone numbers); they live in Sanity as hubDocument files, not in git.
 src/assets/*.pdf
+
+# Camera original of the Twos/Threes class-pet photo. This repo is PUBLIC and
+# the shot shows an identifiable child, while the page it appears on is behind
+# the family login — so only the 900x506 derivative that actually renders
+# (kit-the-kat-sm.webp) is committed. Keep the original locally if you need to
+# regenerate at another size.
+src/assets/photos/3L7A7778.jpg

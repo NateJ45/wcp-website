@@ -11,8 +11,10 @@
 //     OLD content; only the rendered page reflects these. See the Sanity
 //     follow-up list in memory (project-wcp-pending-directory-patch). <<<
 //
-// Each transform matches by CONTENT (not keys) and is a no-op when its target
-// isn't present, so applyHubStopgaps() is safe to run on any handbook page.
+// Each EDITING transform matches by CONTENT (not keys) and is a no-op when its
+// target isn't present, so applyHubStopgaps() is safe to run on any handbook
+// page. Transforms that ADD a section have nothing to content-match on, so they
+// are scoped by the `page` argument instead (see twosClassPet).
 // =============================================================================
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -116,11 +118,51 @@ export function addClassDojoRegisterLink(sections: Section[]): Section[] {
   });
 }
 
-/** Run every stopgap; each no-ops when its target isn't on the page. */
-export function applyHubStopgaps(sections?: Section[]): Section[] {
+/**
+ * Twos & Threes: add the class-pet section (Kit the Kat) immediately ABOVE the
+ * closing CTA, mirroring the Pre-K handbook's Pickles blurb.
+ *
+ * Unlike the other stopgaps this one can't match on content — it ADDS a section
+ * rather than editing one — so it is page-scoped by the caller instead. It
+ * renders through the code-owned `classPetSection` type (see
+ * components/sections/ClassPetSection.astro) because the photo can't be
+ * uploaded to Sanity while writes are quota-blocked. Idempotent: no-op once a
+ * real section carrying the pet is present.
+ */
+export function twosClassPet(sections: Section[]): Section[] {
+  const list = [...(sections ?? [])];
+  if (
+    list.some((s) => s?._type === 'classPetSection' || /kit the kat/i.test(s?.header?.title ?? ''))
+  ) {
+    return list;
+  }
+  // The CLOSING CTA is the last one; a mid-handbook CTA must not catch this.
+  const ctaIdx = list.map((s) => s?._type).lastIndexOf('ctaSection');
+  if (ctaIdx < 0) return list; // no CTA to sit above: leave the page untouched
+
+  const petSection: Section = {
+    _type: 'classPetSection',
+    _key: 'twos-pet-kit',
+    background: 'white',
+    header: { _type: 'sectionHeader', title: 'Meet Kit the Kat, our class pet' },
+    body: 'Kit the Kat is our class pet, shared by the Twos and the Threes. Starting in October, each child gets a weekend with Kit: take Kit everywhere, snap photos or draw pictures of the adventures (Kit at the playground! Kit at the dinner table!), and bring the backpack and story binder back Monday to share with the class.',
+    alt: 'Kit the Kat, a plush cat, sitting on the playground next to a smiling child in a bike helmet.',
+  };
+
+  list.splice(ctaIdx, 0, petSection);
+  return list;
+}
+
+/**
+ * Run every stopgap; each no-ops when its target isn't on the page.
+ * `page` scopes the stopgaps that ADD content (and so can't match on content):
+ * pass the handbook's class key, e.g. 'twos'.
+ */
+export function applyHubStopgaps(sections?: Section[], page?: string): Section[] {
   let s = sections ?? [];
   s = prekMergeSchedule(s);
   s = removeFacebookForPhotos(s);
   s = addClassDojoRegisterLink(s);
+  if (page === 'twos') s = twosClassPet(s);
   return s;
 }

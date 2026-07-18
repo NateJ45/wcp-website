@@ -38,6 +38,9 @@
 import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import CtaSection from '@/components/sections/CtaSection.astro';
+// TEMPORARY (Sanity write quota): the class-pet blurb + photo. Delete with
+// src/lib/hub-stopgaps.ts once the section is a real splitMediaSection.
+import ClassPetSection from '@/components/sections/ClassPetSection.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import { classColor, classStyles } from '@/lib/class-colors';
@@ -84,6 +87,8 @@ const BLEED = new Set([
   'splitMediaSection',
   'instagramSection',
   'teacherSection',
+  // Renders its own image + text band, exactly like splitMediaSection.
+  'classPetSection',
 ]);
 // Long-form / prose-like sections: text flows on the surface, no card chrome.
 const FLOW = new Set(['proseSection', 'storyTimelineSection']);
@@ -166,7 +171,9 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
                   <Icon name={icon} class="h-5 w-5" />
                 </span>
               )}
-              {isSignoffCta ? (
+              {section?._type === 'classPetSection' ? (
+                <ClassPetSection section={section} />
+              ) : isSignoffCta ? (
                 <CtaSection section={section} teacherSlug={signoff} />
               ) : (
                 <SectionRenderer sections={[section]} site={site} cardWatermark hub />
