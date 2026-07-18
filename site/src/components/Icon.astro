@@ -22,8 +22,9 @@ interface Props {
   name: string;
   class?: string;
   title?: string;
+  style?: string;
 }
-const { name, class: className, title } = Astro.props;
+const { name, class: className, title, style } = Astro.props;
 // Two icon sets, both pre-inlined as self-contained SVG bodies (each already
 // declares its own fill/stroke): Lucide (stroke-based line icons) and a
 // handful of brand logos from simple-icons (fill-based) for social links.
@@ -40,6 +41,7 @@ const inner = title ? `<title>${title}</title>${body}` : body;
 <svg
   viewBox="0 0 24 24"
   class={cn('inline-block shrink-0', className)}
+  style={style}
   role={title ? 'img' : undefined}
   aria-hidden={title ? undefined : 'true'}
   aria-label={title}
