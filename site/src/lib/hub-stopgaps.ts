@@ -145,7 +145,7 @@ export function twosClassPet(sections: Section[]): Section[] {
     _key: 'twos-pet-kit',
     background: 'white',
     header: { _type: 'sectionHeader', title: 'Meet Kit the Kat, our class pet' },
-    body: 'Kit the Kat is our class pet, shared by the Twos and the Threes. Starting in October, each child gets a weekend with Kit: take Kit everywhere, snap photos or draw pictures of the adventures (Kit at the playground! Kit at the dinner table!), and bring the backpack and story binder back Monday to share with the class.',
+    body: 'Kit the Kat is our class pet, shared by the Twos and the Threes. Starting in October, each child gets a weekend with Kit: take Kit everywhere, snap photos or draw pictures of the adventures (Kit at the playground! Kit at the dinner table!), and bring the backpack and story binder back to share with the class.',
     alt: 'Kit the Kat, a plush cat, sitting on the playground next to a smiling child in a bike helmet.',
   };
 
