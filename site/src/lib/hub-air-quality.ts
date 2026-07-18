@@ -22,8 +22,12 @@ interface OpenMeteoAQ {
   current?: { us_aqi?: number };
 }
 
-/** EPA US AQI breakpoints → chip icon + a preschool-appropriate line. */
-function describe(aqi: number): Pick<HubAirQuality, 'icon' | 'line'> {
+/**
+ * EPA US AQI breakpoints → chip icon + a preschool-appropriate line.
+ * Exported for unit tests: the tier boundaries are the whole contract here, and
+ * getting 51 wrong once already shipped "Good" copy over a Moderate reading.
+ */
+export function describeAqi(aqi: number): Pick<HubAirQuality, 'icon' | 'line'> {
   if (aqi <= 50) return { icon: 'leaf', line: 'Great air for outside play!' };
   if (aqi <= 100) return { icon: 'wind', line: 'Decent air, fine for outside play' };
   if (aqi <= 150) {
@@ -32,11 +36,24 @@ function describe(aqi: number): Pick<HubAirQuality, 'icon' | 'line'> {
   return { icon: 'triangle-alert', line: 'Indoor play day — air quality is poor' };
 }
 
-/** Current air quality at the school, or null (chip hidden) on any failure. */
+/**
+ * Current air quality at the school, or null (chip hidden) on any failure.
+ *
+ * ONLY THE RAW READING IS CACHED — the icon and line are derived per request.
+ * Caching the rendered object instead meant a copy fix stayed invisible for up
+ * to the full 24h horizon: KV (L2) survives the isolate recycle a deploy
+ * causes, so the first visitor after shipping read the PRE-FIX envelope back
+ * out and the hub kept showing the old wording against a newer number. Derive
+ * presentation strings at read time and a copy edit is live on the next
+ * request, cache or no cache.
+ */
 export async function getAirQuality(): Promise<HubAirQuality | null> {
   try {
-    return await cached(
-      'air-quality:west-chester-oh',
+    const aqi = await cached(
+      // ":v2" — the cached value changed shape (rendered object → raw number).
+      // A new key abandons the old envelopes rather than reading one back as a
+      // number and rendering "AQI [object Object]"; they expire on their own.
+      'air-quality:west-chester-oh:v2',
       28_800_000, // 8h fresh — slow-moving reading, ~3 KV writes/day (see header)
       async () => {
         const res = await fetch(
@@ -45,12 +62,13 @@ export async function getAirQuality(): Promise<HubAirQuality | null> {
         );
         if (!res.ok) throw new Error(`open-meteo air quality ${res.status}`);
         const data = (await res.json()) as OpenMeteoAQ;
-        const aqi = Math.round(data.current?.us_aqi ?? NaN);
-        if (!Number.isFinite(aqi)) throw new Error('no aqi reading');
-        return { aqi, ...describe(aqi) };
+        const reading = Math.round(data.current?.us_aqi ?? NaN);
+        if (!Number.isFinite(reading)) throw new Error('no aqi reading');
+        return reading;
       },
       { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
     );
+    return { aqi, ...describeAqi(aqi) };
   } catch {
     return null;
   }
