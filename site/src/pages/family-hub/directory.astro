@@ -31,8 +31,9 @@ interface HubPageDoc {
   sections?: any[];
 }
 
-// The preschool, geocoded once (9463 Cincinnati Columbus Rd, West Chester OH).
-const PRESCHOOL = { lat: 39.3143544, lng: -84.3750201, label: 'West Chester Preschool' };
+// The preschool. Coordinates come from site.geo (the one place they live) so
+// the map pin, the JSON-LD, and the hub's weather lookups can never disagree.
+const PRESCHOOL = { lat: site.geo.lat, lng: site.geo.lng, label: site.name };
 
 interface DirChild {
   name?: string;

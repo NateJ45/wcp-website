@@ -27,10 +27,12 @@ export const site = {
 
   phone: '(513) 202-6187',
 
-  // Map pin for the building — the SAME coordinates the Family Hub directory
-  // map centers on (src/pages/family-hub/directory.astro). Used by the
-  // LocalBusiness JSON-LD `geo` so search engines pin the school exactly,
-  // not wherever they geocode the street address to.
+  // Map pin for the building, and the ONE place coordinates live. Consumers:
+  // the LocalBusiness JSON-LD (StructuredData.astro), the Family Hub directory
+  // map (family-hub/directory.astro), and the hub's weather / air-quality /
+  // NWS-alert lookups (lib/hub-weather.ts, hub-air-quality.ts, hub-alerts.ts).
+  // Import it — never re-type the numbers. Those three hub modules used to
+  // carry their own pair 2.2 miles away, which nothing would have caught.
   geo: { lat: 39.3143544, lng: -84.3750201 },
 
   // The community the school draws from (LocalBusiness `areaServed`).

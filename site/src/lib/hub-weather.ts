@@ -27,6 +27,7 @@
 //   flags. All from ONE Open-Meteo daily call (no extra fetch or KV key).
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
+import { site } from '@/data/site';
 
 /** The weather icons this module can return (all live in lucide-icons.ts). */
 export type WeatherIcon =
@@ -202,12 +203,13 @@ export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
       // ":v3" — the day shape gained `label`/`precipChance` (v2) then `uvMax`/
       // `needsSunscreen` (v3). Bump the key on any shape change so a deploy
       // fetches the new fields fresh instead of serving the old-shape envelope
-      // for up to the 8h fresh window.
-      'weather:west-chester-oh:week:v3',
+      // for up to the 8h fresh window. ":v4" — the coordinates moved to
+      // site.geo (the school, not a point 2.2 miles away).
+      'weather:west-chester-oh:week:v4',
       28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
       async () => {
         const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=39.3362&longitude=-84.4052' +
+          `https://api.open-meteo.com/v1/forecast?latitude=${site.geo.lat}&longitude=${site.geo.lng}` +
             '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max' +
             '&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7',
           { signal: AbortSignal.timeout(5000) },

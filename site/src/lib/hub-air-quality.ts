@@ -11,6 +11,7 @@
 // purpose to keep this a zero-setup addition. See docs/FAMILY_HUB.md.
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
+import { site } from '@/data/site';
 
 export interface HubAirQuality {
   aqi: number;
@@ -53,11 +54,14 @@ export async function getAirQuality(): Promise<HubAirQuality | null> {
       // ":v2" — the cached value changed shape (rendered object → raw number).
       // A new key abandons the old envelopes rather than reading one back as a
       // number and rendering "AQI [object Object]"; they expire on their own.
-      'air-quality:west-chester-oh:v2',
+      // ":v3" — the coordinates moved to site.geo (the school, not a point 2.2
+      // miles away), so the stored reading is for the old location.
+      'air-quality:west-chester-oh:v3',
       28_800_000, // 8h fresh — slow-moving reading, ~3 KV writes/day (see header)
       async () => {
         const res = await fetch(
-          'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=39.3362&longitude=-84.4052&current=us_aqi',
+          'https://air-quality-api.open-meteo.com/v1/air-quality' +
+            `?latitude=${site.geo.lat}&longitude=${site.geo.lng}&current=us_aqi`,
           { signal: AbortSignal.timeout(5000) },
         );
         if (!res.ok) throw new Error(`open-meteo air quality ${res.status}`);

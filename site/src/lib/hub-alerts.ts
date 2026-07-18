@@ -18,6 +18,7 @@
 // "No relevant alert" is a normal, cacheable state — not a fetch failure.
 // =============================================================================
 import { cached } from '@/lib/hub-cache';
+import { site } from '@/data/site';
 
 export interface HubAlert {
   headline: string;
@@ -43,13 +44,18 @@ const SCHOOL_RELEVANT =
 export async function getActiveAlert(): Promise<HubAlert | null> {
   try {
     return await cached(
-      'nws-alert:west-chester-oh',
+      // ":v2" — the point moved to site.geo (the school, not a location 2.2
+      // miles away). Same NWS zone in practice, but the key tracks the input.
+      'nws-alert:west-chester-oh:v2',
       3_600_000, // 1h fresh — sudden warnings must catch up fast (see header)
       async () => {
-        const res = await fetch('https://api.weather.gov/alerts/active?point=39.3362,-84.4052', {
-          headers: { 'User-Agent': '(westchesterpreschool.org, wcp-website family hub)' },
-          signal: AbortSignal.timeout(5000),
-        });
+        const res = await fetch(
+          `https://api.weather.gov/alerts/active?point=${site.geo.lat},${site.geo.lng}`,
+          {
+            headers: { 'User-Agent': '(westchesterpreschool.org, wcp-website family hub)' },
+            signal: AbortSignal.timeout(5000),
+          },
+        );
         if (!res.ok) throw new Error(`nws alerts ${res.status}`);
         const data = (await res.json()) as NwsAlerts;
         const features = Array.isArray(data.features) ? data.features : [];
