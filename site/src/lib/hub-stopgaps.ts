@@ -118,9 +118,68 @@ export function addClassDojoRegisterLink(sections: Section[]): Section[] {
   });
 }
 
+// The standard closing-CTA copy, taken from the Twos & Threes handbook (Erin's)
+// so both class pages end the same way. Kept identical to the constants in
+// scripts/restructure-prek-pet-section.mjs — the stopgap and that script have to
+// produce the same result, or running it would visibly change the page.
+const CLOSING_CTA_TITLE = 'Questions about anything here?';
+const CLOSING_CTA_LEAD =
+  'This handbook is your guide to our year, but it is not the last word. If anything is unclear, or you just want to say hello, reach out anytime.';
+
+/**
+ * Pre-K: split the class-pet blurb out of the closing CTA.
+ *
+ * The Pre-K CTA had been repurposed to carry the class-pet content (pet title +
+ * paragraph as the CTA lead). HubSectionedBody attaches the teacher sign-off
+ * card to the LAST ctaSection, so Ms. Lisa's signature and contact pills ended
+ * up under the pet copy instead of a "reach out anytime" close.
+ *
+ * This lifts that content into its own prose section ABOVE the CTA and resets
+ * the CTA to the standard closing, so Pre-K ends the way Twos & Threes does.
+ * Matched on the pet title, so it no-ops on any handbook with a normal closing
+ * CTA (including Twos) and the moment the Sanity doc is fixed.
+ */
+export function prekSplitPetFromCta(sections: Section[]): Section[] {
+  const list = [...(sections ?? [])];
+  const ctaIdx = list.map((s) => s?._type).lastIndexOf('ctaSection');
+  if (ctaIdx < 0) return list;
+
+  const cta = list[ctaIdx];
+  // Only a CTA repurposed to carry pet content qualifies — never a normal
+  // closing CTA. Keyed off "class pet" rather than the pet's NAME, because the
+  // AM and PM classes each name their own.
+  if (!/class pet/i.test(cta?.title ?? '')) return list;
+
+  const petTitle = cta.title || 'Meet our class pet';
+  const petBody = cta.lead || '';
+
+  // Mirrors the section restructure-prek-pet-section.mjs writes, _key included,
+  // so the eventual Sanity edit lands on the same shape.
+  const petSection: Section = {
+    _type: 'proseSection',
+    _key: 'prek-pet-sec',
+    background: 'white',
+    narrow: true,
+    header: { _type: 'sectionHeader', title: petTitle, align: 'center' },
+    body: [
+      {
+        _type: 'block',
+        _key: 'prek-pet-b1',
+        style: 'normal',
+        markDefs: [],
+        children: [{ _type: 'span', _key: 'prek-pet-s1', text: petBody, marks: [] }],
+      },
+    ],
+  };
+
+  list[ctaIdx] = { ...cta, title: CLOSING_CTA_TITLE, lead: CLOSING_CTA_LEAD };
+  list.splice(ctaIdx, 0, petSection);
+  return list;
+}
+
 /**
  * Twos & Threes: add the class-pet section (Kit the Kat) immediately ABOVE the
- * closing CTA, mirroring the Pre-K handbook's Pickles blurb.
+ * closing CTA, mirroring the Pre-K handbook's class-pet blurb.
  *
  * Unlike the other stopgaps this one can't match on content — it ADDS a section
  * rather than editing one — so it is page-scoped by the caller instead. It
@@ -191,6 +250,7 @@ export function twosCurriculumMonths(sections: Section[]): Section[] {
 export function applyHubStopgaps(sections?: Section[], page?: string): Section[] {
   let s = sections ?? [];
   s = prekMergeSchedule(s);
+  s = prekSplitPetFromCta(s);
   s = removeFacebookForPhotos(s);
   s = addClassDojoRegisterLink(s);
   s = twosCurriculumMonths(s);
