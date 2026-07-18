@@ -1,0 +1,175 @@
+// =============================================================================
+// hub-search-index — turning hub page sections into searchable entries
+// =============================================================================
+// The ⌘K palette used to index TITLES only (nav labels, update/document/sheet
+// names), so a parent who remembered a phrase but not which handbook it was in
+// got nothing. This walks the page-builder sections and pulls out their words —
+// prose, card bodies, FAQ questions and answers, schedule rows, step lists, and
+// image ALT text — so the palette can find content, not just page names.
+//
+// Pure functions on purpose: the endpoint does the Sanity reads, this does the
+// shaping, and hub-search-index.test.ts covers the extraction rules.
+//
+// TWO RULES THAT KEEP RESULTS HONEST:
+//   1. Only sections with a header title get a #sec- deep link, because
+//      HubSectionedBody's titleIdFor() only emits that id when a title exists.
+//      Linking to an anchor that isn't in the DOM would scroll nowhere.
+//   2. Structural/URL-ish fields are skipped (see SKIP_KEYS). Indexing an icon
+//      name or a background token means searching "navy" matches half the hub.
+// =============================================================================
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Section = Record<string, any>;
+
+export interface SearchEntry {
+  title: string;
+  href: string;
+  kind: 'page' | 'update' | 'document' | 'sign-up' | 'section';
+  sub?: string;
+  /** Body words for matching. Absent on title-only entries (nav, documents). */
+  text?: string;
+}
+
+/**
+ * hubKey → the route that actually RENDERS that doc.
+ *
+ * Deliberately not derived from hub-nav: the mapping isn't 1:1. `twos` renders
+ * at /family-hub/twos-threes (both classes share Erin's handbook), and the
+ * `threes` doc is NOT rendered anywhere — twos-threes.astro reads the twos doc
+ * as the source for both. Indexing `threes` would return hits whose deep links
+ * point at sections that exist in no page, so it is omitted here on purpose.
+ * `directory` is omitted too: its entries are family PII and never get cached.
+ */
+export const HUB_PAGE_ROUTES: Record<string, string> = {
+  calendar: '/family-hub/calendar',
+  'coop-jobs': '/family-hub/coop-jobs',
+  documents: '/family-hub/documents',
+  fundraising: '/family-hub/fundraising',
+  'getting-started': '/family-hub/getting-started',
+  health: '/family-hub/health',
+  'pre-k': '/family-hub/pre-k',
+  tuition: '/family-hub/tuition',
+  twos: '/family-hub/twos-threes',
+};
+
+// Keys whose values are machinery, not prose: ids, refs, icon/enum tokens, and
+// anything URL-shaped. `alt` is deliberately NOT here — alt text is content.
+const SKIP_KEYS = new Set([
+  '_type',
+  '_key',
+  '_ref',
+  '_id',
+  '_rev',
+  'icon',
+  'background',
+  'style',
+  'linkType',
+  'url',
+  'href',
+  'link',
+  'pageSlug',
+  'slug',
+  'tone',
+  'align',
+  'color',
+  'variant',
+  'size',
+  'id',
+  'orderRank',
+  'source',
+  'category',
+  'marks',
+  'listItem',
+  'level',
+]);
+
+const looksLikeUrl = (s: string): boolean => /^(https?:\/\/|\/|mailto:|tel:|#)/.test(s);
+
+/** Every human-readable string inside a section, in document order. */
+export function extractStrings(node: unknown, out: string[] = []): string[] {
+  if (Array.isArray(node)) {
+    for (const v of node) extractStrings(v, out);
+    return out;
+  }
+  if (node && typeof node === 'object') {
+    for (const [key, value] of Object.entries(node as Section)) {
+      if (SKIP_KEYS.has(key)) continue;
+      extractStrings(value, out);
+    }
+    return out;
+  }
+  if (typeof node === 'string') {
+    const s = node.trim();
+    // Single characters and bare tokens carry no search value; URLs are noise.
+    if (s.length > 1 && !looksLikeUrl(s)) out.push(s);
+  }
+  return out;
+}
+
+/**
+ * Collapse a section's strings into one searchable blob, de-duplicated so a
+ * repeated label doesn't inflate the payload. `cap` bounds a runaway section
+ * (a long FAQ) — the whole index ships to the browser on first ⌘K.
+ */
+export function sectionText(section: Section, cap = 1200): string {
+  const seen = new Set<string>();
+  const parts: string[] = [];
+  for (const s of extractStrings(section)) {
+    const k = s.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    parts.push(s);
+  }
+  const joined = parts.join(' ').replace(/\s+/g, ' ').trim();
+  return joined.length > cap ? `${joined.slice(0, cap)}…` : joined;
+}
+
+/** The heading a result shows — the section's own title, else the page's. */
+const sectionTitle = (section: Section, pageHeading: string): string =>
+  (typeof section?.header?.title === 'string' && section.header.title.trim()) || pageHeading;
+
+/**
+ * One entry per section of one hub page. Sections with no words at all are
+ * dropped — a decorative band is not a search result.
+ */
+export function pageEntries(
+  hubKey: string,
+  pageHeading: string,
+  sections: Section[] | undefined,
+): SearchEntry[] {
+  const href = HUB_PAGE_ROUTES[hubKey];
+  if (!href) return [];
+  const entries: SearchEntry[] = [];
+  for (const section of sections ?? []) {
+    if (!section) continue;
+    const text = sectionText(section);
+    if (!text) continue;
+    const hasAnchor = Boolean(section?.header?.title) && Boolean(section?._key);
+    entries.push({
+      title: sectionTitle(section, pageHeading),
+      href: hasAnchor ? `${href}#sec-${section._key}` : href,
+      kind: 'section',
+      sub: pageHeading,
+      text,
+    });
+  }
+  return entries;
+}
+
+/**
+ * A ~140-char window around the first matched word, so a body hit shows WHY it
+ * matched instead of an opaque page name. Falls back to the opening words.
+ */
+export function snippet(text: string, words: string[], width = 140): string {
+  if (!text) return '';
+  const lower = text.toLowerCase();
+  let at = -1;
+  for (const w of words) {
+    const i = lower.indexOf(w);
+    if (i >= 0 && (at < 0 || i < at)) at = i;
+  }
+  if (at < 0) return text.length > width ? `${text.slice(0, width).trimEnd()}…` : text;
+  const start = Math.max(0, at - Math.floor(width / 3));
+  const end = Math.min(text.length, start + width);
+  return `${start > 0 ? '…' : ''}${text.slice(start, end).trim()}${end < text.length ? '…' : ''}`;
+}

@@ -2,20 +2,31 @@
 // Hub search (Cmd/Ctrl+K) — filter + jump, all client-side after one fetch
 // ============================================================================
 // The index comes from /family-hub/api/search-index once per page (module
-// promise cache). Matching is humble on purpose: case-insensitive, every
-// typed word must appear, title-starts-with ranks first — for a corpus of a
-// few hundred titles that beats a fuzzy library nobody has to ship. Results
-// are real links (keyboard: ArrowDown/Up move through them, Enter follows,
-// Esc closes via the native <dialog>). All result DOM is built with
+// promise cache, backed by the endpoint's Cache-Control since every navigation
+// is a fresh document here). It carries page/update/document names AND the
+// words inside each page-builder section, so "sunscreen" finds the handbook
+// paragraph that mentions it, not just pages with it in the title.
+//
+// Matching stays humble — case-insensitive, every typed word must appear — but
+// it now RANKS by where the match landed (title > page label > body). Without
+// that, one passing mention in a long handbook would outrank the page actually
+// named for the thing. A body hit shows a snippet around the match so the
+// result explains itself. Still no fuzzy library shipped.
+//
+// Results are real links (keyboard: ArrowDown/Up move through them, Enter
+// follows, Esc closes via the native <dialog>). All result DOM is built with
 // createElement/textContent — no HTML strings, nothing injectable.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
+import { snippet } from '@/lib/hub-search-index';
 
 interface Entry {
   title: string;
   href: string;
   kind: string;
   sub?: string;
+  /** Body words (page sections, update bodies). Absent on title-only entries. */
+  text?: string;
 }
 
 const KIND_ICON: Record<string, string> = {
@@ -23,6 +34,7 @@ const KIND_ICON: Record<string, string> = {
   update: '📣',
   document: '📎',
   'sign-up': '📝',
+  section: '🔎',
 };
 
 let indexPromise: Promise<Entry[]> | null = null;
@@ -33,12 +45,29 @@ const loadIndex = (): Promise<Entry[]> => {
   return indexPromise;
 };
 
-function matches(entry: Entry, words: string[]): boolean {
-  const hay = `${entry.title} ${entry.sub ?? ''}`.toLowerCase();
-  return words.every((w) => hay.includes(w));
+/** Where a query matched. Lower sorts first, so names beat body prose. */
+const TITLE_HIT = 0;
+const LABEL_HIT = 1;
+const BODY_HIT = 2;
+const NO_HIT = 3;
+
+/**
+ * Rank rather than a boolean: now that section bodies are indexed, a plain
+ * "every word appears somewhere" test would let a passing mention in a long
+ * handbook outrank the page actually named that. Title first, then the page
+ * label, then body text.
+ */
+function hitRank(entry: Entry, words: string[]): number {
+  const title = entry.title.toLowerCase();
+  const label = `${entry.title} ${entry.sub ?? ''}`.toLowerCase();
+  const all = `${label} ${entry.text ?? ''}`.toLowerCase();
+  if (words.every((w) => title.includes(w))) return TITLE_HIT;
+  if (words.every((w) => label.includes(w))) return LABEL_HIT;
+  if (words.every((w) => all.includes(w))) return BODY_HIT;
+  return NO_HIT;
 }
 
-function resultLink(hit: Entry): HTMLLIElement {
+function resultLink(hit: Entry, words: string[], rank: number): HTMLLIElement {
   const li = document.createElement('li');
   const a = document.createElement('a');
   a.href = hit.href;
@@ -57,10 +86,14 @@ function resultLink(hit: Entry): HTMLLIElement {
   title.className = 'block truncate font-semibold text-heading';
   title.textContent = hit.title;
   text.appendChild(title);
-  if (hit.sub) {
+  // On a BODY match the page label alone ("Twos & Threes Classroom") doesn't
+  // explain the hit, so show the matched words in context instead. Still
+  // textContent — no HTML strings anywhere in this file.
+  const detail = rank === BODY_HIT && hit.text ? snippet(hit.text, words) : (hit.sub ?? '');
+  if (detail) {
     const sub = document.createElement('span');
-    sub.className = 'block text-xs text-ink-muted';
-    sub.textContent = hit.sub;
+    sub.className = 'block truncate text-xs text-ink-muted';
+    sub.textContent = detail;
     text.appendChild(sub);
   }
   a.append(icon, text);
@@ -88,20 +121,27 @@ onPageLoad(() => {
     const q = input.value.trim().toLowerCase();
     const words = q.split(/\s+/).filter(Boolean);
     const index = await loadIndex();
-    const hits = (
+    const hits =
       words.length === 0
-        ? index.filter((e) => e.kind === 'page')
-        : index.filter((e) => matches(e, words))
-    )
+        ? index.filter((e) => e.kind === 'page').map((entry) => ({ entry, rank: TITLE_HIT }))
+        : index
+            .map((entry) => ({ entry, rank: hitRank(entry, words) }))
+            .filter((h) => h.rank !== NO_HIT);
+
+    const ranked = hits
       .sort((a, b) => {
-        const aStarts = a.title.toLowerCase().startsWith(q) ? 0 : 1;
-        const bStarts = b.title.toLowerCase().startsWith(q) ? 0 : 1;
+        // Where it matched first, then title-starts-with inside the same tier.
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        const aStarts = a.entry.title.toLowerCase().startsWith(q) ? 0 : 1;
+        const bStarts = b.entry.title.toLowerCase().startsWith(q) ? 0 : 1;
         return aStarts - bStarts;
       })
-      .slice(0, 8);
+      // A few more than the old 8: body matches mean more genuine candidates,
+      // but the list still has to stay glanceable inside the dialog.
+      .slice(0, 12);
 
-    list.replaceChildren(...hits.map(resultLink));
-    emptyNote.classList.toggle('hidden', hits.length > 0);
+    list.replaceChildren(...ranked.map((h) => resultLink(h.entry, words, h.rank)));
+    emptyNote.classList.toggle('hidden', ranked.length > 0);
   };
 
   const open = () => {

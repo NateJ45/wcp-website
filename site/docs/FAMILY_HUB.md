@@ -299,6 +299,30 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   open sign-up sheets). Triggers: the phone strip's icon and the desktop topbar's
   search field (top-anchored on phones so the iOS keyboard can't cover the results;
   the triggers hide themselves on browsers without `<dialog>`).
+  **Full text, not just titles** (2026-07-18): the index also carries the WORDS
+  inside every page-builder section — prose, card bodies, FAQ answers, schedule
+  rows, and image ALT text — so "snow day" finds the closing-policy section, not
+  nothing. Shaping lives in `src/lib/hub-search-index.ts` (unit-tested); the
+  endpoint runs `applyHubStopgaps` first so code-side content is findable too.
+  Three rules hold it together:
+  - **The Directory is never indexed.** Family names, emails, and phones are PII
+    and this response is cached (board cache + a browser `Cache-Control`). The
+    Health page IS indexed — that doc is Board policy, not per-child records.
+    Note meeting-minutes updates do list attendee names in their bodies.
+  - **Only sections with a heading get a `#sec-` deep link**, because
+    `HubSectionedBody` only emits that id when a header title exists. Linking to
+    an absent anchor scrolls nowhere.
+  - **`HUB_PAGE_ROUTES` is the allow-list**, and it is not 1:1 with hub-nav:
+    `twos` renders at `/family-hub/twos-threes`, and the `threes` doc is rendered
+    by NO page (twos-threes reads the twos doc for both classes), so indexing it
+    would yield hits that lead nowhere.
+
+  Payload: ~61KB raw / ~20KB gzipped, fetched once per 5 min via
+  `Cache-Control: private, max-age=300`. That header matters because the site has
+  no `ClientRouter` — every navigation is a fresh document, so the script's
+  module-level promise cache dies with it and the index would otherwise be
+  re-downloaded on the first ⌘K of every page.
+
 - **Desktop topbar** (2026-07-14 app-elevation Track A, in `HubTopBar.astro` alongside
   the phone strip): a floating sticky bar (`h-10` + `m-2` gutter, ~56px total) over the
   content column. On the left, a row of quick links to the things a parent wants on any

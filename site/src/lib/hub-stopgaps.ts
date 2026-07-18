@@ -243,6 +243,24 @@ export function twosCurriculumMonths(sections: Section[]): Section[] {
 }
 
 /**
+ * Fundraising: drop the sections the live BudgetTable superseded — the old
+ * count-up band, and the "The Budget" / "Where the money goes" prose (which
+ * left a narrow reading-cap column and a dangling right gap).
+ *
+ * This lived inline in fundraising.astro until 2026-07-18. It moved here
+ * because a page-local filter is invisible to everything else that reads the
+ * same doc: the search index indexed "Where the money goes" and produced a
+ * deep link to an anchor the page never renders. One filter, one place.
+ */
+export function fundraisingDropSuperseded(sections: Section[]): Section[] {
+  return (sections ?? []).filter(
+    (s) =>
+      s?._type !== 'statBandSection' &&
+      !(s?._type === 'proseSection' && /budget|money goes/i.test(s?.header?.title ?? '')),
+  );
+}
+
+/**
  * Run every stopgap; each no-ops when its target isn't on the page.
  * `page` scopes the stopgaps that ADD content (and so can't match on content):
  * pass the handbook's class key, e.g. 'twos'.
@@ -255,5 +273,6 @@ export function applyHubStopgaps(sections?: Section[], page?: string): Section[]
   s = addClassDojoRegisterLink(s);
   s = twosCurriculumMonths(s);
   if (page === 'twos') s = twosClassPet(s);
+  if (page === 'fundraising') s = fundraisingDropSuperseded(s);
   return s;
 }

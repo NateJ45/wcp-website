@@ -2,28 +2,49 @@
 // GET /family-hub/api/search-index — everything the hub search can jump to
 // =============================================================================
 // Powers the Cmd/Ctrl+K palette (src/scripts/hub-search.ts): hub pages (from
-// the same nav data the rail uses), updates, documents & forms, and open
-// sign-up sheets, as one flat JSON list the client filters locally. Lives
-// inside /family-hub so the middleware gate covers it. Sanity reads ride the
-// board-content SWR cache — a 60s-stale search index is fine (deliberate
-// exception to "collections live": this is a navigation aid, not a content
-// surface; the pages it links to are always fresh).
+// the same nav data the rail uses), the WORDS INSIDE those pages (one entry per
+// page-builder section, incl. image alt text — see lib/hub-search-index.ts),
+// updates with their body text, documents & forms, and open sign-up sheets, as
+// one flat JSON list the client filters locally. Lives inside /family-hub so
+// the middleware gate covers it. Sanity reads ride the board-content SWR cache
+// — a 60s-stale search index is fine (deliberate exception to "collections
+// live": this is a navigation aid, not a content surface; the pages it links to
+// are always fresh).
+//
+// THE DIRECTORY IS NOT INDEXED. Family names, emails, and phone numbers are
+// PII, which never gets cached (see the KV/caching rules in CLAUDE.md) — and
+// this response is cached both in the board cache and by the browser. The
+// health page IS indexed: that doc is Board-written policy, not per-child
+// records.
+//
+// CACHING: the index is now ~10x its old size, and the site runs WITHOUT
+// ClientRouter, so every navigation is a fresh document and the script's
+// module-level promise cache dies with it. Without a Cache-Control header the
+// browser would re-download the whole index on the first ⌘K of every page.
+// `private` because this is gated content — shared caches must not hold it.
 // =============================================================================
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { hubNav } from '@/data/hub-nav';
+import { applyHubStopgaps } from '@/lib/hub-stopgaps';
+import {
+  HUB_PAGE_ROUTES,
+  pageEntries,
+  sectionText,
+  type SearchEntry,
+} from '@/lib/hub-search-index';
 
-interface Entry {
-  title: string;
-  href: string;
-  kind: 'page' | 'update' | 'document' | 'sign-up';
-  sub?: string;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface HubPageRow {
+  hubKey?: string;
+  heading?: string;
+  sections?: any[];
 }
 
 export const GET: APIRoute = async () => {
-  const entries: Entry[] = [];
+  const entries: SearchEntry[] = [];
 
   for (const group of hubNav) {
     for (const link of group.links) {
@@ -33,10 +54,17 @@ export const GET: APIRoute = async () => {
   }
 
   try {
-    const [updates, documents, sheets] = await Promise.all([
-      sanityFetch<{ title?: string; slug?: string; date?: string }[]>(
+    const [pages, updates, documents, sheets] = await Promise.all([
+      // Only the keys that map to a rendered route (HUB_PAGE_ROUTES omits the
+      // unrendered `threes` duplicate and the PII-bearing directory).
+      sanityFetch<HubPageRow[]>(
+        `*[_type == "hubPage" && hubKey in $keys]{ hubKey, heading, sections }`,
+        { keys: Object.keys(HUB_PAGE_ROUTES) },
+        { cache: BOARD_CONTENT_CACHE },
+      ),
+      sanityFetch<{ title?: string; slug?: string; date?: string; body?: any }[]>(
         `*[_type == "update" && defined(slug.current)] | order(publishedAt desc)[0...100]{
-          title, "slug": slug.current, "date": publishedAt
+          title, "slug": slug.current, "date": publishedAt, body
         }`,
         {},
         { cache: BOARD_CONTENT_CACHE },
@@ -54,6 +82,17 @@ export const GET: APIRoute = async () => {
         { cache: BOARD_CONTENT_CACHE },
       ),
     ]);
+
+    for (const page of pages) {
+      if (!page.hubKey) continue;
+      // Run the SAME stopgaps the pages render through, or code-side content
+      // (the class-pet section, the corrected curriculum months, the Pre-K
+      // sign-off split) would be on the page but unfindable. `twos` needs its
+      // page key for the stopgaps that ADD sections.
+      const sections = applyHubStopgaps(page.sections, page.hubKey);
+      entries.push(...pageEntries(page.hubKey, page.heading ?? 'Family Hub', sections));
+    }
+
     for (const u of updates) {
       if (u.title && u.slug) {
         entries.push({
@@ -67,6 +106,7 @@ export const GET: APIRoute = async () => {
                 timeZone: 'America/New_York',
               })
             : undefined,
+          text: u.body ? sectionText({ body: u.body }, 800) : undefined,
         });
       }
     }
@@ -86,6 +126,12 @@ export const GET: APIRoute = async () => {
   }
 
   return new Response(JSON.stringify(entries), {
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      // 5 min: long enough that ⌘K is instant while clicking around the hub,
+      // short enough that a Board edit surfaces in search about as fast as it
+      // surfaces on the pages themselves (the 60s board cache + a rebuild).
+      'cache-control': 'private, max-age=300',
+    },
   });
 };

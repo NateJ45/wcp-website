@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { prekSplitPetFromCta, twosCurriculumMonths } from './hub-stopgaps';
+import {
+  applyHubStopgaps,
+  fundraisingDropSuperseded,
+  prekSplitPetFromCta,
+  twosCurriculumMonths,
+} from './hub-stopgaps';
 
 // The stored Twos/Threes curriculum had Easter + food and nutrition in APRIL;
 // Erin's sheet puts them in MARCH. These cases pin the corrected split so a
@@ -162,5 +167,32 @@ describe('prekSplitPetFromCta', () => {
   it('no-ops on a page with no CTA at all', () => {
     const none = [{ _type: 'proseSection', _key: 'p1' }];
     expect(prekSplitPetFromCta(none)).toEqual(none);
+  });
+});
+
+// The fundraising filter used to live inline in fundraising.astro. It moved
+// into applyHubStopgaps after the search index deep-linked to a section the
+// page drops — anything reading the doc has to trim it the same way.
+describe('fundraisingDropSuperseded', () => {
+  const sections = () => [
+    { _type: 'statBandSection', _key: 'band' },
+    { _type: 'proseSection', _key: 'k185', header: { title: 'Where the money goes' } },
+    { _type: 'proseSection', _key: 'k9', header: { title: 'The Budget' } },
+    { _type: 'proseSection', _key: 'keep', header: { title: 'How fundraisers work' } },
+  ];
+
+  it('drops the count-up band and the superseded budget prose', () => {
+    const out = fundraisingDropSuperseded(sections());
+    expect(out.map((s) => s._key)).toEqual(['keep']);
+  });
+
+  it('is reachable through applyHubStopgaps for the fundraising page', () => {
+    const out = applyHubStopgaps(sections(), 'fundraising');
+    expect(out.map((s) => s._key)).toEqual(['keep']);
+  });
+
+  it('leaves other pages alone — only fundraising trims these', () => {
+    const out = applyHubStopgaps(sections(), 'health');
+    expect(out.map((s) => s._key)).toEqual(['band', 'k185', 'k9', 'keep']);
   });
 });
