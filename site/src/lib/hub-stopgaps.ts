@@ -154,6 +154,36 @@ export function twosClassPet(sections: Section[]): Section[] {
 }
 
 /**
+ * Twos & Threes curriculum: put Easter + food and nutrition back in MARCH.
+ *
+ * The stored month-by-month schedule has them in April, so March reads
+ * "St. Patrick's Day, fire safety" and April carries six topics. Erin's
+ * curriculum sheet has them in March and leaves April as spring, insects,
+ * rocks, weather. Content-matched on the misplaced Easter entry, so it
+ * no-ops the moment the Sanity doc is corrected.
+ */
+export function twosCurriculumMonths(sections: Section[]): Section[] {
+  return (sections ?? []).map((s) => {
+    if (s?._type !== 'scheduleSection' || !Array.isArray(s.entries)) return s;
+    const mar = s.entries.find((e: Section) => e?.time === 'Mar');
+    const apr = s.entries.find((e: Section) => e?.time === 'Apr');
+    // The MISPLACED EASTER is what identifies the curriculum schedule — not the
+    // month rows. This page carries a second month-keyed scheduleSection (the
+    // field trips: Mar "Local fire station", Apr "Creeking"), so a Mar/Apr test
+    // alone would match that one too. Keep the content guard.
+    if (!mar || !apr || !/easter/i.test(apr.title ?? '')) return s;
+    const entries = s.entries.map((e: Section) => {
+      if (e?.time === 'Mar') {
+        return { ...e, title: 'St. Patrick’s Day, fire safety, Easter, food and nutrition' };
+      }
+      if (e?.time === 'Apr') return { ...e, title: 'Spring, insects, rocks, weather' };
+      return e;
+    });
+    return { ...s, entries };
+  });
+}
+
+/**
  * Run every stopgap; each no-ops when its target isn't on the page.
  * `page` scopes the stopgaps that ADD content (and so can't match on content):
  * pass the handbook's class key, e.g. 'twos'.
@@ -163,6 +193,7 @@ export function applyHubStopgaps(sections?: Section[], page?: string): Section[]
   s = prekMergeSchedule(s);
   s = removeFacebookForPhotos(s);
   s = addClassDojoRegisterLink(s);
+  s = twosCurriculumMonths(s);
   if (page === 'twos') s = twosClassPet(s);
   return s;
 }
