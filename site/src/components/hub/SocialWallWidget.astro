@@ -5,9 +5,8 @@
    The hub-home version of the public site's Instagram bulletin board, so the
    dashboard feels like a real community space, not just a set of tools. Photos
    are pinned to a navy board like printed snapshots: white frames, drop
-   shadows, a gentle random tilt, and brand-colour pushpins — the exact look
-   the public "Life inside WCP." section (InstagramSection) and the old
-   Squarespace site used.
+   shadows, and a gentle random tilt — the same look as the public "Life
+   inside WCP." section (InstagramSection).
 
    Source: the LIVE Instagram feed, fetched at request time and cached 24h
    fresh + 3-day stale-while-revalidate (src/lib/hub-cache.ts — same pattern as
@@ -410,45 +409,13 @@ if (tiles.length === 0) {
   .wcp-wall-tile:nth-child(4n) a {
     transform: rotate(2.1deg);
   }
-  /* Two pushpins per snapshot — brand-colour domes, alternating warm/cool. */
-  .wcp-wall-tile a::before,
-  .wcp-wall-tile a::after {
-    content: '';
-    position: absolute;
-    top: 9px;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    box-shadow:
-      0 2px 6px rgba(0, 0, 0, 0.45),
-      inset 0 1px 3px rgba(255, 255, 255, 0.35);
-    z-index: 2;
-  }
-  .wcp-wall-tile a::before {
-    left: 9px;
-    background: radial-gradient(circle at 35% 32%, #ffd280, #ff8c00 55%, #a84800);
-  }
-  .wcp-wall-tile a::after {
-    right: 9px;
-    background: radial-gradient(circle at 35% 32%, #b8eeff, #40aaed 55%, #0d5a8a);
-  }
-  .wcp-wall-tile:nth-child(even) a::before {
-    background: radial-gradient(circle at 35% 32%, #fff0a0, #ffa334 55%, #8a4200);
-  }
-  .wcp-wall-tile:nth-child(even) a::after {
-    background: radial-gradient(circle at 35% 32%, #ffd280, #ff8c00 55%, #a84800);
-  }
-  /* Hover: straighten, lift, and pull the pins as the photo comes forward. */
+  /* Hover: straighten and lift the photo. */
   .wcp-wall-tile a:hover {
     transform: rotate(0deg) scale(1.05);
     box-shadow:
       0 12px 32px rgba(0, 0, 0, 0.45),
       0 2px 6px rgba(0, 0, 0, 0.25);
     z-index: 3;
-  }
-  .wcp-wall-tile a:hover::before,
-  .wcp-wall-tile a:hover::after {
-    opacity: 0;
   }
   .wcp-wall-tile a:focus-visible {
     outline: 3px solid #fff;

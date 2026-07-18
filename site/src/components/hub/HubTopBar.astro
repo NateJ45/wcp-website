@@ -189,15 +189,37 @@ const nextEventTitle = nextEvent ? `Next event: ${nextEvent.title}` : 'Upcoming 
     <nav aria-label="Quick links" class="flex min-w-0 items-center gap-0.5">
       {
         /* Flagship call to action — becoming a certified Super Helper is a top
-         priority, so it leads the bar as a filled amber pill (navy text, AA). */
+         priority, so it leads the bar as a filled amber pill (navy text, AA),
+         dressed up to read as genuinely inviting rather than just another
+         chip: a breathing glow ring at rest (wcp-glow-pulse, on the pill
+         itself) and two small sparkles standing just outside its edges
+         (wcp-twinkle) — all decorative, all reduced-motion-safe, and the only
+         CTA in the bar that gets this treatment on purpose. The hover light
+         sweep (wcp-sheen) lives on an INNER wrapper, not the pill: wcp-sheen
+         clips to overflow-hidden, which would cut off the sparkles poking
+         outside the pill's edge. */
       }
       <a
         href="/family-hub/super-helper"
-        class="mr-1.5 -ml-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber px-3 py-1.5 text-sm font-extrabold whitespace-nowrap text-navy shadow-sm transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
+        class="wcp-glow-pulse relative mr-1.5 -ml-1.5 inline-flex items-center rounded-full text-sm font-extrabold whitespace-nowrap text-navy"
         title="Become a Super Helper"
       >
-        <Icon name="star" class="h-4 w-4 shrink-0" />
-        <span class="hidden sm:inline">Become a Super Helper</span>
+        <span class="wcp-sheen flex items-center gap-1.5 rounded-full bg-amber px-3 py-1.5 shadow-sm transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0">
+          <Icon name="star" class="h-4 w-4 shrink-0" />
+          <span class="hidden sm:inline">Become a Super Helper</span>
+        </span>
+        <Icon
+          name="sparkles"
+          class="wcp-twinkle pointer-events-none absolute -top-1.5 -right-1 h-3 w-3 text-amber"
+          style="--twinkle-delay: 0s"
+          aria-hidden="true"
+        />
+        <Icon
+          name="sparkles"
+          class="wcp-twinkle pointer-events-none absolute -bottom-1 left-4 h-2 w-2 text-amber"
+          style="--twinkle-delay: 1.3s"
+          aria-hidden="true"
+        />
       </a>
       {
         /* Helper schedule — direct link for 0-1 classes, dropdown for 2+

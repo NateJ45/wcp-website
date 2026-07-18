@@ -25,7 +25,7 @@ interface OpenMeteoAQ {
 /** EPA US AQI breakpoints → chip icon + a preschool-appropriate line. */
 function describe(aqi: number): Pick<HubAirQuality, 'icon' | 'line'> {
   if (aqi <= 50) return { icon: 'leaf', line: 'Great air for outside play!' };
-  if (aqi <= 100) return { icon: 'wind', line: 'Good outdoor air today' };
+  if (aqi <= 100) return { icon: 'wind', line: 'Decent air, fine for outside play' };
   if (aqi <= 150) {
     return { icon: 'triangle-alert', line: 'Sensitive kiddos: shorter outdoor time' };
   }

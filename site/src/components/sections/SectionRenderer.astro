@@ -67,6 +67,10 @@ interface Props {
       the build-time registry, see src/lib/photo-moments.ts). Public [...slug]
       passes it; hub/preview surfaces omit it and get no injected strips. */
   pageSlug?: string;
+  /** Family Hub surfaces set this so a Board-added ctaSection never carries the
+      Google-rating trust slip — that's a public-marketing trust signal for
+      prospective parents, not something an already-enrolled family needs. */
+  hub?: boolean;
 }
 const {
   sections: rawSections = [],
@@ -74,6 +78,7 @@ const {
   site,
   cardWatermark = false,
   pageSlug,
+  hub = false,
 } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
@@ -212,6 +217,7 @@ const MAP: Record<string, any> = {
             site={site}
             cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
             pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
+            hideRating={section._type === 'ctaSection' ? hub : undefined}
             isClosing={
               // Public pages only (they pass pageSlug): the hub keeps its navy
               // closers; the amber drench is public-marketing doctrine.

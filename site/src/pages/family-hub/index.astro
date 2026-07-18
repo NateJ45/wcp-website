@@ -384,7 +384,7 @@ const firstDay = settings?.firstDay === '2026-09-10' ? '2026-09-09' : settings?.
   </Section>
 
   {/* Editable welcome section(s) the Board can add to the hub landing. */}
-  <SectionRenderer sections={doc?.sections} site={site} />
+  <SectionRenderer sections={doc?.sections} site={site} hub />
 
   {/* The President's welcome letter — pops once per version stamp. */}
   <PresidentNoteModal />

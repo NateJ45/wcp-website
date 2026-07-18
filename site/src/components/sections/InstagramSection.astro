@@ -3,9 +3,9 @@
    InstagramSection — "Life inside WCP" bulletin-board gallery
    ============================================================================
    Photos pinned to the navy background like printed snapshots: white frames,
-   drop shadows, a gentle random tilt, and pushpins in brand colours. Pulls the
-   live Instagram feed at build time when INSTAGRAM_TOKEN is set; otherwise
-   falls back to the section's curated album. Hides when there is nothing.
+   drop shadows, and a gentle random tilt. Pulls the live Instagram feed at
+   build time when INSTAGRAM_TOKEN is set; otherwise falls back to the
+   section's curated album. Hides when there is nothing.
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
@@ -162,45 +162,13 @@ if (tiles.length === 0) {
   .wcp-ig-tile:nth-child(4n) a {
     transform: rotate(2.1deg);
   }
-  /* pushpins */
-  .wcp-ig-tile a::before,
-  .wcp-ig-tile a::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    box-shadow:
-      0 2px 6px rgba(0, 0, 0, 0.45),
-      inset 0 1px 3px rgba(255, 255, 255, 0.35);
-    z-index: 2;
-  }
-  .wcp-ig-tile a::before {
-    left: 10px;
-    background: radial-gradient(circle at 35% 32%, #ffd280, #ff8c00 55%, #a84800);
-  }
-  .wcp-ig-tile a::after {
-    right: 10px;
-    background: radial-gradient(circle at 35% 32%, #b8eeff, #40aaed 55%, #0d5a8a);
-  }
-  .wcp-ig-tile:nth-child(even) a::before {
-    background: radial-gradient(circle at 35% 32%, #fff0a0, #ffa334 55%, #8a4200);
-  }
-  .wcp-ig-tile:nth-child(even) a::after {
-    background: radial-gradient(circle at 35% 32%, #ffd280, #ff8c00 55%, #a84800);
-  }
-  /* hover: straighten, lift, hide pins */
+  /* hover: straighten, lift */
   .wcp-ig-tile a:hover {
     transform: rotate(0deg) scale(1.05);
     box-shadow:
       0 12px 32px rgba(0, 0, 0, 0.45),
       0 2px 6px rgba(0, 0, 0, 0.25);
     z-index: 3;
-  }
-  .wcp-ig-tile a:hover::before,
-  .wcp-ig-tile a:hover::after {
-    opacity: 0;
   }
   @media (prefers-reduced-motion: reduce) {
     .wcp-ig-tile a {

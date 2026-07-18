@@ -66,7 +66,7 @@ const tiles = CLASSES.map((c) => {
           <a
             href={c.href}
             {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
-            class={`group relative flex h-full items-center gap-3 overflow-hidden rounded-[var(--radius)] border-2 bg-white p-4 no-underline shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-surface ${styles.border}`}
+            class={`group relative flex h-full items-center gap-3 overflow-hidden rounded-[var(--radius)] border-2 bg-white p-4 no-underline shadow-sm transition-[transform,box-shadow] duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-surface ${styles.border}`}
             data-reveal
           >
             {/* Faint class-icon watermark, overflowing the bottom-right corner.
@@ -88,11 +88,32 @@ const tiles = CLASSES.map((c) => {
             <span class="relative z-10 min-w-0 flex-1">
               <span class="flex items-center gap-2 font-bold text-heading">
                 {c.label}
-                <span
-                  class="hidden rounded-full bg-amber px-2 py-0.5 text-[0.6rem] font-bold tracking-wide text-navy uppercase"
-                  data-my-class-tag
-                >
-                  Your class
+                {
+                  /* Dressed up like the topbar's Super Helper pill (same
+                     wcp-glow-pulse + wcp-sheen + wcp-twinkle trio) so a
+                     family that's picked their class(es) gets an unmissable
+                     "this one's yours" beacon, not just a quiet static
+                     label. The pulse/sparkles live on/around the INNER pill,
+                     never the outer `hidden`-toggled span — that keeps
+                     my-class.ts's `classList.remove('hidden')` targeting the
+                     one element it already knows about. */
+                }
+                <span class="relative hidden" data-my-class-tag>
+                  <span class="wcp-glow-pulse wcp-sheen inline-flex items-center rounded-full bg-amber px-2 py-0.5 text-[0.6rem] font-bold tracking-wide text-navy uppercase">
+                    Your class
+                  </span>
+                  <Icon
+                    name="sparkles"
+                    class="wcp-twinkle pointer-events-none absolute -top-1.5 -right-1.5 h-2.5 w-2.5 text-amber"
+                    style="--twinkle-delay: 0s"
+                    aria-hidden="true"
+                  />
+                  <Icon
+                    name="sparkles"
+                    class="wcp-twinkle pointer-events-none absolute -bottom-1 -left-1 h-2 w-2 text-amber"
+                    style="--twinkle-delay: 1.2s"
+                    aria-hidden="true"
+                  />
                 </span>
               </span>
               <span class="block text-[0.68rem] font-semibold tracking-wide text-ink-muted uppercase">

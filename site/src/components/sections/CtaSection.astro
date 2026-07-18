@@ -19,8 +19,12 @@ interface Props {
       chose on purpose. Code-owned; stored tone is untouched, cream stays
       cream, mid-page navy CTAs stay navy. Hub pages never pass it. */
   isClosing?: boolean;
+  /** Family Hub call sites set this — suppresses the Google-rating trust slip,
+      which is a public-marketing signal that has no place behind the family
+      login. */
+  hideRating?: boolean;
 }
-const { section, linkBase = '', teacherSlug, isClosing = false } = Astro.props;
+const { section, linkBase = '', teacherSlug, isClosing = false, hideRating = false } = Astro.props;
 const actions = (section.actions as ActionData[] | undefined) ?? [];
 const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, linkBase);
 const storedTone = (section.tone as 'navy' | 'cream') ?? 'navy';
@@ -32,7 +36,7 @@ const tone = isClosing && storedTone === 'navy' && !teacherSlug ? 'amber' : stor
   lead={section.lead as string | undefined}
   tone={tone}
   seam={section.seam as boolean}
-  rating={!teacherSlug}
+  rating={!teacherSlug && !hideRating}
   titleId={`sec-${section._key}`}
 >
   <Fragment slot="actions">

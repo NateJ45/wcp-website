@@ -169,7 +169,7 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
               {isSignoffCta ? (
                 <CtaSection section={section} teacherSlug={signoff} />
               ) : (
-                <SectionRenderer sections={[section]} site={site} cardWatermark />
+                <SectionRenderer sections={[section]} site={site} cardWatermark hub />
               )}
             </div>
           );

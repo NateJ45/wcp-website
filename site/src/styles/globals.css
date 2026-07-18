@@ -1828,8 +1828,11 @@ li:nth-child(3n + 3) .wcp-testi {
 }
 
 /* Twinkle for a small decorative sparkle (scale + opacity), staggered via an
-   inline --twinkle-delay. A FEW of these around the sun emblem — never a field
-   of them (that's the fast lane to "AI slop"). aria-hidden decorative only. */
+   inline --twinkle-delay. A FEW of these at a time — around the greeting sun,
+   flanking the hub topbar's "Become a Super Helper" pill, or on the "Your
+   class" badge(s) on the helper-schedule tiles (ClassHelperRow — one badge
+   per picked class, so a two-class family sees two, never a field of them
+   across the whole grid). Always aria-hidden decorative. */
 @media (prefers-reduced-motion: no-preference) {
   .wcp-twinkle {
     transform-origin: center;
@@ -1845,6 +1848,29 @@ li:nth-child(3n + 3) .wcp-testi {
     50% {
       transform: scale(1);
       opacity: 1;
+    }
+  }
+}
+
+/* Breathing halo ring for a pill that should read as "notice me" at rest, not
+   just on hover/interaction: the hub topbar's amber Super Helper CTA, and the
+   amber "Your class" badge(s) on ClassHelperRow once a family picks their
+   class. A soft box-shadow ring expands and fades — transform/opacity-free so
+   it never fights the pill's own hover lift. Reserve for a genuinely singular
+   moment per element (one CTA, one badge per picked class) — piling it onto
+   many unrelated elements at once reads as noise, not emphasis. Reduced-
+   motion users get a still pill (no ring). */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-glow-pulse {
+    animation: wcp-glow-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes wcp-glow-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(255 179 0 / 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 7px rgb(255 179 0 / 0);
     }
   }
 }
