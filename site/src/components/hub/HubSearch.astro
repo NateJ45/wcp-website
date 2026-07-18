@@ -13,6 +13,7 @@
    moment the input focuses — the results list was invisible while typing.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
 ---
 
 <dialog
@@ -23,10 +24,17 @@ import Icon from '@/components/Icon.astro';
   <div class="flex items-center gap-2 border-b border-border px-4">
     <Icon name="search" class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
     <label class="sr-only" for="hub-search-input">Search the Family Hub</label>
+    {
+      /* The placeholder is the ONLY instruction most families will ever read,
+        so it teaches by example instead of listing categories. The old
+        "Search pages, updates, documents…" also stopped being true once the
+        index gained section body text. Both examples are checked to return
+        real results. */
+    }
     <input
       id="hub-search-input"
       type="search"
-      placeholder="Search pages, updates, documents…"
+      placeholder="Try “snow day” or “tuition”"
       autocomplete="off"
       class="w-full bg-transparent py-3.5 text-ink outline-none placeholder:text-ink-muted"
     />
@@ -35,10 +43,46 @@ import Icon from '@/components/Icon.astro';
       >esc</kbd
     >
   </div>
-  <ul id="hub-search-results" class="max-h-80 overflow-y-auto p-2" aria-label="Results"></ul>
-  <p id="hub-search-empty" class="hidden px-4 pt-1 pb-4 text-sm text-ink-muted">
-    Nothing matched — try a different word.
+  {
+    /* Result count: search that silently truncates reads as "that's all there
+      is". aria-live announces it for screen readers, which otherwise get no
+      feedback at all as results change under the input. */
+  }
+  <p
+    id="hub-search-count"
+    class="hidden px-4 pt-2 text-xs text-ink-muted"
+    aria-live="polite"
+    role="status"
+  >
   </p>
+  <ul id="hub-search-results" class="max-h-80 overflow-y-auto p-2" aria-label="Results"></ul>
+  {
+    /* Empty state with a way OUT. A dead end here means a parent gives up and
+      emails the board, which is the thing search exists to prevent. */
+  }
+  <div id="hub-search-empty" class="hidden px-4 pt-1 pb-4">
+    <p class="text-sm text-ink">Nothing matched that word.</p>
+    <p class="mt-1 text-sm text-ink-muted">
+      Try a shorter word, or a word you would see on the page.
+    </p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-hub-search-clear
+        class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-ink hover:bg-grey dark:hover:bg-white/10"
+      >
+        <Icon name="list" class="h-4 w-4" aria-hidden="true" />
+        Browse all pages
+      </button>
+      <a
+        href={`mailto:${site.email.admin}`}
+        class="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-ink no-underline hover:bg-grey dark:hover:bg-white/10"
+      >
+        <Icon name="mail" class="h-4 w-4" aria-hidden="true" />
+        Ask the school
+      </a>
+    </div>
+  </div>
 </dialog>
 
 <script>

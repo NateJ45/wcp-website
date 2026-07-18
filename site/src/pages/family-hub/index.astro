@@ -106,6 +106,42 @@ const firstDay = settings?.firstDay === '2026-09-10' ? '2026-09-09' : settings?.
         clip (not hidden — no scroll container) keeps it off the page's
         horizontal scroll width at 320px. */
     }
+    {
+      /* Search, made visible where families actually land.
+        On desktop the topbar carries a labelled "Search the hub ⌘K" pill, but
+        below lg that collapses to one unlabelled magnifier sitting between the
+        bell, the theme toggle and the logo — and ⌘K means nothing on a phone.
+        The phone tab bar is already full at five items, so rather than crowd
+        either, Home gets one obvious full-width control. It opens the same
+        dialog as every other trigger (`data-hub-search-open`), so there is no
+        second search implementation to keep in step.
+
+        lg:hidden: on desktop this would duplicate the topbar pill. */
+    }
+    <button
+      type="button"
+      data-hub-search-open
+      class="mb-4 flex w-full cursor-pointer items-center gap-3 rounded-[var(--radius)] border border-border bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-navy/30 lg:hidden dark:bg-surface dark:hover:border-white/30"
+    >
+      <span
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+        aria-hidden="true"
+      >
+        <Icon name="search" class="h-4 w-4" />
+      </span>
+      {
+        /* Two lines by DESIGN rather than by accident: the label plus the hint
+          wraps at 320px anyway, so it is set as a label + example pair. The
+          examples are the only search instruction most families will read. */
+      }
+      <span class="min-w-0">
+        <span class="block text-sm font-semibold text-heading">Search the hub</span>
+        <span class="block truncate text-xs text-ink-muted">
+          try “snow day”, “tuition”, or “playdate”
+        </span>
+      </span>
+    </button>
+
     <div class="relative grid grid-cols-1 gap-4 overflow-x-clip lg:grid-cols-12">
       {/* Warm wash behind the greeting — tints the paper canvas, never text. */}
       <div

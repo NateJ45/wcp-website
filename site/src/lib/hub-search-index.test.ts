@@ -4,6 +4,8 @@ import {
   extractStrings,
   pageEntries,
   sectionText,
+  highlightParts,
+  matchesWords,
   snippet,
 } from './hub-search-index';
 
@@ -131,5 +133,83 @@ describe('snippet', () => {
 
   it('handles empty text', () => {
     expect(snippet('', ['x'])).toBe('');
+  });
+});
+
+// Matching precision. Plain includes() made body search noisy the moment
+// section text was indexed — these pin the fixes with the real collisions.
+describe('matchesWords', () => {
+  it('does NOT match mid-word — the collisions that made "erin" useless', () => {
+    expect(matchesWords('a gathering and an offering', ['erin'])).toBe(false);
+    expect(matchesWords('paper plates for snack', ['late'])).toBe(false);
+    expect(matchesWords('a translated note', ['late'])).toBe(false);
+  });
+
+  it('still matches at a word start, so prefix search survives', () => {
+    expect(matchesWords('Ms. Erin teaches the Twos', ['erin'])).toBe(true);
+    expect(matchesWords('Tuition is due the first', ['tuit'])).toBe(true);
+    expect(matchesWords('Nap time is after lunch', ['nap'])).toBe(true);
+  });
+
+  it('accepts PREFIX collisions as the price of prefix search', () => {
+    // "nap" matches "napkins" because both start the word. That is the same
+    // rule that lets a parent type "tuit" and find Tuition, so it stays — the
+    // fix was for MID-word noise, not for prefixes.
+    expect(matchesWords('set out napkins', ['nap'])).toBe(true);
+  });
+
+  it('requires EVERY word to match', () => {
+    expect(matchesWords('snow day closing policy', ['snow', 'day'])).toBe(true);
+    expect(matchesWords('snow day closing policy', ['snow', 'tuition'])).toBe(false);
+  });
+
+  it('folds curly apostrophes — nobody types U+2019', () => {
+    // The handbooks say "Mother’s Day"; a parent types "mother's day".
+    expect(matchesWords('Mother’s Day, shells', ["mother's"])).toBe(true);
+    expect(matchesWords('St. Patrick’s Day, fire safety', ["patrick's"])).toBe(true);
+    expect(matchesWords('Valentine’s Day', ["valentine's", 'day'])).toBe(true);
+  });
+
+  it('treats regex metacharacters as literal text', () => {
+    // A parent pasting "(513)" must not blow up the RegExp constructor.
+    expect(() => matchesWords('call (513) 202-6187', ['(513)'])).not.toThrow();
+    expect(matchesWords('what happens next?', ['next?'])).toBe(true);
+  });
+});
+
+describe('highlightParts', () => {
+  it('splits into plain and matched runs', () => {
+    const parts = highlightParts('Snow day closing policy', ['snow']);
+    expect(parts).toEqual([
+      { text: 'Snow', hit: true },
+      { text: ' day closing policy', hit: false },
+    ]);
+  });
+
+  it('preserves the original casing of the matched run', () => {
+    const [first] = highlightParts('Tuition is due', ['tuition']);
+    expect(first).toEqual({ text: 'Tuition', hit: true });
+  });
+
+  it('merges overlapping matches instead of splitting them', () => {
+    const parts = highlightParts('tuition', ['tui', 'tuition']);
+    expect(parts).toEqual([{ text: 'tuition', hit: true }]);
+  });
+
+  it('never highlights mid-word', () => {
+    expect(highlightParts('paper plates', ['late'])).toEqual([
+      { text: 'paper plates', hit: false },
+    ]);
+  });
+
+  it('rejoins to exactly the original text', () => {
+    const text = 'Send a water bottle and a snack every day';
+    for (const words of [['water'], ['snack', 'day'], ['absent']]) {
+      expect(
+        highlightParts(text, words)
+          .map((p) => p.text)
+          .join(''),
+      ).toBe(text);
+    }
   });
 });

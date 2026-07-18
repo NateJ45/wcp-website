@@ -29,6 +29,8 @@ import type { APIRoute } from 'astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { hubNav } from '@/data/hub-nav';
 import { applyHubStopgaps } from '@/lib/hub-stopgaps';
+import { getCalendarEvents, eventDate } from '@/lib/hub-calendar';
+import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import {
   HUB_PAGE_ROUTES,
   pageEntries,
@@ -114,6 +116,46 @@ export const GET: APIRoute = async () => {
       if (d.title && d.href) {
         entries.push({ title: d.title, href: d.href, kind: 'document', sub: 'Documents' });
       }
+    }
+
+    // Calendar events. Parents search for the thing by NAME ("playdate",
+    // "picnic", "conferences") far more often than they search for the word
+    // "calendar" — and before this, "playdate" returned nothing while three
+    // summer playdates sat on the schedule. Events come from the Apps Script
+    // feed, not Sanity, so they need their own read; it rides the same 12h
+    // cache the Calendar page uses, so this costs no extra Google round-trip.
+    // Failures are swallowed separately: a dead feed must not take the whole
+    // index down with it.
+    try {
+      const feedUrl =
+        (
+          await sanityFetch<{ calendarFeedUrl?: string } | null>(
+            `*[_type == "siteSettings"][0]{ calendarFeedUrl }`,
+            {},
+            { cache: BOARD_CONTENT_CACHE },
+          )
+        )?.calendarFeedUrl || calendarFeedUrlFallback;
+      if (feedUrl) {
+        for (const ev of await getCalendarEvents(feedUrl)) {
+          if (!ev.title) continue;
+          entries.push({
+            title: ev.title,
+            href: '/family-hub/calendar',
+            kind: 'event',
+            sub: eventDate(ev.start).toLocaleDateString('en-US', {
+              timeZone: 'America/New_York',
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            }),
+            // Location/description are what make an event findable by more
+            // than its exact name ("Symmes Playground", "wear old shoes").
+            text: [ev.location, ev.description].filter(Boolean).join(' ') || undefined,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[search-index] calendar feed failed', err);
     }
     for (const s of sheets) {
       if (s.title) {

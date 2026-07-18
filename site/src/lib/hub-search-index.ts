@@ -24,7 +24,7 @@ type Section = Record<string, any>;
 export interface SearchEntry {
   title: string;
   href: string;
-  kind: 'page' | 'update' | 'document' | 'sign-up' | 'section';
+  kind: 'page' | 'update' | 'document' | 'sign-up' | 'section' | 'event';
   sub?: string;
   /** Body words for matching. Absent on title-only entries (nav, documents). */
   text?: string;
@@ -156,20 +156,90 @@ export function pageEntries(
   return entries;
 }
 
+// =============================================================================
+// Matching
+// =============================================================================
+
+/**
+ * Lowercase, and flatten the typographic quotes our copy actually uses.
+ *
+ * The handbooks are full of curly apostrophes — "Mother’s Day", "St. Patrick’s
+ * Day", "Valentine’s Day" — and no parent types U+2019. Before this, searching
+ * "mother's day" returned ZERO results for content that plainly says it.
+ */
+export const fold = (s: string): string =>
+  s.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
+
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * A word matches at a WORD BOUNDARY, not anywhere in the string.
+ *
+ * Plain `includes()` made body search noisy the moment section text was
+ * indexed: "erin" matched "gathering" and "offering" (24 hits, 9 of them
+ * junk), "late" matched "plates", "nap" matched "napkins". Anchoring to \b
+ * keeps prefix search working ("tuit" still finds "tuition") while dropping
+ * mid-word collisions.
+ */
+export const wordRe = (word: string, flags = ''): RegExp =>
+  new RegExp(`\\b${escapeRe(fold(word))}`, flags);
+
+/** True when EVERY word matches the haystack at a word boundary. */
+export function matchesWords(haystack: string, words: string[]): boolean {
+  const hay = fold(haystack);
+  return words.every((w) => wordRe(w).test(hay));
+}
+
 /**
  * A ~140-char window around the first matched word, so a body hit shows WHY it
  * matched instead of an opaque page name. Falls back to the opening words.
  */
 export function snippet(text: string, words: string[], width = 140): string {
   if (!text) return '';
-  const lower = text.toLowerCase();
+  const hay = fold(text);
   let at = -1;
   for (const w of words) {
-    const i = lower.indexOf(w);
+    const i = hay.search(wordRe(w));
     if (i >= 0 && (at < 0 || i < at)) at = i;
   }
   if (at < 0) return text.length > width ? `${text.slice(0, width).trimEnd()}…` : text;
   const start = Math.max(0, at - Math.floor(width / 3));
   const end = Math.min(text.length, start + width);
   return `${start > 0 ? '…' : ''}${text.slice(start, end).trim()}${end < text.length ? '…' : ''}`;
+}
+
+/**
+ * Split text into plain / matched runs so the client can build the highlight
+ * with createElement + textContent. Returning DATA rather than an HTML string
+ * is the point: hub-search.ts never interpolates markup, so an update titled
+ * `<img onerror=…>` stays inert text.
+ */
+export function highlightParts(text: string, words: string[]): { text: string; hit: boolean }[] {
+  if (!text || words.length === 0) return [{ text, hit: false }];
+  const hay = fold(text);
+  // Collect every match span, then merge overlaps so nested hits don't split.
+  const spans: [number, number][] = [];
+  for (const w of words) {
+    for (const m of hay.matchAll(wordRe(w, 'g'))) {
+      if (m.index === undefined || m[0].length === 0) continue;
+      spans.push([m.index, m.index + m[0].length]);
+    }
+  }
+  if (spans.length === 0) return [{ text, hit: false }];
+  spans.sort((a, b) => a[0] - b[0]);
+  const merged: [number, number][] = [];
+  for (const [s, e] of spans) {
+    const last = merged[merged.length - 1];
+    if (last && s <= last[1]) last[1] = Math.max(last[1], e);
+    else merged.push([s, e]);
+  }
+  const parts: { text: string; hit: boolean }[] = [];
+  let cursor = 0;
+  for (const [s, e] of merged) {
+    if (s > cursor) parts.push({ text: text.slice(cursor, s), hit: false });
+    parts.push({ text: text.slice(s, e), hit: true });
+    cursor = e;
+  }
+  if (cursor < text.length) parts.push({ text: text.slice(cursor), hit: false });
+  return parts;
 }

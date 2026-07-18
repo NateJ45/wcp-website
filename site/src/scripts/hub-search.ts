@@ -18,7 +18,7 @@
 // createElement/textContent — no HTML strings, nothing injectable.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
-import { snippet } from '@/lib/hub-search-index';
+import { highlightParts, matchesWords, snippet } from '@/lib/hub-search-index';
 
 interface Entry {
   title: string;
@@ -29,12 +29,19 @@ interface Entry {
   text?: string;
 }
 
+// Emoji rather than the hub's lucide <Icon>, because results are built in the
+// browser where that component isn't available. Kept literal and obvious: a
+// parent should read the row, not decode the glyph.
 const KIND_ICON: Record<string, string> = {
   page: '📄',
   update: '📣',
   document: '📎',
   'sign-up': '📝',
-  section: '🔎',
+  event: '📅',
+  // A section lives INSIDE a page, so it borrows the page glyph rather than
+  // introducing a magnifier — a magnifying glass as a result TYPE reads as
+  // "search", which is the thing the whole dialog already is.
+  section: '📄',
 };
 
 let indexPromise: Promise<Entry[]> | null = null;
@@ -58,13 +65,40 @@ const NO_HIT = 3;
  * label, then body text.
  */
 function hitRank(entry: Entry, words: string[]): number {
-  const title = entry.title.toLowerCase();
-  const label = `${entry.title} ${entry.sub ?? ''}`.toLowerCase();
-  const all = `${label} ${entry.text ?? ''}`.toLowerCase();
-  if (words.every((w) => title.includes(w))) return TITLE_HIT;
-  if (words.every((w) => label.includes(w))) return LABEL_HIT;
-  if (words.every((w) => all.includes(w))) return BODY_HIT;
+  const label = `${entry.title} ${entry.sub ?? ''}`;
+  if (matchesWords(entry.title, words)) return TITLE_HIT;
+  if (matchesWords(label, words)) return LABEL_HIT;
+  if (matchesWords(`${label} ${entry.text ?? ''}`, words)) return BODY_HIT;
   return NO_HIT;
+}
+
+/** Text with the matched words wrapped in <mark>, built without HTML strings. */
+function marked(text: string, words: string[], className: string): HTMLSpanElement {
+  const span = document.createElement('span');
+  span.className = className;
+  for (const part of highlightParts(text, words)) {
+    if (!part.hit) {
+      span.appendChild(document.createTextNode(part.text));
+      continue;
+    }
+    const mark = document.createElement('mark');
+    // NOT the browser default (black on yellow) and NOT inherited muted text.
+    // Inheriting looked right in light mode (4.59:1) but measured 2.89:1 in
+    // dark — the amber tint darkens the surface while `text-ink-muted` stays
+    // mid-grey, which is the "coloured tint + muted text fails AA in dark"
+    // trap from CLAUDE.md. `text-heading` is near-white in dark and navy in
+    // light, so the matched word is the most legible thing in the row, which
+    // is what a highlight is FOR.
+    // Measured, not guessed: inherited muted text gave 2.89:1 in dark, and
+    // `text-heading` alone only reached 4.19:1 — the amber tint over the dark
+    // surface lands on a mid brown that a near-white heading colour still
+    // can't clear. Explicit white in dark takes it to ~6.5:1; light mode keeps
+    // the navy heading at 7.66:1.
+    mark.className = 'bg-amber/35 text-heading dark:text-white rounded-[2px]';
+    mark.textContent = part.text;
+    span.appendChild(mark);
+  }
+  return span;
 }
 
 function resultLink(hit: Entry, words: string[], rank: number): HTMLLIElement {
@@ -82,19 +116,14 @@ function resultLink(hit: Entry, words: string[], rank: number): HTMLLIElement {
   icon.textContent = KIND_ICON[hit.kind] ?? '📄';
   const text = document.createElement('span');
   text.className = 'min-w-0 flex-1';
-  const title = document.createElement('span');
-  title.className = 'block truncate font-semibold text-heading';
-  title.textContent = hit.title;
+  const title = marked(hit.title, words, 'block truncate font-semibold text-heading');
   text.appendChild(title);
   // On a BODY match the page label alone ("Twos & Threes Classroom") doesn't
   // explain the hit, so show the matched words in context instead. Still
   // textContent — no HTML strings anywhere in this file.
   const detail = rank === BODY_HIT && hit.text ? snippet(hit.text, words) : (hit.sub ?? '');
   if (detail) {
-    const sub = document.createElement('span');
-    sub.className = 'block truncate text-xs text-ink-muted';
-    sub.textContent = detail;
-    text.appendChild(sub);
+    text.appendChild(marked(detail, words, 'block truncate text-xs text-ink-muted'));
   }
   a.append(icon, text);
   li.appendChild(a);
@@ -116,6 +145,7 @@ onPageLoad(() => {
   const input = dialog.querySelector<HTMLInputElement>('#hub-search-input')!;
   const list = dialog.querySelector<HTMLUListElement>('#hub-search-results')!;
   const emptyNote = dialog.querySelector<HTMLElement>('#hub-search-empty')!;
+  const countNote = dialog.querySelector<HTMLElement>('#hub-search-count')!;
 
   const render = async () => {
     const q = input.value.trim().toLowerCase();
@@ -137,11 +167,27 @@ onPageLoad(() => {
         return aStarts - bStarts;
       })
       // A few more than the old 8: body matches mean more genuine candidates,
-      // but the list still has to stay glanceable inside the dialog.
-      .slice(0, 12);
+      // but the list still has to stay glanceable inside the dialog. The cap
+      // is for RESULTS only — the no-query state is the browse menu, and
+      // truncating that would silently hide a hub page from the list.
+      .slice(0, words.length === 0 ? undefined : 12);
 
     list.replaceChildren(...ranked.map((h) => resultLink(h.entry, words, h.rank)));
     emptyNote.classList.toggle('hidden', ranked.length > 0);
+
+    // Say how many there are, and say so when the list is capped — silent
+    // truncation reads as "that is everything", which is how a parent misses
+    // the page they wanted. Empty on the browse (no query) state, which is a
+    // menu rather than a result set.
+    const total = hits.length;
+    const shown = ranked.length;
+    countNote.textContent =
+      words.length === 0 || total === 0
+        ? ''
+        : shown < total
+          ? `Showing ${shown} of ${total} matches`
+          : `${total} ${total === 1 ? 'match' : 'matches'}`;
+    countNote.classList.toggle('hidden', countNote.textContent === '');
   };
 
   const open = () => {
@@ -163,6 +209,16 @@ onPageLoad(() => {
   });
 
   input.addEventListener('input', () => void render());
+
+  // "Browse all pages" in the empty state: clear back to the menu rather than
+  // leaving a dead end, and put the cursor back where they can type again.
+  for (const clear of dialog.querySelectorAll<HTMLElement>('[data-hub-search-clear]')) {
+    clear.addEventListener('click', () => {
+      input.value = '';
+      void render();
+      input.focus();
+    });
+  }
 
   // Arrow keys: input ↔ results (results are real links; Enter just follows).
   dialog.addEventListener('keydown', (e) => {
