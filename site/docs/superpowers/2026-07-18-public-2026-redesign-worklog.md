@@ -17,10 +17,13 @@ should be able to resume from the documents in this directory alone.
 ## Status
 
 - [x] Branch `redesign/public-2026` created from main @ dbde4b0, pushed
-- [ ] Draft PR open
-- [ ] Phase 0: build + serve the branch locally
-- [ ] Phase 0: route walk at 320/390/768/1024/1440/1920, light + dark, screenshots
-- [ ] Phase 0: per-route critique + slop detection
+- [x] Draft PR open: https://github.com/NateJ45/wcp-website/pull/1
+- [x] Phase 0: build + serve the branch locally (http-server :4400 over dist/client)
+- [~] Phase 0: route walk at 320/390/768/1024/1440/1920, light + dark, screenshots
+      (sweep v2 running; v1 discarded for a lazy-image capture artifact — full-page
+      captures MUST scroll through the page first or below-fold imagery ships blank)
+- [~] Phase 0: per-route critique + slop detection (detector DONE, 25 findings; own
+      funnel-core review DONE → audit doc; per-route agent fan-out pending sweep)
 - [ ] Phase 0: Lighthouse baseline (mobile + desktop) per route
 - [ ] Phase 0: benchmarks (3 direct competitors, 3-5 out-of-category craft references)
 - [ ] Phase 0: scored audit written (keep / rework / kill per element)
