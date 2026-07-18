@@ -1008,15 +1008,28 @@ li:nth-child(4n + 4) > .hub-note {
    The tint TRACKS THE THEME — light yellow in light, warm-dark in dark — so the
    normal text tokens keep their AA contrast; we never put coloured -ink text on
    the tint (the dark-mode trap). It drops the grid + colour tab (the fill is the
-   colour) and adds a folded corner. */
+   colour) and adds a folded corner.
+
+   It KEEPS the hand-drawn doodle tile though — the same one .wcp-hub-canvas
+   lays under the page and the greeting card carries — so a post-it still reads
+   as the school's paper rather than a flat swatch. Light/dark variants match
+   the fill: navy strokes on the yellow, white strokes on the warm-dark. Both
+   are ~5% and sit below text, so contrast is untouched.
+
+   `background-size` MUST be reset here. `.hub-note` sets a four-value size for
+   its grid layers (22px 22px, 22px 22px, auto, auto); leaving that in place
+   would apply `22px 22px` to the single doodle layer and shrink the 340px tile
+   to confetti. */
 .hub-note--postit {
-  background-image: none;
+  background-image: var(--wcp-doodles);
+  background-size: auto;
   background-color: #fff3bf;
   border-top-width: 1px;
   border-top-color: var(--color-border);
 }
 .dark .hub-note--postit {
   background-color: color-mix(in oklab, var(--color-amber) 15%, var(--color-surface));
+  background-image: var(--wcp-doodles-dark);
 }
 .hub-note--postit::after {
   content: '';
