@@ -33,6 +33,15 @@
 
 **Working directory for every command below is `site/`** (the repo root's shell CWD is one level up; prefix with `cd site` or run from there).
 
+## Verifying against the built HTML: do not use `grep -c`
+
+This bit during execution and would have let a broken check pass silently. Two separate problems:
+
+1. **`grep -c` counts matching lines, not matches.** The built HTML is minified onto one line, so `grep -c` returns `1` whether something appears once or fifty times. Use `grep -o … | wc -l` for occurrence counts.
+2. **Heading text is split by markup.** `displayTitleHtml()` wraps hyphenated compounds in nowrap spans and bands wrap words in their own elements, so a literal string search misses headings that plainly render. `grep -o "Come see it for yourself" dist/client/index.html` returns `0` even though that heading is on the page.
+
+For anything inside a heading, extract and strip tags (see Task 7 Step 5). For body copy, `grep -o … | wc -l` is fine.
+
 ---
 
 ## Task 1: Downscale the 24 archive photos
@@ -407,13 +416,24 @@ In the template, immediately BEFORE the existing `<div class="flex gap-0.5" aria
 Run: `npm run build`
 Expected: build succeeds.
 
-Run: `grep -c "wcp-print" dist/client/index.html`
-Expected: at least `3` (all five featured quotes have photos; the home row shows three).
+Count the testimonial figures that actually carry a snapshot (see the grep warning at the top of Verification): `.wcp-print` is also used by `PhotoStrip`, `SeptembersWall`, `HeroFramed` and `HeritageStrip`, so match the testimonial figures specifically.
 
-- [ ] **Step 4: Check /reviews got all 24**
+```bash
+node -e "
+const fs=require('fs');
+for (const [label,f] of [['home','dist/client/index.html'],['reviews','dist/client/reviews/index.html']]) {
+  const h=fs.readFileSync(f,'utf8');
+  const figs=[...h.matchAll(/<figure[^>]*wcp-testi[\s\S]*?<\/figure>/g)].map(m=>m[0]);
+  const withImg=figs.filter(x=>/wcp-print/.test(x)&&/<img/.test(x));
+  console.log(label.padEnd(8),'figures:',figs.length,'| with snapshot:',withImg.length);
+}"
+```
 
-Run: `grep -o 'src="/_astro/[a-z-]*\.[a-z0-9]*\.webp"' dist/client/reviews/index.html | sort -u | wc -l`
-Expected: `24`.
+Expected after Task 3 alone: `home figures: 3 | with snapshot: 0` (the section does not pass `photo` until Task 4).
+
+- [ ] **Step 4: Deferred to Task 4**
+
+The snapshot cannot appear until `TestimonialSection` passes the prop. Verify counts at the end of Task 4.
 
 - [ ] **Step 5: Commit**
 
@@ -492,8 +512,14 @@ The wall is a CSS `columns` masonry with `break-inside-avoid` on each `<li>`, so
 Run: `npm run build`
 Expected: succeeds.
 
-Run: `grep -c "wcp-print" dist/client/reviews/index.html`
-Expected: `24`.
+Re-run the figure-counting snippet from Task 3 Step 3. Expected now that the prop is threaded on both surfaces:
+
+```
+home     figures: 3  | with snapshot: 3
+reviews  figures: 24 | with snapshot: 24
+```
+
+The two numbers on each line must be equal. A shortfall means some author failed to resolve a photo, which the Task 2 coverage test should have caught, so investigate rather than accepting it.
 
 - [ ] **Step 5: Commit**
 
@@ -732,16 +758,33 @@ In `src/lib/page-doctrine.ts`, change the `home` entry of `SECTION_DROP`:
 Run: `npm run build`
 Expected: succeeds.
 
-Run: `grep -c "Come find us" dist/client/index.html`
-Expected: `1` — the VisitBlock heading. If you get `0`, the moment did not render; check Step 3's second chain, which is the easy one to miss.
+**Do not verify this with `grep -c`.** Two independent reasons it lies about this build:
 
-Run: `grep -c "Come see it for yourself" dist/client/index.html`
-Expected: `1` — the closing `ctaSection` (k15) only. Nathan settled the collision: the closer keeps that line and VisitBlock gives it up, so a `2` here means Task 6's heading was not applied.
+1. The built HTML is minified onto one line, so `-c` counts matching *lines* (always 1 or 0), not occurrences.
+2. Heading text is broken up by markup — `displayTitleHtml()` wraps hyphenated compounds in nowrap spans, and the CTA band wraps words — so a literal-string search misses headings that are plainly there. `grep -o "Come see it for yourself" dist/client/index.html` returns **0** today even though that heading renders.
 
-Run: `grep -c "Plan your visit" dist/client/index.html`
-Expected: `0` — the old `hp-visit` prose is gone.
+List the real headings instead, by stripping tags from every `<h2>`:
 
-Run: `grep -c "not a religious school" dist/client/index.html`
+```bash
+node -e "
+const h=require('fs').readFileSync('dist/client/index.html','utf8');
+[...h.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)]
+  .map(m=>m[1].replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim())
+  .forEach((t,i)=>console.log(String(i+1).padStart(2),t));"
+```
+
+Before this task the list ends: `… 9 Life inside WCP. / 10 Plan your visit / 11 Come see it for yourself. / 12 Classes …` (12 onward are footer headings).
+
+Expected AFTER this task:
+- `Plan your visit` is **gone** (the `hp-visit` proseSection was dropped).
+- `Come find us.` appears **once**, in slot 10, where VisitBlock rendered.
+- `Come see it for yourself.` still appears **exactly once**, in slot 11, the closing `ctaSection`. Two occurrences means Task 6's heading was not applied; zero means the closer changed by mistake.
+
+If `Come find us.` is absent entirely, the moment did not render. Check Step 3's second render chain, which is the easy one to miss.
+
+Body copy is not inside a heading and is not markup-split, so a plain occurrence count is fine for it:
+
+Run: `grep -o "not a religious school" dist/client/index.html | wc -l`
 Expected: `1`.
 
 - [ ] **Step 6: Commit**
