@@ -1577,20 +1577,9 @@ li:nth-child(4n + 4) > .hub-note {
     --print-tilt: 2deg;
   }
 }
-/* The living photograph runs ~50% larger on wide screens (Nathan, 2026-07-19)
-   via SCALE, not layout width — a fixed-width item would starve the text
-   column's fr track (measured: 364px). Scaled from center it bleeds a little
-   past the container on the right and over the sweep below, both designed
-   overlaps; the hover-straighten keeps the scale so nothing jumps. */
-@media (min-width: 80rem) {
-  .wcp-hero-framed .wcp-print {
-    transform: rotate(var(--print-tilt)) scale(1.2);
-  }
-  .wcp-hero-framed .wcp-print:hover,
-  .wcp-hero-framed .wcp-print:focus-within {
-    transform: rotate(0.4deg) scale(1.2);
-  }
-}
+/* The living photograph sits at its layout width (34rem): Nathan sized it up
+   50% then back 20% (2026-07-19) — the 1fr/1fr grid rebalance alone keeps it
+   ~27% larger than the original 0.78fr track. */
 
 /* Public motion vocabulary is exponential-ease only: the icon pop keeps its
    designed mid-keyframe overshoot but loses the elastic timing curve on top
