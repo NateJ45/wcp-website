@@ -11,14 +11,14 @@ Nathan supplied six screenshots of the old Squarespace home and reported the
 new site is "missing a lot of the pictures and info". An audit against the code
 found most of it is not missing:
 
-| Old-site element                     | Status on the new home                                             |
-| ------------------------------------ | ------------------------------------------------------------------ |
+| Old-site element                      | Status on the new home                                               |
+| ------------------------------------- | -------------------------------------------------------------------- |
 | 7th card, "55+ years in West Chester" | Promoted to the code-owned `HeritageStrip` ("Fifty-five Septembers") |
-| "WCP is not a religious school"      | Present, in the `hp-visit` prose (unbolded)                        |
-| Class card price / schedule / bullets | Supported by `ClassCard.astro` (`price`, `features`)               |
-| Day-in-life timeline                 | Verbatim identical, all five entries, 9:30 to 11:40                |
-| Testimonial author photos            | **MISSING.** No photo field, no render path                        |
-| Visit block photo                    | **MISSING.** `hp-visit` is a `proseSection`, which has no image slot |
+| "WCP is not a religious school"       | Present, in the `hp-visit` prose (unbolded)                          |
+| Class card price / schedule / bullets | Supported by `ClassCard.astro` (`price`, `features`)                 |
+| Day-in-life timeline                  | Verbatim identical, all five entries, 9:30 to 11:40                  |
+| Testimonial author photos             | **MISSING.** No photo field, no render path                          |
+| Visit block photo                     | **MISSING.** `hp-visit` is a `proseSection`, which has no image slot |
 
 Two further findings are recorded but **out of scope** here:
 
@@ -106,20 +106,20 @@ All 24 quotes in `src/data/testimonials.ts` have a photo, and all 24 source
 files are already present in `assets-from-squarespace/images/` (verified on
 disk, 7.5 MB raw):
 
-| Author             | Archive file                | Author            | Archive file             |
-| ------------------ | --------------------------- | ----------------- | ------------------------ |
-| Alison Blankenship | `013-Alison.jpg`            | Emily Wilkes      | `068-3L7A7100.jpg`       |
-| Erin McQuillen     | `014-ErinMcqueen.jpg`       | Jessica Swarr     | `069-2c95e942-….jpg`     |
-| Amanda Hackney     | `015-Amanda.jpg`            | Kayla Moormann    | `070-image0.jpeg`        |
-| Taylor Dore        | `047-TayloreDore.jpg`       | Lisa T.           | `071-lisat.png`          |
-| Amber Cron         | `050-448967548_….jpg`       | Lexie Lenavitt    | `072-512151748_….jpg`    |
-| Meagan Gegner      | `054-495704435_….jpg`       | Anita Shrestha    | `073-3L7A7071.jpg`       |
-| Katherine Oliver   | `056-Katherine.jpg`         | Sara Jane Nixon   | `074-SaraJaneNixon.jpg`  |
-| Daniel Hagedorn    | `057-395417966_….jpg`       | Courtney Marquart | `075-510583991_….jpg`    |
-| Erin Schmerr       | `062-Erin.jpg`              | Teresa Vasquez    | `076-FullSizeRender.jpeg` |
-| Lauren Lintz       | `063-LaurenLintz.jpg`       | Renee Ross        | `077-reneeross.jpg`      |
-| Laura Gilbert      | `064-LaurenGilbert.jpg`     | Valerie Williams  | `065-462682701_….jpg`    |
-| Erin Millspaw      | `067-erinmills.jpg`         | Nathan Nixon      | `066-img_1_….jpg`        |
+| Author             | Archive file            | Author            | Archive file              |
+| ------------------ | ----------------------- | ----------------- | ------------------------- |
+| Alison Blankenship | `013-Alison.jpg`        | Emily Wilkes      | `068-3L7A7100.jpg`        |
+| Erin McQuillen     | `014-ErinMcqueen.jpg`   | Jessica Swarr     | `069-2c95e942-….jpg`      |
+| Amanda Hackney     | `015-Amanda.jpg`        | Kayla Moormann    | `070-image0.jpeg`         |
+| Taylor Dore        | `047-TayloreDore.jpg`   | Lisa T.           | `071-lisat.png`           |
+| Amber Cron         | `050-448967548_….jpg`   | Lexie Lenavitt    | `072-512151748_….jpg`     |
+| Meagan Gegner      | `054-495704435_….jpg`   | Anita Shrestha    | `073-3L7A7071.jpg`        |
+| Katherine Oliver   | `056-Katherine.jpg`     | Sara Jane Nixon   | `074-SaraJaneNixon.jpg`   |
+| Daniel Hagedorn    | `057-395417966_….jpg`   | Courtney Marquart | `075-510583991_….jpg`     |
+| Erin Schmerr       | `062-Erin.jpg`          | Teresa Vasquez    | `076-FullSizeRender.jpeg` |
+| Lauren Lintz       | `063-LaurenLintz.jpg`   | Renee Ross        | `077-reneeross.jpg`       |
+| Laura Gilbert      | `064-LaurenGilbert.jpg` | Valerie Williams  | `065-462682701_….jpg`     |
+| Erin Millspaw      | `067-erinmills.jpg`     | Nathan Nixon      | `066-img_1_….jpg`         |
 
 Copied into `src/assets/testimonials/` under kebab-case names derived from the
 author (`alison-blankenship.jpg`, `lisa-t.png`, …).

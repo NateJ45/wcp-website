@@ -14,22 +14,22 @@
 
 ## File Structure
 
-| File | Responsibility |
-| --- | --- |
-| `scripts/prepare-testimonial-photos.mjs` | CREATE. One-shot: downscale the 24 archive photos to 320px square WebP into `src/assets/testimonials/`. |
-| `src/assets/testimonials/*.webp` | CREATE (24 files). The committed snapshots, ~400 KB total. |
-| `src/lib/testimonial-photos.ts` | CREATE. Author name → local image. The ONLY place the mapping lives. |
-| `src/lib/testimonial-photos.test.ts` | CREATE. Vitest: normalization + the every-author-resolves regression test. |
-| `src/components/Testimonial.astro` | MODIFY. Optional `photo` prop rendering a taped snapshot. |
-| `src/components/sections/TestimonialSection.astro` | MODIFY. Look up the photo, pass it down. |
-| `src/sanity/schemaTypes/documents/testimonial.ts` | MODIFY. Add the `photo` field the patch script will populate. |
-| `src/components/VisitBlock.astro` | CREATE. Photo + visit details, all facts from `site.ts`. |
-| `src/lib/photo-moments.ts` | MODIFY. Add `'visit'` to the `kind` union and the home moment. |
-| `src/components/sections/SectionRenderer.astro` | MODIFY. Render the `'visit'` kind in BOTH moment blocks. |
-| `src/lib/page-doctrine.ts` | MODIFY. `SECTION_DROP.home` gains `'hp-visit'`. |
-| `scripts/patch-testimonial-photos.mjs` | CREATE. Queued: upload 24 photos onto the Sanity `testimonial` docs. |
-| `scripts/patch-home-visit-splitmedia.mjs` | CREATE. Queued: rebuild `hp-visit` as a real `splitMediaSection`. |
-| `docs/PENDING.md`, `docs/PAGE_BUILDER.md`, `src/sanity/guides/content.ts` | MODIFY. Docs sync, per the repo rule. |
+| File                                                                      | Responsibility                                                                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `scripts/prepare-testimonial-photos.mjs`                                  | CREATE. One-shot: downscale the 24 archive photos to 320px square WebP into `src/assets/testimonials/`. |
+| `src/assets/testimonials/*.webp`                                          | CREATE (24 files). The committed snapshots, ~400 KB total.                                              |
+| `src/lib/testimonial-photos.ts`                                           | CREATE. Author name → local image. The ONLY place the mapping lives.                                    |
+| `src/lib/testimonial-photos.test.ts`                                      | CREATE. Vitest: normalization + the every-author-resolves regression test.                              |
+| `src/components/Testimonial.astro`                                        | MODIFY. Optional `photo` prop rendering a taped snapshot.                                               |
+| `src/components/sections/TestimonialSection.astro`                        | MODIFY. Look up the photo, pass it down.                                                                |
+| `src/sanity/schemaTypes/documents/testimonial.ts`                         | MODIFY. Add the `photo` field the patch script will populate.                                           |
+| `src/components/VisitBlock.astro`                                         | CREATE. Photo + visit details, all facts from `site.ts`.                                                |
+| `src/lib/photo-moments.ts`                                                | MODIFY. Add `'visit'` to the `kind` union and the home moment.                                          |
+| `src/components/sections/SectionRenderer.astro`                           | MODIFY. Render the `'visit'` kind in BOTH moment blocks.                                                |
+| `src/lib/page-doctrine.ts`                                                | MODIFY. `SECTION_DROP.home` gains `'hp-visit'`.                                                         |
+| `scripts/patch-testimonial-photos.mjs`                                    | CREATE. Queued: upload 24 photos onto the Sanity `testimonial` docs.                                    |
+| `scripts/patch-home-visit-splitmedia.mjs`                                 | CREATE. Queued: rebuild `hp-visit` as a real `splitMediaSection`.                                       |
+| `docs/PENDING.md`, `docs/PAGE_BUILDER.md`, `src/sanity/guides/content.ts` | MODIFY. Docs sync, per the repo rule.                                                                   |
 
 **Working directory for every command below is `site/`** (the repo root's shell CWD is one level up; prefix with `cd site` or run from there).
 
@@ -47,6 +47,7 @@ For anything inside a heading, extract and strip tags (see Task 7 Step 5). For b
 ## Task 1: Downscale the 24 archive photos
 
 **Files:**
+
 - Create: `scripts/prepare-testimonial-photos.mjs`
 - Create: `src/assets/testimonials/` (24 `.webp` files)
 
@@ -131,7 +132,9 @@ for (const [author, file] of Object.entries(MAP)) {
     .webp({ quality: 82 })
     .toFile(to);
   bytes += info.size;
-  console.log(`${author.padEnd(20)} -> ${slugFor(author)}.webp  ${(info.size / 1024).toFixed(0)}KB`);
+  console.log(
+    `${author.padEnd(20)} -> ${slugFor(author)}.webp  ${(info.size / 1024).toFixed(0)}KB`,
+  );
 }
 console.log(`\n${Object.keys(MAP).length} photos, ${(bytes / 1024).toFixed(0)}KB total`);
 ```
@@ -161,6 +164,7 @@ git commit -m "Testimonial photos: downscale the 24 archive headshots to committ
 ## Task 2: The author → photo lookup (TDD)
 
 **Files:**
+
 - Create: `src/lib/testimonial-photos.ts`
 - Test: `src/lib/testimonial-photos.test.ts`
 
@@ -342,11 +346,13 @@ git commit -m "Testimonial photos: author-name lookup with a full-coverage regre
 ## Task 3: Render the snapshot on the note
 
 **Files:**
+
 - Modify: `src/components/Testimonial.astro`
 
 The note is a stationery object: ruled paper, one tape strip at top-centre (`wcp-tape-tc`), a capped tilt, hand-drawn stars, a Great Vibes signature. The snapshot must read as a print clipped to that note, NOT as the circular review-site avatar the 2026-07-17 redesign deliberately removed.
 
 Design decisions, already settled:
+
 - Use `.wcp-print` (white paper, padding, shadow, `--print-tilt`) but **no second tape strip**. The note already has one at top-centre, and `.wcp-tape-tc`'s strip is 4.6rem wide, wider than the snapshot itself.
 - Tilt it `+2.5deg`, counter to the note's own lean, so the two objects read as separately placed.
 - `alt=""`. The author is already named in the signature; a real alt would make screen readers announce the name twice.
@@ -386,27 +392,24 @@ const {
 In the template, immediately BEFORE the existing `<div class="flex gap-0.5" aria-hidden="true">` star row, insert:
 
 ```astro
-  {
-    /* A snapshot clipped to the note (the old site's author photo, re-read in
+{
+  /* A snapshot clipped to the note (the old site's author photo, re-read in
        the scrapbook idiom rather than as a review-card avatar). Tilted against
        the note's own lean; no tape strip, the note already carries one. */
-    photo && (
-      <div
-        class="wcp-print mb-4 w-20 shrink-0 self-start [--print-tilt:2.5deg]"
-        aria-hidden="true"
-      >
-        <Image
-          src={photo}
-          alt=""
-          width={160}
-          height={160}
-          loading="lazy"
-          decoding="async"
-          class="aspect-square w-full object-cover"
-        />
-      </div>
-    )
-  }
+  photo && (
+    <div class="wcp-print mb-4 w-20 shrink-0 self-start [--print-tilt:2.5deg]" aria-hidden="true">
+      <Image
+        src={photo}
+        alt=""
+        width={160}
+        height={160}
+        loading="lazy"
+        decoding="async"
+        class="aspect-square w-full object-cover"
+      />
+    </div>
+  )
+}
 ```
 
 `.wcp-print` sets `position: relative` and the tilt; `[--print-tilt:2.5deg]` overrides the alternating-tilt default for this one element.
@@ -447,6 +450,7 @@ git commit -m "Testimonial: optional snapshot taped to the parent note"
 ## Task 4: Wire the lookup into the section
 
 **Files:**
+
 - Modify: `src/components/sections/TestimonialSection.astro`
 
 - [ ] **Step 1: Import the lookup**
@@ -462,13 +466,13 @@ import { photoFor } from '@/lib/testimonial-photos';
 In the non-wall branch, change the `<Testimonial ... />` call to add the `photo` prop:
 
 ```astro
-            <Testimonial
-              quote={t.quote}
-              author={t.author ?? ''}
-              context={t.role}
-              photo={photoFor(t.author)}
-              confetti={confetti}
-            />
+<Testimonial
+  quote={t.quote}
+  author={t.author ?? ''}
+  context={t.role}
+  photo={photoFor(t.author)}
+  confetti={confetti}
+/>
 ```
 
 Leave everything else alone, including the `/reviews` and `/why-wcp` stopgap branches.
@@ -487,22 +491,21 @@ import { photoFor } from '@/lib/testimonial-photos';
 Then inside the `<figure>`, immediately BEFORE the `<div class="flex gap-0.5" aria-hidden="true">` star row, insert:
 
 ```astro
-          {photoFor(t.author) && (
-            <div
-              class="wcp-print mb-4 w-20 shrink-0 [--print-tilt:2.5deg]"
-              aria-hidden="true"
-            >
-              <Image
-                src={photoFor(t.author)!}
-                alt=""
-                width={160}
-                height={160}
-                loading="lazy"
-                decoding="async"
-                class="aspect-square w-full object-cover"
-              />
-            </div>
-          )}
+{
+  photoFor(t.author) && (
+    <div class="wcp-print mb-4 w-20 shrink-0 [--print-tilt:2.5deg]" aria-hidden="true">
+      <Image
+        src={photoFor(t.author)!}
+        alt=""
+        width={160}
+        height={160}
+        loading="lazy"
+        decoding="async"
+        class="aspect-square w-full object-cover"
+      />
+    </div>
+  )
+}
 ```
 
 The wall is a CSS `columns` masonry with `break-inside-avoid` on each `<li>`, so an added image changes card heights but cannot break the layout.
@@ -533,6 +536,7 @@ git commit -m "Testimonial sections: pass the family snapshot through to the not
 ## Task 5: Add the Sanity `photo` field
 
 **Files:**
+
 - Modify: `src/sanity/schemaTypes/documents/testimonial.ts`
 
 A schema change is code, not a Sanity write, so it ships now and gives `patch-testimonial-photos.mjs` (Task 8) somewhere to write.
@@ -579,6 +583,7 @@ git commit -m "Sanity: optional photo field on testimonial docs"
 ## Task 6: Build the visit block
 
 **Files:**
+
 - Create: `src/components/VisitBlock.astro`
 
 Every fact comes from `src/data/site.ts`. Invent nothing. The canonical tour link is `/virtual-tour#sec-pp-tour-form` (the same href `TourPill.astro`, `PageHero.astro` and `data/nav.ts` already use).
@@ -644,19 +649,16 @@ const [photo] = await photosFor('home-visit', 1);
       )
     }
     <div>
-      <SectionHeader
-        eyebrow="Find us"
-        title="Come find us."
-        titleId={titleId}
-        align="left"
-      />
+      <SectionHeader eyebrow="Find us" title="Come find us." titleId={titleId} align="left" />
       <p class="mt-6 text-lg leading-relaxed">
-        We are at <strong>{site.address.street}, {site.address.city}, {site.address.state}{' '}
-        {site.address.zip}</strong>, inside Crestview Presbyterian Church.
+        We are at <strong
+          >{site.address.street}, {site.address.city}, {site.address.state}{' '}
+          {site.address.zip}</strong
+        >, inside Crestview Presbyterian Church.
       </p>
       <p class="mt-4 text-lg leading-relaxed">
-        <strong>WCP is not a religious school.</strong> We are a secular, non-discriminatory
-        cooperative preschool. We rent the space and have no religious affiliation.
+        <strong>WCP is not a religious school.</strong> We are a secular, non-discriminatory cooperative
+        preschool. We rent the space and have no religious affiliation.
       </p>
       <ul class="mt-6 space-y-2 border-l-4 border-sky pl-5 text-lg" role="list">
         <li>
@@ -696,6 +698,7 @@ git commit -m "VisitBlock: photo beside the visit details, facts from site.ts"
 ## Task 7: Wire the visit moment in
 
 **Files:**
+
 - Modify: `src/lib/photo-moments.ts`
 - Modify: `src/components/sections/SectionRenderer.astro`
 - Modify: `src/lib/page-doctrine.ts`
@@ -730,13 +733,13 @@ import VisitBlock from '@/components/VisitBlock.astro';
 There are **two** identical moment-render chains, one for `momentsAfter.get(-1)` and one for the per-section `strips`. Add a `'visit'` branch to **both**, before the final `PhotoStrip` fallback:
 
 ```astro
-    ) : m.kind === 'septembers' ? (
-      <SeptembersWall />
-    ) : m.kind === 'visit' ? (
-      <VisitBlock />
-    ) : (
-      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
-    ),
+) : m.kind === 'septembers' ? (
+<SeptembersWall />
+) : m.kind === 'visit' ? (
+<VisitBlock />
+) : (
+<PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+),
 ```
 
 Missing the second one is the likely mistake: the first chain only handles moments placed before every section, so a `'visit'` moment anchored to `hp-instagram` would silently render as a `PhotoStrip` instead.
@@ -760,7 +763,7 @@ Expected: succeeds.
 
 **Do not verify this with `grep -c`.** Two independent reasons it lies about this build:
 
-1. The built HTML is minified onto one line, so `-c` counts matching *lines* (always 1 or 0), not occurrences.
+1. The built HTML is minified onto one line, so `-c` counts matching _lines_ (always 1 or 0), not occurrences.
 2. Heading text is broken up by markup — `displayTitleHtml()` wraps hyphenated compounds in nowrap spans, and the CTA band wraps words — so a literal-string search misses headings that are plainly there. `grep -o "Come see it for yourself" dist/client/index.html` returns **0** today even though that heading renders.
 
 List the real headings instead, by stripping tags from every `<h2>`:
@@ -776,6 +779,7 @@ const h=require('fs').readFileSync('dist/client/index.html','utf8');
 Before this task the list ends: `… 9 Life inside WCP. / 10 Plan your visit / 11 Come see it for yourself. / 12 Classes …` (12 onward are footer headings).
 
 Expected AFTER this task:
+
 - `Plan your visit` is **gone** (the `hp-visit` proseSection was dropped).
 - `Come find us.` appears **once**, in slot 10, where VisitBlock rendered.
 - `Come see it for yourself.` still appears **exactly once**, in slot 11, the closing `ctaSection`. Two occurrences means Task 6's heading was not applied; zero means the closer changed by mistake.
@@ -799,6 +803,7 @@ git commit -m "Home: swap the prose visit block for VisitBlock with a photo"
 ## Task 8: Author the two queued patch scripts
 
 **Files:**
+
 - Create: `scripts/patch-testimonial-photos.mjs`
 - Create: `scripts/patch-home-visit-splitmedia.mjs`
 
@@ -813,6 +818,7 @@ Run: `sed -n '1,60p' scripts/patch-lib.mjs && sed -n '1,50p' scripts/patch-twos-
 - [ ] **Step 2: Write `patch-testimonial-photos.mjs`**
 
 Follow `patch-twos-class-pet.mjs`'s structure. Requirements:
+
 - Reuse `patch-lib.mjs` for the client, the `--commit` gate and logging.
 - Read the same author → archive-file `MAP` as `scripts/prepare-testimonial-photos.mjs`; import it rather than re-typing it (export `MAP` from that script, or move the shared map into `scripts/testimonial-photo-map.mjs` and import it in both). Two copies of this mapping will drift, and a drifted mapping puts the wrong family's face on a quote.
 - Upload the **320px WebP** from `src/assets/testimonials/`, not the multi-megabyte archive original.
@@ -844,6 +850,7 @@ git commit -m "Queue the two patch scripts that move the photos into Sanity"
 ## Task 9: Sync the docs
 
 **Files:**
+
 - Modify: `docs/PENDING.md`
 - Modify: `docs/PAGE_BUILDER.md`
 - Modify: `src/sanity/guides/content.ts`
@@ -854,10 +861,10 @@ The repo rule is that a change is not done until the docs match reality.
 
 In `docs/PENDING.md`, in the "Code stopgaps" table, add:
 
-| Where | What it papers over | To close out |
-| --- | --- | --- |
-| `src/lib/testimonial-photos.ts` + `src/assets/testimonials/` | The 24 family snapshots on testimonial notes. The images cannot be Sanity assets yet (uploads are writes), so they ship as local files joined by author name | Run `patch-testimonial-photos.mjs --commit`, then delete the module, its test, `src/assets/testimonials/`, and the `photo={photoFor(...)}` threading in `TestimonialSection.astro` / `TestimonialWall.astro` |
-| `VisitBlock.astro` + `photo-moments.ts` `'visit'` + `SECTION_DROP.home` `'hp-visit'` | The home visit block's photo. `hp-visit` is a `proseSection` with no image slot, and moments inject between sections rather than wrapping one, so the section is replaced wholesale. Costs volunteer editability of the address | Run `patch-home-visit-splitmedia.mjs --commit`, then delete `VisitBlock.astro`, the `'visit'` moment and kind, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` |
+| Where                                                                                | What it papers over                                                                                                                                                                                                             | To close out                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/testimonial-photos.ts` + `src/assets/testimonials/`                         | The 24 family snapshots on testimonial notes. The images cannot be Sanity assets yet (uploads are writes), so they ship as local files joined by author name                                                                    | Run `patch-testimonial-photos.mjs --commit`, then delete the module, its test, `src/assets/testimonials/`, and the `photo={photoFor(...)}` threading in `TestimonialSection.astro` / `TestimonialWall.astro` |
+| `VisitBlock.astro` + `photo-moments.ts` `'visit'` + `SECTION_DROP.home` `'hp-visit'` | The home visit block's photo. `hp-visit` is a `proseSection` with no image slot, and moments inject between sections rather than wrapping one, so the section is replaced wholesale. Costs volunteer editability of the address | Run `patch-home-visit-splitmedia.mjs --commit`, then delete `VisitBlock.astro`, the `'visit'` moment and kind, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home`                    |
 
 - [ ] **Step 2: Document the new moment kind**
 
@@ -908,6 +915,7 @@ If axe flags the snapshot, the likely cause is the decorative image picking up a
 - [ ] **Step 3: Verify in the browser**
 
 Start the preview and check, at minimum:
+
 - Home: three testimonial notes each with a snapshot, and the visit block with a photo beside the details.
 - `/reviews`: 24 notes with snapshots, no layout break in the masonry wall.
 - 320px width: the visit block stacks, the snapshot does not overflow its note.
