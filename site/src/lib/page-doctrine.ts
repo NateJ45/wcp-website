@@ -60,6 +60,11 @@ export const SECTION_DROP: Record<string, string[]> = {
   // Ohio licensed" is a binary dressed as a metric. The compare table is the
   // page's one honest numbers moment.
   'why-wcp': ['type:statBandSection'],
+  // /safety: Nathan cut the stat band outright (2026-07-19, reviewing the
+  // adjacency fix that had flipped it white under the navy hero) — the 4.8
+  // rating already rides the hero proof line and the closer's rating slip,
+  // and class size / staffing live in the "Secure, on purpose" list below.
+  safety: ['type:statBandSection'],
   // /classes/pre-k ran TWO curriculum bands (13 cards total; "What WCP Pre-K
   // graduates walk in with" restated "What your Pre-K child learns" in shorter
   // form, ~3 phone viewports of it). One curriculum moment per page.

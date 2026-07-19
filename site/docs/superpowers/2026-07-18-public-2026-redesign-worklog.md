@@ -220,3 +220,11 @@ closer. (The "washed out button" in one capture was the documented mid-reveal
 capture artifact; live computed style is bg-accent navy + white.)
 
 Gates: 210 public + 182 unit + 58 hub all green; format/lint/types clean.
+
+## /safety stat band removed (2026-07-19)
+
+Nathan, seeing the white-flipped strip: cut it entirely. `SECTION_DROP.safety
+= ['type:statBandSection']` (render-time stopgap, PENDING.md row added — the
+4.8 already rides the hero proof line and the closer's rating slip; class
+size/staffing live in the "Secure, on purpose" sheet). Hero now sweeps
+straight into the white specifics band. Gates: 210 + 182 + format green.
