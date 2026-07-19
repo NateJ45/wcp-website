@@ -34,6 +34,22 @@ const { footerNav, legalNav } = await getNavigation();
 // footer at the same request.)
 const [footerPhoto] = await photosFor('footer', 1);
 
+interface Props {
+  /** The FINAL band's color on this page — the seam at the footer boundary
+   *  fills with it (the band above bulges into the photo, orange-traced,
+   *  exactly like every section seam). BaseLayout passes it through. */
+  seamAbove?: 'white' | 'grey' | 'cream' | 'navy' | 'amber';
+}
+const { seamAbove = 'white' } = Astro.props;
+const seamFill: Record<string, string> = {
+  white: '#ffffff',
+  grey: 'var(--color-grey)',
+  cream: 'var(--color-cream)',
+  navy: 'var(--color-navy)',
+  amber: 'var(--color-amber)',
+};
+const seamStroke = seamAbove === 'amber' ? 'var(--color-navy)' : 'var(--color-orange)';
+
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
 // Mirrors CookieConsent.astro's render condition so the "Cookie choices"
@@ -47,7 +63,24 @@ const consentEnabled =
     isValidMetaPixelId(consentEnv.PUBLIC_META_PIXEL_ID));
 ---
 
-<footer class="relative -mt-px bg-navy text-white">
+<footer class="relative -mt-px overflow-hidden bg-navy text-white">
+  {/* The footer sweep: the page's last band arcs into the photo treatment. */}
+  <svg
+    viewBox="0 0 1440 60"
+    preserveAspectRatio="none"
+    class="pointer-events-none absolute inset-x-0 top-0 z-10 block h-8 w-full sm:h-12"
+    aria-hidden="true"
+  >
+    <path
+      d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,0 L0,0 Z"
+      fill={seamFill[seamAbove]}></path>
+    <path
+      d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10"
+      fill="none"
+      stroke={seamStroke}
+      stroke-width="4"
+      stroke-linecap="round"></path>
+  </svg>
   {
     footerPhoto && (
       <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -63,7 +96,7 @@ const consentEnabled =
     )
   }
   <div
-    class="wcp-container relative grid gap-8 py-[var(--wcp-space-lg)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
+    class="wcp-container relative grid gap-8 pt-24 pb-10 sm:pt-28 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
   >
     {/* Brand + contact */}
     <div>
@@ -145,11 +178,11 @@ const consentEnabled =
   {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
   <div class="wcp-container relative -mt-1 pb-6 text-center">
     <p class="font-display text-2xl text-amber">See you at drop-off!</p>
-    <p class="mt-1 text-sm text-white/70">— The WCP Families</p>
+    <p class="mt-1 text-sm text-white/70">— The WCP Community</p>
   </div>
 
   <div class="relative border-t border-white/10">
-    <div class="wcp-container flex flex-col gap-3 py-4 text-xs text-white/60">
+    <div class="wcp-container flex flex-col gap-3 py-6 text-xs text-white/60">
       {/* Legal / policy links */}
       <nav aria-label="Legal" class="flex flex-wrap gap-x-5 gap-y-2">
         {

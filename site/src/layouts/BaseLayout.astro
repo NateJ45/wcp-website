@@ -27,6 +27,8 @@ import { getClosureAlert, getAnnouncements } from '@/lib/cms';
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 
 interface Props {
+  /** Final band color of the page — fills the footer boundary seam. */
+  footerSeam?: 'white' | 'grey' | 'cream' | 'navy' | 'amber';
   /** Browser tab + Open Graph title. Required so no page ships untitled. */
   title: string;
   /** Meta description + OG description. Falls back to the site tagline. */
@@ -59,6 +61,7 @@ interface Props {
 }
 
 const {
+  footerSeam = 'white',
   title,
   description,
   ogImage,
@@ -352,7 +355,7 @@ const currentPath = Astro.url.pathname;
           <main id="main" tabindex="-1" data-pagefind-body>
             <slot />
           </main>
-          <Footer />
+          <Footer seamAbove={footerSeam} />
           {/* The pinned tour invitation: mobile floating CTA between hero and
               footer (Act II conversion doctrine). Public marketing chrome only. */}
           <TourPill />

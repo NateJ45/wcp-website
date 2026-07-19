@@ -13,7 +13,7 @@ export const prerender = true;
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHero from '@/components/sections/PageHero.astro';
-import { HERO_OVERRIDES } from '@/lib/page-doctrine';
+import { HERO_OVERRIDES, finalBandBg } from '@/lib/page-doctrine';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { site as siteFallback } from '@/data/site';
@@ -90,11 +90,17 @@ const faqJsonLd =
 
 // Class pages own their brand color (matches class.color in Sanity; the two
 // Pre-K sessions share the /classes/pre-k page, which leads AM-orange).
+const footerSeam = finalBandBg((page?.sections ?? []) as never, slug) as never;
 const classAccent =
   slug === 'classes/twos' ? 'amber' : slug === 'classes/threes' ? 'green' : 'orange';
 ---
 
-<BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>
+<BaseLayout
+  title={title}
+  description={page?.seoDescription}
+  ogImage={ogImage}
+  footerSeam={footerSeam}
+>
   {
     /* HERO_OVERRIDES: the code-owned page doctrine (src/lib/page-doctrine.ts)
       can retitle a hero while the matching Sanity patch waits on the quota —

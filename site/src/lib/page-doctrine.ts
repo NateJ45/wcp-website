@@ -152,3 +152,26 @@ export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {
   'why-wcp': ['k198'],
   'co-op-life': ['k157'],
 };
+
+// The footer seam fills with the FINAL band's color (the sweep at the footer
+// boundary works exactly like every section seam: the band above bulges into
+// the footer's photo treatment). Mirrors the renderer's doctrine order and the
+// amber-closer rule so the fill always matches what actually rendered last.
+import { effectiveBg } from '@/components/sections/section-helpers';
+
+export function finalBandBg(rawSections: SectionData[], pageSlug: string): string {
+  let sections = [...rawSections];
+  const dropKeys = SECTION_DROP[pageSlug] ?? [];
+  if (dropKeys.length > 0) {
+    sections = sections.filter(
+      (s) => !dropKeys.includes(s._key) && !dropKeys.includes(`type:${s._type}`),
+    );
+  }
+  sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+  const last = [...sections].reverse().find((s) => s._type !== 'noticeBarSection');
+  if (!last) return 'white';
+  const bg = effectiveBg(last);
+  // Closing navy ctaSection renders as the amber drench (renderer doctrine).
+  if (last._type === 'ctaSection' && bg === 'navy') return 'amber';
+  return bg;
+}
