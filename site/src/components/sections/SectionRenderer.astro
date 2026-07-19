@@ -16,6 +16,7 @@ import TuitionOpener from '@/components/TuitionOpener.astro';
 import HeritageStrip from '@/components/HeritageStrip.astro';
 import SeptembersWall from '@/components/SeptembersWall.astro';
 import ChooserRows from '@/components/ChooserRows.astro';
+import VisitBlock from '@/components/VisitBlock.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
 import {
   SECTION_HOIST,
@@ -308,6 +309,8 @@ const MAP: Record<string, any> = {
       <ChooserRows />
     ) : m.kind === 'septembers' ? (
       <SeptembersWall />
+    ) : m.kind === 'visit' ? (
+      <VisitBlock />
     ) : (
       <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
     ),
@@ -372,6 +375,8 @@ const MAP: Record<string, any> = {
             <ChooserRows />
           ) : m.kind === 'septembers' ? (
             <SeptembersWall />
+          ) : m.kind === 'visit' ? (
+            <VisitBlock />
           ) : (
             <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
           ),
