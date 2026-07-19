@@ -620,7 +620,7 @@ const [photo] = await photosFor('home-visit', 1);
     <div>
       <SectionHeader
         eyebrow="Find us"
-        title="Come see it for yourself."
+        title="Come find us."
         titleId={titleId}
         align="left"
       />
@@ -732,16 +732,17 @@ In `src/lib/page-doctrine.ts`, change the `home` entry of `SECTION_DROP`:
 Run: `npm run build`
 Expected: succeeds.
 
+Run: `grep -c "Come find us" dist/client/index.html`
+Expected: `1` — the VisitBlock heading. If you get `0`, the moment did not render; check Step 3's second chain, which is the easy one to miss.
+
 Run: `grep -c "Come see it for yourself" dist/client/index.html`
-Expected: `2` — the VisitBlock heading plus the existing closing `ctaSection` (k15), which already uses that line. If you get `1`, the moment did not render; check Step 3's second chain.
+Expected: `1` — the closing `ctaSection` (k15) only. Nathan settled the collision: the closer keeps that line and VisitBlock gives it up, so a `2` here means Task 6's heading was not applied.
 
 Run: `grep -c "Plan your visit" dist/client/index.html`
 Expected: `0` — the old `hp-visit` prose is gone.
 
 Run: `grep -c "not a religious school" dist/client/index.html`
 Expected: `1`.
-
-> **Judgement call for the reviewer:** "Come see it for yourself." now appears twice on the home page, as the VisitBlock heading and as the closing CTA immediately after it. That reads as a stutter. Flag it and pick one: either retitle VisitBlock (for example "Come find us.") or let the closing CTA own the line. Do not silently ship both.
 
 - [ ] **Step 6: Commit**
 
@@ -869,9 +870,9 @@ Start the preview and check, at minimum:
 - 320px width: the visit block stacks, the snapshot does not overflow its note.
 - Dark mode: the notes and prints stay light paper (physical-object doctrine); the snapshot must not invert or pick up a theme-token border.
 
-- [ ] **Step 4: Confirm the doubled heading decision from Task 7 Step 5 was made**
+- [ ] **Step 4: Confirm the heading collision stayed resolved**
 
-Either VisitBlock's heading was changed or the closing CTA's was. Both must not say "Come see it for yourself."
+The home page must contain "Come find us." once (VisitBlock) and "Come see it for yourself." once (the closing CTA). Two of the latter means Task 6's heading regressed.
 
 - [ ] **Step 5: Commit anything outstanding and push**
 
@@ -901,4 +902,4 @@ Naming is consistent across tasks: `normalizeAuthor` and `photoFor` are defined 
 
 Known duplication, deliberately not refactored: `Testimonial.astro` and `TestimonialWall.astro` carry the same note markup independently, so the snapshot block is added twice (Task 3 Step 2 and Task 4 Step 3). Merging them is a reasonable follow-up but is out of scope here, and doing it mid-change would make the visual review harder.
 
-Judgement call deferred to review rather than decided in the plan: Task 7 Step 5 surfaces that "Come see it for yourself." would appear twice on the home page once VisitBlock lands, since the closing `ctaSection` already uses that line. The plan requires a choice and forbids shipping both.
+Heading collision resolved before execution (Nathan, 2026-07-19): the closing `ctaSection` keeps "Come see it for yourself." and VisitBlock takes "Come find us." Tasks 6, 7 and 10 assert this, so a regression fails a grep rather than reaching review.
