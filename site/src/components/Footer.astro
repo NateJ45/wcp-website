@@ -181,8 +181,12 @@ const consentEnabled =
     }
   </div>
 
-  {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
-  <div class="wcp-container relative -mt-1 pb-6 text-center">
+  {
+    /* A warm, hand-lettered goodbye — ends the visit like a note on the door.
+      Left-aligned on phones with the columns above it (Nathan 2026-07-19);
+      centered only on the wide layout, where the columns span the row. */
+  }
+  <div class="wcp-container relative -mt-1 pb-6 text-left lg:text-center">
     <p class="font-display text-2xl text-amber">See you at drop-off!</p>
     <p class="mt-1 text-sm text-white/70">— The WCP Community</p>
   </div>
