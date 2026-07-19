@@ -1779,6 +1779,15 @@ li:nth-child(4n + 4) > .hub-note {
   color: #fff4e0;
 }
 
+/* -- IG wall compaction: 12 tiles ran ~2.5 phone viewports at 2-col; 3-col
+   keeps the bulletin-board energy at half the scroll cost. ------------------- */
+@media (max-width: 40rem) {
+  .wcp-site-paper [data-stype='instagramSection'] ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+
 /* -- STAT STRIP: the stat band drops its boxes -------------------------------- */
 .wcp-site-paper [data-stype='statBandSection'] ul {
   display: flex;

@@ -13,8 +13,16 @@ import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
 import TuitionOpener from '@/components/TuitionOpener.astro';
+import HeritageStrip from '@/components/HeritageStrip.astro';
+import ChooserRows from '@/components/ChooserRows.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import { SECTION_HOIST, SECTION_APPEND, CARDGRID_KEEP_CARDS } from '@/lib/page-doctrine';
+import {
+  SECTION_HOIST,
+  SECTION_APPEND,
+  SECTION_DROP,
+  SECTION_HEADER_OVERRIDES,
+  CARDGRID_KEEP_CARDS,
+} from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -91,6 +99,14 @@ let sections = rawSections.map((s) => deEmDashDeep(s));
 // Visit page's contact details). Runs BEFORE the seam computation so edges
 // follow the rendered order. Stopgaps registered in docs/PENDING.md.
 if (pageSlug) {
+  // Drops first (render-time stopgaps mirroring queued Sanity patches; keys or
+  // 'type:<sectionType>' entries — see SECTION_DROP).
+  const dropKeys = SECTION_DROP[pageSlug] ?? [];
+  if (dropKeys.length > 0) {
+    sections = sections.filter(
+      (s) => !dropKeys.includes(s._key) && !dropKeys.includes(`type:${s._type}`),
+    );
+  }
   const hoistKeys = SECTION_HOIST[pageSlug] ?? [];
   if (hoistKeys.length > 0) {
     const hoisted = hoistKeys
@@ -99,14 +115,33 @@ if (pageSlug) {
     sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
   }
   sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+  // Header copy overrides (title/lead/eyebrow by _key).
+  const headerOverrides = SECTION_HEADER_OVERRIDES[pageSlug];
+  if (headerOverrides) {
+    sections = sections.map((s) => {
+      const o = headerOverrides[s._key];
+      if (!o) return s;
+      return { ...s, header: { ...(s.header ?? {}), ...o } } as SectionData;
+    });
+  }
 }
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces
-// and unlisted pages). Indexed by "render after section i" for the loop below.
+// and unlisted pages). Indexed by "render after section i" for the loop below;
+// a string `after` anchors to a section _key in the FINAL order (survives the
+// doctrine drops/hoists above; a missing key drops the moment rather than
+// landing it somewhere random).
 const moments: PhotoMoment[] = pageSlug ? (PHOTO_MOMENTS[pageSlug] ?? []) : [];
 const momentsAfter = new Map<number, PhotoMoment[]>();
 for (const m of moments) {
-  const at = Math.max(-1, Math.min(m.after, sections.length - 1));
+  let at: number;
+  if (typeof m.after === 'string') {
+    const idx = sections.findIndex((s) => s._key === m.after);
+    if (idx === -1) continue;
+    at = idx;
+  } else {
+    at = Math.max(-1, Math.min(m.after, sections.length - 1));
+  }
   momentsAfter.set(at, [...(momentsAfter.get(at) ?? []), m]);
 }
 
@@ -128,7 +163,8 @@ for (const [i, s] of sections.entries()) {
 // A moment's effective band colour for the seam chain: strips and the tuition
 // opener are cream paper; a full-bleed interlude is a photograph (neutral, so
 // the next strong band gets its seam).
-const momentBg = (m: PhotoMoment): string => (m.kind === 'interlude' ? 'white' : (m.bg ?? 'cream'));
+const momentBg = (m: PhotoMoment): string =>
+  m.kind === 'interlude' || m.kind === 'chooser' ? 'white' : (m.bg ?? 'cream');
 
 // Seed with a leading moment's colour when one renders before everything.
 let prevBg: string | null = null;
@@ -196,6 +232,10 @@ const MAP: Record<string, any> = {
       <Interlude slot={m.slot} caption={m.caption ?? ''} />
     ) : m.kind === 'tuition-opener' ? (
       <TuitionOpener />
+    ) : m.kind === 'heritage' ? (
+      <HeritageStrip slot={m.slot} />
+    ) : m.kind === 'chooser' ? (
+      <ChooserRows />
     ) : (
       <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
     ),
@@ -253,6 +293,10 @@ const MAP: Record<string, any> = {
             <Interlude slot={m.slot} caption={m.caption ?? ''} />
           ) : m.kind === 'tuition-opener' ? (
             <TuitionOpener />
+          ) : m.kind === 'heritage' ? (
+            <HeritageStrip slot={m.slot} />
+          ) : m.kind === 'chooser' ? (
+            <ChooserRows />
           ) : (
             <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
           ),

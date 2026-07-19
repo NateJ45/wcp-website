@@ -66,7 +66,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class interested in',
-      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM'],
+      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM', 'Not sure yet'],
     },
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
     { kind: 'textarea', name: 'message', label: 'Anything else you’d like us to know' },
@@ -78,7 +78,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class you’re hoping for',
-      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM'],
+      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM', 'Not sure yet'],
     },
     {
       kind: 'text',
@@ -94,7 +94,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class interested in',
-      options: ['Twos', 'Threes', 'Pre-K'],
+      options: ['Twos', 'Threes', 'Pre-K', 'Not sure yet'],
     },
     { kind: 'text', name: 'datesTimes', label: 'Dates/times that work for you', required: true },
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
@@ -217,12 +217,12 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
               <legend class={label}>{f.label}</legend>
               <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
                 {f.options.map((opt) => (
-                  <label class="inline-flex items-center gap-2 text-ink">
+                  <label class="inline-flex min-h-11 items-center gap-2 py-1 pr-1 text-ink">
                     <input
                       type="checkbox"
                       name={f.name}
                       value={opt}
-                      class="h-4 w-4 rounded border-border text-navy focus:ring-2 focus:ring-navy/30"
+                      class="h-5 w-5 rounded border-border text-navy focus:ring-2 focus:ring-navy/30"
                     />
                     {opt}
                   </label>
@@ -283,10 +283,15 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
     <button
       type="submit"
-      class="inline-flex items-center justify-center rounded-full bg-navy px-6 py-3 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+      class="wcp-press inline-flex items-center justify-center rounded-full bg-navy px-6 py-3 font-semibold text-white transition-colors hover:bg-heading disabled:opacity-60"
+      style="--press-base: #011527"
     >
       {buttonLabel}
     </button>
+    <p class="text-sm leading-relaxed text-ink-muted">
+      We are a parent-run school and we actually reply, usually within a school day. Sending this
+      starts a conversation, not a commitment.
+    </p>
   </form>
 
   <div

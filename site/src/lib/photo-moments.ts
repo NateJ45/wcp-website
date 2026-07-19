@@ -7,19 +7,24 @@
 // on each listed page. Code-owned on purpose: volunteers keep zero design
 // knobs, and it ships while Sanity writes are quota-frozen.
 //
-// `after` = the strip renders after the section at that 0-based index of the
-// page's sections array (clamped; -1 = before everything). Positions were
-// picked from the live pages: early enough to break up the card/table runs,
-// never interrupting a form or table mid-flow. Captions are evergreen lines in
-// the site voice (no dates, no names).
+// `after` = WHERE the moment renders: prefer a section _key (resolved against
+// the final rendered order, so it survives the Act II doctrine drops/hoists);
+// a 0-based index (legacy) still works for pages with no doctrine reorder;
+// -1 = before everything. Captions are evergreen lines in the site voice (no
+// dates, no names) and MUST stay true for any registry photo (the Phase 0
+// audit caught "Parents in the room" captioning a hayride tractor — a caption
+// that describes a specific scene is a trust wound when the deterministic
+// photo pick changes).
 // =============================================================================
 
 export interface PhotoMoment {
-  after: number;
+  /** Section _key (preferred) or 0-based index; -1 = before everything. */
+  after: number | string;
   /** What renders: a 3-print strip (default), a full-bleed unscrimmed
-      interlude (one photo owning the viewport, benchmark move), or the
-      code-owned tuition opener statement. */
-  kind?: 'strip' | 'interlude' | 'tuition-opener';
+      interlude (one photo owning the viewport, benchmark move), the
+      code-owned tuition opener statement, the home heritage strip
+      ("Fifty-five Septembers"), or the chooser rows (self-segmentation). */
+  kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser';
   slot: string;
   bg?: 'cream' | 'grey' | 'white';
   captions?: string[];
@@ -29,11 +34,19 @@ export interface PhotoMoment {
 
 export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
   home: [
+    // Self-segmentation chooser (2026 benchmark move): three tappable rows
+    // routing "just looking / comparing / ready" straight to A Day, Tuition,
+    // and the tour form. First band under the hero: the funnel as furniture.
+    { after: -1, kind: 'chooser', slot: 'home-chooser' },
+    // The heritage strip replaces the stat-box band's slot (after the class
+    // cards): the 1969 story as the page's proof moment, ending in the empty
+    // frame that IS the tour invitation.
+    { after: 'hp-classes', kind: 'heritage', slot: 'home-heritage' },
     // The full-bleed interlude (benchmark move): one unscrimmed photo owning
     // a viewport, placed late in the page as the emotional beat before the
     // closing sections.
     {
-      after: 7,
+      after: 'k12',
       kind: 'interlude',
       slot: 'home-interlude',
       caption: 'Some mornings you just have to be there for.',
@@ -55,15 +68,17 @@ export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
   tuition: [
     // The values-led opener leads the page (before every section).
     { after: -1, kind: 'tuition-opener', slot: 'tuition-opener' },
+    // After the fee table (hoisted first by the Act II doctrine): the warmth
+    // right behind the numbers.
     {
-      after: 1,
+      after: 'k53',
       slot: 'tuition-strip',
       captions: ['Mornings like this', 'Small classes, real attention', 'Worth every penny'],
     },
   ],
   enroll: [
     {
-      after: 0,
+      after: 'seed-enroll-steps',
       slot: 'enroll-strip',
       captions: ['Your first day starts here', 'Room for one more', 'Come say hello'],
     },
@@ -79,7 +94,8 @@ export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
     {
       after: 1,
       slot: 'coop-strip',
-      captions: ['Parents in the room', 'The village at work', 'Snack time, handled'],
+      // Photo-agnostic on purpose (see the header note).
+      captions: ['Mornings together', 'The village at work', 'Worth showing up for'],
     },
   ],
 };

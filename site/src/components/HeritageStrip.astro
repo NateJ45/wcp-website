@@ -1,0 +1,91 @@
+---
+/* ============================================================================
+   HeritageStrip — "Fifty-five Septembers." (the home heritage moment)
+   ============================================================================
+   Replaces the stat-box band's slot on home (Act II: the hero-metric template
+   is retired; the 1969 story becomes the proof moment instead). One huge
+   display statement, one sentence, three real prints from the registry, and a
+   fourth EMPTY taped frame that is the tour invitation — the scrapbook page
+   with room for one more photo. Code-owned: zero Sanity knobs, degrades to
+   nothing if the registry has no photos (same contract as PhotoStrip).
+   Captions are photo-agnostic evergreens (the caption-mismatch rule).
+   ============================================================================ */
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl, imageSrcSet } from '@/lib/image';
+
+interface Props {
+  slot: string;
+}
+const { slot } = Astro.props;
+const photos = await photosFor(slot, 3);
+const captions = ['Since 1969', 'Every fall', 'Still going strong'];
+const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+---
+
+{
+  photos.length > 0 && (
+    <section class="wcp-section bg-cream" aria-labelledby="heritage-title">
+      <div class="wcp-container py-[var(--wcp-space-2xl)]">
+        <h2
+          id="heritage-title"
+          class="max-w-[16ch] text-[clamp(2.4rem,6vw+0.5rem,4.5rem)] text-balance"
+          data-reveal
+        >
+          Fifty-five Septembers.
+        </h2>
+        <p class="mt-4 max-w-xl text-lg leading-relaxed" data-reveal>
+          Families have been taping their kids' years to these walls since 1969. There is room on
+          the page for yours.
+        </p>
+        <ul class="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4" role="list">
+          {photos.map((p, i) => (
+            <li>
+              <figure class="wcp-print wcp-tape-tc relative" data-reveal="settle">
+                <img
+                  src={imageUrl(p.image as never, 700)}
+                  srcset={imageSrcSet(p.image as never)}
+                  sizes="(min-width: 1024px) 20rem, 46vw"
+                  alt={p.alt}
+                  loading="lazy"
+                  decoding="async"
+                  class="aspect-[4/3] w-full object-cover"
+                />
+                <figcaption>{captions[i]}</figcaption>
+              </figure>
+            </li>
+          ))}
+          <li>
+            {/* The empty frame: the invitation. Same print proportions, dashed
+                where a photo would be, taped like its neighbors. */}
+            <a
+              href={TOUR_HREF}
+              class="wcp-print wcp-tape-tc relative block no-underline"
+              data-reveal="settle"
+              style="--print-tilt: 1.2deg"
+            >
+              <span
+                class="flex aspect-[4/3] w-full items-center justify-center border-2 border-dashed border-navy/35 bg-white"
+                aria-hidden="true"
+              >
+                <svg
+                  class="h-10 w-10 text-navy/30"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
+              <span class="block pt-2 pb-1 text-center font-display text-base text-navy">
+                2026: your kid here?{' '}
+                <span class="text-[#a85300] underline underline-offset-2">Come see a morning</span>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  )
+}
