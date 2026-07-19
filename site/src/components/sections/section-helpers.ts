@@ -55,6 +55,7 @@ export function bandSize(section: SectionData): 'compact' | 'default' {
 const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'navy'> = {
   countdownSection: 'navy',
   instagramSection: 'navy',
+  statBandSection: 'navy',
   formSection: 'grey',
   quickFactsSection: 'grey',
   newsletterSignupSection: 'cream',

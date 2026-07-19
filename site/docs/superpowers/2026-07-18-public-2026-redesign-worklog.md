@@ -190,3 +190,33 @@ Nathan, reviewing the sliced home captures from his phone:
 Docs synced: PAGE_BUILDER.md grammar section, in-Studio guide (eyebrow line),
 globals.css grammar comment. Gates: check/lint/format green, build green,
 `npm test` 210 passed, `npm run test:unit` 182 passed.
+
+## All-pages design-doctrine sweep (2026-07-19)
+
+Nathan asked for an audit that this session's design changes hold on every
+page. Built a computed-style sweep (scratchpad design-sweep.mjs) checking all
+28 prerendered routes for: chip eyebrows, navy class cards, navy adjacency,
+doodle alternation, hero + footer sweep seams, footer photo/links, no amber
+CTA closers, no orange glows. First run: 25/28 clean, two real violations:
+
+1. **/safety** — the navy stat strip sat directly under the navy drench hero.
+   Root cause: StatBandSection hardcoded `bg="navy"` while effectiveBg reported
+   'white' (no BG_DEFAULT entry), so the adjacency pass neither saw nor could
+   flip it. Fixed: BG_DEFAULT gains statBandSection:'navy'; the bridge honors
+   `section.background` (default navy) + computed seam; StatBlock gained a
+   `tone` prop ('navy' keeps amber/white, 'light' uses heading/ink tokens —
+   amber on white is ~1.9:1, never a light-band text color).
+2. **/reviews** — the stored navy "Loved your experience?" ctaSection sat
+   navy-on-navy above the synthesized navy tour closer; the pass only knew how
+   to flip non-cta neighbors. Fixed: when the CLOSER collides, a previous navy
+   ctaSection flips to its cream tone; a mid-page navy cta after navy also
+   flips itself to cream.
+
+Also gated the whole adjacency pass behind `pageSlug` (public-only, like the
+rest of the doctrine) so hub/preview stored colors can never be rewritten.
+Second sweep: 28/28 clean, zero issues. Verified live: /safety white stat
+strip reads navy-on-white; /reviews runs cream review CTA → sweep seam → navy
+closer. (The "washed out button" in one capture was the documented mid-reveal
+capture artifact; live computed style is bg-accent navy + white.)
+
+Gates: 210 public + 182 unit + 58 hub all green; format/lint/types clean.

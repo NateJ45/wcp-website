@@ -186,8 +186,11 @@ let prevBg: string | null = afterHero ? 'hero' : null;
 for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
 // Band-color adjacency (Nathan 2026-07-19): a navy band never follows a navy
 // band (the drench hero counts as navy). When two navys would touch, the
-// non-closer of the pair flips to white — the closing CTA keeps its identity.
-{
+// non-closer of the pair flips — the closing CTA keeps its identity, everything
+// else goes white (a mid-page ctaSection goes cream, its own light tone).
+// PUBLIC-ONLY, like the rest of the doctrine: hub/preview surfaces omit
+// pageSlug and keep their stored colors untouched (the hub-unchanged rule).
+if (pageSlug) {
   let prev = afterHero ? 'navy' : null;
   for (let i = 0; i < sections.length; i++) {
     const s = sections[i];
@@ -195,13 +198,21 @@ for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
     if (momentsAfter.has(i - 1) || (i === 0 && momentsAfter.has(-1))) prev = null; // a moment breaks adjacency
     let bg = effectiveBg(s);
     if (bg === 'navy' && prev === 'navy') {
-      if (s._type === 'ctaSection') {
-        // keep the closer navy; flip the PREVIOUS navy band instead
+      if (s._type === 'ctaSection' && i === lastBandIndex) {
+        // keep the closer navy; flip the PREVIOUS navy band instead. A stored
+        // navy ctaSection above the closer flips to its cream tone (found on
+        // /reviews: the "Loved your experience?" CTA sat navy-on-navy against
+        // the synthesized tour closer, 2026-07-19 all-pages sweep).
         for (let j = i - 1; j >= 0; j--) {
-          if (sections[j]._type === 'noticeBarSection') continue;
-          if (sections[j]._type !== 'ctaSection') sections[j].background = 'white';
+          const p = sections[j];
+          if (p._type === 'noticeBarSection') continue;
+          if (p._type === 'ctaSection') p.tone = 'cream';
+          else p.background = 'white';
           break;
         }
+      } else if (s._type === 'ctaSection') {
+        s.tone = 'cream';
+        bg = 'cream';
       } else {
         s.background = 'white';
         bg = 'white';

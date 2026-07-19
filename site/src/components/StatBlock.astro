@@ -14,14 +14,21 @@ interface Props {
   prefix?: string;
   suffix?: string;
   label: string;
+  /** Band the block sits on. `navy` (default, the classic strip) keeps the
+      amber number + white label; `light` swaps to the theme heading/ink tokens
+      so a stat band the navy-adjacency pass flips to white stays readable
+      (amber on white is ~1.9:1 — never a text color on light bands). */
+  tone?: 'navy' | 'light';
   class?: string;
 }
-const { value, prefix = '', suffix = '', label, class: className } = Astro.props;
+const { value, prefix = '', suffix = '', label, tone = 'navy', class: className } = Astro.props;
+const onNavy = tone === 'navy';
 ---
 
 <div
   class:list={[
-    '@container rounded-[var(--radius)] border border-white/10 bg-white/[0.06] p-8 text-center',
+    '@container rounded-[var(--radius)] border p-8 text-center',
+    onNavy ? 'border-white/10 bg-white/[0.06]' : 'border-navy/10 bg-navy/[0.04]',
     className,
   ]}
   data-reveal
@@ -34,14 +41,22 @@ const { value, prefix = '', suffix = '', label, class: className } = Astro.props
        ceiling is 3rem = the old text-5xl, so wide layouts look identical. */
   }
   <span
-    class="block font-display text-[clamp(1.6rem,17cqi,3.75rem)] leading-none whitespace-nowrap text-amber tabular-nums"
+    class:list={[
+      'block font-display text-[clamp(1.6rem,17cqi,3.75rem)] leading-none whitespace-nowrap tabular-nums',
+      onNavy ? 'text-amber' : 'text-heading',
+    ]}
   >
     {prefix}<span data-countup data-count={value}>{value}</span>{suffix}
   </span>
-  <span class="mt-3 block text-sm font-bold tracking-wide text-white uppercase">{label}</span>
+  <span
+    class:list={[
+      'mt-3 block text-sm font-bold tracking-wide uppercase',
+      onNavy ? 'text-white' : 'text-heading',
+    ]}>{label}</span
+  >
   {
     Astro.slots.has('default') && (
-      <p class="mt-2 text-sm leading-relaxed text-white/70">
+      <p class:list={['mt-2 text-sm leading-relaxed', onNavy ? 'text-white/70' : 'text-ink-muted']}>
         <slot />
       </p>
     )

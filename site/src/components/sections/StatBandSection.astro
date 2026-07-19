@@ -16,9 +16,15 @@ interface Props {
 const { section } = Astro.props;
 const stats = (section.stats as Stat[] | undefined) ?? [];
 const num = (v: string) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
+// The stat band defaults to the navy sheet (BG_DEFAULT in section-helpers
+// mirrors this so effectiveBg tells the renderer the truth), but it must
+// HONOR a background the renderer's navy-adjacency pass writes back — the
+// hardcoded bg="navy" once put a navy strip directly under /safety's navy
+// drench hero, invisible to the recolor (2026-07-19 all-pages sweep).
+const bg = (section.background as 'white' | 'grey' | 'cream' | 'navy' | undefined) ?? 'navy';
 ---
 
-<Section bg="navy" seam label={section.ariaLabel as string}>
+<Section bg={bg} seam={section.seam} label={section.ariaLabel as string}>
   {
     /* grid-cols-1 at base: wide stat values (e.g. "$67,165") have a min-content
       floor that overflows 320px in two columns. */
@@ -27,7 +33,13 @@ const num = (v: string) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
     {
       stats.map((s) => (
         <li>
-          <StatBlock value={num(s.value)} prefix={s.prefix} suffix={s.suffix} label={s.label}>
+          <StatBlock
+            value={num(s.value)}
+            prefix={s.prefix}
+            suffix={s.suffix}
+            label={s.label}
+            tone={bg === 'navy' ? 'navy' : 'light'}
+          >
             {s.note}
           </StatBlock>
         </li>
