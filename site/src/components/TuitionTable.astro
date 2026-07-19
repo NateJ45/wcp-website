@@ -30,9 +30,11 @@ interface Props {
 const { caption, columns, rows, class: className } = Astro.props;
 ---
 
-{/* Below lg: a card per class — all columns visible, nothing to scroll. Cards
+{
+  /* Below lg: a card per class — all columns visible, nothing to scroll. Cards
     are paper with a full hairline edge — the old border-t-4 strip was the
-    banned side-stripe idiom (Act II strip purge, Phase 0 detector). */}
+    banned side-stripe idiom (Act II strip purge, Phase 0 detector). */
+}
 <ul class={cn('space-y-4 lg:hidden', className)} aria-label={caption}>
   {
     rows.map((row) => (
