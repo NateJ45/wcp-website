@@ -177,6 +177,12 @@ export const guides: Guide[] = [
         text: 'Every page needs exactly one hero banner at the very top, so that part is fixed and cannot be removed or moved. Everything below it is yours to arrange.',
       },
       {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'The home page’s "Come find us" block is temporarily fixed.',
+        text: 'On the home page, the block with our address, phone number, and when tours run is currently built into the site rather than editable here, so you will not find it in the Sections list. The address and phone number come from Site Settings, so update those there if they change. It will move back into the page builder later.',
+      },
+      {
         kind: 'seealso',
         items: ['Edit the menus', 'Photos and images', 'Do it yourself vs. ask for help'],
       },
@@ -845,6 +851,7 @@ export const guides: Guide[] = [
           'Switch to the **Everything** workspace (the name in the top-left corner), click **Testimonials**, then **＋**.',
           'Paste the quote, and add who said it (first name and last initial is fine).',
           'Add their **connection** (for example "Twos parent") and pick a **tag** so it shows on the right pages.',
+          'Add a **Family photo** if you have one. It is optional, a square crop looks best, and it shows as a small print clipped to the quote.',
           'Turn on **Feature this one?** if you want it on the homepage.',
           '**Publish**.',
         ],
