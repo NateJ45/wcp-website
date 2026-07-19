@@ -8,9 +8,27 @@ mobile + desktop per route as the performance baseline. Benchmarks: 3 direct com
 + 4-5 out-of-category 2026 craft references (agents, phones-first). Incumbent under
 judgment: the 2026-07-17 "Fifty-Five Septembers" scrapbook direction.
 
-## Verdict summary (filled at the end)
+## Verdict summary
 
-TBD
+**Site-wide design health: 26/40** (impeccable snapshot
+`.impeccable/critique/2026-07-19T00-17-33Z__site-src-pages-slug-astro-public-marketing-site.md`;
+first run for this target). Route range: co-op-life 31 (best) to 404 14 (worst).
+
+**The one-line verdict: right register, wrong grammar, uneven finish.** The
+Fifty-Five Septembers scrapbook register is correct, on-trend (the 2026 anti-AI-slop
+turn), and locally excellent (drenched class cards, parent notes, seams, drench).
+But it was installed at COMPONENT level: the page grammar underneath is still the
+centered eyebrow + heading + icon-card-grid template on every route, plus a
+hero-metric stat band, doctrine-drifting hero CTAs, display type that hyphenates
+mid-word at 390, a signature font that loads and is never applied, and desktop bands
+that are inflated phone columns. Nothing here says "start over"; everything says
+"finish the job at composition level." That is the brief
+(`2026-07-18-public-2026-redesign-brief.md`: CONSTRUCTION PAPER).
+
+**Live bugs found while auditing (on main today):** the /tuition white-on-white
+timeline headings (P0, hotfix chip filed), the /404 desktop header collision, the
+sitewide dark-mobile logo variant, the never-applied Great Vibes signatures, the
+4.7s reveal stagger on /a-day.
 
 ## The deterministic scan (impeccable detector)
 
@@ -238,11 +256,30 @@ this; only decision-relevant rows are kept here.
 
 ## Lighthouse baseline
 
-TBD (mobile + desktop per route; see `lh-baseline.md` artifacts)
+Full table: [2026-07-18-lighthouse-baseline.md](2026-07-18-lighthouse-baseline.md)
+(28 routes x mobile + desktop, lighthouse CLI against the branch build on this
+Windows machine: treat numbers as RELATIVE baseline; Linux CI is authoritative).
+
+- **a11y 100 on every route, both form factors.** The floor the redesign must hold.
+- Mobile perf 76-90; desktop 85-99. Worst mobile LCPs (local lab): /newsletter/archive
+  5.1s, /virtual-tour 4.8s, /why-wcp 4.7s, /classes/pre-k 4.6s, /a-day 4.5s, home
+  4.1s. CLS ≤ 0.034 everywhere; TBT 0 everywhere (static site, near-zero JS: the
+  redesign must keep this property).
+- Home transfer 4.0-4.9MB (heaviest route: IG wall + photography); most routes
+  0.6-2MB.
+- SEO 66 on /search and /thank-you: expected (noindex'd on purpose).
+- Windows note: `lhci autorun` dies on an EPERM temp-profile cleanup before writing
+  ANY report; workaround is driving the lighthouse CLI per-URL with our own
+  `--user-data-dir` (script in the session scratchpad).
 
 ## Benchmarks
 
-TBD (competitor + craft agents)
+Snapshots in this directory: [competitors, phones-first](2026-07-18-competitor-benchmark-mobile.md)
+(Goddard West Chester, Primrose West Chester, Guidepost; nobody local publishes a
+price or truly books a tour online: both are open weapons) and
+[2026 craft references](2026-07-18-craft-references-2026.md) (Duolingo, Headspace,
+Tony's, Who Gives A Crap, Oatly; the shared grammar: typographically loud,
+kinetically quiet, color-rationed, one CTA, structural mobile/desktop differences).
 
 ## Overflow sweep
 

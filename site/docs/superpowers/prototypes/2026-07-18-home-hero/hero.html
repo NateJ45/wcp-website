@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Hero prototype: Construction Paper (Act II) — WCP redesign</title>
+<!-- Rides the site's real built stylesheet so tokens, fonts, drench, and sheen
+     are the production ones. Serve this file from dist/client/_proto/hero.html
+     (copied there by the session; this docs copy is the durable source). -->
+<link rel="stylesheet" href="/_astro/BaseLayout.DUhYBVkB.css" />
+<style>
+  /* ---- prototype-only additions (candidates for the Phase 1 kit) ---- */
+  @font-face {
+    font-family: 'Great Vibes';
+    src: url('/_astro/great-vibes-latin-400-normal.q5-78SH_.woff2') format('woff2');
+    font-display: swap;
+  }
+  body { margin: 0; font-family: 'Quicksand Variable', system-ui, sans-serif; }
+
+  /* The sheet system: a band is a full color or white, hard edges. */
+  .sheet-navy { position: relative; overflow: clip; }
+  .sheet-cream { background: var(--color-cream); min-height: 38vh; }
+
+  /* Mock header strip (composition context only) */
+  .proto-header {
+    position: absolute; inset: 0 0 auto 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.1rem;
+  }
+  .proto-header img { height: 44px; width: auto; }
+  .proto-tour-pill {
+    font-weight: 700; color: var(--color-navy); background: #fff;
+    border-radius: 999px; padding: 0.55rem 1.15rem; text-decoration: none;
+    font-size: 0.95rem; box-shadow: 0 2px 0 rgba(1,32,58,0.35);
+  }
+
+  .hero {
+    display: grid; gap: 1.4rem;
+    padding: 5.4rem 1.25rem 0;
+    max-width: 74rem; margin-inline: auto;
+    align-items: center;
+  }
+
+  /* Taped paper chip (replaces the uppercase eyebrow) */
+  .taped-chip {
+    justify-self: start;
+    position: relative;
+    background: var(--color-cream);
+    color: #6b3a00;
+    font-weight: 700; font-size: 0.95rem;
+    padding: 0.45rem 0.95rem;
+    transform: rotate(-1.2deg);
+    box-shadow: 0 1px 4px rgba(1, 32, 58, 0.35);
+  }
+  .taped-chip::before {
+    content: ''; position: absolute; top: -0.55rem; left: 50%;
+    width: 3.4rem; height: 1.05rem; transform: translateX(-50%) rotate(1.6deg);
+    background: linear-gradient(rgba(255,251,235,0.55), rgba(255,251,235,0.4));
+    border-left: 1px solid rgba(255,255,255,0.35);
+    border-right: 1px solid rgba(255,255,255,0.35);
+    clip-path: polygon(2% 0, 98% 4%, 100% 100%, 0 96%);
+  }
+
+  h1.display {
+    font-family: 'Captain Comic', 'Quicksand Variable', sans-serif;
+    color: #fff; margin: 0;
+    font-size: clamp(2.1rem, 6.4vw + 0.45rem, 4.9rem);
+    line-height: 1.04;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  h1 .accent { white-space: nowrap; position: relative; display: inline-block; }
+  h1 .accent svg {
+    position: absolute; left: 2%; right: 0; bottom: -0.14em; width: 96%; height: 0.22em;
+  }
+  .hero-sub {
+    color: rgba(255,255,255,0.92); font-size: 1.1rem; line-height: 1.55;
+    max-width: 34rem; margin: 0;
+  }
+
+  /* ONE conversion action + proof line */
+  .cta-row { display: grid; gap: 0.65rem; justify-items: start; }
+  .cta-press {
+    display: inline-block; text-decoration: none;
+    font-weight: 700; font-size: 1.15rem; color: #01203a;
+    background: var(--color-amber);
+    border-radius: 999px; padding: 0.95rem 2.1rem;
+    box-shadow: 0 5px 0 #b97d00;
+    transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.12s;
+  }
+  .cta-press:active { transform: translateY(4px); box-shadow: 0 1px 0 #b97d00; }
+  @media (prefers-reduced-motion: reduce) { .cta-press { transition: none; } }
+  .proof-line {
+    color: rgba(255,255,255,0.88); font-size: 0.95rem; font-weight: 600;
+  }
+  .proof-line .stars { color: var(--color-amber); letter-spacing: 0.1em; }
+  .quiet-link { color: rgba(255,255,255,0.85); font-size: 0.98rem; }
+  .quiet-link a { color: #fff; font-weight: 700; }
+
+  /* The living photograph: a real print, honestly taped */
+  .print {
+    position: relative;
+    background: #fff;
+    padding: 0.65rem 0.65rem 0;
+    box-shadow: 0 10px 24px rgba(1, 12, 24, 0.45);
+    transform: rotate(-1.6deg);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    max-width: 34rem;
+    justify-self: center;
+  }
+  .print:hover { transform: rotate(0deg); }
+  @media (prefers-reduced-motion: reduce) { .print, .print:hover { transition: none; transform: rotate(-1.6deg); } }
+  .print .frame { position: relative; aspect-ratio: 16/10; overflow: hidden; background: #01203a; }
+  .print video, .print img.poster {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .print figcaption {
+    font-family: 'Captain Comic', sans-serif;
+    color: #01203a; font-size: 1rem; text-align: center;
+    padding: 0.7rem 0.4rem 0.85rem;
+  }
+  .print figcaption .by { color: #a85300; }
+  .tape { position: absolute; z-index: 2; height: 1.6rem; width: 5.2rem;
+    background: linear-gradient(100deg, rgba(255,248,225,0.5), rgba(255,248,225,0.36) 55%, rgba(255,248,225,0.5));
+    box-shadow: 0 1px 2px rgba(1,12,24,0.18);
+    clip-path: polygon(1.5% 0, 98% 3%, 100% 97%, 0.5% 100%);
+  }
+  .tape-tl { top: -0.75rem; left: -1.6rem; transform: rotate(-38deg); }
+  .tape-tr { top: -0.7rem; right: -1.7rem; transform: rotate(35deg); }
+
+  /* Handwritten annotation (aria-hidden; meaning duplicated in the caption) */
+  .annotation {
+    position: absolute; display: none;
+    font-family: 'Great Vibes', cursive; color: var(--color-amber);
+    font-size: 1.7rem; transform: rotate(-4deg); white-space: nowrap;
+  }
+
+  /* Desktop: its own composition, not a wider phone */
+  @media (min-width: 64rem) {
+    .hero {
+      grid-template-columns: 1.08fr 0.92fr;
+      column-gap: 3.5rem;
+      padding-top: 7.5rem;
+    }
+    .hero-copy { display: grid; gap: 1.5rem; justify-items: start; align-content: center; }
+    .print {
+      transform: rotate(2deg) translateY(4.5rem); /* taped over the next sheet's edge */
+      z-index: 10;
+      max-width: none;
+      margin-top: -3rem;
+    }
+    .print:hover { transform: rotate(0.4deg) translateY(4.5rem); }
+    @media (prefers-reduced-motion: reduce) {
+      .print, .print:hover { transform: rotate(2deg) translateY(4.5rem); }
+    }
+    .annotation { display: block; right: 4%; top: -2.6rem; }
+    .hero { padding-bottom: 0; }
+  }
+  @media (max-width: 63.98rem) {
+    .hero-copy { display: grid; gap: 1.05rem; }
+    .hero { padding-top: 5.2rem; }
+    .print { margin-bottom: -3.2rem; z-index: 10; }
+  }
+
+  /* the next sheet peeks in with its scallop seam, so the overlap reads */
+  .seam { display: block; width: 100%; height: 34px; color: var(--color-cream); }
+  .sheet-cream-note {
+    max-width: 60rem; margin-inline: auto; padding: 4.6rem 1.25rem 3rem;
+    color: #503000; font-size: 1.02rem;
+  }
+</style>
+</head>
+<body>
+<div class="wcp-site-paper">
+  <section class="sheet-navy wcp-hero-drench" aria-label="Hero prototype">
+    <div class="proto-header" aria-hidden="true">
+      <img src="/_astro/wcp-logo-white.B2KJ-W9s_RHskJ.webp" alt="" />
+      <a class="proto-tour-pill" href="#">Schedule a Tour</a>
+    </div>
+
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="taped-chip">Now enrolling 2026-27</span>
+        <h1 class="display">
+          <span class="accent">A front-row seat<svg viewBox="0 0 220 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8 C 40 3, 90 10, 130 6 S 200 4, 217 7" fill="none" stroke="var(--color-amber)" stroke-width="5" stroke-linecap="round"/></svg></span>
+          to who they'll become.
+        </h1>
+        <p class="hero-sub">A parent-run co-op in West Chester, Ohio. Play-based
+          learning, teachers who stay, and you in the room for all of it.</p>
+        <div class="cta-row">
+          <a class="cta-press wcp-sheen" href="#">Schedule a Tour</a>
+          <span class="proof-line"><span class="stars" aria-hidden="true">★★★★★</span>
+            4.8 on Google · <a href="#" style="color:#fff">our tuition is public</a></span>
+          <span class="quiet-link">Already sure? <a href="#">Start enrolling</a></span>
+        </div>
+      </div>
+
+      <figure class="print" style="position: relative">
+        <span class="tape tape-tl" aria-hidden="true"></span>
+        <span class="tape tape-tr" aria-hidden="true"></span>
+        <span class="annotation" aria-hidden="true">filmed by our families ↓</span>
+        <div class="frame">
+          <img class="poster" src="https://cdn.sanity.io/images/niemhgev/production/29dbde5119fd05d1f1296f6d15c3ff59cccaec67-1600x900.webp?w=1100&fit=max&auto=format" alt="" width="1100" height="619" />
+          <video muted loop playsinline preload="none" aria-hidden="true">
+            <source src="https://cdn.sanity.io/files/niemhgev/production/95f6d8ee0f2e58ae05a3c17790cd6eab53b909e1.webm" type="video/webm" />
+            <source src="https://cdn.sanity.io/files/niemhgev/production/9d13d95bc866866c1384c85263510108b5496f38.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <figcaption>A morning at WCP <span class="by">· filmed by our families</span></figcaption>
+      </figure>
+    </div>
+
+    <svg class="seam" viewBox="0 0 1440 34" preserveAspectRatio="none" aria-hidden="true" style="display:block">
+      <path d="M0 34 L0 18 Q 30 2 60 18 T 120 18 T 180 18 T 240 18 T 300 18 T 360 18 T 420 18 T 480 18 T 540 18 T 600 18 T 660 18 T 720 18 T 780 18 T 840 18 T 900 18 T 960 18 T 1020 18 T 1080 18 T 1140 18 T 1200 18 T 1260 18 T 1320 18 T 1380 18 T 1440 18 L 1440 34 Z" fill="var(--color-cream)"/>
+    </svg>
+  </section>
+
+  <section class="sheet-cream">
+    <div class="sheet-cream-note">
+      <strong>(Prototype note, not part of the hero.)</strong> The cream sheet under
+      the drench exists so the print's "taped over the edge" overlap reads. Points
+      being demonstrated: one conversion action with proof under it; the film print
+      inside the phone's first one-and-a-half viewports; honest tape; a taped paper chip
+      instead of the uppercase eyebrow; balanced headline that never orphans;
+      pressable CTA physics; hover-straighten; everything still under the navy
+      drench doctrine.
+    </div>
+  </section>
+</div>
+<script>
+  // Play the film only for visitors who accept motion; poster stays otherwise.
+  const v = document.querySelector('video');
+  if (v && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    v.preload = 'auto';
+    v.play().then(() => { v.style.opacity = '1'; }).catch(() => {});
+  }
+</script>
+</body>
+</html>

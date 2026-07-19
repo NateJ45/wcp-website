@@ -19,17 +19,25 @@ should be able to resume from the documents in this directory alone.
 - [x] Branch `redesign/public-2026` created from main @ dbde4b0, pushed
 - [x] Draft PR open: https://github.com/NateJ45/wcp-website/pull/1
 - [x] Phase 0: build + serve the branch locally (http-server :4400 over dist/client)
-- [~] Phase 0: route walk at 320/390/768/1024/1440/1920, light + dark, screenshots
-      (sweep v2 running; v1 discarded for a lazy-image capture artifact — full-page
-      captures MUST scroll through the page first or below-fold imagery ships blank)
-- [~] Phase 0: per-route critique + slop detection (detector DONE, 25 findings; own
-      funnel-core review DONE → audit doc; per-route agent fan-out pending sweep)
-- [ ] Phase 0: Lighthouse baseline (mobile + desktop) per route
-- [ ] Phase 0: benchmarks (3 direct competitors, 3-5 out-of-category craft references)
-- [ ] Phase 0: scored audit written (keep / rework / kill per element)
-- [ ] Phase 0: design brief with ONE named direction + anti-reference list
-- [ ] Phase 0: new home hero prototype served for preview
-- [ ] STOP: Nathan approves direction
+- [x] Phase 0: route walk 320/390/768/1024/1440/1920 x light/dark: 348 checks, ZERO
+      overflows. Two capture gotchas learned: (1) full-page captures must scroll
+      through the page first or lazy imagery ships blank; (2) content-visibility:auto
+      regions capture blank even so — every capture-P0 needs live verification
+      (three were disproven live).
+- [x] Phase 0: per-route critique + slop detection (detector 25 findings; lead review
+      of funnel core; 6 agent clusters; snapshot persisted to .impeccable/critique/,
+      site-wide 26/40)
+- [x] Phase 0: Lighthouse baseline → docs/superpowers/2026-07-18-lighthouse-baseline.md
+      (a11y 100 everywhere; local-lab relative numbers; lhci EPERM workaround = drive
+      lighthouse CLI per-URL with own --user-data-dir)
+- [x] Phase 0: benchmarks → 2026-07-18-competitor-benchmark-mobile.md +
+      2026-07-18-craft-references-2026.md
+- [x] Phase 0: scored audit → 2026-07-18-public-2026-redesign-audit.md
+- [x] Phase 0: design brief (CONSTRUCTION PAPER) → 2026-07-18-public-2026-redesign-brief.md
+- [x] Phase 0: home hero prototype → docs/superpowers/prototypes/2026-07-18-home-hero/
+      hero.html (open directly, or copy into dist/client/_proto/ and serve; verified
+      320/390/1440, no overflow, reduced-motion poster fallback)
+- [ ] STOP: Nathan approves direction (gate reached this session; awaiting answer)
 - [ ] Phase 1: design system
 - [ ] Phase 2: routes (funnel order)
 - [ ] Phase 3: sweep + docs sync + PR ready
