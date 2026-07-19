@@ -79,7 +79,6 @@ const normalizedMap = new Map(
   Object.entries(MAP).map(([author, file]) => [normalizeAuthor(author), { author, file }]),
 );
 
-const matchedDocIds = new Set();
 const unmatchedMapAuthors = new Set(Object.keys(MAP));
 const unmatchedDocs = [];
 
@@ -94,7 +93,6 @@ for (const doc of docs) {
     continue;
   }
 
-  matchedDocIds.add(doc._id);
   unmatchedMapAuthors.delete(entry.author);
 
   if (doc.photo && doc.photo.asset) {
