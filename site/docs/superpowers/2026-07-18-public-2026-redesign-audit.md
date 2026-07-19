@@ -69,9 +69,13 @@ banned idioms survive at composition level:
   marquee scrapbook element misses its own metaphor.
 - Class cards (drench): the strongest, most ownable band on the site, but internal
   alignment is ragged (price wraps differently per card, CTA widths jump).
-- Great Vibes signatures did not render in captures (plain Quicksand shown). Verify
-  `signature-font.ts` fires on production build; if it does, timing still means most
-  visitors read the fallback first.
+- **Great Vibes signatures never render, for anyone (confirmed live).** The loader
+  (`signature-font.ts`) works: `document.fonts` reports `Great Vibes: loaded`. But no
+  CSS rule ever points `.wcp-signature` at it: the token `--font-signature` exists in
+  `globals.css:258` and the component only sets `wcp-signature block text-3xl ...`
+  (Quicksand). The incumbent's signature "handwritten moment" silently shipped in the
+  body font. P1 craft bug and a fair symbol of the wider finding: the system was
+  specced but the page never received it.
 - Testimonial parent notes: right register, correct anti-slop direction. Keep.
 - Interlude band (unscrimmed photo + one caption): works, elite move, keep and extend.
 - IG wall: authentic (real flyers/photos) but uncurated: includes an April-Fools fake
@@ -85,9 +89,56 @@ banned idioms survive at composition level:
   icon-grid explainer: the payoff is ~4 viewports deep on the money page.
 - Dead band: ~0.6 viewport of empty white after home testimonials.
 
-## Per-route catalogue (agent fan-out results)
+## Per-route catalogue (agent fan-out, verified spot-checks by lead)
 
-TBD
+Scores are /40, honest bands (most real pages 20-32). Full agent reports informed
+this; only decision-relevant rows are kept here.
+
+### Classes cluster: twos 26, threes 24, pre-k 27
+
+- Verdict: one template stamped three times; Pre-K partially differentiates (AM/PM
+  price cards are the only place class color does real work). Twos-amber and
+  Threes-green appear nowhere ownable on their own pages.
+- KEEP: heroes (real classroom photos on twos/pre-k), typical-day timelines, post-it
+  testimonial component, scalloped CTA edge + wave footer, 4.8 chip.
+- REWORK: 13-22 icon cards per page (the monoculture); teacher band is a phone card
+  floating in an empty 1440 band; timeline half-empty at 1440; Threes hero photo is a
+  camera-roll outtake (adult with phone, tourist shirt).
+- KILL: Pre-K's second curriculum band (13 curriculum cards on one page).
+- P1 content-trust: the Threes testimonial is signed by the site's own designer
+  ("Nathan Nixon, Twos & Threes Parent" + footer "Designed by Nixon Creative
+  Studio"). Swap for another parent.
+- Systemic type bug: display headings break inside hyphenated compounds at 390
+  ("TWO-YEAR-/OLD", "THREE-/YEAR-OLD?", "PRE-/K GRADUATES", "FOUR-/YEAR-OLD").
+- Copy: British spellings on twos/threes ("colours", "recognising", "practising");
+  the Caregiver & Me potty callout is pasted verbatim across twos AND threes;
+  duplicate identical Mrs. Erin block on both pages; footer "OH45069" missing space
+  sitewide; three labels for one action (Tour / Schedule a Tour / Request a tour).
+- Dark: logo wordmark near-invisible on dark topbar; post-it becomes grey glass +
+  floating grey tape; amber/orange icon chips go muddy.
+
+### Money cluster: tuition 26, enroll 22
+
+- **P0 (live on main, hotfix chip filed):** /tuition "Registration Timeline" card
+  headings render white-on-white in LIGHT mode (FeatureCard `h3 text-heading` inside
+  a white card inherits the navy band's flipped heading token). Verified by lead on
+  390-light-t08.
+- /tuition: price first paints in viewport 4 at 390 (hero claim with zero numbers →
+  manifesto → 4 icon cards → table). The manifesto band ("EVERY FEE, PUBLISHED. ON
+  PURPOSE.") is top-decile copy: KEEP verbatim. Table itself excellent at 1440 and
+  legible stacked at 390 BUT mobile cards carry the banned border-t-4 strip; $100
+  reg + $100 deposit rows repeat identically in all four cards. No "what does this
+  cost ME" answer: the built calculator section is placed on NO page. 4.8 chip only
+  appears 10 viewports deep. Hero CTAs Enroll+Breakdown (doctrine drift).
+- /enroll: TWO contradictory 3-step sections on one page (Reach out/Tour/Paperwork
+  vs Tour/Choose/Register); the /tuition fee table duplicated wholesale mid-page;
+  form titled "Ask about enrolling" is the page's only action (the actual enrollment
+  mechanism is never stated: say "the packet is handed to you at your tour");
+  "CLEAR, AFFORD-/ABLE PRICING" and "CO-/OP" display breaks; no commit-vs-deciding
+  fork. KEEP: 7-item honesty checklist, class picker (best band on either route),
+  parent-volunteer cream band.
+- Dark: cream bands go muddy brown; the navy "Send inquiry" pill nearly disappears
+  on near-black.
 
 ## Lighthouse baseline
 
