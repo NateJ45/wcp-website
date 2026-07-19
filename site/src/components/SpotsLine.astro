@@ -1,0 +1,28 @@
+---
+/* ============================================================================
+   SpotsLine — honest live-availability line under the hero tour CTA
+   ============================================================================
+   "Spots open in Twos and Threes for fall" — the strongest urgency the site
+   can ethically run, because it is simply TRUE (it reads the enrollment
+   chair's sheet through /api/availability, the same source as the class-card
+   badges). Rendered hidden; src/scripts/availability.ts fills the label and
+   reveals it only when at least one class is open or nearly full. Failure,
+   empty sheet, all-waitlist: it stays hidden and the hero is complete without
+   it. Sits on the navy hero, so the fixed light inks of the proof line apply.
+   ============================================================================ */
+---
+
+<p data-spots-line hidden class="wcp-proof-line mt-1.5 w-full">
+  <span
+    data-spots-dot
+    class="mr-1.5 inline-block h-2 w-2 rounded-full bg-green align-middle"
+    aria-hidden="true"></span><span data-spots-label></span>
+</p>
+
+{
+  /* Colocated so the hydrator ships on every hero page, not only pages that
+     render a ClassCard (Astro dedupes the include across both). */
+}
+<script>
+  import '@/scripts/availability';
+</script>

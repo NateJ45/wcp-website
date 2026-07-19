@@ -1819,6 +1819,55 @@ li:nth-child(4n + 4) > .hub-note {
   color: var(--page-accent-ink);
 }
 
+/* -- The hero trace draw-in: the ONE "wow" beat per pageview. The sweep
+   edge's orange crayon draws itself left-to-right shortly after load
+   (pathLength=1 on the path normalizes the dash math). Decorative svg, not
+   the LCP element, and the delay keeps it clear of first paint entirely.
+   Reduced-motion: the media query never applies, so the line is simply
+   painted. Exponential ease-out per the public motion vocabulary. --------- */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-site-paper .wcp-hero-trace {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: wcp-trace-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
+  }
+}
+@keyframes wcp-trace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* -- Story timeline: the crayon draws the day. A solid orange line fills down
+   the dashed spine tracking the reader's scroll through the story (the A Day
+   page's "film advancing" feel). Scroll-driven CSS only — Chrome/Edge get it,
+   Safari/Firefox keep the plain dashed spine (@supports), reduced-motion
+   users too. scaleY is transform-only; origin top so it grows downward. --- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper [data-stype='storyTimelineSection'] ol > div[aria-hidden]::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 -2px;
+      width: 4px;
+      border-radius: 2px;
+      background: var(--color-orange);
+      transform-origin: top;
+      animation: wcp-spine-grow linear both;
+      animation-timeline: view();
+      animation-range: cover 12% cover 78%;
+    }
+  }
+}
+@keyframes wcp-spine-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
 /* -- Schedule timelines: two ruled columns on wide screens (a 7-step single
    column left ~55% of a 1440 band empty on every class page). Sequence stays
    readable: steps run down the first column, then the second. -------------- */

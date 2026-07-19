@@ -228,3 +228,53 @@ Nathan, seeing the white-flipped strip: cut it entirely. `SECTION_DROP.safety
 4.8 already rides the hero proof line and the closer's rating slip; class
 size/staffing live in the "Secure, on purpose" sheet). Hero now sweeps
 straight into the white specifics band. Gates: 210 + 182 + format green.
+
+## Creative expansion batch (2026-07-19): items 4, 6, 7, 8, 9, 10 + back-to-top
+
+Nathan picked six items from the "top-tier portfolio + conversion tool" list:
+
+- **(4) A Day film-strip feel**: the story timeline's dashed spine gains a
+  solid orange crayon line that FILLS downward tracking scroll — pure
+  scroll-driven CSS (`animation-timeline: view()`), Chrome/Edge only by
+  @supports, reduced-motion + Safari/Firefox keep the static dashed spine.
+- **(6) SEO structured data**: AUDITED AS ALREADY DONE — Preschool JSON-LD
+  (StructuredData.astro, geo/hours/priceRange) ships on every public page and
+  [...slug].astro aggregates ONE FAQPage entity per page. aggregateRating is
+  deliberately absent (Google self-serving-review penalty; documented in the
+  component). No change made.
+- **(7) Live spots line**: `SpotsLine.astro` under every hero proof line +
+  `spotsLineFor()` in src/scripts/availability.ts — hydrates "Spots open in
+  Twos and Threes for fall." (green dot) or "A few spots left in X." (amber)
+  from /api/availability. Honest-only: all-waitlist/full/empty keeps it
+  hidden. Ships hidden for no-JS.
+- **(8) Septembers wall**: `SeptembersWall.astro`, new photo-moment kind
+  `septembers` on /about (after k26): a horizontal scroll-snap rail of every
+  school year 1969-2025 as tilted paper tabs (decades in navy), five registry
+  prints interleaved WITHOUT year attribution (honesty rule), ending in the
+  empty 2026 frame as tour invitation. Rail is tabindex=0 + role=region
+  (scrollable-region-focusable); page body never scrolls sideways.
+- **(9) /colophon**: code-owned page (footer legal-bar link added in
+  src/data/nav.ts): stack, Construction Paper, the standards, credit to
+  Nathan. Navy drench opener with the /404 header-collision pt fix. Added to
+  tests/routes.ts. Gotcha hit twice: Astro EATS the space when a line wraps
+  between a word and an inline <a> — the visible text ran "fromCloudflare";
+  fixed with explicit {' '} before wrapped links.
+- **(10) One wow**: the hero sweep edge's orange crayon now DRAWS itself
+  left-to-right 0.55s after load (`pathLength="1"` + stroke-dash animation,
+  `.wcp-hero-trace`), decorative svg so LCP untouched; reduced-motion gets it
+  painted.
+- **Back-to-top (both surfaces)**: `BackToTop.astro` in both BaseLayout
+  branches + src/scripts/back-to-top.ts. Bottom-LEFT (TourPill owns public
+  bottom-right; hub offsets above the phone tab bar, md:bottom-6). Appears
+  after 1.75 viewports, rAF-throttled passive listener, smooth scroll gated
+  on no-preference, refocuses #main after the jump. Insets are CLASSES not
+  inline style (an inline bottom would beat the md: override).
+
+Also fixed while in there: PAGE_BUILDER.md's stale "amber closing drench"
+paragraph now describes the navy + accent-underline closer; photo-moment kind
+list documented; colophon copy avoids year counts (brand says "Fifty-five
+Septembers", math says 57 — the copy now says "since 1969" and "decades").
+
+Verified live pre-test: wall renders 58 year tabs + 5 prints, rail scrolls
+internally with zero body overflow at 320; back-to-top appears at 3vh and
+returns to top; trace + spine animations attached; spots line ships hidden.

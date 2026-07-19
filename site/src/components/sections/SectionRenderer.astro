@@ -14,6 +14,7 @@ import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
 import TuitionOpener from '@/components/TuitionOpener.astro';
 import HeritageStrip from '@/components/HeritageStrip.astro';
+import SeptembersWall from '@/components/SeptembersWall.astro';
 import ChooserRows from '@/components/ChooserRows.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
 import {
@@ -305,6 +306,8 @@ const MAP: Record<string, any> = {
       <HeritageStrip slot={m.slot} />
     ) : m.kind === 'chooser' ? (
       <ChooserRows />
+    ) : m.kind === 'septembers' ? (
+      <SeptembersWall />
     ) : (
       <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
     ),
@@ -367,6 +370,8 @@ const MAP: Record<string, any> = {
             <HeritageStrip slot={m.slot} />
           ) : m.kind === 'chooser' ? (
             <ChooserRows />
+          ) : m.kind === 'septembers' ? (
+            <SeptembersWall />
           ) : (
             <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
           ),

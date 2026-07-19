@@ -1,0 +1,143 @@
+---
+/* ============================================================================
+   SeptembersWall — every September since 1969, on one wall (the About moment)
+   ============================================================================
+   The content moat no competitor can copy: 55+ years in one horizontal
+   scrapbook rail. Every school year gets a small paper year-tab in the site's
+   hand; real prints from the registry punctuate the run (captioned with the
+   Board's own captions or nothing — never an invented year, the honesty rule:
+   modern photos are NOT attributed to old years); the rail ends at September
+   2026 as an empty taped frame that is the tour invitation.
+
+   - The rail is a scroll-snap strip. Axe's scrollable-region-focusable rule:
+     tabindex=0 + role=region + aria-label so keyboard users can scroll it.
+   - Decade years (1969, 1979, ...) get the navy tab; other years small cream
+     tabs. Tabs are THEME-STABLE paper artifacts (fixed inks, like the taped
+     chip); the rail sits on the cream band.
+   - Degrades: no registry photos → the year run still renders (the wall is
+     the years; photos are garnish). No JS needed at all.
+   - Motion: none beyond the standard reveal; tilts are static transforms.
+   ============================================================================ */
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl } from '@/lib/image';
+
+const FOUNDED = 1969;
+const THIS_FALL = 2026;
+const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+
+const photos = await photosFor('septembers-wall', 5);
+// A print lands after every ~11th year so five spread across the run. Keyed by
+// year for the interleave below.
+const photoAfterYear = new Map<number, (typeof photos)[number]>();
+photos.forEach((p, i) => photoAfterYear.set(FOUNDED + 6 + i * 11, p));
+
+const years: number[] = [];
+for (let y = FOUNDED; y < THIS_FALL; y++) years.push(y);
+
+// Static tilt rotation for the year tabs — paper, not a spreadsheet.
+const TILTS = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1'];
+---
+
+<section class="wcp-section bg-cream" aria-labelledby="septembers-title">
+  <div class="wcp-container pt-[var(--wcp-space-2xl)] pb-10">
+    <h2
+      id="septembers-title"
+      class="max-w-[18ch] text-[clamp(2.2rem,5vw+0.5rem,3.8rem)] text-balance"
+      data-reveal
+    >
+      Every September since 1969.
+    </h2>
+    <p class="mt-4 max-w-xl text-lg leading-relaxed" data-reveal>
+      Decades of first days of school in the same warm rooms. Scroll through them; the last frame is
+      waiting for your family.
+    </p>
+  </div>
+
+  {/* Full-bleed rail; the container above keeps the heading aligned. */}
+  <div
+    class="wcp-sept-rail pb-[var(--wcp-space-xl)]"
+    tabindex="0"
+    role="region"
+    aria-label="A timeline of every school year since 1969"
+    data-reveal
+  >
+    <ul class="flex items-center gap-3 px-[max(1.25rem,calc((100vw-72rem)/2))]" role="list">
+      {
+        years.map((y, i) => {
+          const decade = (y - FOUNDED) % 10 === 0;
+          const print = photoAfterYear.get(y);
+          return (
+            <>
+              <li class="shrink-0 snap-start">
+                <span
+                  class:list={[
+                    'inline-block px-2.5 py-1 font-display shadow-sm',
+                    TILTS[i % TILTS.length],
+                    decade ? 'bg-navy text-lg text-white' : 'bg-[#fffdf7] text-sm text-[#2f4258]',
+                  ]}
+                >
+                  {y}
+                </span>
+              </li>
+              {print && (
+                <li class="shrink-0 snap-center">
+                  {/* No year claim on purpose: registry photos are modern. */}
+                  <figure class="wcp-print wcp-tape-tc relative w-44 sm:w-52">
+                    <img
+                      src={imageUrl(print.image as never, 500)}
+                      alt={print.alt}
+                      loading="lazy"
+                      decoding="async"
+                      class="aspect-[4/3] w-full object-cover"
+                    />
+                    {print.caption && <figcaption>{print.caption}</figcaption>}
+                  </figure>
+                </li>
+              )}
+            </>
+          );
+        })
+      }
+      <li class="shrink-0 snap-center pr-6">
+        {/* September 2026: the empty frame IS the invitation. */}
+        <a
+          href={TOUR_HREF}
+          class="wcp-print wcp-tape-tc relative block w-48 no-underline sm:w-56"
+          style="--print-tilt: 1.5deg"
+        >
+          <span
+            class="flex aspect-[4/3] w-full items-center justify-center border-2 border-dashed border-navy/35 bg-white"
+            aria-hidden="true"
+          >
+            <svg
+              class="h-9 w-9 text-navy/30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            >
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+          </span>
+          <span class="block pt-2 pb-1 text-center font-display text-base text-navy">
+            September 2026: <span class="text-[#a85300] underline underline-offset-2">yours?</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* Horizontal snap rail: overscroll containment so a trackpad fling doesn't
+     bounce the page; a thin styled scrollbar reads as intentional. The page
+     body never scrolls sideways — all overflow lives here (WCAG 1.4.10). */
+  .wcp-sept-rail {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-navy) 35%, transparent) transparent;
+  }
+</style>

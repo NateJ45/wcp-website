@@ -179,7 +179,15 @@ const {
     <path
       class="wcp-hero-edge"
       d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z"></path>
+    {
+      /* pathLength=1 normalizes the crayon trace for the one-time draw-in
+        (.wcp-hero-trace in globals.css: the orange line draws itself left to
+        right shortly after load — the site's single "wow" beat, decorative
+        and delayed so it never touches LCP; reduced-motion gets it painted). */
+    }
     <path
+      class="wcp-hero-trace"
+      pathLength="1"
       d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10"
       fill="none"
       stroke="var(--color-orange)"

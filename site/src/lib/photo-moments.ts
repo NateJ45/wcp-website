@@ -23,8 +23,10 @@ export interface PhotoMoment {
   /** What renders: a 3-print strip (default), a full-bleed unscrimmed
       interlude (one photo owning the viewport, benchmark move), the
       code-owned tuition opener statement, the home heritage strip
-      ("Fifty-five Septembers"), or the chooser rows (self-segmentation). */
-  kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser';
+      ("Fifty-five Septembers"), the chooser rows (self-segmentation), or the
+      About page's Septembers wall (every school year since 1969 on one
+      horizontal scrapbook rail). */
+  kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser' | 'septembers';
   slot: string;
   bg?: 'cream' | 'grey' | 'white';
   captions?: string[];
@@ -82,6 +84,11 @@ export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
       slot: 'enroll-strip',
       captions: ['Your first day starts here', 'Room for one more', 'Come say hello'],
     },
+  ],
+  about: [
+    // The Septembers wall: the About page owns the deep-history moment (home
+    // keeps the shorter heritage strip). After the intro prose (k26).
+    { after: 'k26', kind: 'septembers', slot: 'septembers-wall' },
   ],
   safety: [
     {

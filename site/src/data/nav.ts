@@ -121,4 +121,5 @@ export const legalNav: NavLink[] = [
   { label: 'Accessibility', href: '/accessibility' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms of Use', href: '/terms' },
+  { label: 'Colophon', href: '/colophon' },
 ];
