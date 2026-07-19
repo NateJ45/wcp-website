@@ -168,8 +168,15 @@ export function finalBandBg(rawSections: SectionData[], pageSlug: string): strin
     );
   }
   sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
-  const last = [...sections].reverse().find((s) => s._type !== 'noticeBarSection');
+  const bands = sections.filter((s) => s._type !== 'noticeBarSection');
+  const last = bands[bands.length - 1];
   if (!last) return 'white';
-  const bg = effectiveBg(last);
+  let bg = effectiveBg(last);
+  // Mirror the renderer's navy-adjacency recolor: a non-closer navy band that
+  // follows another navy renders white.
+  const prev = bands[bands.length - 2];
+  if (bg === 'navy' && last._type !== 'ctaSection' && prev && effectiveBg(prev) === 'navy') {
+    bg = 'white';
+  }
   return bg;
 }

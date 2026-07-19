@@ -1638,12 +1638,15 @@ li:nth-child(4n + 4) > .hub-note {
                     quiet wrapped fact row on the navy sheet.
    ---------------------------------------------------------------------------- */
 
-/* -- Flush same-color runs: the doodle/grain tile slices its icons at an
-   invisible boundary when two adjacent bands share a color, so every member
-   of a flush run drops the tile and the run reads as ONE surface (Nathan,
-   2026-07-19). ---------------------------------------------------------------- */
-.wcp-site-paper [data-flush] > section {
+/* -- Doodle alternation: among consecutive doodle-carrying bands the tile
+   skips every other one (Nathan: doodles stay, but never on two neighbors —
+   the tile slices its icons where look-alike bands meet). Cream keeps its
+   grain (uniform noise, cuts invisible); navy goes plain. ------------------- */
+.wcp-site-paper [data-nodoodle] > section.bg-navy {
   background-image: none;
+}
+.wcp-site-paper [data-nodoodle] > section.bg-cream {
+  background-image: var(--wcp-grain);
 }
 
 /* -- Header treatment: TAPED LABEL (left-anchored data sections) ------------ */
