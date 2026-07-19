@@ -85,9 +85,20 @@ should be able to resume from the documents in this directory alone.
   - TRAP (2nd occurrence, now habits): paper-artifact surfaces (chips) must be
     FIXED light cream — the cream token flips to #241a12 in dark and kills
     fixed inks. axe-dark caught 58 nodes; consent axe failed collaterally.
-  - [ ] Route walks on the new grammar, funnel order: home (heritage strip
-        content moment, chooser rows, IG wall curation/compaction), enroll
-        (dedupe contradictory steps, commit/decide fork, form reframe), classes
+  - [x] Route-walk batch 1 (commits 5ed8413 + db3cb26): HOME chooser rows +
+        heritage strip ("Fifty-five Septembers" + empty-frame tour invitation,
+        stat band dropped) + IG 3-col mobile; ENROLL steps deduped tour-first,
+        dup fee table + post-form re-route dropped, form retitled with the
+        mechanism stated; TUITION table hoisted to viewport 1-2; FORMS "Not
+        sure yet" option + 44px checkbox targets + press submit + reassurance
+        under the button; strip purge (TuitionTable, AnnouncementModal); 404
+        rebuilt as the migration catch-net (drench band fixes the desktop
+        header collision, inline search, quick links); /search honors ?q=;
+        /why-wcp: wall deduped to curated voices + link, stat band dropped
+        ($70-vs-$175 bait fixed); /thank-you funnel CTAs; photo moments anchor
+        by section key; co-op-life captions photo-agnostic. All stopgaps have
+        PENDING.md rows. Gates green per commit.
+  - [ ] Route walks remaining: classes
         x3 (class-color ownership, teacher band 1440 composition, curriculum
         cap), visit (form reassurance under submit, "Not sure yet" class
         option, checkbox target size, gallery static grid), tuition (table
