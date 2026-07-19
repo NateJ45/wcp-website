@@ -9,6 +9,9 @@ export interface SectionData {
   _key: string;
   background?: 'white' | 'grey' | 'cream' | 'navy';
   seam?: boolean;
+  /** True when an adjacent band shares this color (texture drops so the run
+   *  reads as one surface — set by SectionRenderer). */
+  flush?: boolean;
   compact?: boolean;
   header?: { eyebrow?: string; title?: string; lead?: string; align?: 'center' | 'left' };
   [key: string]: unknown;

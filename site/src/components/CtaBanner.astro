@@ -53,7 +53,10 @@ const {
 // underlined word never breaks off its stroke). Escaping stays in
 // displayTitleHtml for the leading part; the last word is escaped there too.
 const words = title.trim().split(/\s+/);
-const accentWord = underlineAccent && words.length > 1 ? words[words.length - 1] : null;
+// Cap: a nowrap accent word longer than ~12 chars can overflow a 320px
+// column (the threes closer's 'three-year-old?' did, caught by reflow CI).
+const lastWord = words[words.length - 1] ?? '';
+const accentWord = underlineAccent && words.length > 1 && lastWord.length <= 12 ? lastWord : null;
 const titleLead = accentWord ? words.slice(0, -1).join(' ') + ' ' : title;
 const isNavy = tone === 'navy';
 const isAmber = tone === 'amber';

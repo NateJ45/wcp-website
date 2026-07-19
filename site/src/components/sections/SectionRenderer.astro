@@ -184,6 +184,18 @@ const momentBg = (m: PhotoMoment): string =>
 // the old site), then a leading moment's colour when one renders first.
 let prevBg: string | null = afterHero ? 'hero' : null;
 for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
+// Flush detection (Nathan 2026-07-19): when two ADJACENT bands share a color
+// (no moment between them), the doodle tile would visibly slice its icons at
+// the invisible boundary — so every member of a same-color run drops its
+// texture (data-flush → grammar CSS) and the run reads as ONE surface. The
+// navy drench hero counts as navy for the band sitting flush under it.
+const flushWith = (a: string | null, b: string | null) =>
+  a !== null &&
+  b !== null &&
+  (a === b || (a === 'hero' && b === 'navy') || (b === 'hero' && a === 'navy'));
+const bgs: (string | null)[] = sections.map((s) =>
+  s._type === 'noticeBarSection' ? null : effectiveBg(s),
+);
 for (const [i, section] of sections.entries()) {
   if (section._type === 'noticeBarSection') {
     section.seam = false;
@@ -191,6 +203,16 @@ for (const [i, section] of sections.entries()) {
   }
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
+  const prevFlush = flushWith(bg, prevBg);
+  let nextFlush = false;
+  if (!momentsAfter.has(i)) {
+    for (let j = i + 1; j < bgs.length; j++) {
+      if (bgs[j] === null) continue; // notice bars are thin strips, not bands
+      nextFlush = flushWith(bg, bgs[j]);
+      break;
+    }
+  }
+  section.flush = prevFlush || nextFlush;
   prevBg = bg;
   // A moment after this section becomes the band the NEXT section sits under.
   for (const m of momentsAfter.get(i) ?? []) prevBg = momentBg(m);
@@ -273,6 +295,7 @@ const MAP: Record<string, any> = {
     const grammarAttrs = pageSlug
       ? {
           'data-stype': section._type,
+          'data-flush': section.flush ? '' : undefined,
           'data-cards':
             section._type === 'cardGridSection' &&
             (CARDGRID_KEEP_CARDS[pageSlug] ?? []).includes(section._key)
