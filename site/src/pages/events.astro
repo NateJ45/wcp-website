@@ -91,6 +91,34 @@ const eventsJsonLd = events.flatMap((e) => {
 >
   <EventsListing events={events} pastEvents={pastEvents} fallbackLocation={fallbackLocation} />
   {
+    /* The between-events bridge (Act II): both real events sit months out, so
+       without this the page reads "closed until January" to a parent visiting
+       in September. Tours run all year — the page's actual conversion answer. */
+  }
+  <section class="bg-cream" aria-labelledby="ev-bridge-title">
+    <div class="wcp-container py-[var(--wcp-space-xl)]">
+      <div
+        class="wcp-note-paper wcp-tape-tc relative mx-auto max-w-2xl rounded-[var(--radius)] px-7 py-6 shadow-[0_1px_2px_rgba(1,32,58,0.14),0_8px_18px_rgba(1,32,58,0.12)]"
+      >
+        <h2 id="ev-bridge-title" class="font-display text-2xl text-[#01203a]">
+          Can't wait for the next event?
+        </h2>
+        <p class="mt-2 leading-relaxed">
+          Tours run all year. Come see a regular morning, meet the teachers, and bring your kid
+          along.
+        </p>
+        <p class="mt-4">
+          <a
+            class="wcp-press inline-block rounded-full bg-amber px-6 py-2.5 font-bold text-[#01203a] no-underline"
+            href="/virtual-tour#sec-pp-tour-form"
+          >
+            Schedule a Tour
+          </a>
+        </p>
+      </div>
+    </div>
+  </section>
+  {
     eventsJsonLd.length > 0 && (
       <script type="application/ld+json" set:html={JSON.stringify(eventsJsonLd)} is:inline />
     )

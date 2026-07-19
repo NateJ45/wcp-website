@@ -20,6 +20,7 @@ import {
   SECTION_HOIST,
   SECTION_APPEND,
   SECTION_DROP,
+  SECTION_INSERT_AFTER,
   SECTION_HEADER_OVERRIDES,
   CARDGRID_KEEP_CARDS,
 } from '@/lib/page-doctrine';
@@ -113,6 +114,14 @@ if (pageSlug) {
       .map((k) => sections.find((s) => s._key === k))
       .filter((s): s is SectionData => Boolean(s));
     sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
+  }
+  // Splice synthetic sections in after their anchor keys (final order).
+  const inserts = SECTION_INSERT_AFTER[pageSlug];
+  if (inserts) {
+    for (const [afterKey, extra] of Object.entries(inserts)) {
+      const at = sections.findIndex((s) => s._key === afterKey);
+      if (at !== -1) sections = [...sections.slice(0, at + 1), ...extra, ...sections.slice(at + 1)];
+    }
   }
   sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
   // Header copy overrides (title/lead/eyebrow by _key).

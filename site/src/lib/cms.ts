@@ -134,6 +134,28 @@ export async function getClassFacts(id: string): Promise<ClassFactsDoc | null> {
   return cmsFetch<ClassFactsDoc | null>(CLASS_FACTS_QUERY, { id }, null);
 }
 
+export interface ClassCardItem {
+  name: string;
+  color?: string;
+  monthly?: string;
+  days?: string;
+  time?: string;
+  age?: string;
+  studentFee?: string;
+  slug?: string;
+}
+
+/** All classes in Studio drag order, shaped exactly like a classCardsSection's
+ *  dereferenced classItems — lets a code-owned synthetic section (the Act II
+ *  page doctrine) render the drenched class cards without a Sanity write. */
+export async function getAllClassCards(): Promise<ClassCardItem[]> {
+  return cmsFetch<ClassCardItem[]>(
+    `*[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current }`,
+    {},
+    [],
+  );
+}
+
 export interface TestimonialDoc {
   quote: string;
   author?: string;

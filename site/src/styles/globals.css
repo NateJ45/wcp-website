@@ -1788,6 +1788,36 @@ li:nth-child(4n + 4) > .hub-note {
   }
 }
 
+/* -- Schedule timelines: two ruled columns on wide screens (a 7-step single
+   column left ~55% of a 1440 band empty on every class page). Sequence stays
+   readable: steps run down the first column, then the second. -------------- */
+.wcp-site-paper [data-stype='scheduleSection'] ol {
+  max-width: 42rem;
+}
+@media (min-width: 64rem) {
+  .wcp-site-paper [data-stype='scheduleSection'] ol {
+    max-width: 60rem;
+    columns: 2;
+    column-gap: 4.5rem;
+  }
+  .wcp-site-paper [data-stype='scheduleSection'] ol > li {
+    break-inside: avoid;
+  }
+}
+
+/* -- Gallery collage: mixed-size scrapbook grid (every 7th photo doubles) —
+   uniform crop grids read as stock (Oatly's zine-grid lesson). aspect-ratio
+   is preserved inside each cell, so CLS stays zero. ------------------------ */
+@media (min-width: 40rem) {
+  .wcp-site-paper [data-stype='gallerySection'] ul {
+    grid-auto-flow: dense;
+  }
+  .wcp-site-paper [data-stype='gallerySection'] ul > li:nth-child(7n + 1) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
 /* -- STAT STRIP: the stat band drops its boxes -------------------------------- */
 .wcp-site-paper [data-stype='statBandSection'] ul {
   display: flex;

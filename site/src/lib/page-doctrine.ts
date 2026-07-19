@@ -60,6 +60,14 @@ export const SECTION_DROP: Record<string, string[]> = {
   // Ohio licensed" is a binary dressed as a metric. The compare table is the
   // page's one honest numbers moment.
   'why-wcp': ['type:statBandSection'],
+  // /classes/pre-k ran TWO curriculum bands (13 cards total; "What WCP Pre-K
+  // graduates walk in with" restated "What your Pre-K child learns" in shorter
+  // form, ~3 phone viewports of it). One curriculum moment per page.
+  'classes/pre-k': ['k374'],
+  // /a-day-at-wcp: four near-identical 7-step schedule timelines in a row
+  // (~5.5 phone viewports). Replaced by the class-cards insert below; the
+  // exact schedules live on each class page.
+  'a-day-at-wcp': ['k91', 'k98', 'k106', 'k114'],
 };
 
 /** Header text overrides by page + section _key (STOPGAP content-in-code,
@@ -85,6 +93,51 @@ export const SECTION_APPEND: Record<string, SectionData[]> = {
   'virtual-tour': [
     { _type: 'contactDetailsSection', _key: 'code-visit-contact', background: 'grey' },
   ],
+  // /reviews ended by asking CURRENT parents for reviews while giving the
+  // prospect who just read every quote no path at all (Phase 0: both CTAs
+  // were outbound to Google). A tour closer ends the proof page on the ask
+  // that matters; it renders as the amber drench + rating slip (closing-band
+  // doctrine).
+  reviews: [
+    {
+      _type: 'ctaSection',
+      _key: 'code-reviews-tour',
+      tone: 'navy',
+      title: 'Come see it for yourself.',
+      lead: 'Tours are casual and low-pressure, and kids are welcome.',
+      actions: [
+        {
+          label: 'Schedule a Tour',
+          style: 'accent',
+          linkType: 'url',
+          url: '/virtual-tour#sec-pp-tour-form',
+        },
+      ],
+    } as unknown as SectionData,
+  ],
+};
+
+/** Synthetic sections spliced in AFTER a named section (by _key), applied
+ *  after drops/hoists so the anchor is the final order. */
+export const SECTION_INSERT_AFTER: Record<string, Record<string, SectionData[]>> = {
+  // /a-day-at-wcp: the four near-identical schedule timelines are replaced by
+  // ONE compact answer — the drenched class cards (days, hours, price, link
+  // per class), pulled from the class docs at build time. The storyTimeline
+  // above carries the day's rhythm; exact schedules live on each class page.
+  'a-day-at-wcp': {
+    'pp-day-story': [
+      {
+        _type: 'classCardsSection',
+        _key: 'code-day-classes',
+        background: 'white',
+        pullAll: true,
+        header: {
+          title: 'When each class meets',
+          lead: 'The rhythm is the same for everyone; the days and hours differ by class.',
+        },
+      } as unknown as SectionData,
+    ],
+  },
 };
 
 // Act II grammar: cardGridSections render as the ruled "sign-up sheet" list by
@@ -93,4 +146,9 @@ export const SECTION_APPEND: Record<string, SectionData[]> = {
 // decided during the route walks (e.g. month/tradition grids whose chips and
 // colors do compositional work). Applied by SectionRenderer as a data-cards
 // attribute the grammar CSS reads.
-export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {};
+export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {
+  // The "year full of things" month/tradition grids: month chips + per-card
+  // color edges do real compositional work (route-walk call, 2026-07-18).
+  'why-wcp': ['k198'],
+  'co-op-life': ['k157'],
+};
