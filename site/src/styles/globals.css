@@ -1544,7 +1544,10 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-taped-chip {
   position: relative;
   display: inline-block;
-  background: var(--color-cream);
+  /* FIXED light-cream paper (theme-stable island): the cream TOKEN flips to
+     #241a12 in dark mode and the fixed 7.2:1 brown ink dies on it (axe-dark
+     caught 58 nodes). Paper artifacts stay light in both themes. */
+  background: #fff4e0;
   color: #6b3a00;
   font-weight: 700;
   font-size: 0.95rem;
@@ -1581,6 +1584,219 @@ li:nth-child(4n + 4) > .hub-note {
    Public-scoped so the hub's existing feel is untouched. */
 .wcp-site-paper .group:hover .wcp-pop {
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================================
+   Act II section grammar (public only) — composition by section TYPE
+   ============================================================================
+   SectionRenderer wraps every public section in a display:contents div carrying
+   data-stype, so the grammar composes here with zero bridge edits and zero hub
+   impact. Two header treatments replace the eyebrow-on-every-band scaffold
+   (Phase 0: ~100% hit rate, the #1 AI tell):
+
+     TAPED LABEL  — data/list/form sections: left-anchored header, the stored
+                    eyebrow re-rendered as a taped paper chip. Finally exercises
+                    the left axis the audit found unused sitewide.
+     CAPTION      — photo/story/emotional sections: centered heading, eyebrow
+                    RETIRED (the kicker text stays Board-editable in Sanity and
+                    simply no longer prints; dropping a decorative kicker is a
+                    rendering doctrine, not a content edit).
+
+   Plus two re-expressions of stored data (content untouched, volunteers keep
+   editing the same fields):
+
+     SHEET LIST   — cardGridSection card grids flatten into a ruled sign-up
+                    sheet (2-col on lg): kills the icon-card monoculture in one
+                    move. Real cards return only via CARDGRID_KEEP_CARDS.
+                    Bonus: with the white card surface gone, heading tokens
+                    inherit the band's own scheme, which retires the
+                    white-on-white navy-band P0 the audit found on /tuition.
+     STAT STRIP   — statBandSection boxes (the hero-metric template) become one
+                    quiet wrapped fact row on the navy sheet.
+   ---------------------------------------------------------------------------- */
+
+/* -- Header treatment: TAPED LABEL (left-anchored data sections) ------------ */
+.wcp-site-paper
+  :is(
+    [data-stype='cardGridSection'],
+    [data-stype='tuitionTableSection'],
+    [data-stype='formSection'],
+    [data-stype='stepListSection'],
+    [data-stype='faqSection'],
+    [data-stype='scheduleSection'],
+    [data-stype='quickFactsSection'],
+    [data-stype='downloadsSection'],
+    [data-stype='jobsSection'],
+    [data-stype='compareSection'],
+    [data-stype='accordionSection'],
+    [data-stype='tabsSection'],
+    [data-stype='newsletterSignupSection'],
+    [data-stype='tuitionCalculatorSection'],
+    [data-stype='contactDetailsSection'],
+    [data-stype='campaignSection']
+  )
+  .wcp-section-header {
+  margin-inline: 0;
+  text-align: left;
+}
+.wcp-site-paper
+  :is(
+    [data-stype='cardGridSection'],
+    [data-stype='tuitionTableSection'],
+    [data-stype='formSection'],
+    [data-stype='stepListSection'],
+    [data-stype='faqSection'],
+    [data-stype='scheduleSection'],
+    [data-stype='quickFactsSection'],
+    [data-stype='downloadsSection'],
+    [data-stype='jobsSection'],
+    [data-stype='compareSection'],
+    [data-stype='accordionSection'],
+    [data-stype='tabsSection'],
+    [data-stype='newsletterSignupSection'],
+    [data-stype='tuitionCalculatorSection'],
+    [data-stype='contactDetailsSection'],
+    [data-stype='campaignSection']
+  )
+  .wcp-eyebrow {
+  /* The stored eyebrow re-renders as the taped chip: FIXED light-cream paper
+     (never the theme-reactive cream token — it flips dark and kills the fixed
+     brown ink; axe-dark caught it), fixed 7.2:1 ink on every band color. */
+  position: relative;
+  display: inline-block;
+  background: #fff4e0;
+  color: #6b3a00;
+  padding: 0.32rem 0.8rem;
+  transform: rotate(-1.2deg);
+  box-shadow: 0 1px 4px rgba(1, 32, 58, 0.3);
+  margin-bottom: 0.9rem;
+}
+.wcp-site-paper [data-stype] .wcp-eyebrow > svg {
+  display: none;
+}
+
+/* -- Header treatment: CAPTION (photo/story sections retire the eyebrow) ---- */
+.wcp-site-paper
+  :is(
+    [data-stype='gallerySection'],
+    [data-stype='storyTimelineSection'],
+    [data-stype='splitMediaSection'],
+    [data-stype='testimonialSection'],
+    [data-stype='videoSection'],
+    [data-stype='albumSection'],
+    [data-stype='instagramSection'],
+    [data-stype='latestPostsSection'],
+    [data-stype='upcomingEventsSection'],
+    [data-stype='pullQuoteSection'],
+    [data-stype='programCardsSection'],
+    [data-stype='boardMembersSection'],
+    [data-stype='teacherSection'],
+    [data-stype='classCardsSection'],
+    [data-stype='schoolYearSection'],
+    [data-stype='logoStripSection'],
+    [data-stype='mapSection'],
+    [data-stype='countdownSection'],
+    [data-stype='enrollmentCtaSection'],
+    [data-stype='reviewFormSection'],
+    [data-stype='statBandSection']
+  )
+  .wcp-eyebrow {
+  display: none;
+}
+
+/* -- SHEET LIST: the card-grid re-expression --------------------------------- */
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) ul:has(> .wcp-feature-card) {
+  grid-template-columns: 1fr;
+  gap: 0;
+  column-gap: 3.5rem;
+}
+@media (min-width: 64rem) {
+  .wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) ul:has(> .wcp-feature-card) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  border: 0;
+  padding: 1.05rem 0;
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);
+  column-gap: 0.9rem;
+  align-items: start;
+  /* the ruled line, in the band's own ink so it works on white, cream, grey
+     AND navy sheets */
+  border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span {
+  /* the icon chip flattens to a plain brand-ink icon on the sheet */
+  background: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin: 0;
+  border-radius: 0;
+  grid-row: span 3;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span svg {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > h3 {
+  grid-column: 2;
+  font-size: 1.1rem;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > div,
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > a {
+  grid-column: 2;
+  margin-top: 0.2rem;
+}
+/* With the white card surface gone, the row's text must follow the BAND's own
+   scheme, not the card tokens (text-ink stays dark on a navy sheet — the same
+   token trap as the retired P0, mirrored). The Section container already
+   carries the right color per band; inherit it. Headings keep the heading
+   token (Section flips it per band). On navy sheets the varied -ink icon tones
+   go muddy, so icons unify on cream there; links ride currentColor. */
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > div {
+  color: inherit;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > a {
+  color: currentColor;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.wcp-site-paper
+  [data-stype='cardGridSection']:not([data-cards])
+  section.bg-navy
+  .wcp-feature-card
+  > span {
+  /* fixed light cream: the token flips dark in dark mode and the icons would
+     vanish on the navy band (same trap as the chip above) */
+  color: #fff4e0;
+}
+
+/* -- STAT STRIP: the stat band drops its boxes -------------------------------- */
+.wcp-site-paper [data-stype='statBandSection'] ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: clamp(2.25rem, 6vw, 4.5rem);
+  row-gap: 1.75rem;
+}
+.wcp-site-paper [data-stype='statBandSection'] li {
+  /* Explicit basis: the StatBlock root is an inline-size @container, and an
+     auto-width flex item with size containment would collapse to zero. */
+  flex: 0 1 13rem;
+}
+.wcp-site-paper [data-stype='statBandSection'] li > div {
+  border: 0;
+  background: none;
+  padding: 0;
 }
 
 /* Parent-note tilt: a small capped rotation that alternates across the grid /

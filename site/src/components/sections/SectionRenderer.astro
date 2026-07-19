@@ -14,7 +14,7 @@ import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
 import TuitionOpener from '@/components/TuitionOpener.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import { SECTION_HOIST, SECTION_APPEND } from '@/lib/page-doctrine';
+import { SECTION_HOIST, SECTION_APPEND, CARDGRID_KEEP_CARDS } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -208,23 +208,46 @@ const MAP: Record<string, any> = {
     if (!Comp && strips.length === 0) return null;
     // cardWatermark reaches only CardGridSection (the sole reader); every other
     // bridge ignores the extra prop. Photo strips splice in AFTER their section.
+    // Act II section grammar (public only): each section is wrapped in a
+    // zero-box `display: contents` div carrying its _type, so the grammar
+    // layer in globals.css can compose per section TYPE (header treatments,
+    // the card-grid sheet re-expression, the stat strip) with no bridge
+    // edits and no hub impact (hub surfaces don't pass pageSlug and lack the
+    // .wcp-site-paper scope anyway). `data-cards` opts a specific grid back
+    // into real cards where cards earn it (CARDGRID_KEEP_CARDS doctrine).
+    const grammarAttrs = pageSlug
+      ? {
+          'data-stype': section._type,
+          'data-cards':
+            section._type === 'cardGridSection' &&
+            (CARDGRID_KEEP_CARDS[pageSlug] ?? []).includes(section._key)
+              ? ''
+              : undefined,
+        }
+      : null;
+    const rendered = Comp && (
+      <Comp
+        section={section}
+        linkBase={linkBase}
+        site={site}
+        cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+        pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
+        hideRating={section._type === 'ctaSection' ? hub : undefined}
+        isClosing={
+          // Public pages only (they pass pageSlug): the hub keeps its navy
+          // closers; the amber drench is public-marketing doctrine.
+          section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
+        }
+      />
+    );
     return (
       <>
-        {Comp && (
-          <Comp
-            section={section}
-            linkBase={linkBase}
-            site={site}
-            cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
-            pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
-            hideRating={section._type === 'ctaSection' ? hub : undefined}
-            isClosing={
-              // Public pages only (they pass pageSlug): the hub keeps its navy
-              // closers; the amber drench is public-marketing doctrine.
-              section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
-            }
-          />
+        {rendered && grammarAttrs && (
+          <div class="contents" {...grammarAttrs}>
+            {rendered}
+          </div>
         )}
+        {rendered && !grammarAttrs && rendered}
         {strips.map((m) =>
           m.kind === 'interlude' ? (
             <Interlude slot={m.slot} caption={m.caption ?? ''} />

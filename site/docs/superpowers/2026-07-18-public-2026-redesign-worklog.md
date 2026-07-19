@@ -37,8 +37,7 @@ should be able to resume from the documents in this directory alone.
 - [x] Phase 0: home hero prototype → docs/superpowers/prototypes/2026-07-18-home-hero/
       hero.html (open directly, or copy into dist/client/_proto/ and serve; verified
       320/390/1440, no overflow, reduced-motion poster fallback)
-- [x] STOP: Nathan APPROVED all four questions 2026-07-18 ("1. approve 2. approve
-      3. approve 4. approve"): direction (Construction Paper), hero recomposition,
+- [x] STOP: Nathan APPROVED all four questions 2026-07-18 ("1. approve 2. approve 3. approve 4. approve"): direction (Construction Paper), hero recomposition,
       tour-slots as Phase 3 human task, Threes testimonial swap on quota return.
 - [~] Phase 1: design system (in progress)
   - [x] Type discipline: public `hyphens:none` on display type + `text-wrap:pretty`
@@ -60,8 +59,7 @@ should be able to resume from the documents in this directory alone.
         stored non-tour action demoted to ghost, proof line "4.8 · tuition is
         public" under the buttons); dark-mobile logo variant fix in Header.
   - [x] Gate: astro check 0 errors · lint clean · format:check exit 0 · unit 182+7
-        passed · build green · npm test 210 passed (smoke + axe light/dark + reflow
-        + consent + interactions, chromium + webkit-iphone) · test:hub 58 passed
+        passed · build green · npm test 210 passed (smoke + axe light/dark + reflow + consent + interactions, chromium + webkit-iphone) · test:hub 58 passed
         (hub grep-verified to use none of the touched artifact classes; all other
         globals changes are .wcp-site-paper-scoped) · check:links 87 ok · live
         verify: tour-first hero + proof line on home/tuition, pill shows mid-page

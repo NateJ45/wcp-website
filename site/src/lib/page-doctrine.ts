@@ -42,3 +42,11 @@ export const SECTION_APPEND: Record<string, SectionData[]> = {
     { _type: 'contactDetailsSection', _key: 'code-visit-contact', background: 'grey' },
   ],
 };
+
+// Act II grammar: cardGridSections render as the ruled "sign-up sheet" list by
+// default on public pages (the icon-card grid was the site's loudest AI tell,
+// 40+ instances). A grid earns REAL cards back only by page + section _key,
+// decided during the route walks (e.g. month/tradition grids whose chips and
+// colors do compositional work). Applied by SectionRenderer as a data-cards
+// attribute the grammar CSS reads.
+export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {};
