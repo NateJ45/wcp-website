@@ -168,9 +168,11 @@ public-only — gated on the `pageSlug` prop the hub never passes):
   deterministic picks from the already-public A Day gallery, Board alt text
   included, zero Sanity writes. Kinds: `strip` (3 taped prints), `interlude`
   (one full-bleed photo), `tuition-opener`, `heritage` (home's "Fifty-five
-  Septembers" strip), `chooser` (home's self-segmentation rows), and
-  `septembers` (the About page's horizontal every-year-since-1969 rail,
-  `SeptembersWall.astro`). Each degrades gracefully if the build-time photo
+  Septembers" strip), `chooser` (home's self-segmentation rows), `septembers`
+  (the About page's horizontal every-year-since-1969 rail,
+  `SeptembersWall.astro`), and `visit` (home's "Come find us" address/phone/
+  CTA block paired with a photo, replacing the Sanity `hp-visit` proseSection,
+  which has no image slot). Each degrades gracefully if the build-time photo
   fetch fails.
 - **The closing CTA**: when a page's FINAL band is a navy `ctaSection`, it stays
   navy with the amber crayon underline on the title's last word

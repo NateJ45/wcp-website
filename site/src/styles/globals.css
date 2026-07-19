@@ -1392,6 +1392,19 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-print:nth-of-type(3n + 3) {
   --print-tilt: -0.5deg;
 }
+/* The testimonial snapshot: a print clipped to a parent note. It leans the
+   OTHER way from the note so the two read as separately placed objects, and it
+   sits out of the alternating row rhythm above — it is the only .wcp-print
+   inside its <figure>, so :nth-of-type(3n+1) matches every one of them and
+   would otherwise pin all the snapshots to the same -1.4deg.
+   Unlayered here on purpose: a Tailwind `[--print-tilt:2.5deg]` utility LOSES
+   to the nth-of-type rules above, because unlayered CSS outranks
+   @layer utilities regardless of specificity (the globals-beats-utilities
+   gotcha in CLAUDE.md — this shipped tilted the wrong way before it was
+   caught). Same specificity as those rules, so it must stay after them. */
+.wcp-print.wcp-snap {
+  --print-tilt: 2.5deg;
+}
 /* Prints stay white paper in dark mode (physical-object doctrine above); the
    caption ink is fixed navy on the stable white lip, both themes. */
 

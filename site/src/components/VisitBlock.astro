@@ -1,0 +1,97 @@
+---
+/* ============================================================================
+   VisitBlock — the photo-and-details "come see it" band
+   ============================================================================
+   CODE STOPGAP (2026-07-19). The old Squarespace home paired a classroom photo
+   with the address, the not-a-religious-school line, the phone number and two
+   CTAs. The new home carried the copy as a Sanity proseSection (hp-visit),
+   which has no image slot, so the photo was lost.
+
+   Code-owned for the same reason HeritageStrip is: photo moments inject BETWEEN
+   sections and cannot wrap one, so a side-by-side layout means replacing the
+   section. page-doctrine drops hp-visit and the moments map injects this in its
+   slot.
+
+   Where the facts come from: the street address, the phone number and the
+   school-year line are read from src/data/site.ts, so they never drift from the
+   footer or the LocalBusiness JSON-LD. The tours-June-to-August sentence and the
+   not-a-religious-school paragraph are local prose, because no site.ts field
+   carries them. Keep that split accurate — an earlier version of this comment
+   claimed everything came from site.ts while the school-year line was hardcoded,
+   which is exactly the kind of false comment a later developer trusts.
+
+   TRADEOFF: this takes the address block out of the page-builder, so a
+   volunteer can no longer edit it in the Studio. Accepted temporarily.
+   CLOSE OUT: run scripts/patch-home-visit-splitmedia.mjs --commit, then delete
+   this file, the 'visit' moment, and the SECTION_DROP entry. See docs/PENDING.md.
+
+   Renders text-only when the photo registry is empty, never a broken frame
+   (same contract as Interlude and PhotoStrip).
+   ============================================================================ */
+import Section from '@/components/Section.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl, imageSrcSet } from '@/lib/image';
+import { site } from '@/data/site';
+
+const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+const MAPS_HREF = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  `${site.address.street} ${site.address.city} ${site.address.state} ${site.address.zip}`,
+)}`;
+const TEL = `tel:+1${site.phone.replace(/\D/g, '')}`;
+
+const titleId = 'sec-home-visit-title';
+const [photo] = await photosFor('home-visit', 1);
+---
+
+<Section bg="white" labelledby={titleId}>
+  <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    {
+      photo && (
+        <div class="wcp-print wcp-tape-tc relative" data-reveal="settle">
+          <img
+            src={imageUrl(photo.image as never, 900)}
+            srcset={imageSrcSet(photo.image as never)}
+            sizes="(min-width: 1024px) 32rem, 92vw"
+            alt={photo.alt}
+            loading="lazy"
+            decoding="async"
+            class="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      )
+    }
+    <div>
+      <SectionHeader eyebrow="Find us" title="Come find us." titleId={titleId} align="left" />
+      <p class="mt-6 text-lg leading-relaxed">
+        {'We are at '}
+        <strong>
+          {
+            `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.zip}`
+          }
+        </strong>
+        {', inside Crestview Presbyterian Church.'}
+      </p>
+      <p class="mt-4 text-lg leading-relaxed">
+        <strong>WCP is not a religious school.</strong> We are a secular, non-discriminatory cooperative
+        preschool. We rent the space and have no religious affiliation.
+      </p>
+      <ul class="mt-6 space-y-2 border-l-4 border-sky pl-5 text-lg" role="list">
+        <li>
+          Call or text{' '}
+          <a class="font-bold text-sky-ink underline underline-offset-2" href={TEL}>
+            {site.phone}
+          </a>
+        </li>
+        <li>{site.calendar} Tours by appointment June to August.</li>
+      </ul>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <Button href={TOUR_HREF} variant="accent" size="lg"> Schedule a Tour </Button>
+        <Button href={MAPS_HREF} variant="outline" size="lg" target="_blank" rel="noopener">
+          Open in Google Maps
+        </Button>
+      </div>
+    </div>
+  </div>
+</Section>

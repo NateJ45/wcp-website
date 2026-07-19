@@ -20,6 +20,7 @@
    prefers-reduced-motion.
    ============================================================================ */
 import { cn } from '@/lib/utils';
+import { Image } from 'astro:assets';
 
 interface Props {
   quote: string;
@@ -27,9 +28,20 @@ interface Props {
   context?: string;
   rating?: number;
   confetti?: boolean;
+  /** The family's snapshot, taped to the note. Decorative: the author is
+      already named in the signature, so this renders with alt="". */
+  photo?: ImageMetadata;
   class?: string;
 }
-const { quote, author, context, rating = 5, confetti = false, class: className } = Astro.props;
+const {
+  quote,
+  author,
+  context,
+  rating = 5,
+  confetti = false,
+  photo,
+  class: className,
+} = Astro.props;
 
 // A hand-drawn 5-star row (amber fill, amber-ink outline) instead of the glyph
 // run — warmer, and it holds its shape at any size. Decorative; the sr-only
@@ -46,6 +58,24 @@ const STAR = 'M10 1.6l2.4 5.2 5.7.5-4.3 3.8 1.3 5.6-5.1-3-5.1 3 1.3-5.6L1.9 7.3l
   data-reveal="settle"
   data-confetti={confetti ? '' : undefined}
 >
+  {
+    /* A snapshot clipped to the note (the old site's author photo, re-read in
+       the scrapbook idiom rather than as a review-card avatar). Tilted against
+       the note's own lean; no tape strip, the note already carries one. */
+    photo && (
+      <div class="wcp-print wcp-snap mb-4 w-20 shrink-0 self-start" aria-hidden="true">
+        <Image
+          src={photo}
+          alt=""
+          width={160}
+          height={160}
+          loading="lazy"
+          decoding="async"
+          class="aspect-square w-full object-cover"
+        />
+      </div>
+    )
+  }
   <div class="flex gap-0.5" aria-hidden="true">
     {
       Array.from({ length: rating }).map(() => (

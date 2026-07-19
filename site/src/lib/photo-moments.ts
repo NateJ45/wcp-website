@@ -23,10 +23,12 @@ export interface PhotoMoment {
   /** What renders: a 3-print strip (default), a full-bleed unscrimmed
       interlude (one photo owning the viewport, benchmark move), the
       code-owned tuition opener statement, the home heritage strip
-      ("Fifty-five Septembers"), the chooser rows (self-segmentation), or the
+      ("Fifty-five Septembers"), the chooser rows (self-segmentation), the
       About page's Septembers wall (every school year since 1969 on one
-      horizontal scrapbook rail). */
-  kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser' | 'septembers';
+      horizontal scrapbook rail), or the visit block (photo + address/phone/
+      CTAs, replacing the Sanity hp-visit proseSection that has no image
+      slot). */
+  kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser' | 'septembers' | 'visit';
   slot: string;
   bg?: 'cream' | 'grey' | 'white';
   captions?: string[];
@@ -53,6 +55,10 @@ export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
       slot: 'home-interlude',
       caption: 'Some mornings you just have to be there for.',
     },
+    // The visit block replaces the Sanity hp-visit proseSection (dropped in
+    // page-doctrine): the old site paired these details with a photo, and a
+    // proseSection has no image slot.
+    { after: 'hp-instagram', kind: 'visit', slot: 'home-visit' },
   ],
   'why-wcp': [
     {
