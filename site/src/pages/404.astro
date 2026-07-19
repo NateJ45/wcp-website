@@ -1,27 +1,81 @@
 ---
-/* 404 — friendly not-found page. PLACEHOLDER copy, safe to refine. */
+/* ============================================================================
+   404 — the migration catch-net
+   ============================================================================
+   After the DNS cutover this page catches the entire old-Squarespace long
+   tail, so it works for a living (Phase 0 scored the old one 14/40: template
+   copy, zero recovery tooling, and the transparent overlay header printed the
+   nav straight through the headline at desktop because this was the one route
+   with no navy band under it). Act II rebuild:
+     - a navy drench band under the overlay header (chrome consistent with
+       every other page — the collision fix is structural, not a patch);
+     - an inline search that lands on /search?q=… (plain GET form, no JS);
+     - the four destinations lost visitors actually want;
+     - one warm line in the co-op voice + the old-site note for stale links.
+   ============================================================================ */
 import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const QUICK_LINKS = [
+  { label: 'Tuition and fees', href: '/tuition' },
+  { label: 'Our classes', href: '/classes/pre-k' },
+  { label: 'Schedule a tour', href: '/virtual-tour#sec-pp-tour-form' },
+  { label: 'Visit or contact us', href: '/virtual-tour' },
+];
 ---
 
 <BaseLayout
   title="Page not found — West Chester Preschool"
   description="That page could not be found."
 >
-  <section class="bg-grey" aria-labelledby="nf-title">
-    <div class="wcp-container py-[var(--wcp-space-2xl)] text-center">
-      <p class="mb-2 font-semibold tracking-widest text-sky-ink uppercase">Page not found</p>
-      <h1 id="nf-title">We couldn&rsquo;t find that page.</h1>
-      <p class="mx-auto mt-4 max-w-md text-ink">
-        The link may be old or mistyped. Let&rsquo;s get you back on track.
+  <section class="wcp-hero-drench relative" aria-labelledby="nf-title">
+    <div class="wcp-container pt-40 pb-[var(--wcp-space-xl)] lg:pt-56">
+      <p class="wcp-taped-chip wcp-tape-tc relative mb-5">Page not found</p>
+      <h1 id="nf-title" class="max-w-[18ch] text-balance text-white">
+        Even our best finders couldn't find that one.
+      </h1>
+      <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90">
+        The link may be old or mistyped. If it came from our previous website, the page has probably
+        moved to a new home here.
       </p>
-      <p class="mt-8">
-        <a
-          href="/"
-          class="rounded-pill bg-accent px-8 py-3.5 font-bold text-accent-foreground no-underline"
+
+      {/* Inline search: a plain GET form, works with zero JS on this page. */}
+      <form action="/search" method="get" role="search" class="mt-8 flex max-w-xl gap-3">
+        <label class="sr-only" for="nf-search">Search the site</label>
+        <input
+          id="nf-search"
+          type="search"
+          name="q"
+          placeholder="Try: tuition, pre-k, open house"
+          class="min-h-12 w-full rounded-full border-0 bg-white px-5 text-[#01203a] placeholder:text-[#52657a] focus:ring-2 focus:ring-amber"
+        />
+        <button
+          type="submit"
+          class="wcp-press min-h-12 shrink-0 rounded-full bg-amber px-6 font-bold text-[#01203a]"
         >
-          Back to home
-        </a>
-      </p>
+          Search
+        </button>
+      </form>
+
+      <ul class="mt-10 max-w-xl" role="list">
+        {
+          QUICK_LINKS.map((l) => (
+            <li class="border-b border-white/20 last:border-b-0">
+              <a
+                href={l.href}
+                class="group flex min-h-12 items-center justify-between gap-4 py-3 font-semibold text-white no-underline hover:underline"
+              >
+                {l.label}
+                <span
+                  aria-hidden="true"
+                  class="transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                >
+                  →
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 </BaseLayout>

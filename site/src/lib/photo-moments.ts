@@ -54,12 +54,12 @@ export const PHOTO_MOMENTS: Record<string, PhotoMoment[]> = {
   ],
   'why-wcp': [
     {
-      after: 0,
+      after: 'k179',
       slot: 'why-wcp-strip',
       captions: ['Hands-on, every morning', 'Friends by September', 'Real classrooms, real mess'],
     },
     {
-      after: 4,
+      after: 'k197',
       kind: 'interlude',
       slot: 'why-wcp-interlude',
       caption: 'Every child known by name. Every parent in the room.',

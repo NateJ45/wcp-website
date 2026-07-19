@@ -55,6 +55,11 @@ export const SECTION_DROP: Record<string, string[]> = {
   // Home: the stat-box band's numbers all live one band up in the class cards
   // ($70/mo etc.) and the heritage strip now owns that slot (photo-moments).
   home: ['type:statBandSection'],
+  // /why-wcp: the stat band said "$70 tuition from" two scrolls above the
+  // compare table's "$175-$200" for a 4-year-old (reads as bait), and "100%
+  // Ohio licensed" is a binary dressed as a metric. The compare table is the
+  // page's one honest numbers moment.
+  'why-wcp': ['type:statBandSection'],
 };
 
 /** Header text overrides by page + section _key (STOPGAP content-in-code,
