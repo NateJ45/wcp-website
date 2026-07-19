@@ -245,12 +245,18 @@ if (tiles.length === 0) {
   .wcp-ig-grid {
     list-style: none;
     margin: 0;
-    /* No side padding — the outer snapshots crop at the viewport edge, which
-       IS the full-bleed look. Bottom room keeps the tilt off the band edge. */
-    padding: 0 0 32px;
+    /* Side padding is 18px, not the 12ish it looks: the tiles carry a -5px
+       margin (see .wcp-ig-tile) so the outer ones reach 5px back into this
+       padding, leaving ~13px of real breathing room at the viewport edge.
+       Change the two together or the wall re-crops at the edge. Bottom room
+       keeps the tilt and the drop shadow off the band edge. */
+    padding: 0 18px 24px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    /* gap:0 on purpose — the spacing between prints is the tiles' negative
+       margin, because grid gap cannot go below zero and these need to OVERLAP
+       (the Squarespace wall stacked them like loose photos). */
+    gap: 0;
   }
   @media (min-width: 640px) {
     .wcp-ig-grid {
@@ -266,7 +272,6 @@ if (tiles.length === 0) {
   @media (min-width: 1024px) {
     .wcp-ig-grid {
       grid-template-columns: repeat(6, 1fr);
-      gap: 22px;
     }
   }
   .wcp-ig-tile {
@@ -275,6 +280,14 @@ if (tiles.length === 0) {
        the track to the caption's full width and overflow the page (caught by
        the overflow check the moment captions landed). */
     min-width: 0;
+    /* THE OVERLAP. A negative margin makes each tile render 10px wider and
+       taller than its grid track, so neighbours encroach ~10px on each seam
+       and the wall reads as loose photos dropped on top of each other rather
+       than a tidy grid. Grid `gap` cannot express this: it has no negative
+       values, which is why gap is 0 above.
+       Stacking is DOM order, so a tile overlaps the one before it; hover
+       raises the hovered print clear via z-index on the <a>. */
+    margin: -5px;
   }
   .wcp-ig-tile a {
     display: block;
