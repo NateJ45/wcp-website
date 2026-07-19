@@ -193,6 +193,51 @@ test('tuition calculator updates the monthly total when a class is ticked', asyn
 });
 
 // -----------------------------------------------------------------------------
+// Instagram lightbox (src/scripts/social-lightbox.ts + InstagramSection.astro)
+// -----------------------------------------------------------------------------
+test('instagram tile opens the in-page viewer, next advances, Escape closes', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await settle(page);
+
+  // Tiles are feed/CMS-driven; a tokenless build with no fallback album has
+  // none — skip rather than fail (matches the calculator/announcement style).
+  const tiles = page.locator('[data-wall-item]');
+  test.skip(
+    (await tiles.count()) === 0,
+    'No Instagram tiles in this build (feed/CMS-driven); this activates when the band has content.',
+  );
+
+  const dialog = page.locator('[data-wall-lightbox]');
+  const img = dialog.locator('[data-wall-lb-img]');
+  await expect(dialog).toBeHidden();
+
+  // Tiles stay REAL Instagram links for no-JS visitors.
+  expect(await tiles.first().getAttribute('href')).toMatch(/^https?:\/\//);
+
+  // Plain click is intercepted and opens the native <dialog> viewer.
+  await tiles.first().click();
+  await expect(dialog).toBeVisible();
+  const firstSrc = await img.getAttribute('src');
+  expect(firstSrc, 'viewer shows the tile media').toBeTruthy();
+
+  // Next advances to a different post when the band has more than one tile
+  // (image src changes, or an inline video swaps in for a reel).
+  if ((await tiles.count()) > 1) {
+    await dialog.locator('[data-wall-next]').click();
+    const video = dialog.locator('[data-wall-lb-video]');
+    await expect
+      .poll(async () =>
+        (await video.isVisible()) ? 'video' : ((await img.getAttribute('src')) ?? ''),
+      )
+      .not.toBe(firstSrc);
+  }
+
+  // Native dialog behavior: Escape closes the viewer.
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+});
+
+// -----------------------------------------------------------------------------
 // Announcement bar dismissal (src/scripts/announcement-bars.ts)
 // -----------------------------------------------------------------------------
 test('announcement bar dismisses and stays dismissed after reload', async ({ page }) => {

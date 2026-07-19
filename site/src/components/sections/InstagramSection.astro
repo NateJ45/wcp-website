@@ -6,9 +6,19 @@
    drop shadows, and a gentle random tilt. Pulls the live Instagram feed at
    build time when INSTAGRAM_TOKEN is set; otherwise falls back to the
    section's curated album. Hides when there is nothing.
+
+   In-page viewer (hub parity, Nathan 2026-07-19): tiles carry the same
+   data-wall-* contract as the hub's SocialWallWidget, driven by the SHARED
+   src/scripts/social-lightbox.ts — click opens a native <dialog> with the
+   full uncropped image (or inline video with poster fallback), caption, and
+   prev/next. Tiles stay real Instagram links for no-JS visitors. The signed
+   CDN URLs in data-full / data-video-url are rewritten to same-origin /ig/
+   copies by scripts/rehost-instagram.mjs (its URL regex is attribute-agnostic
+   and downloads .mp4 too), so the viewer outlives Instagram's signatures.
    ============================================================================ */
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
+import Icon from '@/components/Icon.astro';
 import { cmsFetch } from '@/lib/cms';
 import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
 import { imageUrl, type SanityImageValue } from '@/lib/image';
@@ -41,7 +51,9 @@ if (tiles.length === 0) {
       .map((p) => {
         const fig = p as unknown as { image: SanityImageValue; alt?: string };
         return {
-          imgUrl: imageUrl(fig.image as never, 600),
+          // 800px: big enough for the lightbox's uncropped view (hub parity),
+          // still fine for the ~300px grid tile.
+          imgUrl: imageUrl(fig.image as never, 800),
           href: igProfile,
           alt: fig.alt ?? 'A moment from West Chester Preschool',
           caption: fig.alt ?? '',
@@ -97,12 +109,24 @@ if (tiles.length === 0) {
             polaroid lip, a play badge on reels, focus-visible outline. */}
         {tiles.map((t) => (
           <li class="wcp-ig-tile">
-            <a href={t.href} target="_blank" rel="noopener">
+            {/* A real link (opens the post) with no JS; social-lightbox.ts
+                intercepts the click to open the in-page viewer instead. The
+                aria-label names the link (hub scheme — alt stays empty so the
+                caption is never read twice). */}
+            <a
+              href={t.href}
+              target="_blank"
+              rel="noopener"
+              data-wall-item
+              data-full={t.imgUrl}
+              data-caption={t.caption}
+              data-href={t.href}
+              data-video={t.isVideo ? 'true' : 'false'}
+              data-video-url={t.videoUrl}
+              aria-label={t.isVideo ? `Play video: ${t.alt}` : `View photo: ${t.alt}`}
+            >
               <span class="wcp-ig-frame">
-                {/* The visible lip caption is the link's name; a matching alt
-                    would be read twice (axe image-redundant-alt). Captionless
-                    tiles keep the alt as their name. */}
-                <img src={t.imgUrl} alt={t.caption ? '' : t.alt} loading="lazy" decoding="async" />
+                <img src={t.imgUrl} alt="" loading="lazy" decoding="async" />
                 {t.isVideo && (
                   <span class="wcp-ig-play" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
@@ -118,6 +142,71 @@ if (tiles.length === 0) {
           </li>
         ))}
       </ul>
+
+      {/* In-page viewer — same structure the hub's SocialWallWidget renders,
+          driven by the SHARED social-lightbox.ts (one instance per page: the
+          public IG band and the hub board never share a page). Native
+          <dialog> = top layer + focus trap + Esc for free. */}
+      <dialog data-wall-lightbox class="wcp-wall-lb" aria-label="Photo viewer">
+        <figure class="wcp-wall-lb-fig">
+          <span class="wcp-wall-lb-stage">
+            <img data-wall-lb-img class="wcp-wall-lb-img" alt="" />
+            {/* Plays inline for video posts; on an expired/blocked video URL
+                the script falls back to the poster + play badge, and the
+                "Watch on Instagram" link still works. */}
+            <video
+              data-wall-lb-video
+              class="wcp-wall-lb-video"
+              controls
+              playsinline
+              preload="metadata"
+              hidden
+            />
+            <span data-wall-lb-play class="wcp-wall-lb-play" hidden aria-hidden="true">
+              <Icon name="play" class="h-8 w-8" />
+            </span>
+            <button
+              type="button"
+              data-wall-close
+              class="wcp-wall-lb-btn wcp-wall-lb-close"
+              aria-label="Close viewer"
+            >
+              <Icon name="x" class="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              data-wall-prev
+              class="wcp-wall-lb-btn wcp-wall-lb-prev"
+              aria-label="Previous"
+            >
+              <Icon name="chevron-left" class="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              data-wall-next
+              class="wcp-wall-lb-btn wcp-wall-lb-next"
+              aria-label="Next"
+            >
+              <Icon name="chevron-right" class="h-6 w-6" />
+            </button>
+          </span>
+          <figcaption class="wcp-wall-lb-cap">
+            <p data-wall-lb-caption class="wcp-wall-lb-text" />
+            <a
+              data-wall-lb-link
+              href={igProfile}
+              target="_blank"
+              rel="noopener"
+              class="wcp-wall-lb-link"
+            >
+              <Icon name="instagram" class="h-4 w-4" aria-hidden="true" />
+              <span data-wall-lb-linktext>View on Instagram</span>
+            </a>
+          </figcaption>
+        </figure>
+      </dialog>
+
+      <script>import '@/scripts/social-lightbox';</script>
     </Section>
   )
 }
@@ -242,5 +331,133 @@ if (tiles.length === 0) {
       transition: none;
       transform: none !important;
     }
+  }
+
+  /* ---- In-page viewer (native <dialog>) ----
+     A scoped COPY of the hub SocialWallWidget's lightbox styles (Astro scopes
+     per-component, so the hub's block can't reach here; duplicating keeps the
+     hub file untouched). If you change one, mirror the other. */
+  .wcp-wall-lb {
+    margin: auto;
+    width: auto;
+    max-width: min(94vw, 42rem);
+    /* vh fallback first, then dvh: with the iOS toolbar expanded, 92vh is
+       taller than the visible viewport. */
+    max-height: 92vh;
+    max-height: 92dvh;
+    border: none;
+    padding: 0;
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-heading);
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  }
+  .wcp-wall-lb::backdrop {
+    background: rgba(1, 30, 55, 0.74);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  .wcp-wall-lb-fig {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .wcp-wall-lb-stage {
+    position: relative;
+    display: block;
+    background: #0b1622;
+  }
+  .wcp-wall-lb-img {
+    display: block;
+    width: 100%;
+    max-height: min(66vh, 34rem);
+    /* SHOW the whole image, uncropped — the point of the viewer (tiles crop). */
+    object-fit: contain;
+  }
+  .wcp-wall-lb-video {
+    display: block;
+    width: 100%;
+    max-height: min(66vh, 34rem);
+    background: #000;
+  }
+  /* Explicit — the display:block above would otherwise beat the UA [hidden]
+     rule and both would show at once. */
+  .wcp-wall-lb-img[hidden],
+  .wcp-wall-lb-video[hidden] {
+    display: none;
+  }
+  .wcp-wall-lb-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    pointer-events: none;
+  }
+  .wcp-wall-lb-play :global(svg) {
+    padding: 0.9rem;
+    box-sizing: content-box;
+    border-radius: 9999px;
+    background: rgba(1, 69, 126, 0.82);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+  }
+  .wcp-wall-lb-btn {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-navy);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .wcp-wall-lb-btn:hover {
+    background: #fff;
+  }
+  .wcp-wall-lb-close {
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+  .wcp-wall-lb-prev,
+  .wcp-wall-lb-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .wcp-wall-lb-prev {
+    left: 0.6rem;
+  }
+  .wcp-wall-lb-next {
+    right: 0.6rem;
+  }
+  .wcp-wall-lb-cap {
+    padding: 0.85rem 1.1rem 1.1rem;
+  }
+  .wcp-wall-lb-text {
+    margin: 0 0 0.55rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+  .wcp-wall-lb-text[hidden] {
+    display: none;
+  }
+  .wcp-wall-lb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-sky-ink);
+    text-decoration: none;
+  }
+  .wcp-wall-lb-link:hover {
+    text-decoration: underline;
   }
 </style>
