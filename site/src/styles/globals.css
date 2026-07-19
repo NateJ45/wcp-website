@@ -1330,6 +1330,34 @@ li:nth-child(4n + 4) > .hub-note {
   left: 50%;
   transform: translateX(-50%) rotate(1.6deg);
 }
+/* Both top corners on ONE element (the framed hero's print): -tl keeps the
+   ::before; the -tr strip moves to ::after so the two don't fight over one
+   pseudo-element. */
+.wcp-tape-tl.wcp-tape-tr::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  width: 4.6rem;
+  height: 1.35rem;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 252, 235, 0.66),
+    rgba(250, 244, 218, 0.48) 45%,
+    rgba(255, 252, 235, 0.62)
+  );
+  border: 1px solid rgba(1, 69, 126, 0.06);
+  box-shadow: 0 1px 2px rgba(1, 32, 58, 0.08);
+  clip-path: polygon(1.5% 0%, 99% 3%, 100% 30%, 98.5% 97%, 1% 100%, 0% 62%);
+  pointer-events: none;
+  top: -0.65rem;
+  right: -1.4rem;
+  transform: rotate(28deg);
+}
+.wcp-tape-tl.wcp-tape-tr::before {
+  top: -0.65rem;
+  left: -1.4rem;
+  transform: rotate(-32deg);
+}
 .wcp-tape-tl::before {
   top: -0.65rem;
   left: -1.4rem;
@@ -1536,6 +1564,15 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-proof-line .wcp-proof-stars {
   color: var(--color-amber);
   letter-spacing: 0.08em;
+}
+
+/* The framed hero's print rests at +2deg on desktop and tapes over the hero's
+   bottom sheet edge (HeroFramed). A CSS rule, not a utility class, so it wins
+   the same specificity war as the nth-of-type tilt alternation below it. */
+@media (min-width: 64rem) {
+  .wcp-hero-framed .wcp-print {
+    --print-tilt: 2deg;
+  }
 }
 
 /* Public motion vocabulary is exponential-ease only: the icon pop keeps its

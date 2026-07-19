@@ -67,9 +67,20 @@ const actions: ActionData[] = [
 // tokens inside the accent phrase get a nowrap wrapper (the ClassCard pattern)
 // so huge display type can never break AFTER a hyphen ("FRONT- / ROW") — the
 // ugliest possible line break; the phrase still wraps at spaces on phones.
+// A short leading article ("A ", "The ") folds INTO the accent so it can never
+// orphan on its own line above the underlined phrase ("A / FRONT-ROW SEAT" was
+// the Phase 0 home-hero rag at every width) — the crayon underline simply
+// starts at the article, which is how the approved prototype draws it.
+let fragBefore = before;
+let fragTokens = word ? word.split(' ') : [];
+const articleMatch = idx >= 0 ? fragBefore.match(/(?:^|\s)(\p{L}{1,3})\s$/u) : null;
+if (articleMatch) {
+  fragTokens = [articleMatch[1], ...fragTokens];
+  fragBefore = fragBefore.slice(0, fragBefore.length - articleMatch[1].length - 1);
+}
 const titleFragment =
   idx >= 0 && word
-    ? { before, tokens: word.split(' '), after, color: hero.accentColor ?? 'amber' }
+    ? { before: fragBefore, tokens: fragTokens, after, color: hero.accentColor ?? 'amber' }
     : null;
 
 // Hero doctrine (2026-07-17): every hero lives on the navy doodle drench

@@ -57,42 +57,34 @@ const {
 ---
 
 <section
-  class={cn('wcp-hero-framed wcp-hero-drench relative overflow-hidden', className)}
+  class={cn('wcp-hero-framed wcp-hero-drench relative overflow-x-clip', className)}
   aria-labelledby={titleId}
 >
   <div
-    class="wcp-container grid items-center gap-x-10 gap-y-8 py-[var(--wcp-space-xl)] lg:grid-cols-[1.02fr_0.98fr] lg:pt-56"
+    class="wcp-container grid items-center gap-x-10 gap-y-8 pt-[var(--wcp-space-xl)] pb-[var(--wcp-space-lg)] lg:grid-cols-[1.22fr_0.78fr] lg:pt-56 lg:pb-6"
   >
     {/* --- Text column ------------------------------------------------------- */}
     <div class="max-w-[40rem]">
       {
+        /* Act II: the eyebrow is a taped paper chip, not a tracked label — the
+           first artifact on the page, holding the enrollment status. */
         eyebrow && (
-          <p
-            class="wcp-eyebrow mb-3 flex items-center gap-2 text-sm font-bold text-amber"
-            data-reveal="fade"
-          >
-            <svg class="h-2 w-6 shrink-0" viewBox="0 0 28 8" fill="none" aria-hidden="true">
-              <path
-                d="M1.5 5.5 C 7 3.5, 13 6.5, 18 4.5 S 25 3.5, 26.5 5"
-                stroke="var(--color-amber)"
-                stroke-width="3"
-                stroke-linecap="round"
-              />
-            </svg>
-            <span>{eyebrow}</span>
+          <p class="wcp-taped-chip wcp-tape-tc relative mb-5" data-reveal="fade">
+            {eyebrow}
           </p>
         )
       }
       {
         /* Line-break discipline (the high-end benchmark's #1 lesson: huge type
-          must break on 2-4 INTENTIONAL lines, never fragment). The framed hero's
-          text column is ~40rem at lg, so the global --text-h1 cap (4.75rem)
-          fragments "front-row seat" onto its own island; this hero-scoped clamp
-          is sized so the longest nowrap phrase fits the column at every width. */
+          must break on 2-4 INTENTIONAL lines, never fragment). Act II raises the
+          ceiling toward display courage (the 2026 references run 44-56px at 390
+          and ~78px at 1440): the clamp is sized so the longest glued phrase
+          ("A front-row seat", article folded into the accent by PageHero) still
+          fits the column at 320. Measured after build, not assumed. */
       }
       <h1
         id={titleId}
-        class="text-[clamp(2.3rem,4.4vw,3.5rem)] text-balance text-white"
+        class="text-[clamp(1.95rem,5.4vw+0.4rem,3.9rem)] text-balance text-white"
         data-reveal
       >
         <slot name="title" />
@@ -113,8 +105,17 @@ const {
       </div>
     </div>
 
-    {/* --- Framed living photograph ------------------------------------------ */}
-    <figure class="wcp-print wcp-tape-tc relative mx-auto w-full max-w-[34rem] justify-self-center">
+    {
+      /* --- Framed living photograph ------------------------------------------
+        Desktop composition: the print grows, tilts to its resting 2deg, and is
+        taped OVER the hero's bottom seam strip (negative bottom margin + z-10)
+        — the first "taped over the edge" moment of the sheet system. Mobile
+        keeps it flat in flow, peeking into the first viewport under the CTAs.
+        Hover-straighten comes from .wcp-print's own rule. */
+    }
+    <figure
+      class="wcp-print wcp-tape-tl wcp-tape-tr relative z-10 mx-auto w-full max-w-[34rem] justify-self-center lg:-mb-16 lg:max-w-[37rem]"
+    >
       <div class="relative isolate overflow-hidden bg-navy" style="aspect-ratio: 16 / 10;">
         {
           sanityImage && (
@@ -148,13 +149,33 @@ const {
         }
       </div>
       <figcaption class="flex items-baseline justify-center gap-2 pt-3">
+        {
+          /* Fixed inks on the theme-stable white print lip (never -ink tokens
+            inside a stable island — they flip bright in dark mode). */
+        }
         <span class="font-display text-base text-navy">{caption}</span>
-        <span class="wcp-signature text-xl leading-none text-orange-ink"
-          >filmed by our families</span
+        <span class="wcp-signature text-xl leading-none text-[#a85300]">filmed by our families</span
         >
       </figcaption>
     </figure>
   </div>
+
+  {
+    /* The hero's own bottom sheet-edge: a cream wave the desktop print tapes
+       over (the overlap stays INSIDE this component, so no following band can
+       be covered whatever the Board stacks under the hero). aria-hidden, zero
+       CLS (fixed height). */
+  }
+  <svg
+    class="block h-[34px] w-full"
+    viewBox="0 0 1440 34"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M0 34 L0 20 Q 40 6 80 18 T 200 16 T 320 20 T 440 15 T 560 19 T 680 16 T 800 20 T 920 15 T 1040 19 T 1160 16 T 1280 20 T 1400 16 L 1440 18 L 1440 34 Z"
+      fill="var(--color-cream)"></path>
+  </svg>
 </section>
 
 {/* Colocated: hero-video autoplay (reduced-motion-aware) + the on-demand signature font. */}
