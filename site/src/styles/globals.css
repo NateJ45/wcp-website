@@ -1797,12 +1797,15 @@ li:nth-child(4n + 4) > .hub-note {
   color: #fff4e0;
 }
 
-/* -- IG wall compaction: 12 tiles ran ~2.5 phone viewports at 2-col; 3-col
-   keeps the bulletin-board energy at half the scroll cost. ------------------- */
+/* -- IG wall on phones: TWO across. The 3-col compaction here existed because
+   the wall carried 12 tiles (~2.5 phone viewports at 2-col); the wall is 8
+   tiles and full-bleed now (2026-07-19), so 2-col costs the same 4 rows while
+   each snapshot reads as a real photo instead of a thumbnail. Gap matches the
+   component's own base gap. --------------------------------------------------*/
 @media (max-width: 40rem) {
   .wcp-site-paper [data-stype='instagramSection'] ul {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
   }
 }
 

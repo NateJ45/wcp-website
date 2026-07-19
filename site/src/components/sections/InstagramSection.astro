@@ -33,9 +33,15 @@ const titleId = titleIdFor(section);
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
 const fbProfile = site.social?.facebook || 'https://www.facebook.com/westchesterpreschool';
 
+// EIGHT tiles (Nathan 2026-07-19): with the full-bleed wall, 8 fills the same
+// band as two tidy rows with each snapshot noticeably bigger — 12 shrank every
+// print to a thumbnail. Keep this in step with the column counts in the style
+// block below (8 = 4x2 on desktop, 2 rows at every breakpoint).
+const TILE_COUNT = 8;
+
 // Live Instagram first; fall back to the curated album if there's no token /
 // the feed is empty or unreachable.
-let tiles: InstaTile[] = await fetchInstagram(12);
+let tiles: InstaTile[] = await fetchInstagram(TILE_COUNT);
 if (tiles.length === 0) {
   const albumRef = (section.fallbackAlbum as { _ref?: string } | undefined)?._ref;
   if (albumRef) {
@@ -47,7 +53,7 @@ if (tiles.length === 0) {
     // figureImage nests the actual image under `.image` (asset at .image.asset).
     tiles = (album?.photos ?? [])
       .filter((p) => (p as { image?: { asset?: unknown } })?.image?.asset)
-      .slice(0, 12)
+      .slice(0, TILE_COUNT)
       .map((p) => {
         const fig = p as unknown as { image: SanityImageValue; alt?: string };
         return {
@@ -72,6 +78,7 @@ if (tiles.length === 0) {
       seam={section.seam as boolean}
       size={bandSize(section)}
       labelledby={titleId}
+      class="overflow-x-clip"
     >
       <SectionHeader
         eyebrow={header?.eyebrow ?? 'Follow along'}
@@ -104,44 +111,52 @@ if (tiles.length === 0) {
         </a>
       </div>
 
-      <ul class="wcp-ig-grid mt-10">
-        {/* Hub social-wall parity (Nathan, 2026-07-19): real captions on the
+      {/* Full-bleed wall (Nathan 2026-07-19: "like the Squarespace site did") —
+          the grid escapes the container and runs edge to edge, so the outer
+          snapshots crop at the viewport like a real pinned wall. The section
+          root carries overflow-x-clip, so the 100vw breakout can never widen
+          the PAGE (scrollbar-width math + the tilts/hover lift all clip here,
+          not on <html> — the 320px reflow gate proves it). */}
+      <div class="wcp-ig-bleed mt-10">
+        <ul class="wcp-ig-grid">
+          {/* Hub social-wall parity (Nathan, 2026-07-19): real captions on the
             polaroid lip, a play badge on reels, focus-visible outline. */}
-        {tiles.map((t) => (
-          <li class="wcp-ig-tile">
-            {/* A real link (opens the post) with no JS; social-lightbox.ts
+          {tiles.map((t) => (
+            <li class="wcp-ig-tile">
+              {/* A real link (opens the post) with no JS; social-lightbox.ts
                 intercepts the click to open the in-page viewer instead. The
                 aria-label names the link (hub scheme — alt stays empty so the
                 caption is never read twice). */}
-            <a
-              href={t.href}
-              target="_blank"
-              rel="noopener"
-              data-wall-item
-              data-full={t.imgUrl}
-              data-caption={t.caption}
-              data-href={t.href}
-              data-video={t.isVideo ? 'true' : 'false'}
-              data-video-url={t.videoUrl}
-              aria-label={t.isVideo ? `Play video: ${t.alt}` : `View photo: ${t.alt}`}
-            >
-              <span class="wcp-ig-frame">
-                <img src={t.imgUrl} alt="" loading="lazy" decoding="async" />
-                {t.isVideo && (
-                  <span class="wcp-ig-play" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                      <path d="M8 5.5v13l11-6.5z" />
-                    </svg>
-                  </span>
-                )}
-              </span>
-              <span class:list={['wcp-ig-cap', !t.caption && 'wcp-ig-cap--stamp']}>
-                {t.caption || 'From our Instagram'}
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+              <a
+                href={t.href}
+                target="_blank"
+                rel="noopener"
+                data-wall-item
+                data-full={t.imgUrl}
+                data-caption={t.caption}
+                data-href={t.href}
+                data-video={t.isVideo ? 'true' : 'false'}
+                data-video-url={t.videoUrl}
+                aria-label={t.isVideo ? `Play video: ${t.alt}` : `View photo: ${t.alt}`}
+              >
+                <span class="wcp-ig-frame">
+                  <img src={t.imgUrl} alt="" loading="lazy" decoding="async" />
+                  {t.isVideo && (
+                    <span class="wcp-ig-play" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M8 5.5v13l11-6.5z" />
+                      </svg>
+                    </span>
+                  )}
+                </span>
+                <span class:list={['wcp-ig-cap', !t.caption && 'wcp-ig-cap--stamp']}>
+                  {t.caption || 'From our Instagram'}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* In-page viewer — same structure the hub's SocialWallWidget renders,
           driven by the SHARED social-lightbox.ts (one instance per page: the
@@ -212,10 +227,19 @@ if (tiles.length === 0) {
 }
 
 <style>
+  /* Full-bleed breakout: 100vw centered on the container's own midpoint. The
+     section root clips horizontally, so a classic scrollbar's few px (100vw
+     counts them, the container doesn't) can never reach the page. */
+  .wcp-ig-bleed {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
   .wcp-ig-grid {
     list-style: none;
     margin: 0;
-    padding: 0 4px 32px;
+    /* No side padding — the outer snapshots crop at the viewport edge, which
+       IS the full-bleed look. Bottom room keeps the tilt off the band edge. */
+    padding: 0 0 32px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
@@ -225,9 +249,11 @@ if (tiles.length === 0) {
       grid-template-columns: repeat(3, 1fr);
     }
   }
+  /* Four across on desktop: the 8 tiles land as two big edge-to-edge rows. */
   @media (min-width: 1024px) {
     .wcp-ig-grid {
       grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
     }
   }
   .wcp-ig-tile {
