@@ -87,6 +87,11 @@ const faqJsonLd =
         })),
       }
     : null;
+
+// Class pages own their brand color (matches class.color in Sanity; the two
+// Pre-K sessions share the /classes/pre-k page, which leads AM-orange).
+const classAccent =
+  slug === 'classes/twos' ? 'amber' : slug === 'classes/threes' ? 'green' : 'orange';
 ---
 
 <BaseLayout title={title} description={page?.seoDescription} ogImage={ogImage}>
@@ -97,7 +102,23 @@ const faqJsonLd =
       Stopgap; close-out registered in docs/PENDING.md. */
     page?.hero && <PageHero hero={{ ...page.hero, ...(HERO_OVERRIDES[slug] ?? {}) }} />
   }
-  <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
+  {
+    /* Class pages own their brand color (Act II: Phase 0 found Twos-amber and
+       Threes-green appeared nowhere ownable on their own pages). The wrapper
+       sets --page-accent for the grammar CSS (display: contents = zero box). */
+  }
+  {
+    slug.startsWith('classes/') ? (
+      <div
+        class="wcp-class-accent contents"
+        style={`--page-accent: var(--color-${classAccent}); --page-accent-ink: var(--color-${classAccent}-ink)`}
+      >
+        <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
+      </div>
+    ) : (
+      <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
+    )
+  }
   {
     faqJsonLd && (
       <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />

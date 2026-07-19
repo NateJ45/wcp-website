@@ -35,6 +35,23 @@ import { site } from '@/data/site';
     <div class="mx-auto max-w-2xl" data-pagefind-ignore>
       <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
       <div id="search" class="wcp-search"></div>
+      {
+        /* The zero state used to be a bare input (Phase 0: "a search page's
+          empty state is its whole design"). These ride the new ?q= deep links. */
+      }
+      <p class="mt-6 flex flex-wrap items-center gap-2 text-sm" data-pagefind-ignore>
+        <span class="font-semibold text-ink-muted">Popular:</span>
+        {
+          ['tuition', 'pre-k', 'open house', 'schedule', 'co-op'].map((q) => (
+            <a
+              class="inline-flex min-h-9 items-center rounded-full border border-navy/20 px-3.5 font-semibold text-heading no-underline hover:bg-cream dark:border-white/25"
+              href={`/search?q=${encodeURIComponent(q)}`}
+            >
+              {q}
+            </a>
+          ))
+        }
+      </p>
       <noscript>
         <p class="text-center text-ink-muted">Search needs JavaScript turned on.</p>
       </noscript>

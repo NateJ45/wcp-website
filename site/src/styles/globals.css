@@ -1788,6 +1788,19 @@ li:nth-child(4n + 4) > .hub-note {
   }
 }
 
+/* -- Class-page color ownership: a class page sets --page-accent(-ink) on its
+   section tree ([...slug].astro) and the grammar picks it up — the taped chip
+   gets the class-color edge and sheet icons unify on the class ink (AA-safe:
+   -ink tones on light surfaces; the navy-band cream rule below still wins on
+   navy sheets). Pages without the vars are untouched (transparent/inherit
+   fallbacks). ---------------------------------------------------------------- */
+.wcp-site-paper [data-stype] .wcp-eyebrow {
+  border-bottom: 3px solid var(--page-accent, transparent);
+}
+.wcp-class-accent [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span {
+  color: var(--page-accent-ink);
+}
+
 /* -- Schedule timelines: two ruled columns on wide screens (a 7-step single
    column left ~55% of a 1440 band empty on every class page). Sequence stays
    readable: steps run down the first column, then the second. -------------- */

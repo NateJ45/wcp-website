@@ -125,6 +125,10 @@ Earlier stopgaps:
 - **Supply the Google Business Profile review short URL** (g.page/r/...) for
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
+- **Board-approved wording for the safety trust answers** (background checks,
+  CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
+  /faq can answer the questions parents actually screen for (Phase 0 audit:
+  both pages duck them today; the redesign left slots, not invented facts).
 - **Board sets the co-op hours goal** (Studio → Site Settings) — until then
   `/family-hub/hours` shows its designed empty state. Requires the quota back.
 - **Update the Sanity webhook filter in the dashboard** to match the 2026-07-17
