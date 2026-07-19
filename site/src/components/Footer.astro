@@ -9,9 +9,10 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import Seam from '@/components/Seam.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
-import SeasonalAccent from '@/components/SeasonalAccent.astro';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings, getNavigation, getSeason } from '@/lib/cms';
+import { getSiteSettings, getNavigation } from '@/lib/cms';
+import { photosFor } from '@/lib/photo-registry';
+import { imageUrl } from '@/lib/image';
 import { withBase } from '@/lib/utils';
 import { isValidGtagId, isValidMetaPixelId } from '@/lib/consent-state';
 
@@ -28,7 +29,11 @@ const href = (h: string) => withBase(h, linkBase);
 const site = await getSiteSettings(siteFallback);
 const { footerNav, legalNav } = await getNavigation();
 // Seasonal footer decorations (Site Settings → "Seasonal touches"; build-time).
-const season = await getSeason();
+// The old site's footer sat on a navy-tinted classroom photo (Nathan,
+// 2026-07-19): one registry pick, heavy navy overlay, degrades to plain navy
+// when the registry is empty. (The seasonal sun/cloud art is retired from the
+// footer at the same request.)
+const [footerPhoto] = await photosFor('footer', 1);
 
 const phoneDigits = site.phone.replace(/[^\d]/g, '');
 const year = new Date().getFullYear();
@@ -51,19 +56,25 @@ const consentEnabled =
 <footer class="relative -mt-px bg-navy text-white">
   <Seam color="navy" />
   {
-    season && (
-      <SeasonalAccent
-        season={season}
-        class="absolute top-10 right-6 hidden opacity-90 md:block lg:right-12"
-      />
+    footerPhoto && (
+      <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
+        <img
+          src={imageUrl(footerPhoto.image as never, 1600)}
+          alt=""
+          class="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+        <div class="absolute inset-0 bg-navy/[0.88]" />
+      </div>
     )
   }
   <div
-    class="wcp-container grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
+    class="wcp-container relative grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
   >
     {/* Brand + contact */}
     <div>
-      <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-16 w-auto" />
+      <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-24 w-auto" />
       <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/80">{site.tagline}</p>
       <address class="mt-4 space-y-2 text-sm text-white/90 not-italic">
         <a href={`tel:${phoneDigits}`} class="inline-flex items-center gap-2 hover:underline">
@@ -139,12 +150,12 @@ const consentEnabled =
   </div>
 
   {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
-  <div class="wcp-container -mt-2 pb-8 text-center">
+  <div class="wcp-container relative -mt-2 pb-8 text-center">
     <p class="font-display text-2xl text-amber">See you at drop-off!</p>
     <p class="mt-1 text-sm text-white/70">— The WCP Families</p>
   </div>
 
-  <div class="border-t border-white/10">
+  <div class="relative border-t border-white/10">
     <div class="wcp-container flex flex-col gap-4 py-6 text-xs text-white/60">
       {/* Legal / policy links */}
       <nav aria-label="Legal" class="flex flex-wrap gap-x-5 gap-y-2">
