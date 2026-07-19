@@ -128,7 +128,24 @@ should be able to resume from the documents in this directory alone.
         rebuild (migration catch-net + solid header fix), search zero state,
         thank-you next-step, packet table stacking, per-route
         CARDGRID_KEEP_CARDS decisions (month/tradition grids are candidates).
-- [ ] Phase 3: sweep + docs sync + Lighthouse vs baseline + PR ready
+- [x] Phase 3 (2026-07-19): COMPLETE.
+  - [x] main merged at the boundary (already up to date).
+  - [x] Docs sync: CLAUDE.md (Construction Paper conventions + motion vocabulary + the stale-astro-dev-4321 testing gotcha), PAGE_BUILDER.md (Act II
+        grammar + doctrine registries), in-Studio volunteer guide (eyebrow +
+        cards rendering notes), PENDING.md (a row per stopgap + the safety
+        trust-answer Board task).
+  - [x] Final full gate: astro check 0 · lint · format · build · npm test 210 ·
+        unit 182 · test:hub 58 · check:links 97.
+  - [x] Final overflow sweep: 348/348 clean (29 routes x 6 widths x 2 themes).
+  - [x] Lighthouse final vs baseline →
+        2026-07-18-lighthouse-final-comparison.md: a11y 100 everywhere both
+        runs; perf-neutral (the batch run's apparent drops were machine
+        contention — quiet resruns restore baseline within a point; home mobile
+        LCP 3904ms vs 4055ms baseline).
+  - [x] Production verified untouched (live site has zero redesign markers; the
+        Cloudflare "Workers Builds" PR check is a preview build, not a deploy).
+  - [x] PR #1 body finalized with the full evidence map and marked READY FOR
+        REVIEW. Merging = deploying = Nathan's call; NOT done here.
 
 ## Session log
 
