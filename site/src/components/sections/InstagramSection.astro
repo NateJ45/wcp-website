@@ -33,11 +33,19 @@ const titleId = titleIdFor(section);
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
 const fbProfile = site.social?.facebook || 'https://www.facebook.com/westchesterpreschool';
 
-// EIGHT tiles (Nathan 2026-07-19): with the full-bleed wall, 8 fills the same
-// band as two tidy rows with each snapshot noticeably bigger — 12 shrank every
-// print to a thumbnail. Keep this in step with the column counts in the style
-// block below (8 = 4x2 on desktop, 2 rows at every breakpoint).
-const TILE_COUNT = 8;
+// TWELVE tiles in TWO rows (Nathan 2026-07-19, second pass): twelve photos, but
+// the band stays two rows tall, so desktop goes 6 across.
+//
+// History, because the note that used to live here was misleading: the wall
+// briefly dropped to 8 on the theory that 12 "shrank every print to a
+// thumbnail". Tile count was never the cause — the columns were 2/3/4 before
+// and after, and what actually enlarged each print was going FULL-BLEED in the
+// same commit. Holding 12 to two rows DOES shrink them, though, because that
+// takes 6 columns. Column count is the only thing that sets tile size.
+//
+// Keep this in step with the column counts in the style block below
+// (12 = 6x2 desktop, 4x3 at sm, 2-up on mobile).
+const TILE_COUNT = 12;
 
 // Live Instagram first; fall back to the curated album if there's no token /
 // the feed is empty or unreachable.
@@ -246,13 +254,18 @@ if (tiles.length === 0) {
   }
   @media (min-width: 640px) {
     .wcp-ig-grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
     }
   }
-  /* Four across on desktop: the 8 tiles land as two big edge-to-edge rows. */
+  /* SIX across on desktop, so the 12 tiles stay TWO rows (Nathan 2026-07-19:
+     twelve photos, two rows). Tile size is set by the column count, not the
+     tile count: holding 12 to two rows necessarily makes each print about a
+     third narrower than the 4-across wall it replaced. That is the deliberate
+     trade — more of the feed visible at once, each frame smaller. If the prints
+     ever read too small, the fix is 8 tiles at 4 across, not more columns. */
   @media (min-width: 1024px) {
     .wcp-ig-grid {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 22px;
     }
   }
