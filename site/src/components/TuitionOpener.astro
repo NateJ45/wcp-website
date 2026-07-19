@@ -8,9 +8,15 @@
    Injected by the moments map; copy is evergreen and code-owned (a designed
    artifact like the rating slip, not volunteer content).
    ============================================================================ */
+import Seam from '@/components/Seam.astro';
 ---
 
-<section class="bg-cream" aria-labelledby="tuition-opener-title">
+<section class="relative bg-cream" aria-labelledby="tuition-opener-title">
+  {
+    /* The sweep at the hero boundary — this band leads the page, so it carries
+      the divider the first stored section would otherwise draw. */
+  }
+  <Seam color="cream" />
   <div class="wcp-container py-[var(--wcp-space-xl)] text-center">
     <h2
       id="tuition-opener-title"

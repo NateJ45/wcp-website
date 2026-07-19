@@ -80,6 +80,10 @@ interface Props {
       Google-rating trust slip — that's a public-marketing trust signal for
       prospective parents, not something an already-enrolled family needs. */
   hub?: boolean;
+  /** True when a page hero renders directly above these sections: the first
+      band then always carries the sweep seam (the old site's media→content
+      divider, every page). Public page routes pass it; hub surfaces don't. */
+  afterHero?: boolean;
 }
 const {
   sections: rawSections = [],
@@ -88,6 +92,7 @@ const {
   cardWatermark = false,
   pageSlug,
   hub = false,
+  afterHero = false,
 } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
@@ -175,8 +180,9 @@ for (const [i, s] of sections.entries()) {
 const momentBg = (m: PhotoMoment): string =>
   m.kind === 'interlude' || m.kind === 'chooser' ? 'white' : (m.bg ?? 'cream');
 
-// Seed with a leading moment's colour when one renders before everything.
-let prevBg: string | null = null;
+// Seed with the hero boundary (the sweep divider lands under every hero, like
+// the old site), then a leading moment's colour when one renders first.
+let prevBg: string | null = afterHero ? 'hero' : null;
 for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
 for (const [i, section] of sections.entries()) {
   if (section._type === 'noticeBarSection') {

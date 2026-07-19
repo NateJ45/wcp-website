@@ -113,10 +113,20 @@ const classAccent =
         class="wcp-class-accent contents"
         style={`--page-accent: var(--color-${classAccent}); --page-accent-ink: var(--color-${classAccent}-ink)`}
       >
-        <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
+        <SectionRenderer
+          sections={page?.sections}
+          site={siteData}
+          pageSlug={slug}
+          afterHero={Boolean(page?.hero)}
+        />
       </div>
     ) : (
-      <SectionRenderer sections={page?.sections} site={siteData} pageSlug={slug} />
+      <SectionRenderer
+        sections={page?.sections}
+        site={siteData}
+        pageSlug={slug}
+        afterHero={Boolean(page?.hero)}
+      />
     )
   }
   {

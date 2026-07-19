@@ -61,7 +61,7 @@ const {
   aria-labelledby={titleId}
 >
   <div
-    class="wcp-container grid items-center gap-x-10 gap-y-8 pt-[var(--wcp-space-xl)] pb-[var(--wcp-space-lg)] lg:grid-cols-[1.22fr_0.78fr] lg:pt-56 lg:pb-6"
+    class="wcp-container grid items-center gap-x-10 gap-y-8 pt-[var(--wcp-space-xl)] pb-[var(--wcp-space-lg)] lg:grid-cols-[1fr_1fr] lg:pt-56 lg:pb-6"
   >
     {/* --- Text column ------------------------------------------------------- */}
     <div class="max-w-[40rem]">
@@ -84,7 +84,7 @@ const {
       }
       <h1
         id={titleId}
-        class="text-[clamp(1.95rem,5.4vw+0.4rem,3.9rem)] text-balance text-white"
+        class="text-[clamp(1.95rem,5.4vw+0.4rem,3.35rem)] text-balance text-white lg:text-[clamp(2.4rem,3.4vw,2.95rem)]"
         data-reveal
       >
         <slot name="title" />
@@ -114,7 +114,7 @@ const {
         Hover-straighten comes from .wcp-print's own rule. */
     }
     <figure
-      class="wcp-print wcp-tape-tl wcp-tape-tr relative z-10 mx-auto w-full max-w-[34rem] justify-self-center lg:-mb-16 lg:max-w-[37rem]"
+      class="wcp-print wcp-tape-tl wcp-tape-tr relative z-10 mx-auto w-full max-w-[34rem] justify-self-center lg:-mb-20 lg:w-[34rem] lg:max-w-none lg:justify-self-end"
     >
       <div class="relative isolate overflow-hidden bg-navy" style="aspect-ratio: 16 / 10;">
         {
@@ -167,16 +167,37 @@ const {
        CLS (fixed height). */
   }
   <svg
-    class="block h-[34px] w-full"
-    viewBox="0 0 1440 34"
+    class="block h-[38px] w-full sm:h-[52px]"
+    viewBox="0 0 1440 60"
     preserveAspectRatio="none"
     aria-hidden="true"
   >
+    {
+      /* The one sweep divider (Seam.astro geometry), orange-traced — Nathan's
+        "exactly the Squarespace dividers" call, 2026-07-19. */
+    }
     <path
-      d="M0 34 L0 20 Q 40 6 80 18 T 200 16 T 320 20 T 440 15 T 560 19 T 680 16 T 800 20 T 920 15 T 1040 19 T 1160 16 T 1280 20 T 1400 16 L 1440 18 L 1440 34 Z"
-      fill="var(--color-cream)"></path>
+      class="wcp-hero-edge"
+      d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z"></path>
+    <path
+      d="M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10"
+      fill="none"
+      stroke="var(--color-orange)"
+      stroke-width="4"
+      stroke-linecap="round"></path>
   </svg>
 </section>
+
+<style>
+  /* The edge fills with the WHITE page surface (the chooser band sits directly
+     under the home hero), theme-aware like any white band. */
+  .wcp-hero-edge {
+    fill: #fff;
+  }
+  :global(.dark) .wcp-hero-edge {
+    fill: var(--color-surface);
+  }
+</style>
 
 {/* Colocated: hero-video autoplay (reduced-motion-aware) + the on-demand signature font. */}
 <script>

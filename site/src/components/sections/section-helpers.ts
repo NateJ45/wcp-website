@@ -76,7 +76,12 @@ export function effectiveBg(section: SectionData): 'white' | 'grey' | 'cream' | 
  * seam; navy↔navy (a CTA under a navy section) gets none either.
  */
 export function wantsSeam(thisBg: string, prevBg: string | null): boolean {
-  if (prevBg === null) return false; // first section: the hero sits above it
+  // 'hero' = the section directly under the page hero. The old Squarespace
+  // site drew its sweep divider at every media→content boundary, and Nathan
+  // asked for exactly that (2026-07-19) — so the first band always carries the
+  // seam, whatever its color. `null` = a surface with no hero above (hub etc.).
+  if (prevBg === 'hero') return true;
+  if (prevBg === null) return false;
   return (thisBg === 'cream' || thisBg === 'navy') && thisBg !== prevBg;
 }
 
