@@ -126,11 +126,18 @@ Earlier stopgaps:
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
 - **Cloudflare "Workers Builds" Git integration fails on EVERY commit** (main
-  included, verified 2026-07-19 via check-runs on dbde4b0): the dashboard-side
-  build lacks the build env/config this repo needs (SANITY_TOKEN, site/ root).
-  It is not a repo gate (deploys ride deploy.yml) but it paints a red X on all
-  commits and PRs. In the Cloudflare dashboard: configure its build settings +
-  env, or disconnect the integration.
+  included). Root cause confirmed from the 2026-07-19 build log: it runs
+  `npx wrangler deploy` from the REPO ROOT with no install/build step — the app
+  lives in `site/`, needs `npm ci && npm run build` (with SANITY_TOKEN) first,
+  and must deploy via `-c dist/server/wrangler.json`. Fix in the dashboard
+  (Workers & Pages → wcp-website → Settings → Build), pick ONE:
+  (a) RECOMMENDED: disconnect the Git integration / toggle builds off — deploys
+  already ride deploy.yml, which also owns the Sanity publish webhook and the
+  weekly cron the integration cannot replace; or (b) keep it for PR preview
+  URLs: root directory `site`, build `npm ci && npm run build`, deploy
+  `npx wrangler deploy -c dist/server/wrangler.json`, build vars SANITY_TOKEN
+  (+ optional INSTAGRAM_TOKEN), and DISABLE production-branch builds for main
+  so merges do not deploy twice.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for (Phase 0 audit:
