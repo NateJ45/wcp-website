@@ -96,11 +96,16 @@ const consentEnabled =
       </div>
     )
   }
+  {
+    /* Two nav columns from the smallest phones up (Nathan 2026-07-19: the
+      1-col stack ran ~4 viewports; 2-up halves the scroll). The brand block
+      spans the full row until lg, where the 5-track desktop grid takes over. */
+  }
   <div
-    class="wcp-container relative grid gap-8 pt-24 pb-10 sm:pt-28 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
+    class="wcp-container relative grid grid-cols-2 gap-x-6 gap-y-8 pt-24 pb-10 sm:pt-28 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8"
   >
     {/* Brand + contact */}
-    <div>
+    <div class="col-span-2 lg:col-span-1">
       <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-24 w-auto" />
       <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/80">{site.tagline}</p>
       <address class="mt-4 space-y-2 text-sm text-white/90 not-italic">
@@ -176,8 +181,12 @@ const consentEnabled =
     }
   </div>
 
-  {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
-  <div class="wcp-container relative -mt-1 pb-6 text-center">
+  {
+    /* A warm, hand-lettered goodbye — ends the visit like a note on the door.
+      Left-aligned on phones with the columns above it (Nathan 2026-07-19);
+      centered only on the wide layout, where the columns span the row. */
+  }
+  <div class="wcp-container relative -mt-1 pb-6 text-left lg:text-center">
     <p class="font-display text-2xl text-amber">See you at drop-off!</p>
     <p class="mt-1 text-sm text-white/70">— The WCP Community</p>
   </div>
@@ -218,7 +227,11 @@ const consentEnabled =
           }.
         </p>
       </div>
-      <p class="text-center sm:text-left">
+      {
+        /* Left-aligned like every other legal-bar line (it centered on phones
+          while everything above sat left — Nathan 2026-07-19). */
+      }
+      <p>
         Designed by{' '}
         <a
           href="https://nixoncreativestudio.com"
