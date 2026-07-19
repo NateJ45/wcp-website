@@ -87,44 +87,79 @@ author name.
   `src/lib` test convention): known author resolves, unknown returns
   `undefined`, normalization handles punctuation and case.
 
-### Assets
+### Assets: all 24 authors have a photo
 
-Eleven confirmed matches, copied from `assets-from-squarespace/images/` into
-`src/assets/testimonials/` under readable kebab-case names:
+**Method matters here.** An earlier draft of this spec guessed the mapping from
+archive filenames and got three of eleven wrong. The mapping below is derived
+from the live old site instead: every testimonial `<img>` on
+`westchesterpreschool.org` carries the author's name in its `alt` attribute, so
+the pairing is stated by the source, not inferred. Two extraction traps cost
+real time and are recorded so the next person avoids them:
 
-| Quote author (`testimonials.ts`) | Source file             | New name                |
-| -------------------------------- | ----------------------- | ----------------------- |
-| Alison Blankenship               | `013-Alison.jpg`        | `alison-blankenship.jpg` |
-| Erin McQuillen                   | `014-ErinMcqueen.jpg`   | `erin-mcquillen.jpg`    |
-| Amanda Hackney                   | `015-Amanda.jpg`        | `amanda-hackney.jpg`    |
-| Taylor Dore                      | `047-TayloreDore.jpg`   | `taylor-dore.jpg`       |
-| Katherine Oliver                 | `056-Katherine.jpg`     | `katherine-oliver.jpg`  |
-| Lauren Lintz                     | `063-LaurenLintz.jpg`   | `lauren-lintz.jpg`      |
-| Laura Gilbert                    | `064-LaurenGilbert.jpg` | `laura-gilbert.jpg`     |
-| Erin Millspaw                    | `067-erinmills.jpg`     | `erin-millspaw.jpg`     |
-| Lisa T.                          | `071-lisat.png`         | `lisa-t.png`            |
-| Sara Jane Nixon                  | `074-SaraJaneNixon.jpg` | `sara-jane-nixon.jpg`   |
-| Renee Ross                       | `077-reneeross.jpg`     | `renee-ross.jpg`        |
+- The CDN serves **both** `/content/v1/<site>/<uuid>/` and
+  `/content/<site>/<uuid>/`. Requiring the `v1` segment silently dropped seven
+  authors.
+- A filename with a `?content-type=` query string breaks any pattern that
+  expects the name to be followed immediately by a closing quote.
 
-**Decisions taken:**
+All 24 quotes in `src/data/testimonials.ts` have a photo, and all 24 source
+files are already present in `assets-from-squarespace/images/` (verified on
+disk, 7.5 MB raw):
 
-- `064-LaurenGilbert.jpg` maps to **Laura Gilbert**. The filename says Lauren,
-  the quote says Laura; Nathan confirmed Laura. The quote's spelling is
-  authoritative for display.
-- `062-Erin.jpg` is **excluded**. It could be Erin Schmerr or Erin Millspaw and
-  guessing attaches a real person's face to the wrong name. Open item below.
+| Author             | Archive file                | Author            | Archive file             |
+| ------------------ | --------------------------- | ----------------- | ------------------------ |
+| Alison Blankenship | `013-Alison.jpg`            | Emily Wilkes      | `068-3L7A7100.jpg`       |
+| Erin McQuillen     | `014-ErinMcqueen.jpg`       | Jessica Swarr     | `069-2c95e942-….jpg`     |
+| Amanda Hackney     | `015-Amanda.jpg`            | Kayla Moormann    | `070-image0.jpeg`        |
+| Taylor Dore        | `047-TayloreDore.jpg`       | Lisa T.           | `071-lisat.png`          |
+| Amber Cron         | `050-448967548_….jpg`       | Lexie Lenavitt    | `072-512151748_….jpg`    |
+| Meagan Gegner      | `054-495704435_….jpg`       | Anita Shrestha    | `073-3L7A7071.jpg`       |
+| Katherine Oliver   | `056-Katherine.jpg`         | Sara Jane Nixon   | `074-SaraJaneNixon.jpg`  |
+| Daniel Hagedorn    | `057-395417966_….jpg`       | Courtney Marquart | `075-510583991_….jpg`    |
+| Erin Schmerr       | `062-Erin.jpg`              | Teresa Vasquez    | `076-FullSizeRender.jpeg` |
+| Lauren Lintz       | `063-LaurenLintz.jpg`       | Renee Ross        | `077-reneeross.jpg`      |
+| Laura Gilbert      | `064-LaurenGilbert.jpg`     | Valerie Williams  | `065-462682701_….jpg`    |
+| Erin Millspaw      | `067-erinmills.jpg`         | Nathan Nixon      | `066-img_1_….jpg`        |
 
-**Consent basis:** every one of these images was published on the public
-Squarespace site, so re-publishing them on the replacement site does not widen
-the consent surface. This matches the photo-registry rule.
+Copied into `src/assets/testimonials/` under kebab-case names derived from the
+author (`alison-blankenship.jpg`, `lisa-t.png`, …).
+
+**Resolved, both from the old site's own alt text:**
+
+- `062-Erin.jpg` is **Erin Schmerr**, not Erin Millspaw. (Erin Millspaw is
+  `067-erinmills.jpg`.)
+- `064-LaurenGilbert.jpg` is **Laura Gilbert**. The filename says Lauren, the
+  alt text and the quote both say Laura. Laura is authoritative.
+
+**Two collisions to not trip over:**
+
+- Erin Schmerr appears twice on the old site with **different photos**: as a
+  testimonial author (`062-Erin.jpg`) and as a teacher (`3L7A4018.jpg`, already
+  committed as `src/assets/staff/erin-schmerr.jpg`). These must not be swapped.
+- `073-3L7A7071.jpg` (Anita Shrestha) is also referenced by an existing seed
+  script, so the same image may already exist as a Sanity gallery asset. Not a
+  conflict, but do not assume it is unused.
+
+**Preprocessing.** 7.5 MB of source files for images that render at roughly
+100px is wasteful in a public repo. Downscale to 320px square WebP with `sharp`
+(the same tool and pattern that produced the `-sm.webp` brand assets), landing
+around 400 KB committed. Keep `lisa-t.png` and the two `.jpeg` files converted
+to `.webp` as well so the directory is uniform.
+
+**Consent basis:** every one of these images is published on the public
+Squarespace site today, so carrying them to the replacement site does not widen
+the consent surface. This matches the photo-registry rule. They are photographs
+of identifiable families, so they must not be used for anything other than the
+quote they belong to.
 
 ### Component change
 
 `Testimonial.astro` gains an optional `photo?: ImageMetadata` prop.
 
-- When absent, the note renders exactly as today. **Non-negotiable:** 13 of the
-  24 quotes have no photo, and `/reviews` shows the full wall, so the no-photo
-  path is the common case and must be visually unchanged.
+- When absent, the note renders exactly as today. Every current quote has a
+  photo, so this path is not the common case, but it must stay correct: a
+  volunteer adding a quote in the Studio will have no photo for it, and the
+  note has to look finished without one.
 - When present, render an `astro:assets` `<Image>` as a taped print: small
   (~4.5rem), square crop, tilted counter to the note's tilt, its own small tape
   strip, sitting above the star row.
@@ -139,12 +174,16 @@ the consent surface. This matches the photo-registry rule.
 `TestimonialSection.astro` calls `photoFor(t.author)` and passes the result
 through. No change to its existing `/reviews` and `/why-wcp` stopgap branches.
 
-### Degradation
+### Coverage and page weight
 
-The home row shows 3 of 5 featured quotes; only Alison, Taylor Dore and Amanda
-Hackney have photos, so the row may render 1 to 3 snapshots depending on GROQ
-ordering. A mixed row of photo and no-photo notes must look deliberate, not
-broken. This is the primary visual review point.
+All five featured quotes (Alison Blankenship, Amber Cron, Meagan Gegner, Taylor
+Dore, Amanda Hackney) have photos, so the home row renders three snapshots
+regardless of GROQ ordering. No mixed-state design problem on the home page.
+
+`/reviews` is the weight risk: it renders the full wall, so all 24 photos land
+on one page. They must be `loading="lazy"` below the fold and sized to their
+render box. At 320px WebP thumbnails this is a few hundred KB, but the
+Lighthouse run on `/reviews` is the check that matters.
 
 ---
 
@@ -219,7 +258,7 @@ Per the repo's docs rule, in the same commit:
 Two queued patch scripts are authored but **not run** (writes are frozen), each
 dry-run by default per the `patch-lib.mjs` convention:
 
-- `patch-testimonial-photos.mjs` — upload the eleven headshots as Sanity assets
+- `patch-testimonial-photos.mjs` — upload all 24 headshots as Sanity assets
   onto their `testimonial` docs; close out by deleting `testimonial-photos.ts`
   and its test.
 - `patch-home-visit-splitmedia.mjs` — rebuild `hp-visit` as a real
@@ -244,12 +283,14 @@ since a schema change is code, not a write.
 
 ## Open items for Nathan
 
-1. **Who is `062-Erin.jpg`?** Erin Schmerr or Erin Millspaw. Excluded until
-   confirmed; adding it later is a one-line map entry.
-2. **The home row drifted from the old site.** The old home showed Alison, Erin
-   McQuillen and Amanda. Sanity's featured set is Alison, Amber Cron, Meagan
-   Gegner, Taylor Dore, Amanda Hackney, and Amber and Meagan have no photo.
-   Re-picking the featured five is a Sanity edit, so it is quota-blocked, but
-   worth queueing if the home row should lead with photographed families.
-3. **The hero video** remains the largest visual gap on the live site and is
+1. **The home row shows different families than the old site did.** The old
+   home led with Alison Blankenship, Erin McQuillen and Amanda Hackney;
+   Sanity's featured five are Alison, Amber Cron, Meagan Gegner, Taylor Dore
+   and Amanda Hackney. All have photos either way, so this is a content
+   preference, not a blocker. Changing it is a Sanity write and therefore
+   quota-blocked; say the word and it joins the patch queue.
+2. **The hero video** remains the largest visual gap on the live site and is
    not addressed here.
+
+Previously open, now resolved from the old site's own alt text: `062-Erin.jpg`
+is Erin Schmerr, and `064-LaurenGilbert.jpg` is Laura Gilbert.
