@@ -68,8 +68,39 @@ should be able to resume from the documents in this directory alone.
   - GOTCHA (now in CLAUDE.md): a stale daemonized astro dev on 4321 absorbs the
     Playwright webServer via reuseExistingServer and the whole suite runs against
     the WRONG server (8 phantom consent failures). Check the port first.
-- [ ] Phase 2: routes (funnel order)
-- [ ] Phase 3: sweep + docs sync + PR ready
+- [~] Phase 2: routes (funnel order) — systemic moves landed first:
+  - [x] Home hero recomposition (commit fb2a851): taped-chip eyebrow, calibrated
+        display clamp per width (article folds into the underlined accent — no
+        more orphan "A"; 3 lines at 390/1440, 0 overflow 320-1440), wider text
+        column, print with both corner tapes + 2deg tilt taped OVER the hero's
+        own cream sheet-edge on desktop (overlap contained in-component).
+  - [x] Section grammar (commit 4f8b707): SectionRenderer data-stype wrapper
+        (public-only, display:contents) + CSS grammar layer. Taped-label header
+        treatment (left axis, eyebrow→chip) for data types; caption treatment
+        (eyebrow retired) for story types; cardGrid → ruled sign-up-sheet lists
+        (the icon-card monoculture is gone sitewide; tuition navy-band P0
+        self-retired via band-scheme inheritance, re-verified both themes);
+        statBand boxes → one fact strip. CARDGRID_KEEP_CARDS doctrine hook for
+        per-route card restoration (empty; fill during route walks).
+  - TRAP (2nd occurrence, now habits): paper-artifact surfaces (chips) must be
+    FIXED light cream — the cream token flips to #241a12 in dark and kills
+    fixed inks. axe-dark caught 58 nodes; consent axe failed collaterally.
+  - [ ] Route walks on the new grammar, funnel order: home (heritage strip
+        content moment, chooser rows, IG wall curation/compaction), enroll
+        (dedupe contradictory steps, commit/decide fork, form reframe), classes
+        x3 (class-color ownership, teacher band 1440 composition, curriculum
+        cap), visit (form reassurance under submit, "Not sure yet" class
+        option, checkbox target size, gallery static grid), tuition (table
+        toward viewport 1, calculator placement, fee-card strip removal),
+        why-wcp (dedupe wall → curated 4 + link, $70-vs-$175 line), reviews
+        (proof engine: dates/badges/pull-quotes, tour CTA at terminus), safety
+        (nouns, FAQ category), a-day (collage grid + one schedule band with
+        class switcher), co-op-life (caption/photo mismatches, seven-things as
+        contract sheet), news/events (moment layer, small-surfaces kit), 404
+        rebuild (migration catch-net + solid header fix), search zero state,
+        thank-you next-step, packet table stacking, per-route
+        CARDGRID_KEEP_CARDS decisions (month/tradition grids are candidates).
+- [ ] Phase 3: sweep + docs sync + Lighthouse vs baseline + PR ready
 
 ## Session log
 
