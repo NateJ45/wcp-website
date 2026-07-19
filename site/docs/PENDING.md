@@ -125,6 +125,12 @@ Earlier stopgaps:
 - **Supply the Google Business Profile review short URL** (g.page/r/...) for
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
+- **Cloudflare "Workers Builds" Git integration fails on EVERY commit** (main
+  included, verified 2026-07-19 via check-runs on dbde4b0): the dashboard-side
+  build lacks the build env/config this repo needs (SANITY_TOKEN, site/ root).
+  It is not a repo gate (deploys ride deploy.yml) but it paints a red X on all
+  commits and PRs. In the Cloudflare dashboard: configure its build settings +
+  env, or disconnect the integration.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for (Phase 0 audit:
