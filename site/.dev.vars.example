@@ -27,3 +27,11 @@ SANITY_TOKEN="change-me"
 # pages (the Family Hub's SocialWallWidget) can't see import.meta.env. Unset =
 # the hub's "Life inside WCP" widget falls back to the curated album.
 INSTAGRAM_TOKEN="change-me"
+
+# AirNow (EPA) API key for the Family Hub's air-quality chip. Free, from
+# https://docs.airnowapi.org/account/request/ (Agency: "Other Agency").
+# Unset = the chip falls back to Open-Meteo's forecast MODEL, which on
+# 2026-07-19 reported AQI 61 while EPA monitors observed 153 (Unhealthy) and
+# the hub told families it was "fine for outside play". Set this.
+# Deployed Worker needs it too: npx wrangler secret put AIRNOW_API_KEY
+AIRNOW_API_KEY="change-me"

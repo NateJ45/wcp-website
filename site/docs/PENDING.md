@@ -99,6 +99,22 @@ Earlier stopgaps:
 
 ## Waiting on a human (not quota-blocked)
 
+- **Set `AIRNOW_API_KEY` (EPA AirNow) so the hub's air-quality chip reads real
+  monitors.** Found 2026-07-19: the chip showed "AQI 61 · Decent air, fine for
+  outside play" while EPA monitors in Cincinnati observed **AQI 153,
+  Unhealthy**. It was not a stale cache; Open-Meteo's `us_aqi` is the CAMS
+  global FORECAST MODEL and it missed a real particulate event by ~90 points
+  and two categories. The code now prefers AirNow observations when the key is
+  present and, without it, takes `max(us_aqi, aqiFromPm25)` so a spike surfaces
+  in hours instead of a day, plus the copy no longer authorises outdoor play on
+  a Moderate reading. **The model fallback still under-reads a real event, so
+  this key is the actual fix.** Free, no cost, no card:
+  https://docs.airnowapi.org/account/request/ (Agency: "Other Agency"). Then
+  add `AIRNOW_API_KEY` to `site/.dev.vars` AND run
+  `npx wrangler secret put AIRNOW_API_KEY` for the deployed Worker. Verify
+  afterwards by comparing the hub chip against a phone weather app on a day
+  when air is not Good.
+
 ### Public-site transformation, Phase 0 (added 2026-07-17; see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
 
 - **DNS cutover** — www.westchesterpreschool.org still serves the old

@@ -70,6 +70,11 @@ declare namespace Cloudflare {
     /** Turnstile server secret — when set, /api/contact rejects submissions
      *  whose widget token fails siteverify. Pair with PUBLIC_TURNSTILE_SITE_KEY. */
     TURNSTILE_SECRET_KEY?: string;
+    /** AirNow (EPA) API key for the hub's air-quality chip. Optional, but
+     *  STRONGLY preferred: unset, the chip falls back to Open-Meteo's forecast
+     *  MODEL, which on 2026-07-19 read 61 against an observed 153 (Unhealthy).
+     *  Free key: docs.airnowapi.org/account/request/. See hub-air-quality.ts. */
+    AIRNOW_API_KEY?: string;
     /** Long-lived Instagram Graph API token, AS A WORKER SECRET — same value as
      *  the build-time INSTAGRAM_TOKEN env var, but set separately via
      *  `wrangler secret put INSTAGRAM_TOKEN` since SSR pages can't see
