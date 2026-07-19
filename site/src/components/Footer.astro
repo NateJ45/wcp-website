@@ -38,7 +38,7 @@ interface Props {
   /** The FINAL band's color on this page — the seam at the footer boundary
    *  fills with it (the band above bulges into the photo, orange-traced,
    *  exactly like every section seam). BaseLayout passes it through. */
-  seamAbove?: 'white' | 'grey' | 'cream' | 'navy' | 'amber';
+  seamAbove?: 'white' | 'grey' | 'cream' | 'navy' | 'amber' | 'sky';
 }
 const { seamAbove = 'white' } = Astro.props;
 const seamFill: Record<string, string> = {
@@ -47,6 +47,7 @@ const seamFill: Record<string, string> = {
   cream: 'var(--color-cream)',
   navy: 'var(--color-navy)',
   amber: 'var(--color-amber)',
+  sky: 'var(--color-sky)',
 };
 const seamStroke = seamAbove === 'amber' ? 'var(--color-navy)' : 'var(--color-orange)';
 

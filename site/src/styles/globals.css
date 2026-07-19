@@ -1494,6 +1494,26 @@ li:nth-child(4n + 4) > .hub-note {
   color: var(--drench-muted);
 }
 
+/* The sky closing drench (Act II, 2026-07-19): the closer is a full SKY sheet
+   with fixed navy ink — measured 6.45:1 on the full-strength fill — and orange
+   arrives as ACCENT only (seam trace, rating star), never as a text surface.
+   Replaces the amber closer (Nathan: the navy-text-on-orange look is out;
+   white-on-orange cannot pass AA). Theme-stable island, same rules as
+   .wcp-cta-amber. */
+.wcp-cta-sky {
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.85);
+  color: var(--drench-ink);
+  background-color: var(--color-sky);
+  background-image: var(--wcp-grain);
+}
+.wcp-cta-sky :is(h1, h2, h3) {
+  color: var(--drench-ink);
+}
+.wcp-cta-sky .wcp-drench-muted {
+  color: var(--drench-muted);
+}
+
 /* -- Parent note: stationery with faint ruled lines + grain, for testimonials.
    The ruled lines are ~5% navy (well below the AA text floor) and sit UNDER the
    ink quote. -----------------------------------------------------------------*/

@@ -171,7 +171,5 @@ export function finalBandBg(rawSections: SectionData[], pageSlug: string): strin
   const last = [...sections].reverse().find((s) => s._type !== 'noticeBarSection');
   if (!last) return 'white';
   const bg = effectiveBg(last);
-  // Closing navy ctaSection renders as the amber drench (renderer doctrine).
-  if (last._type === 'ctaSection' && bg === 'navy') return 'amber';
   return bg;
 }
