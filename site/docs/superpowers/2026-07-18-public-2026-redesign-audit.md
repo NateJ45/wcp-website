@@ -5,8 +5,9 @@
 light + dark (Playwright against the branch build, lazy-images forced, reduced-motion
 stills; motion judged live separately). Impeccable slop detector over `src/`. Lighthouse
 mobile + desktop per route as the performance baseline. Benchmarks: 3 direct competitors
-+ 4-5 out-of-category 2026 craft references (agents, phones-first). Incumbent under
-judgment: the 2026-07-17 "Fifty-Five Septembers" scrapbook direction.
+
+- 4-5 out-of-category 2026 craft references (agents, phones-first). Incumbent under
+  judgment: the 2026-07-17 "Fifty-Five Septembers" scrapbook direction.
 
 ## Verdict summary
 
@@ -34,15 +35,15 @@ sitewide dark-mobile logo variant, the never-applied Great Vibes signatures, the
 
 25 findings over `src/components`, `src/pages`, `src/styles`. Public-relevant, verified:
 
-| Finding | Where | Verdict |
-| --- | --- | --- |
-| `border-t-4` strip on mobile tuition cards | `TuitionTable.astro:37` | REAL. The strip purge (Workstream C) missed it. |
-| `border-t-4` on the announcement modal | `AnnouncementModal.astro:69` | REAL. Same idiom. |
-| Thick border strip | `TabsSection.astro` | REAL (active-tab underline family; verify in rework). |
-| `border-l-4` amber blockquote | `PostArticle.astro:78`, `newsletter/[slug].astro:79` | Half-real: classic blockquote convention, but off-register; paper pull-quote treatment would be ours. |
-| Bounce easing `cubic-bezier(0.34,1.56,0.64,1)` | `globals.css` `.wcp-pop` | REAL vs the "no bounce/elastic" motion rule. Motion doctrine decides in Phase 1. |
-| `transition: width` | `globals.css` hub rail | HUB, out of scope. |
-| broken-image / em-dash hits | various | False positives: dynamic Astro `src={...}` attrs; em-dashes in code comments (exempt). |
+| Finding                                        | Where                                                | Verdict                                                                                               |
+| ---------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `border-t-4` strip on mobile tuition cards     | `TuitionTable.astro:37`                              | REAL. The strip purge (Workstream C) missed it.                                                       |
+| `border-t-4` on the announcement modal         | `AnnouncementModal.astro:69`                         | REAL. Same idiom.                                                                                     |
+| Thick border strip                             | `TabsSection.astro`                                  | REAL (active-tab underline family; verify in rework).                                                 |
+| `border-l-4` amber blockquote                  | `PostArticle.astro:78`, `newsletter/[slug].astro:79` | Half-real: classic blockquote convention, but off-register; paper pull-quote treatment would be ours. |
+| Bounce easing `cubic-bezier(0.34,1.56,0.64,1)` | `globals.css` `.wcp-pop`                             | REAL vs the "no bounce/elastic" motion rule. Motion doctrine decides in Phase 1.                      |
+| `transition: width`                            | `globals.css` hub rail                               | HUB, out of scope.                                                                                    |
+| broken-image / em-dash hits                    | various                                              | False positives: dynamic Astro `src={...}` attrs; em-dashes in code comments (exempt).                |
 
 ## Route walk: confirmed findings (own review, funnel core)
 
@@ -288,6 +289,7 @@ hard 320px gate holds everywhere. (sweep-results.json in the session audit
 scratchpad.)
 
 **Sweep methodology gotchas (for future audits):**
+
 1. Full-page Playwright captures MUST scroll through the page first or lazy images
    ship blank in the shots (sweep v1 discarded for this).
 2. Even after scroll-through, `content-visibility: auto` regions and long masonry
@@ -299,6 +301,7 @@ scratchpad.)
 ## Sitewide punch list (cross-cluster, deduped)
 
 **Real bugs (live on main today):**
+
 - P0 /tuition registration-timeline headings white-on-white in light mode (hotfix
   chip filed for Nathan).
 - P1 /404 transparent-header collision at desktop widths.
@@ -308,6 +311,7 @@ scratchpad.)
 - P2 "OH45069" footer typo sitewide; "West Chester, OH45069" missing space.
 
 **Systemic design debt (the redesign's actual target):**
+
 - Eyebrow-per-section cadence: ~100% hit rate across all routes.
 - Icon-card grids: 40+ instances across the site as the default container.
 - Display-font mid-word hyphen breaks at 390 on at least 10 headings
@@ -322,6 +326,7 @@ scratchpad.)
   paper artifacts go dark, tape vanishes).
 
 **Copy debt (quota-blocked → PENDING.md rows when touched):**
+
 - Banned constructions still live (home "MORE THAN A PRESCHOOL...").
 - British spellings on twos/threes; Caregiver & Me callout pasted verbatim on two
   routes; duplicated Mrs. Erin bio; designer-signed testimonial on /classes/threes;

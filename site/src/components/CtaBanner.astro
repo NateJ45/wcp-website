@@ -17,6 +17,7 @@
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
 import { site } from '@/data/site';
+import { displayTitleHtml } from '@/lib/typography';
 
 interface Props {
   title: string;
@@ -83,9 +84,8 @@ const bandClass = isNavy
       id={titleId}
       class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')}
       data-reveal
-    >
-      {title}
-    </h2>
+      set:html={displayTitleHtml(title)}
+    />{/* escaped + hyphen-compounds glued — closers say "co-op", never "CO- / OP" */}
     {
       lead && (
         <p

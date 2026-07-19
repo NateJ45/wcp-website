@@ -69,7 +69,24 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
   <div class="sticky top-0 z-40 border-b border-border bg-white lg:hidden dark:bg-surface">
     <div class="wcp-container flex items-center justify-between gap-4 py-3">
       <a href={b('/')} class="inline-flex items-center" aria-label={`${site.name} home`}>
-        <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-11 w-auto" />
+        {
+          /* Theme-correct lockup: the navy wordmark was near-invisible on the
+            dark bar (Phase 0 audit, every route). Both variants ship; CSS picks. */
+        }
+        <Image
+          src={wcpLogoNavy}
+          alt={site.name}
+          width={240}
+          height={160}
+          class="h-11 w-auto dark:hidden"
+        />
+        <Image
+          src={wcpLogoWhite}
+          alt={site.name}
+          width={240}
+          height={160}
+          class="hidden h-11 w-auto dark:block"
+        />
       </a>
       <div class="flex items-center gap-1">
         {
@@ -282,7 +299,20 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
   >
     <div class="wcp-container flex items-center justify-between gap-6 py-2.5">
       <a href={b('/')} class="inline-flex shrink-0 items-center" aria-label={`${site.name} home`}>
-        <Image src={wcpLogoNavy} alt={site.name} width={240} height={160} class="h-10 w-auto" />
+        <Image
+          src={wcpLogoNavy}
+          alt={site.name}
+          width={240}
+          height={160}
+          class="h-10 w-auto dark:hidden"
+        />
+        <Image
+          src={wcpLogoWhite}
+          alt={site.name}
+          width={240}
+          height={160}
+          class="hidden h-10 w-auto dark:block"
+        />
       </a>
       <nav aria-label="Primary (compact)">
         <NavList idPrefix="compact" variant="compact" items={mainNav} linkBase={linkBase} />

@@ -39,7 +39,13 @@ const { photos, class: className } = Astro.props;
       <li
         class="[contain-intrinsic-size:auto_260px] [content-visibility:auto]"
         data-reveal
-        style={`--reveal-delay: ${i * 60}ms`}
+        style={
+          /* Stagger wraps every 6 items (two grid rows) so deep rows never wait
+             on a cumulative i*60ms tail — at 96 photos that tail reached 4.7s
+             AFTER a row entered the viewport (Phase 0 audit). Motion doctrine:
+             stagger inside the group a user sees, never across the whole set. */
+          `--reveal-delay: ${(i % 6) * 60}ms`
+        }
       >
         <figure class="group overflow-hidden rounded-[var(--radius)] bg-navy shadow-sm">
           <div class="aspect-[4/3] overflow-hidden">

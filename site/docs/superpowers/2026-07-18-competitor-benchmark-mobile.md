@@ -12,7 +12,7 @@ Compiled during Phase 0 of the redesign/public-2026 branch.
 - Mobile fold: sticky header with navy "Learn More & Tour" pill; photo carousel of the
   REAL building/classrooms with an owner "A Quick Hello!" video chip; H1 + phone +
   hours. Primary CTA visible at 0px scroll. Marred by cookie wall + fixed tour widget
-  + feedback tab (permanent chrome clutter).
+  - feedback tab (permanent chrome clutter).
 - Tour funnel: 1 tap → 4-step wizard, ONE question per screen with progress bar (8
   fields total) → online tour-slot step with confirmation codes. Phone fallback
   throughout. Tracker-heavy (DoubleClick, TradeDesk).

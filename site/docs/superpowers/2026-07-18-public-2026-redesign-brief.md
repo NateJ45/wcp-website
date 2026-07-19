@@ -23,9 +23,9 @@ never received it. Act II is composition-level or it is nothing.
 
 ## The direction, named
 
-**CONSTRUCTION PAPER.** One point of view: *the site is built the way a preschool
+**CONSTRUCTION PAPER.** One point of view: _the site is built the way a preschool
 hallway is built: sheets of solid colored paper, big marker letters, real photographs
-taped down, and one pinned invitation you cannot miss.*
+taped down, and one pinned invitation you cannot miss._
 
 Construction paper is the most preschool-native material there is, and it dictates
 every rule we need:

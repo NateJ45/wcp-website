@@ -37,8 +37,39 @@ should be able to resume from the documents in this directory alone.
 - [x] Phase 0: home hero prototype → docs/superpowers/prototypes/2026-07-18-home-hero/
       hero.html (open directly, or copy into dist/client/_proto/ and serve; verified
       320/390/1440, no overflow, reduced-motion poster fallback)
-- [ ] STOP: Nathan approves direction (gate reached this session; awaiting answer)
-- [ ] Phase 1: design system
+- [x] STOP: Nathan APPROVED all four questions 2026-07-18 ("1. approve 2. approve
+      3. approve 4. approve"): direction (Construction Paper), hero recomposition,
+      tour-slots as Phase 3 human task, Threes testimonial swap on quota return.
+- [~] Phase 1: design system (in progress)
+  - [x] Type discipline: public `hyphens:none` on display type + `text-wrap:pretty`
+        prose; `src/lib/typography.ts` displayTitleHtml() (escape + glue hyphen
+        compounds ≤14 chars) applied in SectionHeader + CtaBanner; 7 unit tests.
+  - [x] Signature fix: `.wcp-signature`/`.wcp-annotation` now actually reference
+        --font-signature (the loaded-but-never-applied Phase 0 P1).
+  - [x] Artifact kit v2: tape gains torn ends + sheen (no more grey rectangle);
+        `.wcp-taped-chip`, `.wcp-annotation`, `.wcp-press` (pressable CTA),
+        `.wcp-proof-line` primitives.
+  - [x] Dark-mode paper doctrine: prints/notes/tape are PHYSICAL OBJECTS — light
+        paper in both themes, fixed inks (theme-stable islands); UI cards stay
+        theme-reactive. Testimonial + TestimonialWall migrated off theme tokens.
+  - [x] Motion: public `.wcp-pop` loses the elastic bezier; PhotoGallery stagger
+        wraps every 6 items (was i*60ms → 4.7s tails).
+  - [x] Conversion chrome: TourPill.astro (mobile floating tour CTA between hero
+        and footer, IntersectionObserver, no-JS hidden, safe-area, print-hidden);
+        PageHero tour-first doctrine (every hero: primary=Schedule a Tour, first
+        stored non-tour action demoted to ghost, proof line "4.8 · tuition is
+        public" under the buttons); dark-mobile logo variant fix in Header.
+  - [x] Gate: astro check 0 errors · lint clean · format:check exit 0 · unit 182+7
+        passed · build green · npm test 210 passed (smoke + axe light/dark + reflow
+        + consent + interactions, chromium + webkit-iphone) · test:hub 58 passed
+        (hub grep-verified to use none of the touched artifact classes; all other
+        globals changes are .wcp-site-paper-scoped) · check:links 87 ok · live
+        verify: tour-first hero + proof line on home/tuition, pill shows mid-page
+        and hides at top/footer, Great Vibes signatures render, notes stay light
+        paper in dark, dark mobile logo white, hyphens:none computed, no overflow.
+  - GOTCHA (now in CLAUDE.md): a stale daemonized astro dev on 4321 absorbs the
+    Playwright webServer via reuseExistingServer and the whole suite runs against
+    the WRONG server (8 phantom consent failures). Check the port first.
 - [ ] Phase 2: routes (funnel order)
 - [ ] Phase 3: sweep + docs sync + PR ready
 

@@ -10,6 +10,7 @@ import '../styles/globals.css';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import TourPill from '@/components/TourPill.astro';
 import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
@@ -352,6 +353,9 @@ const currentPath = Astro.url.pathname;
             <slot />
           </main>
           <Footer />
+          {/* The pinned tour invitation: mobile floating CTA between hero and
+              footer (Act II conversion doctrine). Public marketing chrome only. */}
+          <TourPill />
           {announcements.length > 0 && (
             <AnnouncementModal announcements={announcements} currentPath={currentPath} />
           )}

@@ -9,6 +9,7 @@
    ============================================================================ */
 import Eyebrow from './Eyebrow.astro';
 import { cn } from '@/lib/utils';
+import { displayTitleHtml } from '@/lib/typography';
 
 interface Props {
   eyebrow?: string;
@@ -44,6 +45,11 @@ const Heading = as;
   data-reveal
 >
   {eyebrow && <Eyebrow tone={eyebrowTone}>{eyebrow}</Eyebrow>}
-  <Heading id={titleId} class="text-balance">{title}</Heading>
+  {
+    /* displayTitleHtml escapes the Board-typed title, then glues hyphenated
+      compounds ("Pre-K", "co-op") so display type never breaks at a hyphen.
+      Mid-word hyphenation is off in the public layer (globals). */
+  }
+  <Heading id={titleId} class="text-balance" set:html={displayTitleHtml(title)} />
   {lead && <p class="mt-4 text-lg leading-relaxed">{lead}</p>}
 </div>
