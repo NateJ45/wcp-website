@@ -7,7 +7,6 @@
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
-import Seam from '@/components/Seam.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings, getNavigation } from '@/lib/cms';
@@ -48,13 +47,7 @@ const consentEnabled =
     isValidMetaPixelId(consentEnv.PUBLIC_META_PIXEL_ID));
 ---
 
-{
-  /* The footer's cloud seam reveals whatever section sits above it — a navy
-    CTA on most pages (reads as a subtle orange seam line) or a light section
-    on the newsletter/legal pages (reads as a full cloud). */
-}
 <footer class="relative -mt-px bg-navy text-white">
-  <Seam color="navy" />
   {
     footerPhoto && (
       <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -70,7 +63,7 @@ const consentEnabled =
     )
   }
   <div
-    class="wcp-container relative grid gap-10 py-[var(--wcp-space-xl)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
+    class="wcp-container relative grid gap-8 py-[var(--wcp-space-lg)] md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]"
   >
     {/* Brand + contact */}
     <div>
@@ -150,13 +143,13 @@ const consentEnabled =
   </div>
 
   {/* A warm, hand-lettered goodbye — ends the visit like a note on the door. */}
-  <div class="wcp-container relative -mt-2 pb-8 text-center">
+  <div class="wcp-container relative -mt-1 pb-6 text-center">
     <p class="font-display text-2xl text-amber">See you at drop-off!</p>
     <p class="mt-1 text-sm text-white/70">— The WCP Families</p>
   </div>
 
   <div class="relative border-t border-white/10">
-    <div class="wcp-container flex flex-col gap-4 py-6 text-xs text-white/60">
+    <div class="wcp-container flex flex-col gap-3 py-4 text-xs text-white/60">
       {/* Legal / policy links */}
       <nav aria-label="Legal" class="flex flex-wrap gap-x-5 gap-y-2">
         {
