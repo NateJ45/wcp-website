@@ -10,10 +10,18 @@
 // Joined on AUTHOR NAME because the home page renders testimonials from Sanity
 // (page-home section k12, source: 'featured'), not from data/testimonials.ts.
 //
-// CLOSE OUT: run scripts/patch-testimonial-photos.mjs --commit when the quota
-// is back, then delete this file, its test, the `photo` prop threading in
-// TestimonialSection.astro, and the src/assets/testimonials/ directory. See
-// docs/PENDING.md.
+// CLOSE OUT is a THREE-step sequence and the order matters, because nothing
+// reads the Sanity `photo` field yet (the testimonial projections in
+// queries.ts select quote/author/role only). Deleting this module first would
+// take all 24 photos off the live site:
+//   1. run scripts/patch-testimonial-photos.mjs --commit (uploads the assets)
+//   2. project `photo` in BOTH testimonial queries (queries.ts: the
+//      testimonialSection branch of PAGE_BY_SLUG_QUERY, and getTestimonials)
+//      and render it in Testimonial.astro / TestimonialWall.astro
+//   3. only then delete this file, its test, src/assets/testimonials/, and the
+//      photoFor() threading in TestimonialSection.astro AND TestimonialWall.astro
+//      (both import it — deleting on the strength of step 3 alone breaks the build)
+// See docs/PENDING.md.
 //
 // The mapping is transcribed from the live old site's alt attributes, NOT
 // guessed from archive filenames (that produced three wrong pairings). Two

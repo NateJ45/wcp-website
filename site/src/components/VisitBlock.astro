@@ -10,8 +10,15 @@
    Code-owned for the same reason HeritageStrip is: photo moments inject BETWEEN
    sections and cannot wrap one, so a side-by-side layout means replacing the
    section. page-doctrine drops hp-visit and the moments map injects this in its
-   slot. Facts come from src/data/site.ts, the existing single source of truth,
-   so nothing is duplicated.
+   slot.
+
+   Where the facts come from: the street address, the phone number and the
+   school-year line are read from src/data/site.ts, so they never drift from the
+   footer or the LocalBusiness JSON-LD. The tours-June-to-August sentence and the
+   not-a-religious-school paragraph are local prose, because no site.ts field
+   carries them. Keep that split accurate — an earlier version of this comment
+   claimed everything came from site.ts while the school-year line was hardcoded,
+   which is exactly the kind of false comment a later developer trusts.
 
    TRADEOFF: this takes the address block out of the page-builder, so a
    volunteer can no longer edit it in the Studio. Accepted temporarily.
@@ -77,11 +84,11 @@ const [photo] = await photosFor('home-visit', 1);
             {site.phone}
           </a>
         </li>
-        <li>School runs September to May. Tours by appointment June to August.</li>
+        <li>{site.calendar} Tours by appointment June to August.</li>
       </ul>
       <div class="mt-8 flex flex-wrap gap-4">
         <Button href={TOUR_HREF} variant="accent" size="lg"> Schedule a Tour </Button>
-        <Button href={MAPS_HREF} variant="outline" size="lg" rel="noopener">
+        <Button href={MAPS_HREF} variant="outline" size="lg" target="_blank" rel="noopener">
           Open in Google Maps
         </Button>
       </div>

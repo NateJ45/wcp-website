@@ -32,14 +32,26 @@
 //   node scripts/patch-testimonial-photos.mjs            # dry run
 //   node scripts/patch-testimonial-photos.mjs --commit
 //
-// AFTER RUNNING (same sitting, or the Studio and the site drift):
-//   - Delete src/lib/testimonial-photos.ts and its test.
-//   - Delete the `photo` prop threading that reads from it in
-//     TestimonialSection.astro (and wherever else it's consumed).
-//   - Delete the src/assets/testimonials/ directory.
-//   - Remove this script's row from docs/PENDING.md.
+// DRAFTS ARE OUT OF SCOPE. This patches whatever the client's default
+// perspective returns (published). If a `testimonial` has an unpublished draft,
+// only one of the pair gets the photo, and publishing that draft later silently
+// wipes it. Its sibling patch-home-visit-splitmedia.mjs handles both explicitly
+// because it targets two known ids; there is no fixed id list here. After
+// running, check the Studio for drafted testimonials by hand.
+//
+// AFTER RUNNING, in this order (the order matters — nothing reads the Sanity
+// `photo` field yet, so deleting the code stopgap first takes all 24 photos off
+// the live site):
+//   1. Project `photo` in BOTH testimonial queries in src/lib/queries.ts (the
+//      testimonialSection branch of PAGE_BY_SLUG_QUERY, and getTestimonials),
+//      and render it in Testimonial.astro / TestimonialWall.astro.
+//   2. Verify the photos still appear on / and /reviews.
+//   3. Then delete src/lib/testimonial-photos.ts and its test, the photoFor()
+//      threading in BOTH TestimonialSection.astro and TestimonialWall.astro,
+//      and the src/assets/testimonials/ directory.
+//   4. Remove this script's row from docs/PENDING.md.
 // =============================================================================
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { client, COMMIT, apply, done } from './patch-lib.mjs';
@@ -47,6 +59,24 @@ import { MAP, slugFor } from './testimonial-photo-map.mjs';
 
 const SITE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PHOTO_DIR = `${SITE_DIR}/src/assets/testimonials`;
+
+// Preflight the whole file set BEFORE touching Sanity. The upload reads each
+// WebP inside the per-document loop, so without this a missing or renamed file
+// throws partway through --commit, after earlier documents were already
+// patched, leaving a half-migrated dataset. This script is meant to be run
+// months from now by someone who may have pruned the directory, and the dry run
+// never touches the filesystem, so the failure would otherwise be invisible
+// until it was already half-applied.
+const missingFiles = Object.keys(MAP)
+  .map((author) => `${PHOTO_DIR}/${slugFor(author)}.webp`)
+  .filter((p) => !existsSync(p));
+if (missingFiles.length > 0) {
+  console.error(
+    `Missing committed WebP file(s) — refusing to run so a partial migration is impossible:\n  ${missingFiles.join('\n  ')}\n` +
+      `Regenerate them with: node scripts/prepare-testimonial-photos.mjs`,
+  );
+  process.exit(1);
+}
 
 /** Lowercase, strip punctuation, collapse runs of separators to one space.
  *  MUST match normalizeAuthor() in src/lib/testimonial-photos.ts exactly — a
