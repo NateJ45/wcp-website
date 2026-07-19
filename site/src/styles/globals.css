@@ -1822,6 +1822,21 @@ li:nth-child(4n + 4) > .hub-note {
   color: var(--page-accent-ink);
 }
 
+/* -- Back-to-top vs. the tour pill: both live in the bottom-RIGHT corner on
+   public mobile (2026-07-19). The button's own class raises it a pill-height
+   above the corner; this rule drops it INTO the corner for the stretches where
+   the pill is hidden (before the hero clears, over the footer, on the tour page
+   itself). Stated in that direction on purpose: a browser without :has() keeps
+   the RAISED position, which merely floats a little high — it can never stack
+   the two on top of each other. Capped below lg because the pill is lg:hidden
+   and the component's own lg:bottom-6 owns the desktop corner (this selector
+   would otherwise outweigh that utility). --------------------------------- */
+@media (max-width: 63.9375rem) {
+  .wcp-site-paper:has([data-tour-pill][hidden]) [data-back-to-top] {
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* -- The hero trace draw-in: the ONE "wow" beat per pageview. The sweep
    edge's orange crayon draws itself left-to-right shortly after load
    (pathLength=1 on the path normalizes the dash math). Decorative svg, not
@@ -2193,6 +2208,27 @@ li:nth-child(3n + 3) .wcp-testi {
   .wcp-sheen:focus-visible::after {
     transform: translateX(130%);
   }
+}
+
+/* .wcp-sheen sets `position: relative` to anchor its ::after — and that plain
+   rule silently BEAT Tailwind's `fixed` utility, because this stylesheet is
+   UNLAYERED and unlayered CSS outranks everything in @layer utilities whatever
+   the source order. The casualty was TourPill (the mobile "Schedule a Tour"
+   CTA): it rendered `position: relative` and sat ~10,000px down the page under
+   the footer instead of floating, on every page, for everyone EXCEPT
+   reduced-motion visitors (the sheen block above is motion-gated, so only they
+   got the working pill). Found 2026-07-19 while moving the back-to-top button
+   into the same corner. Restore the utility's intent explicitly — an element
+   that asks to be fixed/absolute/sticky keeps it, and the sheen still has its
+   positioning context either way. */
+.wcp-sheen.fixed {
+  position: fixed;
+}
+.wcp-sheen.absolute {
+  position: absolute;
+}
+.wcp-sheen.sticky {
+  position: sticky;
 }
 
 /* Underline that draws in from the left on hover/focus. Reduced-motion users
