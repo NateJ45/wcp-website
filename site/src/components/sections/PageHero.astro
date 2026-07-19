@@ -5,7 +5,10 @@ import Hero from '@/components/Hero.astro';
 import HeroFramed from '@/components/HeroFramed.astro';
 import Underline from '@/components/Underline.astro';
 import ActionButtons from './ActionButtons.astro';
+import SpotsLine from '@/components/SpotsLine.astro';
 import type { ActionData } from './section-helpers';
+import { site } from '@/data/site';
+import { withBase } from '@/lib/utils';
 
 interface HeroData {
   eyebrow?: string;
@@ -37,15 +40,48 @@ const word = hero.accentWord?.trim();
 const idx = word ? hero.title.indexOf(word) : -1;
 const before = idx >= 0 ? hero.title.slice(0, idx) : hero.title;
 const after = idx >= 0 ? hero.title.slice(idx + (word?.length ?? 0)) : '';
-const actions = hero.actions ?? [];
+
+// Tour-first doctrine (Act II, approved 2026-07-18): every hero carries ONE
+// primary action — Schedule a Tour → the tour form — with the site's proof
+// line under it. Stored (Board-editable) actions are not lost: the first
+// non-tour action survives as the quiet secondary; any stored tour CTA is
+// absorbed into the doctrine button (so a Board label tweak like "Book a
+// Tour" doesn't create a duplicate); everything else drops — a hero is not a
+// menu. Phase 0 evidence: every hero on the site contradicted the header's
+// tour-first CTA (home led with Enroll, /tuition with Enroll Now, /enroll
+// with Call), and the tour path measurably vanished mid-page.
+const TOUR_ACTION: ActionData = {
+  label: 'Schedule a Tour',
+  style: 'accent',
+  linkType: 'url',
+  url: '/virtual-tour#sec-pp-tour-form',
+};
+const isTourAction = (a: ActionData) =>
+  /\btour\b/i.test(a.label) || (a.linkType === 'url' && /virtual-tour/.test(a.url ?? ''));
+const storedSecondary = (hero.actions ?? []).find((a) => !isTourAction(a));
+const actions: ActionData[] = [
+  TOUR_ACTION,
+  ...(storedSecondary ? [{ ...storedSecondary, style: 'ghost' }] : []),
+];
 
 // The accent-word title fragment, shared by both hero layouts. Hyphenated
 // tokens inside the accent phrase get a nowrap wrapper (the ClassCard pattern)
 // so huge display type can never break AFTER a hyphen ("FRONT- / ROW") — the
 // ugliest possible line break; the phrase still wraps at spaces on phones.
+// A short leading article ("A ", "The ") folds INTO the accent so it can never
+// orphan on its own line above the underlined phrase ("A / FRONT-ROW SEAT" was
+// the Phase 0 home-hero rag at every width) — the crayon underline simply
+// starts at the article, which is how the approved prototype draws it.
+let fragBefore = before;
+let fragTokens = word ? word.split(' ') : [];
+const articleMatch = idx >= 0 ? fragBefore.match(/(?:^|\s)(\p{L}{1,3})\s$/u) : null;
+if (articleMatch) {
+  fragTokens = [articleMatch[1], ...fragTokens];
+  fragBefore = fragBefore.slice(0, fragBefore.length - articleMatch[1].length - 1);
+}
 const titleFragment =
   idx >= 0 && word
-    ? { before, tokens: word.split(' '), after, color: hero.accentColor ?? 'amber' }
+    ? { before: fragBefore, tokens: fragTokens, after, color: hero.accentColor ?? 'amber' }
     : null;
 
 // Hero doctrine (2026-07-17): every hero lives on the navy doodle drench
@@ -85,13 +121,22 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
           hero.title
         )}
       </Fragment>
-      {actions.length > 0 && (
-        <Fragment slot="actions">
-          {/* The framed hero's band is the navy drench now — remap the seeded
-              action styles for a dark surface (amber fills, white outlines). */}
-          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
-        </Fragment>
-      )}
+      <Fragment slot="actions">
+        {/* The framed hero's band is the navy drench now — remap the seeded
+            action styles for a dark surface (amber fills, white outlines). */}
+        <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
+        <p class="wcp-proof-line mt-3 w-full">
+          <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
+            ★★★★★
+          </span>
+          <span class="sr-only">Rated {site.google.rating} out of 5:</span>
+          {site.google.rating} on Google ·{' '}
+          <a href={withBase('/tuition', linkBase)} class="text-white underline underline-offset-2">
+            our tuition is public
+          </a>
+        </p>
+        <SpotsLine />
+      </Fragment>
     </HeroFramed>
   ) : (
     <Hero
@@ -122,14 +167,23 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
           hero.title
         )}
       </Fragment>
-      {actions.length > 0 && (
-        <Fragment slot="actions">
-          {/* Every hero surface is the navy family now (drench or navy-scrimmed
-              photo) — remap navy-invisible action styles (a seeded `primary`
-              rendered navy-on-navy on the tuition drench, caught 2026-07-17). */}
-          <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
-        </Fragment>
-      )}
+      <Fragment slot="actions">
+        {/* Every hero surface is the navy family now (drench or navy-scrimmed
+            photo) — remap navy-invisible action styles (a seeded `primary`
+            rendered navy-on-navy on the tuition drench, caught 2026-07-17). */}
+        <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
+        <p class="wcp-proof-line mt-3 w-full">
+          <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
+            ★★★★★
+          </span>
+          <span class="sr-only">Rated {site.google.rating} out of 5:</span>
+          {site.google.rating} on Google ·{' '}
+          <a href={withBase('/tuition', linkBase)} class="text-white underline underline-offset-2">
+            our tuition is public
+          </a>
+        </p>
+        <SpotsLine />
+      </Fragment>
     </Hero>
   )
 }

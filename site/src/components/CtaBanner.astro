@@ -17,12 +17,13 @@
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
 import { site } from '@/data/site';
+import { displayTitleHtml } from '@/lib/typography';
 
 interface Props {
   title: string;
   titleId?: string;
   lead?: string;
-  tone?: 'navy' | 'cream' | 'amber';
+  tone?: 'navy' | 'cream' | 'amber' | 'sky';
   /** Cloud seam at the top. On by default — the closing CTA is always a color
       change from the content above. Set false when a same-color band (a navy
       Section) sits directly above, so we don't seam navy into navy. */
@@ -31,6 +32,10 @@ interface Props {
       4.8 rating rides every closing CTA (home / tuition / enroll — the pages
       the audit flagged as missing it). Set false for a teacher sign-off CTA. */
   rating?: boolean;
+  /** Closing-band accent: the title's last word gets the amber crayon
+      underline (orange energy as ACCENT — dark text never sits on a warm
+      fill; Nathan's 2026-07-19 palette rule). */
+  underlineAccent?: boolean;
   class?: string;
 }
 const {
@@ -40,10 +45,22 @@ const {
   tone = 'navy',
   seam = true,
   rating = true,
+  underlineAccent = false,
   class: className,
 } = Astro.props;
+
+// Accent split: the final word carries the crayon underline (nowrap so the
+// underlined word never breaks off its stroke). Escaping stays in
+// displayTitleHtml for the leading part; the last word is escaped there too.
+const words = title.trim().split(/\s+/);
+// Cap: a nowrap accent word longer than ~12 chars can overflow a 320px
+// column (the threes closer's 'three-year-old?' did, caught by reflow CI).
+const lastWord = words[words.length - 1] ?? '';
+const accentWord = underlineAccent && words.length > 1 && lastWord.length <= 12 ? lastWord : null;
+const titleLead = accentWord ? words.slice(0, -1).join(' ') + ' ' : title;
 const isNavy = tone === 'navy';
 const isAmber = tone === 'amber';
+const isSky = tone === 'sky';
 // Deterministic: callers pass rating={false} for a teacher sign-off CTA.
 // (Astro.slots.has() is unreliable for a slot passed inside a {cond && ...}.)
 const showRating = rating;
@@ -51,48 +68,48 @@ const bandClass = isNavy
   ? 'bg-navy text-white'
   : isAmber
     ? 'wcp-cta-amber' // fixed drench colors live in globals.css
-    : 'bg-cream text-heading';
+    : isSky
+      ? 'wcp-cta-sky' // the closing tone: sky sheet, navy ink, orange accents
+      : 'bg-cream text-heading';
 ---
 
 <section class={cn('relative -mt-px', bandClass, className)} aria-labelledby={titleId}>
   {seam && <Seam color={tone} variant="trim" />}
-  {
-    /* Warm brand glow — gives the closing CTA depth so it reads as a lifted
-      card, not a flat block. Decorative + aria-hidden; feathered and mostly
-      off-canvas so it never fights the centered text (AA unchanged). Amber on
-      navy, orange on cream. `wcp-glow-drift` is transform-only, reduced-motion
-      safe. The glow lives in its OWN clip layer (inset-0, overflow-hidden) so
-      it's contained to the band without clipping the cloud Seam, which sits
-      ABOVE the section on the public site. */
-  }
-  {
-    !isAmber && (
-      <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div
-          class={cn(
-            'wcp-glow wcp-glow-drift -top-24 -right-20 h-72 w-[30rem]',
-            isNavy ? 'wcp-glow-amber' : 'wcp-glow-orange',
-          )}
-          style="opacity: 0.35"
-        />
-      </div>
-    )
-  }
   <div class="wcp-container relative py-[var(--wcp-space-xl)] text-center">
     <h2
       id={titleId}
       class={cn('mx-auto max-w-2xl text-balance', isNavy && 'text-white')}
       data-reveal
     >
-      {title}
-    </h2>
+      <Fragment set:html={displayTitleHtml(titleLead)} />{
+        accentWord && (
+          <span class="relative inline-block whitespace-nowrap">
+            <Fragment set:html={displayTitleHtml(accentWord)} />
+            <svg
+              class="absolute right-0 -bottom-[0.12em] left-0 h-[0.2em] w-full"
+              viewBox="0 0 120 12"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 8 C 30 3, 62 10, 88 6 S 114 4, 117 7"
+                fill="none"
+                stroke="var(--color-amber)"
+                stroke-width="5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+        )
+      }
+    </h2>{/* escaped + hyphen-compounds glued — closers say "co-op", never "CO- / OP" */}
     {
       lead && (
         <p
           class={cn(
             'mx-auto mt-4 max-w-xl text-lg leading-relaxed',
             isNavy && 'text-white/90',
-            isAmber && 'wcp-drench-muted',
+            (isAmber || isSky) && 'wcp-drench-muted',
           )}
           data-reveal
           style="--reveal-delay: 120ms"
@@ -169,7 +186,7 @@ const bandClass = isNavy
             'mt-5 text-sm [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-2',
             isNavy
               ? 'text-white/70 [&_a]:text-white'
-              : isAmber
+              : isAmber || isSky
                 ? 'wcp-drench-muted [&_a]:[color:#01203a]'
                 : 'text-ink-muted [&_a]:text-navy',
           )}

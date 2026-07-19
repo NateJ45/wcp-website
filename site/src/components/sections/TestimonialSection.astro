@@ -5,6 +5,7 @@ import Testimonial from '@/components/Testimonial.astro';
 import TestimonialWall from '@/components/TestimonialWall.astro';
 import { getTestimonials } from '@/lib/cms';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { cn } from '@/lib/utils';
 
 interface Quote {
   quote: string;
@@ -32,8 +33,15 @@ const allItems: Quote[] =
 // Apply the limit here (GROQ can't slice by a coalesced value). Manual picks
 // and walls show everything; featured/tag grids cap at the section's limit.
 const limit = typeof section.limit === 'number' ? section.limit : 3;
-const isWall = section.layout === 'wall' || pageSlug === 'reviews';
-const items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
+// Act II proof-ownership doctrine: /reviews owns the FULL deck; /why-wcp keeps
+// a curated teaser (4 voices) and points at /reviews instead of duplicating
+// all ~24 quotes (Phase 0: the wall ran 6 mobile viewports on why-wcp and the
+// duplicate copies had even drifted apart in punctuation). STOPGAP mirroring
+// the queued patch-testimonial-redistribution script (PENDING.md).
+const isWall = (section.layout === 'wall' || pageSlug === 'reviews') && pageSlug !== 'why-wcp';
+let items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
+if (pageSlug === 'why-wcp') items = items.slice(0, 4);
+const readAllLink = pageSlug === 'why-wcp';
 const confetti = Boolean(section.confetti);
 ---
 
@@ -56,7 +64,7 @@ const confetti = Boolean(section.confetti);
         <TestimonialWall items={items.map((t) => ({ ...t, author: t.author ?? '' })) as never} />
       </div>
     ) : (
-      <ul class="mt-12 grid gap-6 md:grid-cols-3">
+      <ul class={cn('mt-12 grid gap-6', items.length === 4 ? 'md:grid-cols-2' : 'md:grid-cols-3')}>
         {items.map((t) => (
           <li class="h-full">
             <Testimonial
@@ -68,6 +76,15 @@ const confetti = Boolean(section.confetti);
           </li>
         ))}
       </ul>
+    )
+  }
+  {
+    readAllLink && (
+      <p class="mt-8 text-center">
+        <a class="font-bold text-sky-ink underline underline-offset-2" href="/reviews">
+          Read every family review →
+        </a>
+      </p>
     )
   }
 </Section>

@@ -32,15 +32,19 @@ import { site } from '@/data/site';
     lead="Thanks for reaching out. We will be in touch soon."
     height="medium"
   />
-  <Section bg="white">
+  <Section bg="white" seam>
     <div class="mx-auto max-w-xl text-center">
       <p class="text-lg text-ink-muted" data-thanks-note>
         A member of our volunteer board will get back to you as soon as we can. In the meantime,
         feel free to look around.
       </p>
       <div class="mt-6 flex flex-wrap justify-center gap-4">
-        <Button href="/" variant="accent">Back home</Button>
-        <Button href="/news" variant="outline">Read our news</Button>
+        {
+          /* The next funnel step while the reply is on its way — not the news
+            archive (Phase 0: a warm lead is captive here for one moment). */
+        }
+        <Button href="/a-day-at-wcp" variant="accent">See what a morning is like</Button>
+        <Button href="/tuition" variant="outline">Look over tuition</Button>
       </div>
     </div>
   </Section>

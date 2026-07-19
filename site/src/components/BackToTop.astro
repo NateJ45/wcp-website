@@ -1,0 +1,65 @@
+---
+/* ============================================================================
+   BackToTop — the floating "back to top" button (public site + Family Hub)
+   ============================================================================
+   Long pages (home runs 11+ phone viewports; hub Documents similar) had no way
+   back to the top but flick-scrolling. One fixed round button, bottom-LEFT so
+   it never collides with the bottom-right conversion chrome (TourPill on
+   public mobile) or the hub's emblem watermark corner.
+
+   - Appears only after ~1.75 viewports of scroll (src/scripts/back-to-top.ts,
+     rAF-throttled passive listener); hidden until then and for no-JS visitors
+     (progressive enhancement — the page scrolls fine without it).
+   - Click scrolls to top (smooth only under no-preference) and moves focus to
+     #main so keyboard users aren't stranded at a now-offscreen button.
+   - Surface offsets: the hub's phone tab bar (3.5rem) and the public pill zone
+     share the bottom edge, so each surface passes its own bottom inset.
+   - Bottom chrome: the top scroll-padding budget (CLAUDE.md) is untouched.
+   - AA: 44px min target, aria-label, global focus ring; navy fill + white
+     arrow reads on every band it can float over, in both themes (the button
+     is a theme-stable chrome island like the rail).
+   ============================================================================ */
+interface Props {
+  /** Which chrome this floats over: hub offsets above the phone tab bar. */
+  surface?: 'site' | 'hub';
+}
+const { surface = 'site' } = Astro.props;
+---
+
+{
+  /* Bottom insets are CLASSES, not an inline style — an inline `bottom` would
+    beat the hub's md: override in the cascade. The hub's fixed phone tab bar
+    is 3.5rem tall, so the button floats above it below md. */
+}
+<button
+  type="button"
+  data-back-to-top
+  hidden
+  aria-label="Back to top"
+  class:list={[
+    'fixed left-4 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full',
+    'bg-navy text-white shadow-lg outline-offset-2 print:hidden',
+    'transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none',
+    'hover:-translate-y-0.5 motion-reduce:hover:translate-y-0',
+    surface === 'hub'
+      ? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6'
+      : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))]',
+  ]}
+>
+  <svg
+    class="h-5 w-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 19V5M5 12l7-7 7 7"></path>
+  </svg>
+</button>
+
+<script>
+  import '@/scripts/back-to-top';
+</script>

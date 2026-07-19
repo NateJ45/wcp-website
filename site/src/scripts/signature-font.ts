@@ -15,7 +15,7 @@ import greatVibesWoff2 from '@fontsource/great-vibes/files/great-vibes-latin-400
 let requested = false;
 function ensureSignatureFont() {
   if (requested || typeof FontFace === 'undefined') return;
-  if (!document.querySelector('.wcp-signature')) return;
+  if (!document.querySelector('.wcp-signature, .wcp-annotation')) return;
   requested = true;
   const face = new FontFace('Great Vibes', `url(${greatVibesWoff2}) format('woff2')`, {
     style: 'normal',

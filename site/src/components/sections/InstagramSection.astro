@@ -93,10 +93,27 @@ if (tiles.length === 0) {
       </div>
 
       <ul class="wcp-ig-grid mt-10">
+        {/* Hub social-wall parity (Nathan, 2026-07-19): real captions on the
+            polaroid lip, a play badge on reels, focus-visible outline. */}
         {tiles.map((t) => (
           <li class="wcp-ig-tile">
             <a href={t.href} target="_blank" rel="noopener">
-              <img src={t.imgUrl} alt={t.alt} loading="lazy" decoding="async" />
+              <span class="wcp-ig-frame">
+                {/* The visible lip caption is the link's name; a matching alt
+                    would be read twice (axe image-redundant-alt). Captionless
+                    tiles keep the alt as their name. */}
+                <img src={t.imgUrl} alt={t.caption ? '' : t.alt} loading="lazy" decoding="async" />
+                {t.isVideo && (
+                  <span class="wcp-ig-play" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                      <path d="M8 5.5v13l11-6.5z" />
+                    </svg>
+                  </span>
+                )}
+              </span>
+              <span class:list={['wcp-ig-cap', !t.caption && 'wcp-ig-cap--stamp']}>
+                {t.caption || 'From our Instagram'}
+              </span>
             </a>
           </li>
         ))}
@@ -126,12 +143,16 @@ if (tiles.length === 0) {
   }
   .wcp-ig-tile {
     position: relative;
+    /* Grid items default to min-width:auto, so a nowrap caption would inflate
+       the track to the caption's full width and overflow the page (caught by
+       the overflow check the moment captions landed). */
+    min-width: 0;
   }
   .wcp-ig-tile a {
     display: block;
     position: relative;
     background: #fff;
-    padding: 8px 8px 26px;
+    padding: 7px 7px 9px;
     border-radius: 4px;
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.35),
@@ -141,6 +162,10 @@ if (tiles.length === 0) {
       box-shadow 0.25s ease;
     will-change: transform;
   }
+  .wcp-ig-frame {
+    display: block;
+    position: relative;
+  }
   .wcp-ig-tile img {
     display: block;
     width: 100%;
@@ -148,6 +173,48 @@ if (tiles.length === 0) {
     aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: 2px;
+  }
+  /* Play badge on reels/videos — translucent navy disc, white glyph. */
+  .wcp-ig-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 9999px;
+    background: rgba(1, 69, 126, 0.72);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+  /* Caption on the polaroid's white lip — a real photo caption, not dead
+     space. Fixed dark ink on the stable white frame (both themes). */
+  .wcp-ig-cap {
+    display: block;
+    margin-top: 6px;
+    padding: 0 3px;
+    font-size: 0.6rem;
+    line-height: 1.25;
+    color: #46536a;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wcp-ig-cap--stamp {
+    /* darker than the hub original (#9aa5b1 is 2.4:1 on white — it only ever
+       rendered under test because every post had a caption; here it is AA-safe
+       from day one) */
+    color: #5f6c80;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .wcp-ig-tile a:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
   }
   /* gentle alternating tilt */
   .wcp-ig-tile:nth-child(3n + 1) a {

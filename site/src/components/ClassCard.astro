@@ -2,14 +2,14 @@
 /* ============================================================================
    ClassCard — a class option summary (Twos, Threes, Pre-K AM/PM)
    ============================================================================
-   Boldness pass 2026-07: the card is a full class-color DRENCH — the old
-   Squarespace site's strongest device (its class cards WERE the class colors).
-   The .wcp-cc-* classes in globals.css own the fill and a FIXED, measured
-   AA-safe ink (#01203a on the four light colors 6.45-8.31:1, white on navy
-   9.75:1); the card is a theme-stable chrome island, so nothing inside uses a
-   theme-reactive token. Grain keeps the paper feel on the color. Optional
-   price, schedule, age, features, live availability, and a CTA button (navy
-   on light fills, amber on the navy fill).
+   Recolored 2026-07-19 (the closing CTA's move — Nathan ruled out dark text
+   on light warm fills): every card is the NAVY sheet with white ink (9.75:1),
+   and the class color arrives as ACCENT — the crayon stroke under the name,
+   the feature check marks, and the class-colored CTA button (.wcp-cc-btn in
+   globals.css, fixed #01203a ink measured 6.45-8.31:1 on the four fills).
+   The .wcp-cc-* classes own the fill + accent var; the card is a theme-stable
+   chrome island, so nothing inside uses a theme-reactive token. Grain keeps
+   the paper feel on the navy.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import Button from '@/components/ui/Button.astro';
@@ -57,8 +57,7 @@ const Heading = headingAs;
 // to wrap between words instead of overflowing the card.
 const nameTokens = name.split(' ');
 
-// Full class-color DRENCH (boldness pass 2026-07, the old site's strongest
-// device). The drench classes in globals.css own the fill + FIXED AA-safe ink
+// The drench classes in globals.css own the navy fill + the class ACCENT var
 // (these are theme-stable chrome islands, so no theme-reactive tokens inside).
 // Full literals so nothing is string-built.
 const drench: Record<string, string> = {
@@ -68,9 +67,6 @@ const drench: Record<string, string> = {
   sky: 'wcp-cc-sky',
   navy: 'wcp-cc-navy',
 };
-// The in-card CTA must stay visible ON the fill: navy button on the four light
-// class colors, amber-fill (on-navy) button on the navy card.
-const ctaVariant = color === 'navy' ? 'on-navy' : 'primary';
 ---
 
 <Tag
@@ -107,6 +103,18 @@ const ctaVariant = color === 'navy' ? 'on-navy' : 'primary';
       )
     }
   </div>
+  {
+    /* The class color's signature moment: a short crayon stroke under the
+       name, the same accent language as the closing CTA's underline.
+       Decorative (aria-hidden) — identity also rides the CTA button fill. */
+  }
+  <svg class="mt-1.5 h-2 w-16 shrink-0" viewBox="0 0 64 8" fill="none" aria-hidden="true">
+    <path
+      d="M2 5.5 C 14 2.5, 30 6.5, 44 4 S 58 3.5, 62 5"
+      stroke="var(--cc-accent)"
+      stroke-width="4"
+      stroke-linecap="round"></path>
+  </svg>
   {schedule && <p class="mt-1 font-bold">{schedule}</p>}
   {age && <p class="wcp-drench-muted mt-0.5 text-sm">{age}</p>}
   {
@@ -136,7 +144,7 @@ const ctaVariant = color === 'navy' ? 'on-navy' : 'primary';
       <ul class="mt-4 flex-1 space-y-2">
         {features.map((f: string) => (
           <li class="flex gap-2.5">
-            <Icon name="check" class="mt-1 h-4 w-4" />
+            <Icon name="check" class="mt-1 h-4 w-4 [color:var(--cc-accent)]" />
             <span class="leading-snug">{f}</span>
           </li>
         ))}
@@ -146,7 +154,7 @@ const ctaVariant = color === 'navy' ? 'on-navy' : 'primary';
 
   {
     href && (
-      <Button href={href} variant={ctaVariant as never} class="mt-6 w-full">
+      <Button href={href} variant="on-navy" class="wcp-cc-btn mt-6 w-full">
         {ctaLabel}
       </Button>
     )

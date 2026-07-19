@@ -27,6 +27,7 @@ export const routes = [
   '/newsletter',
   '/newsletter/archive',
   '/accessibility',
+  '/colophon',
   '/privacy',
   '/terms',
   '/news',

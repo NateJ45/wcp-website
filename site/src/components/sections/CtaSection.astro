@@ -28,13 +28,19 @@ const { section, linkBase = '', teacherSlug, isClosing = false, hideRating = fal
 const actions = (section.actions as ActionData[] | undefined) ?? [];
 const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, linkBase);
 const storedTone = (section.tone as 'navy' | 'cream') ?? 'navy';
-const tone = isClosing && storedTone === 'navy' && !teacherSlug ? 'amber' : storedTone;
+// Closers stay NAVY: white text on navy (9.75:1) with ORANGE as accent only
+// (crayon underline, seam trace, amber glow). Nathan ruled out dark text on
+// warm fills entirely (amber 2026-07-19a, sky 2026-07-19b); white on navy is
+// the AA-passing way to keep the color energy.
+const tone = storedTone;
+const accentClose = isClosing && storedTone === 'navy' && !teacherSlug;
 ---
 
 <CtaBanner
   title={section.title as string}
   lead={section.lead as string | undefined}
   tone={tone}
+  underlineAccent={accentClose}
   seam={section.seam as boolean}
   rating={!teacherSlug && !hideRating}
   titleId={`sec-${section._key}`}

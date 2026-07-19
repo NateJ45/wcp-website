@@ -1,0 +1,44 @@
+---
+/* ============================================================================
+   ChooserRows — self-segmentation rows ("just looking / comparing / ready")
+   ============================================================================
+   The 2026 benchmark move (Headspace's chooser): IA as a friendly question.
+   Three full-width tappable rows directly under the home hero route each
+   visitor intent to its page — the funnel as furniture, zero JS, native
+   links, ruled editorial rows in the sheet register. Code-owned copy.
+   ============================================================================ */
+const ROWS = [
+  { q: 'Just looking?', label: 'See what a morning here is like', href: '/a-day-at-wcp' },
+  { q: 'Comparing schools?', label: 'Our tuition is public', href: '/tuition' },
+  { q: 'Ready to visit?', label: 'Schedule a tour', href: '/virtual-tour#sec-pp-tour-form' },
+];
+---
+
+<nav class="wcp-section bg-white dark:bg-surface" aria-label="Start here">
+  <div class="wcp-container py-[var(--wcp-space-lg)]">
+    <ul role="list">
+      {
+        ROWS.map((r) => (
+          <li class="border-b border-navy/15 last:border-b-0 dark:border-white/15">
+            <a
+              href={r.href}
+              class="group flex min-h-14 flex-wrap items-baseline gap-x-3 gap-y-0 py-4 no-underline"
+            >
+              <span class="font-display text-lg text-heading">{r.q}</span>
+              <span class="font-semibold text-sky-ink group-hover:underline">
+                {r.label}
+                <span
+                  aria-hidden="true"
+                  class="ml-1 inline-block transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                >
+                  {' '}
+                  →
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>

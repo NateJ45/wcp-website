@@ -13,8 +13,18 @@ import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
 import TuitionOpener from '@/components/TuitionOpener.astro';
+import HeritageStrip from '@/components/HeritageStrip.astro';
+import SeptembersWall from '@/components/SeptembersWall.astro';
+import ChooserRows from '@/components/ChooserRows.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import { SECTION_HOIST, SECTION_APPEND } from '@/lib/page-doctrine';
+import {
+  SECTION_HOIST,
+  SECTION_APPEND,
+  SECTION_DROP,
+  SECTION_INSERT_AFTER,
+  SECTION_HEADER_OVERRIDES,
+  CARDGRID_KEEP_CARDS,
+} from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -71,6 +81,10 @@ interface Props {
       Google-rating trust slip — that's a public-marketing trust signal for
       prospective parents, not something an already-enrolled family needs. */
   hub?: boolean;
+  /** True when a page hero renders directly above these sections: the first
+      band then always carries the sweep seam (the old site's media→content
+      divider, every page). Public page routes pass it; hub surfaces don't. */
+  afterHero?: boolean;
 }
 const {
   sections: rawSections = [],
@@ -79,6 +93,7 @@ const {
   cardWatermark = false,
   pageSlug,
   hub = false,
+  afterHero = false,
 } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
@@ -91,6 +106,14 @@ let sections = rawSections.map((s) => deEmDashDeep(s));
 // Visit page's contact details). Runs BEFORE the seam computation so edges
 // follow the rendered order. Stopgaps registered in docs/PENDING.md.
 if (pageSlug) {
+  // Drops first (render-time stopgaps mirroring queued Sanity patches; keys or
+  // 'type:<sectionType>' entries — see SECTION_DROP).
+  const dropKeys = SECTION_DROP[pageSlug] ?? [];
+  if (dropKeys.length > 0) {
+    sections = sections.filter(
+      (s) => !dropKeys.includes(s._key) && !dropKeys.includes(`type:${s._type}`),
+    );
+  }
   const hoistKeys = SECTION_HOIST[pageSlug] ?? [];
   if (hoistKeys.length > 0) {
     const hoisted = hoistKeys
@@ -98,15 +121,42 @@ if (pageSlug) {
       .filter((s): s is SectionData => Boolean(s));
     sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
   }
+  // Splice synthetic sections in after their anchor keys (final order).
+  const inserts = SECTION_INSERT_AFTER[pageSlug];
+  if (inserts) {
+    for (const [afterKey, extra] of Object.entries(inserts)) {
+      const at = sections.findIndex((s) => s._key === afterKey);
+      if (at !== -1) sections = [...sections.slice(0, at + 1), ...extra, ...sections.slice(at + 1)];
+    }
+  }
   sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+  // Header copy overrides (title/lead/eyebrow by _key).
+  const headerOverrides = SECTION_HEADER_OVERRIDES[pageSlug];
+  if (headerOverrides) {
+    sections = sections.map((s) => {
+      const o = headerOverrides[s._key];
+      if (!o) return s;
+      return { ...s, header: { ...(s.header ?? {}), ...o } } as SectionData;
+    });
+  }
 }
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces
-// and unlisted pages). Indexed by "render after section i" for the loop below.
+// and unlisted pages). Indexed by "render after section i" for the loop below;
+// a string `after` anchors to a section _key in the FINAL order (survives the
+// doctrine drops/hoists above; a missing key drops the moment rather than
+// landing it somewhere random).
 const moments: PhotoMoment[] = pageSlug ? (PHOTO_MOMENTS[pageSlug] ?? []) : [];
 const momentsAfter = new Map<number, PhotoMoment[]>();
 for (const m of moments) {
-  const at = Math.max(-1, Math.min(m.after, sections.length - 1));
+  let at: number;
+  if (typeof m.after === 'string') {
+    const idx = sections.findIndex((s) => s._key === m.after);
+    if (idx === -1) continue;
+    at = idx;
+  } else {
+    at = Math.max(-1, Math.min(m.after, sections.length - 1));
+  }
   momentsAfter.set(at, [...(momentsAfter.get(at) ?? []), m]);
 }
 
@@ -128,11 +178,57 @@ for (const [i, s] of sections.entries()) {
 // A moment's effective band colour for the seam chain: strips and the tuition
 // opener are cream paper; a full-bleed interlude is a photograph (neutral, so
 // the next strong band gets its seam).
-const momentBg = (m: PhotoMoment): string => (m.kind === 'interlude' ? 'white' : (m.bg ?? 'cream'));
+const momentBg = (m: PhotoMoment): string =>
+  m.kind === 'interlude' || m.kind === 'chooser' ? 'white' : (m.bg ?? 'cream');
 
-// Seed with a leading moment's colour when one renders before everything.
-let prevBg: string | null = null;
+// Seed with the hero boundary (the sweep divider lands under every hero, like
+// the old site), then a leading moment's colour when one renders first.
+let prevBg: string | null = afterHero ? 'hero' : null;
 for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
+// Band-color adjacency (Nathan 2026-07-19): a navy band never follows a navy
+// band (the drench hero counts as navy). When two navys would touch, the
+// non-closer of the pair flips — the closing CTA keeps its identity, everything
+// else goes white (a mid-page ctaSection goes cream, its own light tone).
+// PUBLIC-ONLY, like the rest of the doctrine: hub/preview surfaces omit
+// pageSlug and keep their stored colors untouched (the hub-unchanged rule).
+if (pageSlug) {
+  let prev = afterHero ? 'navy' : null;
+  for (let i = 0; i < sections.length; i++) {
+    const s = sections[i];
+    if (s._type === 'noticeBarSection') continue;
+    if (momentsAfter.has(i - 1) || (i === 0 && momentsAfter.has(-1))) prev = null; // a moment breaks adjacency
+    let bg = effectiveBg(s);
+    if (bg === 'navy' && prev === 'navy') {
+      if (s._type === 'ctaSection' && i === lastBandIndex) {
+        // keep the closer navy; flip the PREVIOUS navy band instead. A stored
+        // navy ctaSection above the closer flips to its cream tone (found on
+        // /reviews: the "Loved your experience?" CTA sat navy-on-navy against
+        // the synthesized tour closer, 2026-07-19 all-pages sweep).
+        for (let j = i - 1; j >= 0; j--) {
+          const p = sections[j];
+          if (p._type === 'noticeBarSection') continue;
+          if (p._type === 'ctaSection') p.tone = 'cream';
+          else p.background = 'white';
+          break;
+        }
+      } else if (s._type === 'ctaSection') {
+        s.tone = 'cream';
+        bg = 'cream';
+      } else {
+        s.background = 'white';
+        bg = 'white';
+      }
+    }
+    prev = bg;
+  }
+}
+
+// Doodle alternation (Nathan 2026-07-19: "doodles are fine, just make them
+// skip a section"): among consecutive doodle-carrying bands (navy + cream —
+// white/grey carry grain only), every other one goes plain (data-nodoodle →
+// grammar CSS), so the tile never slices its icons against a look-alike
+// neighbor. The doodled hero seeds the chain; a photo moment resets it.
+let prevDoodled = afterHero;
 for (const [i, section] of sections.entries()) {
   if (section._type === 'noticeBarSection') {
     section.seam = false;
@@ -140,9 +236,19 @@ for (const [i, section] of sections.entries()) {
   }
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
+  const doodleEligible = bg === 'navy' || bg === 'cream';
+  if (doodleEligible && prevDoodled) {
+    section.noDoodle = true;
+    prevDoodled = false;
+  } else {
+    prevDoodled = doodleEligible;
+  }
   prevBg = bg;
   // A moment after this section becomes the band the NEXT section sits under.
-  for (const m of momentsAfter.get(i) ?? []) prevBg = momentBg(m);
+  for (const m of momentsAfter.get(i) ?? []) {
+    prevBg = momentBg(m);
+    prevDoodled = prevBg === 'cream';
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,6 +302,12 @@ const MAP: Record<string, any> = {
       <Interlude slot={m.slot} caption={m.caption ?? ''} />
     ) : m.kind === 'tuition-opener' ? (
       <TuitionOpener />
+    ) : m.kind === 'heritage' ? (
+      <HeritageStrip slot={m.slot} />
+    ) : m.kind === 'chooser' ? (
+      <ChooserRows />
+    ) : m.kind === 'septembers' ? (
+      <SeptembersWall />
     ) : (
       <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
     ),
@@ -208,28 +320,58 @@ const MAP: Record<string, any> = {
     if (!Comp && strips.length === 0) return null;
     // cardWatermark reaches only CardGridSection (the sole reader); every other
     // bridge ignores the extra prop. Photo strips splice in AFTER their section.
+    // Act II section grammar (public only): each section is wrapped in a
+    // zero-box `display: contents` div carrying its _type, so the grammar
+    // layer in globals.css can compose per section TYPE (header treatments,
+    // the card-grid sheet re-expression, the stat strip) with no bridge
+    // edits and no hub impact (hub surfaces don't pass pageSlug and lack the
+    // .wcp-site-paper scope anyway). `data-cards` opts a specific grid back
+    // into real cards where cards earn it (CARDGRID_KEEP_CARDS doctrine).
+    const grammarAttrs = pageSlug
+      ? {
+          'data-stype': section._type,
+          'data-nodoodle': section.noDoodle ? '' : undefined,
+          'data-cards':
+            section._type === 'cardGridSection' &&
+            (CARDGRID_KEEP_CARDS[pageSlug] ?? []).includes(section._key)
+              ? ''
+              : undefined,
+        }
+      : null;
+    const rendered = Comp && (
+      <Comp
+        section={section}
+        linkBase={linkBase}
+        site={site}
+        cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+        pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
+        hideRating={section._type === 'ctaSection' ? hub : undefined}
+        isClosing={
+          // Public pages only (they pass pageSlug): the hub keeps its navy
+          // closers; the amber drench is public-marketing doctrine.
+          section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
+        }
+      />
+    );
     return (
       <>
-        {Comp && (
-          <Comp
-            section={section}
-            linkBase={linkBase}
-            site={site}
-            cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
-            pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
-            hideRating={section._type === 'ctaSection' ? hub : undefined}
-            isClosing={
-              // Public pages only (they pass pageSlug): the hub keeps its navy
-              // closers; the amber drench is public-marketing doctrine.
-              section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
-            }
-          />
+        {rendered && grammarAttrs && (
+          <div class="contents" {...grammarAttrs}>
+            {rendered}
+          </div>
         )}
+        {rendered && !grammarAttrs && rendered}
         {strips.map((m) =>
           m.kind === 'interlude' ? (
             <Interlude slot={m.slot} caption={m.caption ?? ''} />
           ) : m.kind === 'tuition-opener' ? (
             <TuitionOpener />
+          ) : m.kind === 'heritage' ? (
+            <HeritageStrip slot={m.slot} />
+          ) : m.kind === 'chooser' ? (
+            <ChooserRows />
+          ) : m.kind === 'septembers' ? (
+            <SeptembersWall />
           ) : (
             <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
           ),

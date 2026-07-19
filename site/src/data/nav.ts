@@ -99,9 +99,9 @@ export const footerNav: NavGroup[] = [
       // Sanity _key (see titleIdFor in section-helpers.ts) — the tour ask
       // lands ON the form, not on /enroll.
       { label: 'Schedule a Tour', href: '/virtual-tour#sec-pp-tour-form' },
-      { label: 'Virtual Tour', href: '/virtual-tour' },
+      { label: 'Visit Us', href: '/virtual-tour' },
       { label: 'Enroll', href: '/enroll' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'Contact', href: '/virtual-tour' },
     ],
   },
   {
@@ -121,4 +121,5 @@ export const legalNav: NavLink[] = [
   { label: 'Accessibility', href: '/accessibility' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms of Use', href: '/terms' },
+  { label: 'Colophon', href: '/colophon' },
 ];

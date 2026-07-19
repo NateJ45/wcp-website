@@ -163,17 +163,57 @@ Two more code-owned doctrines live in the renderer (boldness pass 2026-07, both
 public-only — gated on the `pageSlug` prop the hub never passes):
 
 - **Photo moments** ([`src/lib/photo-moments.ts`](../src/lib/photo-moments.ts)): a
-  per-page map splices `PhotoStrip` bands (3 big taped prints) between sections,
-  fed by the build-time photo registry
-  ([`src/lib/photo-registry.ts`](../src/lib/photo-registry.ts)) — deterministic
-  picks from the already-public A Day gallery, Board alt text included, zero
-  Sanity writes. A strip degrades to nothing if the build-time fetch fails.
-- **The amber closing drench**: when a page's FINAL band is a navy `ctaSection`,
-  it renders as the full amber drench (`CtaBanner tone="amber"`, fixed AA-measured
-  ink) — the warm full-color closer the old site ended every page with. Stored
-  tone is untouched; cream closers and mid-page navy CTAs are unaffected.
-  `titleId` derives from the section `_key` and feeds both `Section labelledby` and
+  per-page map splices code-owned bands between sections, fed by the build-time
+  photo registry ([`src/lib/photo-registry.ts`](../src/lib/photo-registry.ts)) —
+  deterministic picks from the already-public A Day gallery, Board alt text
+  included, zero Sanity writes. Kinds: `strip` (3 taped prints), `interlude`
+  (one full-bleed photo), `tuition-opener`, `heritage` (home's "Fifty-five
+  Septembers" strip), `chooser` (home's self-segmentation rows), and
+  `septembers` (the About page's horizontal every-year-since-1969 rail,
+  `SeptembersWall.astro`). Each degrades gracefully if the build-time photo
+  fetch fails.
+- **The closing CTA**: when a page's FINAL band is a navy `ctaSection`, it stays
+  navy with the amber crayon underline on the title's last word
+  (`underlineAccent` — orange as accent, never a text surface; the 2026-07-19
+  palette rule replaced the earlier amber drench closer). Stored tone is
+  untouched; cream closers and mid-page navy CTAs are unaffected. `titleId`
+  derives from the section `_key` and feeds both `Section labelledby` and
   `SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
+
+### The Act II section grammar (redesign 2026-07-18, public only)
+
+The renderer wraps every public section in a zero-box `display: contents` div
+carrying `data-stype="<sectionType>"`, and the "Construction Paper" grammar in
+`globals.css` composes on it — **content is untouched; only rendering changes**:
+
+- **Header treatments by section TYPE.** Every printed public eyebrow renders
+  as a taped paper chip (2026-07-19: the chip look went universal, not just the
+  data sections). Data/list/form sections (cardGrid, tuitionTable, form,
+  stepList, faq, schedule, quickFacts, compare, tabs, accordion, downloads,
+  jobs, newsletterSignup, tuitionCalculator, contactDetails, campaign)
+  additionally render a LEFT-anchored header. Photo/story/emotional sections
+  render centered with the eyebrow retired (the field stays editable in the
+  Studio; it just no longer prints on those types).
+- **The sheet list.** `cardGridSection` card grids render as a ruled
+  "sign-up sheet" list (2 columns on wide screens) instead of icon-card grids.
+  A grid gets REAL cards back only via `CARDGRID_KEEP_CARDS` in
+  [`src/lib/page-doctrine.ts`](../src/lib/page-doctrine.ts) (page slug +
+  section `_key`; currently the month/tradition grids on /why-wcp and
+  /co-op-life).
+- **The stat strip.** `statBandSection` renders as one wrapped fact row on the
+  navy band, not boxed tiles.
+- **Class-page color ownership.** `/classes/*` sets `--page-accent(-ink)` so
+  taped chips and sheet icons carry that class's brand color.
+
+The page doctrine in [`src/lib/page-doctrine.ts`](../src/lib/page-doctrine.ts)
+also grew render-time registries (each entry is a STOPGAP with a close-out row
+in [PENDING.md](PENDING.md)): `SECTION_DROP` (hide by `_key` or
+`type:<sectionType>`), `SECTION_HOIST` (reorder to front), `SECTION_INSERT_AFTER`
+(splice a synthetic section after an anchor key — e.g. the "When each class
+meets" class cards on /a-day-at-wcp, which use a `pullAll` flag to fetch class
+docs at build), `SECTION_APPEND`, and `SECTION_HEADER_OVERRIDES` (retitle a
+section header). Photo-moment `after` anchors accept a section `_key` (preferred,
+survives reorders) or a legacy index.
 
 - **Images:** [`src/lib/image.ts`](../src/lib/image.ts) builds responsive URLs from
   Sanity's CDN via `@sanity/image-url`; `SanityImage.astro` emits `<img srcset>`. The

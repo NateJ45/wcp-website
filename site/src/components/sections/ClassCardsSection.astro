@@ -3,6 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ClassCard from '@/components/ClassCard.astro';
 import { titleIdFor, eyebrowTone, bandSize, slugHref, type SectionData } from './section-helpers';
+import { getAllClassCards } from '@/lib/cms';
 
 interface ClassItem {
   name: string;
@@ -20,7 +21,13 @@ interface Props {
 }
 const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
-const classes = (section.classItems as ClassItem[] | undefined) ?? [];
+// A synthetic doctrine section (page-doctrine.ts) carries `pullAll` instead of
+// stored refs: fetch every class in Studio order at build time (same read the
+// page query would have dereferenced; no Sanity write involved).
+let classes = (section.classItems as ClassItem[] | undefined) ?? [];
+if (classes.length === 0 && section.pullAll) {
+  classes = (await getAllClassCards()) as ClassItem[];
+}
 const cols =
   classes.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
 

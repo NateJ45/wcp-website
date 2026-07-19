@@ -565,11 +565,6 @@
   top: 22%;
   background: radial-gradient(closest-side, rgba(1, 69, 126, 1), transparent 70%);
 }
-.wcp-hub-wash .wash-b {
-  right: -8rem;
-  top: 2%;
-  background: radial-gradient(closest-side, rgba(255, 140, 0, 1), transparent 70%);
-}
 .wcp-hub-wash .wash-c {
   left: 28%;
   bottom: -12rem;
@@ -583,10 +578,6 @@
     animation: wcp-wash-a 21s ease-in-out infinite;
     will-change: transform;
   }
-  .wcp-hub-wash .wash-b {
-    animation: wcp-wash-b 27s ease-in-out infinite;
-    will-change: transform;
-  }
   .wcp-hub-wash .wash-c {
     animation: wcp-wash-c 33s ease-in-out infinite;
     will-change: transform;
@@ -598,15 +589,6 @@
     }
     50% {
       transform: translate3d(6%, 7%, 0) scale(1.12);
-    }
-  }
-  @keyframes wcp-wash-b {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-      transform: translate3d(-7%, 9%, 0) scale(1.1);
     }
   }
   @keyframes wcp-wash-c {
@@ -1264,9 +1246,47 @@ li:nth-child(4n + 4) > .hub-note {
    Tokens: reuse --wcp-grain, --color-*, --radius from above.
    ---------------------------------------------------------------------------- */
 
+/* -- Type discipline (Act II): display type NEVER hyphenates mid-word. The
+   base heading rule turns hyphens:auto on as a long-word safety, which auto
+   -broke real headlines at 390 ("TYPI-CAL", "EXPE-RIENCE", "QUES-TIONS" — the
+   Phase 0 audit found 10+). Public display moments forbid it; the body-level
+   overflow-wrap:break-word stays as the true last-resort so 320px reflow can
+   never overflow. Hub keeps the auto behavior (its card headings are short and
+   its narrow columns are the case the safety was built for). `text-wrap:
+   pretty` tidies public prose rag where supported (progressive, no fallback
+   needed). Breaks AT a real hyphen ("PRE- / K") are markup's job: see
+   displayTitle() in src/lib/typography.ts. */
+.wcp-site-paper :is(h1, h2, h3, h4, h5, h6, .font-display) {
+  -webkit-hyphens: none;
+  hyphens: none;
+}
+.wcp-site-paper p {
+  text-wrap: pretty;
+}
+
+/* -- Handwritten register: the ONE rule that puts loaded script faces on
+   screen. `signature-font.ts` registers Great Vibes via the FontFace API when
+   a .wcp-signature / .wcp-annotation is on the page — but the face only shows
+   if something points at it, and (Phase 0 audit) nothing ever did: the parent
+   -note signatures silently shipped in Quicksand. Decorative register only:
+   signatures and margin annotations, 18px+, real selectable text, never CTAs
+   or body copy. */
+.wcp-signature,
+.wcp-annotation {
+  font-family: var(--font-signature);
+  font-weight: 400;
+}
+.wcp-annotation {
+  color: var(--color-amber);
+  font-size: 1.55rem;
+  line-height: 1.1;
+}
+
 /* -- Tape strip: a semi-opaque warm-white piece of tape. A pseudo-element the
    caller positions (.wcp-tape-tl / -tr / -tc helpers place the common ones).
-   Decorative; the element carrying it must be position:relative. --------------*/
+   Decorative; the element carrying it must be position:relative. Act II craft
+   pass: torn ends (clip-path jitter) + a faint lengthwise sheen so it reads as
+   TAPE, not a grey rectangle (the Phase 0 audit's exact words). ------------- */
 .wcp-tape::before,
 .wcp-tape-tc::before,
 .wcp-tape-tl::before,
@@ -1276,15 +1296,49 @@ li:nth-child(4n + 4) > .hub-note {
   z-index: 2;
   width: 4.6rem;
   height: 1.35rem;
-  background: linear-gradient(rgba(255, 252, 235, 0.62), rgba(250, 246, 225, 0.5));
+  background: linear-gradient(
+    100deg,
+    rgba(255, 252, 235, 0.66),
+    rgba(250, 244, 218, 0.48) 45%,
+    rgba(255, 252, 235, 0.62)
+  );
   border: 1px solid rgba(1, 69, 126, 0.06);
-  box-shadow: 0 1px 2px rgba(1, 32, 58, 0.05);
+  box-shadow: 0 1px 2px rgba(1, 32, 58, 0.08);
+  clip-path: polygon(1.5% 0%, 99% 3%, 100% 30%, 98.5% 97%, 1% 100%, 0% 62%);
   pointer-events: none;
 }
 .wcp-tape-tc::before {
   top: -0.7rem;
   left: 50%;
   transform: translateX(-50%) rotate(1.6deg);
+}
+/* Both top corners on ONE element (the framed hero's print): -tl keeps the
+   ::before; the -tr strip moves to ::after so the two don't fight over one
+   pseudo-element. */
+.wcp-tape-tl.wcp-tape-tr::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  width: 4.6rem;
+  height: 1.35rem;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 252, 235, 0.66),
+    rgba(250, 244, 218, 0.48) 45%,
+    rgba(255, 252, 235, 0.62)
+  );
+  border: 1px solid rgba(1, 69, 126, 0.06);
+  box-shadow: 0 1px 2px rgba(1, 32, 58, 0.08);
+  clip-path: polygon(1.5% 0%, 99% 3%, 100% 30%, 98.5% 97%, 1% 100%, 0% 62%);
+  pointer-events: none;
+  top: -0.65rem;
+  right: -1.4rem;
+  transform: rotate(28deg);
+}
+.wcp-tape-tl.wcp-tape-tr::before {
+  top: -0.65rem;
+  left: -1.4rem;
+  transform: rotate(-32deg);
 }
 .wcp-tape-tl::before {
   top: -0.65rem;
@@ -1296,12 +1350,12 @@ li:nth-child(4n + 4) > .hub-note {
   right: -1.4rem;
   transform: rotate(28deg);
 }
-.dark .wcp-tape-tc::before,
-.dark .wcp-tape-tl::before,
-.dark .wcp-tape-tr::before {
-  background: linear-gradient(rgba(255, 250, 228, 0.16), rgba(240, 232, 205, 0.12));
-  border-color: rgba(255, 255, 255, 0.08);
-}
+/* Dark-mode paper doctrine (Act II): ARTIFACTS ARE PHYSICAL OBJECTS. A photo
+   print or a handwritten note is white even in a dark room, so prints, parent
+   notes, and their tape keep their light-mode paper in dark mode (theme-stable
+   islands, fixed ink — the documented rating-slip rule). UI cards (paper-card,
+   feature cards) stay theme-reactive: UI is UI. So: no dark override for tape;
+   the light recipe reads on dark canvases through its translucency. */
 
 /* -- Print: a photo treated as a physical print (white frame + double shadow +
    a capped, alternating tilt). Straightens on hover/focus. Put on a <figure>
@@ -1338,12 +1392,8 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-print:nth-of-type(3n + 3) {
   --print-tilt: -0.5deg;
 }
-.dark .wcp-print {
-  background: var(--color-surface);
-}
-.dark .wcp-print figcaption {
-  color: var(--color-heading);
-}
+/* Prints stay white paper in dark mode (physical-object doctrine above); the
+   caption ink is fixed navy on the stable white lip, both themes. */
 
 /* -- Paper card: the public sibling of the hub's .hub-note, GRAIN ONLY (no
    graph grid, no rotating accent tint — those are hub app-identity). A soft
@@ -1383,30 +1433,46 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-drench .wcp-drench-muted {
   color: var(--drench-muted);
 }
-.wcp-cc-amber {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-amber);
-}
-.wcp-cc-green {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-green);
-}
-.wcp-cc-orange {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-orange);
-}
-.wcp-cc-sky {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-sky);
-}
+/* Recolored 2026-07-19, the same move as the closing CTA (Nathan ruled out
+   dark text on light warm fills): every class card is now the NAVY sheet with
+   white ink, and the CLASS color arrives as ACCENT — the crayon stroke under
+   the name, the feature check marks, and the class-colored CTA button (fixed
+   #01203a ink on the accent fills: 8.31 amber / 7.26 green / 7.09 orange /
+   6.45 sky, measured). The accents themselves are decorative or button fills,
+   never body text on navy, so nothing rides an under-AA text pairing. */
+.wcp-cc-amber,
+.wcp-cc-green,
+.wcp-cc-orange,
+.wcp-cc-sky,
 .wcp-cc-navy {
   --drench-ink: #ffffff;
   --drench-muted: rgba(255, 255, 255, 0.85);
   background-color: var(--color-navy);
+}
+.wcp-cc-amber {
+  --cc-accent: var(--color-amber);
+}
+.wcp-cc-green {
+  --cc-accent: var(--color-green);
+}
+.wcp-cc-orange {
+  --cc-accent: var(--color-orange);
+}
+.wcp-cc-sky {
+  --cc-accent: var(--color-sky);
+}
+.wcp-cc-navy {
+  --cc-accent: var(--color-amber);
+}
+/* The card CTA takes the class color as its fill (overrides the on-navy
+   variant's amber): fixed dark ink, and the hover lightens the accent itself
+   so the class identity never flips mid-hover. */
+.wcp-drench .wcp-cc-btn {
+  background-color: var(--cc-accent);
+  color: #01203a;
+}
+.wcp-drench .wcp-cc-btn:hover {
+  background-color: color-mix(in srgb, var(--cc-accent) 86%, white);
 }
 
 /* The amber drench CTA band (CtaBanner tone="amber") — the old site's
@@ -1426,6 +1492,26 @@ li:nth-child(4n + 4) > .hub-note {
   color: var(--drench-muted);
 }
 
+/* The sky closing drench (Act II, 2026-07-19): the closer is a full SKY sheet
+   with fixed navy ink — measured 6.45:1 on the full-strength fill — and orange
+   arrives as ACCENT only (seam trace, rating star), never as a text surface.
+   Replaces the amber closer (Nathan: the navy-text-on-orange look is out;
+   white-on-orange cannot pass AA). Theme-stable island, same rules as
+   .wcp-cta-amber. */
+.wcp-cta-sky {
+  --drench-ink: #01203a;
+  --drench-muted: rgba(1, 32, 58, 0.85);
+  color: var(--drench-ink);
+  background-color: var(--color-sky);
+  background-image: var(--wcp-grain);
+}
+.wcp-cta-sky :is(h1, h2, h3) {
+  color: var(--drench-ink);
+}
+.wcp-cta-sky .wcp-drench-muted {
+  color: var(--drench-muted);
+}
+
 /* -- Parent note: stationery with faint ruled lines + grain, for testimonials.
    The ruled lines are ~5% navy (well below the AA text floor) and sit UNDER the
    ink quote. -----------------------------------------------------------------*/
@@ -1434,9 +1520,402 @@ li:nth-child(4n + 4) > .hub-note {
   background-image:
     repeating-linear-gradient(transparent 0 1.68rem, var(--wcp-note-line) 1.68rem 1.75rem),
     var(--wcp-grain);
+  /* Theme-STABLE island (physical-object doctrine): the note is light paper in
+     both themes, so every ink inside is a fixed hex, never a theme token (the
+     documented -ink trap). Measured on #fffdf7: #2f4258 body 9.6:1, #01203a
+     signature 15.4:1, #52657a muted 5.5:1. Components inherit `color` and use
+     .wcp-note-muted for the small attribution line. */
+  color: #2f4258;
 }
-.dark .wcp-note-paper {
-  background-color: color-mix(in srgb, var(--color-surface) 92%, #fff 8%);
+.wcp-note-paper .wcp-signature {
+  color: #01203a;
+}
+.wcp-note-paper .wcp-note-muted {
+  color: #52657a;
+}
+
+/* -- Pressable CTA (Act II motion vocabulary: "press"). The primary action
+   sits on a hard shadow and physically depresses onto it — transform-only,
+   an :active state (fires on tap and on keyboard activation), with the
+   transition motion-gated. --press-base carries the shadow color per surface
+   (defaults to the amber's own dark edge for the amber fill). */
+.wcp-press {
+  --press-base: #b97d00;
+  box-shadow: 0 4px 0 var(--press-base);
+}
+.wcp-press:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--press-base);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-press {
+    transition:
+      transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* -- Taped chip: a small strip of paper taped to the surface — the Act II
+   replacement for the uppercase hero eyebrow (natural case, cream paper,
+   capped tilt, one piece of tape). Text ink fixed on the stable cream chip:
+   #6b3a00 on the cream fill measures 7.2:1. */
+.wcp-taped-chip {
+  position: relative;
+  display: inline-block;
+  /* FIXED light-cream paper (theme-stable island): the cream TOKEN flips to
+     #241a12 in dark mode and the fixed 7.2:1 brown ink dies on it (axe-dark
+     caught 58 nodes). Paper artifacts stay light in both themes. */
+  background: #fff4e0;
+  color: #6b3a00;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.9rem;
+  transform: rotate(-1.2deg);
+  box-shadow: 0 1px 4px rgba(1, 32, 58, 0.3);
+}
+
+/* -- Proof line: the one-sentence trust row that rides under a primary CTA
+   ("4.8 on Google · our tuition is public"). On the navy drench it reads in
+   warm white; the star row is decorative (callers pair it with sr-only text). */
+.wcp-proof-line {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+.wcp-proof-line .wcp-proof-stars {
+  color: var(--color-amber);
+  letter-spacing: 0.08em;
+}
+
+/* The framed hero's print rests at +2deg on desktop and tapes over the hero's
+   bottom sheet edge (HeroFramed). A CSS rule, not a utility class, so it wins
+   the same specificity war as the nth-of-type tilt alternation below it. */
+@media (min-width: 64rem) {
+  .wcp-hero-framed .wcp-print {
+    --print-tilt: 2deg;
+  }
+}
+/* The living photograph sits at its layout width (34rem): Nathan sized it up
+   50% then back 20% (2026-07-19) — the 1fr/1fr grid rebalance alone keeps it
+   ~27% larger than the original 0.78fr track. */
+
+/* Public motion vocabulary is exponential-ease only: the icon pop keeps its
+   designed mid-keyframe overshoot but loses the elastic timing curve on top
+   (the spring bezier double-bounces past the keyframe and reads toy-like).
+   Public-scoped so the hub's existing feel is untouched. */
+.wcp-site-paper .group:hover .wcp-pop {
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================================
+   Act II section grammar (public only) — composition by section TYPE
+   ============================================================================
+   SectionRenderer wraps every public section in a display:contents div carrying
+   data-stype, so the grammar composes here with zero bridge edits and zero hub
+   impact. Two header treatments replace the eyebrow-on-every-band scaffold
+   (Phase 0: ~100% hit rate, the #1 AI tell):
+
+     TAPED LABEL  — data/list/form sections: left-anchored header. Finally
+                    exercises the left axis the audit found unused sitewide.
+                    (2026-07-19: the taped-chip eyebrow itself went UNIVERSAL —
+                    every printed public eyebrow is the chip now, see below.)
+     CAPTION      — photo/story/emotional sections: centered heading, eyebrow
+                    RETIRED (the kicker text stays Board-editable in Sanity and
+                    simply no longer prints; dropping a decorative kicker is a
+                    rendering doctrine, not a content edit).
+
+   Plus two re-expressions of stored data (content untouched, volunteers keep
+   editing the same fields):
+
+     SHEET LIST   — cardGridSection card grids flatten into a ruled sign-up
+                    sheet (2-col on lg): kills the icon-card monoculture in one
+                    move. Real cards return only via CARDGRID_KEEP_CARDS.
+                    Bonus: with the white card surface gone, heading tokens
+                    inherit the band's own scheme, which retires the
+                    white-on-white navy-band P0 the audit found on /tuition.
+     STAT STRIP   — statBandSection boxes (the hero-metric template) become one
+                    quiet wrapped fact row on the navy sheet.
+   ---------------------------------------------------------------------------- */
+
+/* -- Doodle alternation: among consecutive doodle-carrying bands the tile
+   skips every other one (Nathan: doodles stay, but never on two neighbors —
+   the tile slices its icons where look-alike bands meet). Cream keeps its
+   grain (uniform noise, cuts invisible); navy goes plain. ------------------- */
+.wcp-site-paper [data-nodoodle] > section.bg-navy {
+  background-image: none;
+}
+.wcp-site-paper [data-nodoodle] > section.bg-cream {
+  background-image: var(--wcp-grain);
+}
+
+/* -- Header treatment: TAPED LABEL (left-anchored data sections) ------------ */
+.wcp-site-paper
+  :is(
+    [data-stype='cardGridSection'],
+    [data-stype='tuitionTableSection'],
+    [data-stype='formSection'],
+    [data-stype='stepListSection'],
+    [data-stype='faqSection'],
+    [data-stype='scheduleSection'],
+    [data-stype='quickFactsSection'],
+    [data-stype='downloadsSection'],
+    [data-stype='jobsSection'],
+    [data-stype='compareSection'],
+    [data-stype='accordionSection'],
+    [data-stype='tabsSection'],
+    [data-stype='newsletterSignupSection'],
+    [data-stype='tuitionCalculatorSection'],
+    [data-stype='contactDetailsSection'],
+    [data-stype='campaignSection']
+  )
+  .wcp-section-header {
+  margin-inline: 0;
+  text-align: left;
+}
+/* Every printed public eyebrow re-renders as the taped chip (Nathan 2026-07-19:
+   the "Why families choose us" paper chip applies to ALL eyebrows, not just the
+   data sections' left-anchored headers). FIXED light-cream paper (never the
+   theme-reactive cream token — it flips dark and kills the fixed brown ink;
+   axe-dark caught it), fixed 7.2:1 ink on every band color. The CAPTION list
+   below still retires its eyebrows entirely — its :is() selector carries the
+   higher specificity, so display:none keeps winning over inline-block here. */
+.wcp-site-paper .wcp-eyebrow {
+  position: relative;
+  display: inline-block;
+  background: #fff4e0;
+  color: #6b3a00;
+  padding: 0.32rem 0.8rem;
+  transform: rotate(-1.2deg);
+  box-shadow: 0 1px 4px rgba(1, 32, 58, 0.3);
+  margin-bottom: 0.9rem;
+}
+.wcp-site-paper .wcp-eyebrow > svg {
+  display: none;
+}
+
+/* -- Header treatment: CAPTION (photo/story sections retire the eyebrow) ---- */
+.wcp-site-paper
+  :is(
+    [data-stype='gallerySection'],
+    [data-stype='storyTimelineSection'],
+    [data-stype='splitMediaSection'],
+    [data-stype='testimonialSection'],
+    [data-stype='videoSection'],
+    [data-stype='albumSection'],
+    [data-stype='instagramSection'],
+    [data-stype='latestPostsSection'],
+    [data-stype='upcomingEventsSection'],
+    [data-stype='pullQuoteSection'],
+    [data-stype='programCardsSection'],
+    [data-stype='boardMembersSection'],
+    [data-stype='teacherSection'],
+    [data-stype='classCardsSection'],
+    [data-stype='schoolYearSection'],
+    [data-stype='logoStripSection'],
+    [data-stype='mapSection'],
+    [data-stype='countdownSection'],
+    [data-stype='enrollmentCtaSection'],
+    [data-stype='reviewFormSection'],
+    [data-stype='statBandSection']
+  )
+  .wcp-eyebrow {
+  display: none;
+}
+
+/* -- SHEET LIST: the card-grid re-expression --------------------------------- */
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) ul:has(> .wcp-feature-card) {
+  grid-template-columns: 1fr;
+  gap: 0;
+  column-gap: 3.5rem;
+}
+@media (min-width: 64rem) {
+  .wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) ul:has(> .wcp-feature-card) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  border: 0;
+  padding: 1.05rem 0;
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);
+  column-gap: 0.9rem;
+  align-items: start;
+  /* the ruled line, in the band's own ink so it works on white, cream, grey
+     AND navy sheets */
+  border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span {
+  /* the icon chip flattens to a plain brand-ink icon on the sheet */
+  background: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin: 0;
+  border-radius: 0;
+  grid-row: span 3;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span svg {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > h3 {
+  grid-column: 2;
+  font-size: 1.1rem;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > div,
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > a {
+  grid-column: 2;
+  margin-top: 0.2rem;
+}
+/* With the white card surface gone, the row's text must follow the BAND's own
+   scheme, not the card tokens (text-ink stays dark on a navy sheet — the same
+   token trap as the retired P0, mirrored). The Section container already
+   carries the right color per band; inherit it. Headings keep the heading
+   token (Section flips it per band). On navy sheets the varied -ink icon tones
+   go muddy, so icons unify on cream there; links ride currentColor. */
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > div {
+  color: inherit;
+}
+.wcp-site-paper [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > a {
+  color: currentColor;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.wcp-site-paper
+  [data-stype='cardGridSection']:not([data-cards])
+  section.bg-navy
+  .wcp-feature-card
+  > span {
+  /* fixed light cream: the token flips dark in dark mode and the icons would
+     vanish on the navy band (same trap as the chip above) */
+  color: #fff4e0;
+}
+
+/* -- IG wall compaction: 12 tiles ran ~2.5 phone viewports at 2-col; 3-col
+   keeps the bulletin-board energy at half the scroll cost. ------------------- */
+@media (max-width: 40rem) {
+  .wcp-site-paper [data-stype='instagramSection'] ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+
+/* -- Class-page color ownership: a class page sets --page-accent(-ink) on its
+   section tree ([...slug].astro) and the grammar picks it up — the taped chip
+   gets the class-color edge and sheet icons unify on the class ink (AA-safe:
+   -ink tones on light surfaces; the navy-band cream rule below still wins on
+   navy sheets). Pages without the vars are untouched (transparent/inherit
+   fallbacks). ---------------------------------------------------------------- */
+.wcp-site-paper .wcp-eyebrow {
+  border-bottom: 3px solid var(--page-accent, transparent);
+}
+.wcp-class-accent [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span {
+  color: var(--page-accent-ink);
+}
+
+/* -- The hero trace draw-in: the ONE "wow" beat per pageview. The sweep
+   edge's orange crayon draws itself left-to-right shortly after load
+   (pathLength=1 on the path normalizes the dash math). Decorative svg, not
+   the LCP element, and the delay keeps it clear of first paint entirely.
+   Reduced-motion: the media query never applies, so the line is simply
+   painted. Exponential ease-out per the public motion vocabulary. --------- */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-site-paper .wcp-hero-trace {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: wcp-trace-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
+  }
+}
+@keyframes wcp-trace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* -- Story timeline: the crayon draws the day. A solid orange line fills down
+   the dashed spine tracking the reader's scroll through the story (the A Day
+   page's "film advancing" feel). Scroll-driven CSS only — Chrome/Edge get it,
+   Safari/Firefox keep the plain dashed spine (@supports), reduced-motion
+   users too. scaleY is transform-only; origin top so it grows downward. --- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper [data-stype='storyTimelineSection'] ol > div[aria-hidden]::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 -2px;
+      width: 4px;
+      border-radius: 2px;
+      background: var(--color-orange);
+      transform-origin: top;
+      animation: wcp-spine-grow linear both;
+      animation-timeline: view();
+      animation-range: cover 12% cover 78%;
+    }
+  }
+}
+@keyframes wcp-spine-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* -- Schedule timelines: two ruled columns on wide screens (a 7-step single
+   column left ~55% of a 1440 band empty on every class page). Sequence stays
+   readable: steps run down the first column, then the second. -------------- */
+.wcp-site-paper [data-stype='scheduleSection'] ol {
+  max-width: 42rem;
+}
+@media (min-width: 64rem) {
+  .wcp-site-paper [data-stype='scheduleSection'] ol {
+    max-width: 60rem;
+    columns: 2;
+    column-gap: 4.5rem;
+  }
+  .wcp-site-paper [data-stype='scheduleSection'] ol > li {
+    break-inside: avoid;
+  }
+}
+
+/* -- Gallery collage: mixed-size scrapbook grid (every 7th photo doubles) —
+   uniform crop grids read as stock (Oatly's zine-grid lesson). aspect-ratio
+   is preserved inside each cell, so CLS stays zero. ------------------------ */
+@media (min-width: 40rem) {
+  .wcp-site-paper [data-stype='gallerySection'] ul {
+    grid-auto-flow: dense;
+  }
+  .wcp-site-paper [data-stype='gallerySection'] ul > li:nth-child(7n + 1) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+/* -- STAT STRIP: the stat band drops its boxes -------------------------------- */
+.wcp-site-paper [data-stype='statBandSection'] ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: clamp(2.25rem, 6vw, 4.5rem);
+  row-gap: 1.75rem;
+}
+.wcp-site-paper [data-stype='statBandSection'] li {
+  /* Explicit basis: the StatBlock root is an inline-size @container, and an
+     auto-width flex item with size containment would collapse to zero. */
+  flex: 0 1 13rem;
+}
+.wcp-site-paper [data-stype='statBandSection'] li > div {
+  border: 0;
+  background: none;
+  padding: 0;
 }
 
 /* Parent-note tilt: a small capped rotation that alternates across the grid /

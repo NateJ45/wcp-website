@@ -10,6 +10,8 @@ import '../styles/globals.css';
 import Analytics from '@/components/Analytics.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import TourPill from '@/components/TourPill.astro';
+import BackToTop from '@/components/BackToTop.astro';
 import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
@@ -26,6 +28,8 @@ import { getClosureAlert, getAnnouncements } from '@/lib/cms';
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 
 interface Props {
+  /** Final band color of the page — fills the footer boundary seam. */
+  footerSeam?: 'white' | 'grey' | 'cream' | 'navy' | 'amber' | 'sky';
   /** Browser tab + Open Graph title. Required so no page ships untitled. */
   title: string;
   /** Meta description + OG description. Falls back to the site tagline. */
@@ -58,6 +62,7 @@ interface Props {
 }
 
 const {
+  footerSeam = 'white',
   title,
   description,
   ogImage,
@@ -310,7 +315,6 @@ const currentPath = Astro.url.pathname;
                 users get it perfectly still (see .wcp-hub-wash in globals.css). */}
             <div class="wcp-hub-wash" aria-hidden="true">
               <span class="wash-a" />
-              <span class="wash-b" />
               <span class="wash-c" />
             </div>
             {/* Fixed emblem watermark: stays put as the page scrolls, sits above
@@ -343,6 +347,7 @@ const currentPath = Astro.url.pathname;
             </main>
             <HubTabBar />
             <HubSearch />
+            <BackToTop surface="hub" />
           </div>
         </div>
       ) : (
@@ -351,7 +356,12 @@ const currentPath = Astro.url.pathname;
           <main id="main" tabindex="-1" data-pagefind-body>
             <slot />
           </main>
-          <Footer />
+          <Footer seamAbove={footerSeam} />
+          {/* The pinned tour invitation: mobile floating CTA between hero and
+              footer (Act II conversion doctrine). Public marketing chrome only. */}
+          <TourPill />
+          {/* Back to top floats bottom-LEFT (TourPill owns bottom-right). */}
+          <BackToTop surface="site" />
           {announcements.length > 0 && (
             <AnnouncementModal announcements={announcements} currentPath={currentPath} />
           )}

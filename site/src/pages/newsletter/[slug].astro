@@ -64,7 +64,7 @@ const dateStr = formatDate(issue.publishedAt);
       sanityImage={cover?.asset ? (cover as unknown as SanityImageSource) : undefined}
       imageAlt={cover?.alt ?? issue.title ?? ''}
     />
-    <Section bg="white">
+    <Section bg="white" seam>
       <div class="mx-auto max-w-3xl">
         <div class="text-sm">
           <a

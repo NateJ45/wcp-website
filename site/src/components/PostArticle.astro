@@ -62,7 +62,7 @@ const eyebrow = [categoryLabel, dateStr].filter(Boolean).join(' · ');
     sanityImage={cover?.asset ? (cover as unknown as SanityImageSource) : undefined}
     imageAlt={cover?.alt ?? post.title ?? ''}
   />
-  <Section bg="white">
+  <Section bg="white" seam>
     <div class="mx-auto max-w-3xl">
       <div class="flex items-center justify-between text-sm">
         <a

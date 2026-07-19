@@ -30,7 +30,7 @@ const STAR = 'M10 1.6l2.4 5.2 5.7.5-4.3 3.8 1.3 5.6-5.1-3-5.1 3 1.3-5.6L1.9 7.3l
         <figure
           class={cn(
             'wcp-testi wcp-tape-tc wcp-note-paper relative rounded-[var(--radius)] px-6 pt-8 pb-5',
-            'shadow-[0_1px_2px_rgba(1,32,58,0.14),0_8px_18px_rgba(1,32,58,0.12)] dark:border dark:border-border',
+            'shadow-[0_1px_2px_rgba(1,32,58,0.14),0_8px_18px_rgba(1,32,58,0.12)]',
           )}
           data-reveal="settle"
         >
@@ -42,12 +42,13 @@ const STAR = 'M10 1.6l2.4 5.2 5.7.5-4.3 3.8 1.3 5.6-5.1-3-5.1 3 1.3-5.6L1.9 7.3l
             ))}
           </div>
           <span class="sr-only">5 out of 5 stars</span>
-          <blockquote class="relative mt-3 leading-relaxed text-ink">{t.quote}</blockquote>
+          {/* Theme-stable light-paper island: inks come from .wcp-note-paper's
+              fixed palette (globals.css dark-mode paper doctrine), never theme
+              tokens. */}
+          <blockquote class="relative mt-3 leading-relaxed">{t.quote}</blockquote>
           <figcaption class="mt-4">
-            <span class="wcp-signature block text-3xl leading-none text-navy dark:text-heading">
-              {t.author}
-            </span>
-            <span class="mt-1 block text-sm text-ink-muted">{t.role}</span>
+            <span class="wcp-signature block text-3xl leading-none">{t.author}</span>
+            <span class="wcp-note-muted mt-1 block text-sm">{t.role}</span>
           </figcaption>
         </figure>
       </li>

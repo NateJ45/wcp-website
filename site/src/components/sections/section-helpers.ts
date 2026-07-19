@@ -9,6 +9,9 @@ export interface SectionData {
   _key: string;
   background?: 'white' | 'grey' | 'cream' | 'navy';
   seam?: boolean;
+  /** Doodle alternation: set by SectionRenderer when this band skips the
+   *  doodle tile (its neighbor already carries it). */
+  noDoodle?: boolean;
   compact?: boolean;
   header?: { eyebrow?: string; title?: string; lead?: string; align?: 'center' | 'left' };
   [key: string]: unknown;
@@ -52,6 +55,7 @@ export function bandSize(section: SectionData): 'compact' | 'default' {
 const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'navy'> = {
   countdownSection: 'navy',
   instagramSection: 'navy',
+  statBandSection: 'navy',
   formSection: 'grey',
   quickFactsSection: 'grey',
   newsletterSignupSection: 'cream',
@@ -76,7 +80,12 @@ export function effectiveBg(section: SectionData): 'white' | 'grey' | 'cream' | 
  * seam; navy↔navy (a CTA under a navy section) gets none either.
  */
 export function wantsSeam(thisBg: string, prevBg: string | null): boolean {
-  if (prevBg === null) return false; // first section: the hero sits above it
+  // 'hero' = the section directly under the page hero. The old Squarespace
+  // site drew its sweep divider at every media→content boundary, and Nathan
+  // asked for exactly that (2026-07-19) — so the first band always carries the
+  // seam, whatever its color. `null` = a surface with no hero above (hub etc.).
+  if (prevBg === 'hero') return true;
+  if (prevBg === null) return false;
   return (thisBg === 'cream' || thisBg === 'navy') && thisBg !== prevBg;
 }
 

@@ -1,0 +1,83 @@
+---
+/* ============================================================================
+   TourPill — the pinned tour invitation (mobile floating CTA)
+   ============================================================================
+   Phase 0 found public pages run 11-41 mobile viewports with NO conversion
+   affordance between the hero and the closing band: once the header scrolls
+   away, the thumb-path to a tour is the bottom of the page. The 2026 pattern
+   (and Primrose, the one local competitor doing it right) is a persistent
+   mobile CTA. This is a single fixed pill in the phone thumb zone:
+
+   - Public static pages only (BaseLayout public branch), hidden on lg+ where
+     the sticky compact bar already carries "Book a Tour".
+   - Appears only after the visitor scrolls PAST the hero (the hero carries its
+     own tour CTA; doubling it in the first viewport is noise), and hides while
+     the footer is on screen (the closing band has the CTA, and the pill must
+     never cover footer links). Both via one IntersectionObserver on
+     [data-tour-pill-sentinels]; no scroll listeners.
+   - No-JS: stays hidden (progressive enhancement; every page still ends in a
+     tour CTA). Reduced-motion: no transition, plain show/hide.
+   - Bottom chrome, so the top scroll-padding budget (CLAUDE.md) is untouched;
+     safe-area inset respected for gesture-nav phones; print-hidden.
+   - AA: fixed navy ink on amber (8.31:1 measured, the drench pair), 48px min
+     target, visible focus ring, aria-label names the destination.
+   ============================================================================ */
+const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+---
+
+<a
+  href={TOUR_HREF}
+  data-tour-pill
+  hidden
+  aria-label="Schedule a tour"
+  class="wcp-press wcp-sheen fixed right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-amber px-5 font-bold text-[#01203a] shadow-lg outline-offset-2 lg:hidden print:hidden"
+  style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+>
+  {/* the sun mark, small — the pin on the invitation */}
+  <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="5" fill="#01203a"></circle>
+    <g stroke="#01203a" stroke-width="2" stroke-linecap="round">
+      <path
+        d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"
+      ></path>
+    </g>
+  </svg>
+  Schedule a Tour
+</a>
+
+<script>
+  import { onPageLoad } from '@/scripts/_page-load';
+
+  // Show the pill between the hero and the footer. One observer over two
+  // sentinels (the page's first section-ish block and the footer): the pill is
+  // visible only when the hero has left the viewport AND the footer hasn't
+  // arrived. bfcache restores re-run nothing here — observer state survives a
+  // restore because the elements and observer live with the document.
+  onPageLoad(() => {
+    const pill = document.querySelector<HTMLElement>('[data-tour-pill]');
+    if (!pill) return;
+    // On the tour form's own page the pill would just scroll you to where you
+    // already are — skip it there.
+    if (location.pathname.replace(/\/$/, '') === '/virtual-tour') return;
+    const hero = document.querySelector('main > *:first-child, [data-hero]');
+    const footer = document.querySelector('footer');
+    if (!hero || !footer) return;
+    let heroGone = false;
+    let footerHere = false;
+    const update = () => {
+      pill.hidden = !(heroGone && !footerHere);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.target === hero) heroGone = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+          if (e.target === footer) footerHere = e.isIntersecting;
+        }
+        update();
+      },
+      { threshold: 0 },
+    );
+    io.observe(hero);
+    io.observe(footer);
+  });
+</script>

@@ -1,0 +1,105 @@
+---
+/* ============================================================================
+   /colophon — how this site is made (code-owned page, like /404 and /search)
+   ============================================================================
+   The quiet craft page: what the site runs on, who edits it, and the standards
+   it holds itself to. Two jobs at once: it tells prospective parents this
+   school sweats the details, and it is the case study living at the client's
+   own domain. Linked from the footer's legal bar. Utilitarian treatment on
+   purpose — prose bands, one fact row, no hero.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Seam from '@/components/Seam.astro';
+---
+
+<BaseLayout
+  title="Colophon | West Chester Preschool"
+  description="How the West Chester Preschool website is designed, built, and kept accessible."
+  footerSeam="cream"
+>
+  {
+    /* Opener: navy drench band under the transparent overlay header — the same
+      structural collision fix as /404 (pt clears the big header's overlay). */
+  }
+  <section class="wcp-hero-drench relative bg-navy text-white" aria-labelledby="colophon-title">
+    <div class="wcp-container pt-40 pb-[var(--wcp-space-xl)] lg:pt-56">
+      <p class="wcp-taped-chip wcp-tape-tc relative mb-5">How this site is made</p>
+      <h1 id="colophon-title" class="max-w-[20ch] text-balance text-white">
+        A handmade site for a handmade school.
+      </h1>
+      <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90">
+        West Chester Preschool has been parent-run since 1969. Its website works the same way: built
+        by a parent, run by volunteers, cared for like the classrooms.
+      </p>
+    </div>
+  </section>
+
+  <section class="wcp-section relative -mt-px bg-white dark:bg-surface" aria-label="The details">
+    <Seam color="white" variant="trim" />
+    <div
+      class="wcp-container max-w-3xl py-[var(--wcp-space-xl)] [&_a]:font-semibold [&_a]:text-navy [&_a]:underline [&_a]:underline-offset-2 dark:[&_a]:text-heading"
+    >
+      <h2 class="text-2xl">The stack</h2>
+      <p class="mt-3 leading-relaxed text-ink">
+        The site is built with <a href="https://astro.build" rel="noopener">Astro</a> and styled with{
+          ' '
+        }
+        <a href="https://tailwindcss.com" rel="noopener">Tailwind CSS</a>. Every public page is
+        prerendered to plain HTML and served from{' '}
+        <a href="https://workers.cloudflare.com" rel="noopener">Cloudflare</a>'s edge network, which
+        is why pages open fast on a school parking lot connection. Content lives in{' '}
+        <a href="https://www.sanity.io" rel="noopener">Sanity</a>, where board volunteers edit every
+        word and photo in a friendly editor. No board member touches code.
+      </p>
+
+      <h2 class="mt-10 text-2xl">The design</h2>
+      <p class="mt-3 leading-relaxed text-ink">
+        The design system is called Construction Paper: sheets of brand color, taped photographs,
+        crayon underlines, and hand-drawn doodles, all borrowed from the walls of the school itself.
+        Headings are set in Captain Comic, body text in Quicksand, and the margin notes in Great
+        Vibes. Every photograph is a real WCP morning, taken by our own families.
+      </p>
+
+      <h2 class="mt-10 text-2xl">The standards</h2>
+      <p class="mt-3 leading-relaxed text-ink">
+        Accessibility is a build gate here, not a wish. Every page must hold a perfect Lighthouse
+        accessibility score, pass automated WCAG 2.2 AA checks in light and dark mode, and lay out
+        cleanly on screens as narrow as 320 pixels, or the change does not ship. Animations respect
+        your reduced-motion setting, and the whole site works without JavaScript.
+      </p>
+
+      <h2 class="mt-10 text-2xl">The people</h2>
+      <p class="mt-3 leading-relaxed text-ink">
+        Designed and built by Nathan Nixon, a WCP parent and the co-op's publicity chair. The
+        photographs belong to the WCP community. The school itself is the work of five decades of
+        families showing up for each other.
+      </p>
+    </div>
+  </section>
+
+  <section class="wcp-section relative -mt-px bg-cream" aria-label="Site facts">
+    <Seam color="cream" variant="trim" />
+    <div class="wcp-container py-[var(--wcp-space-xl)]">
+      <ul class="flex flex-wrap items-baseline justify-center gap-x-12 gap-y-6 text-center">
+        <li>
+          <span class="block font-display text-4xl text-heading">100</span>
+          <span class="mt-1 block text-sm font-bold tracking-wide text-heading uppercase"
+            >Lighthouse accessibility, every page</span
+          >
+        </li>
+        <li>
+          <span class="block font-display text-4xl text-heading">320px</span>
+          <span class="mt-1 block text-sm font-bold tracking-wide text-heading uppercase"
+            >Smallest screen we test on</span
+          >
+        </li>
+        <li>
+          <span class="block font-display text-4xl text-heading">0</span>
+          <span class="mt-1 block text-sm font-bold tracking-wide text-heading uppercase"
+            >Code needed to edit a page</span
+          >
+        </li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
