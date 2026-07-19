@@ -33,6 +33,14 @@ export const testimonial = defineType({
       description: 'e.g. "Twos parent" or "Alumni family".',
     }),
     defineField({
+      name: 'photo',
+      title: 'Family photo',
+      type: 'image',
+      description:
+        'Optional. A photo of the family, shown as a small print clipped to the quote. Square crops look best.',
+      options: { hotspot: true },
+    }),
+    defineField({
       name: 'tags',
       title: 'Tags',
       type: 'array',
