@@ -98,7 +98,24 @@ should be able to resume from the documents in this directory alone.
         ($70-vs-$175 bait fixed); /thank-you funnel CTAs; photo moments anchor
         by section key; co-op-life captions photo-agnostic. All stopgaps have
         PENDING.md rows. Gates green per commit.
-  - [ ] Route walks remaining: classes
+  - [x] Route-walk batch 2 (commit e05257f): a-day's four schedule timelines →
+        one synthetic "When each class meets" drenched-class-cards band
+        (SECTION_INSERT_AFTER + pullAll) + gallery collage (every 7th photo
+        doubles); reviews gains the tour closer (amber drench + rating slip);
+        pre-k's duplicate curriculum band dropped; events between-events bridge
+        note; news cards join the paper register; packet table scrolls in a
+        keyboard-focusable region (axe caught the wrapper — fixed); month grids
+        on why-wcp/co-op-life keep real cards; schedule timelines 2-col at lg.
+  - [x] Route-walk batch 3 (commit 0799dab): class-color ownership on
+        /classes/* (--page-accent(-ink): taped-chip edge + sheet icons in the
+        class ink); /search zero state (popular chips over ?q= deep links);
+        safety trust-answer wording registered as a Board task (no invented
+        facts in code).
+  - DEFERRED to post-merge polish (recorded, not blocking): teacher-band 1440
+    two-column composition (TeacherCard internals), reviews per-card
+    dates/source badges (content, needs quota), heritage-strip band padding
+    tune, a photo-registry curation pass (wrestling-pile/creek picks).
+  - [ ] Remaining walk notes for future passes: classes
         x3 (class-color ownership, teacher band 1440 composition, curriculum
         cap), visit (form reassurance under submit, "Not sure yet" class
         option, checkbox target size, gallery static grid), tuition (table

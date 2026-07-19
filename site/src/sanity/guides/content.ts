@@ -126,6 +126,12 @@ export const guides: Guide[] = [
         title: 'You pick the words and pictures. The design takes care of itself.',
         text: 'Every section is pre-styled in the school’s look. That is on purpose: it means a page you build in five minutes still looks like it belongs, and nobody can accidentally make the site look off-brand.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Two styling notes from the 2026 refresh.',
+        text: 'The small **Eyebrow** label above a heading now shows as a little taped paper tag on list-style sections (cards, FAQs, forms, tables) and does not show at all on photo and story sections, so do not worry if one you typed is not visible on the page. And **Cards** sections display as a tidy ruled list on the public site rather than boxed tiles: same words, same order, just the newer look.',
+      },
       { kind: 'h', text: 'The easiest way to edit: click it on the page' },
       {
         kind: 'steps',
