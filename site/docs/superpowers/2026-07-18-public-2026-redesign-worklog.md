@@ -167,3 +167,26 @@ anti-AI-tells, competitive teardown, 320px reflow doctrine). Key context loaded:
 - KV write budget near cap: no new KV-writing caches for public features.
 - Windows traps: pkill doesn't exist (kill by port via netstat/taskkill), astro dev
   daemonizes, local lhci can EPERM, format:check exit code over output tail.
+
+## Iteration batch (2026-07-19, remote session): universal taped-chip eyebrows + navy class cards
+
+Nathan, reviewing the sliced home captures from his phone:
+
+1. **Every printed public eyebrow is now the taped paper chip** ("Why families
+   choose us" look applied to all, e.g. "Front-Row Learning"). Implemented by
+   broadening the grammar's chip rule from the TAPED LABEL stype list to
+   `.wcp-site-paper .wcp-eyebrow` (crayon-tick svg hidden with it; the
+   class-accent border rule broadened to match). The CAPTION retirement list
+   still wins on specificity, so photo/story sections keep printing no eyebrow.
+   Hub untouched (not `.wcp-site-paper`).
+2. **Class cards recolored the closing CTA's way** (no dark text on light warm
+   fills): all `.wcp-cc-*` variants are now the navy sheet + white ink, class
+   color as ACCENT via `--cc-accent` — crayon stroke under the name, feature
+   check marks, and the class-colored `.wcp-cc-btn` CTA (fixed #01203a ink,
+   measured 6.45-8.31:1 on the four fills; hover lightens the accent itself).
+   ClassCard is public-only (hub never imports it). Bands hosting class cards
+   are white/grey everywhere, so navy cards pop on all five pages.
+
+Docs synced: PAGE_BUILDER.md grammar section, in-Studio guide (eyebrow line),
+globals.css grammar comment. Gates: check/lint/format green, build green,
+`npm test` 210 passed, `npm run test:unit` 182 passed.

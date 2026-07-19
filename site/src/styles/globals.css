@@ -1433,30 +1433,46 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-drench .wcp-drench-muted {
   color: var(--drench-muted);
 }
-.wcp-cc-amber {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-amber);
-}
-.wcp-cc-green {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-green);
-}
-.wcp-cc-orange {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-orange);
-}
-.wcp-cc-sky {
-  --drench-ink: #01203a;
-  --drench-muted: rgba(1, 32, 58, 0.82);
-  background-color: var(--color-sky);
-}
+/* Recolored 2026-07-19, the same move as the closing CTA (Nathan ruled out
+   dark text on light warm fills): every class card is now the NAVY sheet with
+   white ink, and the CLASS color arrives as ACCENT — the crayon stroke under
+   the name, the feature check marks, and the class-colored CTA button (fixed
+   #01203a ink on the accent fills: 8.31 amber / 7.26 green / 7.09 orange /
+   6.45 sky, measured). The accents themselves are decorative or button fills,
+   never body text on navy, so nothing rides an under-AA text pairing. */
+.wcp-cc-amber,
+.wcp-cc-green,
+.wcp-cc-orange,
+.wcp-cc-sky,
 .wcp-cc-navy {
   --drench-ink: #ffffff;
   --drench-muted: rgba(255, 255, 255, 0.85);
   background-color: var(--color-navy);
+}
+.wcp-cc-amber {
+  --cc-accent: var(--color-amber);
+}
+.wcp-cc-green {
+  --cc-accent: var(--color-green);
+}
+.wcp-cc-orange {
+  --cc-accent: var(--color-orange);
+}
+.wcp-cc-sky {
+  --cc-accent: var(--color-sky);
+}
+.wcp-cc-navy {
+  --cc-accent: var(--color-amber);
+}
+/* The card CTA takes the class color as its fill (overrides the on-navy
+   variant's amber): fixed dark ink, and the hover lightens the accent itself
+   so the class identity never flips mid-hover. */
+.wcp-drench .wcp-cc-btn {
+  background-color: var(--cc-accent);
+  color: #01203a;
+}
+.wcp-drench .wcp-cc-btn:hover {
+  background-color: color-mix(in srgb, var(--cc-accent) 86%, white);
 }
 
 /* The amber drench CTA band (CtaBanner tone="amber") — the old site's
@@ -1599,9 +1615,10 @@ li:nth-child(4n + 4) > .hub-note {
    impact. Two header treatments replace the eyebrow-on-every-band scaffold
    (Phase 0: ~100% hit rate, the #1 AI tell):
 
-     TAPED LABEL  — data/list/form sections: left-anchored header, the stored
-                    eyebrow re-rendered as a taped paper chip. Finally exercises
-                    the left axis the audit found unused sitewide.
+     TAPED LABEL  — data/list/form sections: left-anchored header. Finally
+                    exercises the left axis the audit found unused sitewide.
+                    (2026-07-19: the taped-chip eyebrow itself went UNIVERSAL —
+                    every printed public eyebrow is the chip now, see below.)
      CAPTION      — photo/story/emotional sections: centered heading, eyebrow
                     RETIRED (the kicker text stays Board-editable in Sanity and
                     simply no longer prints; dropping a decorative kicker is a
@@ -1655,29 +1672,14 @@ li:nth-child(4n + 4) > .hub-note {
   margin-inline: 0;
   text-align: left;
 }
-.wcp-site-paper
-  :is(
-    [data-stype='cardGridSection'],
-    [data-stype='tuitionTableSection'],
-    [data-stype='formSection'],
-    [data-stype='stepListSection'],
-    [data-stype='faqSection'],
-    [data-stype='scheduleSection'],
-    [data-stype='quickFactsSection'],
-    [data-stype='downloadsSection'],
-    [data-stype='jobsSection'],
-    [data-stype='compareSection'],
-    [data-stype='accordionSection'],
-    [data-stype='tabsSection'],
-    [data-stype='newsletterSignupSection'],
-    [data-stype='tuitionCalculatorSection'],
-    [data-stype='contactDetailsSection'],
-    [data-stype='campaignSection']
-  )
-  .wcp-eyebrow {
-  /* The stored eyebrow re-renders as the taped chip: FIXED light-cream paper
-     (never the theme-reactive cream token — it flips dark and kills the fixed
-     brown ink; axe-dark caught it), fixed 7.2:1 ink on every band color. */
+/* Every printed public eyebrow re-renders as the taped chip (Nathan 2026-07-19:
+   the "Why families choose us" paper chip applies to ALL eyebrows, not just the
+   data sections' left-anchored headers). FIXED light-cream paper (never the
+   theme-reactive cream token — it flips dark and kills the fixed brown ink;
+   axe-dark caught it), fixed 7.2:1 ink on every band color. The CAPTION list
+   below still retires its eyebrows entirely — its :is() selector carries the
+   higher specificity, so display:none keeps winning over inline-block here. */
+.wcp-site-paper .wcp-eyebrow {
   position: relative;
   display: inline-block;
   background: #fff4e0;
@@ -1687,7 +1689,7 @@ li:nth-child(4n + 4) > .hub-note {
   box-shadow: 0 1px 4px rgba(1, 32, 58, 0.3);
   margin-bottom: 0.9rem;
 }
-.wcp-site-paper [data-stype] .wcp-eyebrow > svg {
+.wcp-site-paper .wcp-eyebrow > svg {
   display: none;
 }
 
@@ -1810,7 +1812,7 @@ li:nth-child(4n + 4) > .hub-note {
    -ink tones on light surfaces; the navy-band cream rule below still wins on
    navy sheets). Pages without the vars are untouched (transparent/inherit
    fallbacks). ---------------------------------------------------------------- */
-.wcp-site-paper [data-stype] .wcp-eyebrow {
+.wcp-site-paper .wcp-eyebrow {
   border-bottom: 3px solid var(--page-accent, transparent);
 }
 .wcp-class-accent [data-stype='cardGridSection']:not([data-cards]) .wcp-feature-card > span {

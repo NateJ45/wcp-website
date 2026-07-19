@@ -181,13 +181,14 @@ The renderer wraps every public section in a zero-box `display: contents` div
 carrying `data-stype="<sectionType>"`, and the "Construction Paper" grammar in
 `globals.css` composes on it — **content is untouched; only rendering changes**:
 
-- **Header treatments by section TYPE.** Data/list/form sections (cardGrid,
-  tuitionTable, form, stepList, faq, schedule, quickFacts, compare, tabs,
-  accordion, downloads, jobs, newsletterSignup, tuitionCalculator,
-  contactDetails, campaign) render a LEFT-anchored header whose stored eyebrow
-  becomes a taped paper chip. Photo/story/emotional sections render centered
-  with the eyebrow retired (the field stays editable in the Studio; it just no
-  longer prints on those types).
+- **Header treatments by section TYPE.** Every printed public eyebrow renders
+  as a taped paper chip (2026-07-19: the chip look went universal, not just the
+  data sections). Data/list/form sections (cardGrid, tuitionTable, form,
+  stepList, faq, schedule, quickFacts, compare, tabs, accordion, downloads,
+  jobs, newsletterSignup, tuitionCalculator, contactDetails, campaign)
+  additionally render a LEFT-anchored header. Photo/story/emotional sections
+  render centered with the eyebrow retired (the field stays editable in the
+  Studio; it just no longer prints on those types).
 - **The sheet list.** `cardGridSection` card grids render as a ruled
   "sign-up sheet" list (2 columns on wide screens) instead of icon-card grids.
   A grid gets REAL cards back only via `CARDGRID_KEEP_CARDS` in

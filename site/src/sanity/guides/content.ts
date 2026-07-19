@@ -130,7 +130,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'primary',
         title: 'Two styling notes from the 2026 refresh.',
-        text: 'The small **Eyebrow** label above a heading now shows as a little taped paper tag on list-style sections (cards, FAQs, forms, tables) and does not show at all on photo and story sections, so do not worry if one you typed is not visible on the page. And **Cards** sections display as a tidy ruled list on the public site rather than boxed tiles: same words, same order, just the newer look.',
+        text: 'The small **Eyebrow** label above a heading now shows as a little taped paper tag wherever it appears, and does not show at all on photo and story sections, so do not worry if one you typed is not visible on the page. And **Cards** sections display as a tidy ruled list on the public site rather than boxed tiles: same words, same order, just the newer look.',
       },
       { kind: 'h', text: 'The easiest way to edit: click it on the page' },
       {
