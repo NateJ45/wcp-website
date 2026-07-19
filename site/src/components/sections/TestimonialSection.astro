@@ -4,6 +4,7 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Testimonial from '@/components/Testimonial.astro';
 import TestimonialWall from '@/components/TestimonialWall.astro';
 import { getTestimonials } from '@/lib/cms';
+import { photoFor } from '@/lib/testimonial-photos';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 import { cn } from '@/lib/utils';
 
@@ -71,6 +72,7 @@ const confetti = Boolean(section.confetti);
               quote={t.quote}
               author={t.author ?? ''}
               context={t.role}
+              photo={photoFor(t.author)}
               confetti={confetti}
             />
           </li>
