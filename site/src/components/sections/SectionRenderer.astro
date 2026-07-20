@@ -25,6 +25,7 @@ import {
   SECTION_INSERT_AFTER,
   SECTION_HEADER_OVERRIDES,
   SECTION_ACTION_HREFS,
+  applyDoctrine,
   CARDGRID_KEEP_CARDS,
 } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
@@ -108,30 +109,11 @@ let sections = rawSections.map((s) => deEmDashDeep(s));
 // Visit page's contact details). Runs BEFORE the seam computation so edges
 // follow the rendered order. Stopgaps registered in docs/PENDING.md.
 if (pageSlug) {
-  // Drops first (render-time stopgaps mirroring queued Sanity patches; keys or
-  // 'type:<sectionType>' entries — see SECTION_DROP).
-  const dropKeys = SECTION_DROP[pageSlug] ?? [];
-  if (dropKeys.length > 0) {
-    sections = sections.filter(
-      (s) => !dropKeys.includes(s._key) && !dropKeys.includes(`type:${s._type}`),
-    );
-  }
-  const hoistKeys = SECTION_HOIST[pageSlug] ?? [];
-  if (hoistKeys.length > 0) {
-    const hoisted = hoistKeys
-      .map((k) => sections.find((s) => s._key === k))
-      .filter((s): s is SectionData => Boolean(s));
-    sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
-  }
-  // Splice synthetic sections in after their anchor keys (final order).
-  const inserts = SECTION_INSERT_AFTER[pageSlug];
-  if (inserts) {
-    for (const [afterKey, extra] of Object.entries(inserts)) {
-      const at = sections.findIndex((s) => s._key === afterKey);
-      if (at !== -1) sections = [...sections.slice(0, at + 1), ...extra, ...sections.slice(at + 1)];
-    }
-  }
-  sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+  // Drop / hoist / insert-after / append, in that order. Shared with
+  // finalBandBg() via applyDoctrine so the footer seam can never disagree with
+  // the renderer about which band ends the page — it did, and painted grey
+  // against a cream band on /enroll (see the note on applyDoctrine).
+  sections = applyDoctrine(sections, pageSlug);
   // Header copy overrides (title/lead/eyebrow by _key).
   const headerOverrides = SECTION_HEADER_OVERRIDES[pageSlug];
   if (headerOverrides) {

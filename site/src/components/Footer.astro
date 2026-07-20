@@ -93,6 +93,16 @@ const consentEnabled =
           decoding="async"
         />
         <div class="absolute inset-0 bg-navy/[0.88]" />
+        {/* The photo has to START BELOW THE SEAM, not at it. The scrim is a
+            uniform 88%, so the classroom photo was showing through right at the
+            top edge — which meant the seam (painted a FLAT band colour) met a
+            photo-tinted navy a pixel below it, and the step read as a rendering
+            fault rather than a transition. Most visible when the last band is
+            itself navy: navy, amber line, then a slightly lighter navy.
+            This top fade is solid navy where the seam lands and clears within
+            ~8rem, so the seam is continuous with what it touches and the photo
+            still does its job everywhere below. */}
+        <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-navy to-transparent" />
       </div>
     )
   }

@@ -208,21 +208,59 @@ export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {
   'co-op-life': ['k157'],
 };
 
-// The footer seam fills with the FINAL band's color (the sweep at the footer
-// boundary works exactly like every section seam: the band above bulges into
-// the footer's photo treatment). Mirrors the renderer's doctrine order and the
-// amber-closer rule so the fill always matches what actually rendered last.
 import { effectiveBg } from '@/components/sections/section-helpers';
 
-export function finalBandBg(rawSections: SectionData[], pageSlug: string): string {
+/**
+ * Apply the page doctrine to a section list, in the SAME ORDER SectionRenderer
+ * does: drop, hoist, insert-after, append.
+ *
+ * This exists because it did NOT exist, and the two drifted. `finalBandBg`
+ * used to re-implement a partial version of the pipeline — drops and appends
+ * only — so any page whose doctrine HOISTED or INSERTED a section disagreed
+ * with the renderer about which band actually ends the page. /enroll hoists
+ * `seed-enroll-steps` to the front, which changes what lands last, so the
+ * footer seam painted grey against a cream band: a visibly wrong wedge of
+ * colour at the footer boundary (Nathan, 2026-07-20).
+ *
+ * Any future doctrine step belongs HERE, so the renderer and the seam cannot
+ * disagree again. tests/seams.spec.ts asserts they agree on every route.
+ */
+export function applyDoctrine(rawSections: SectionData[], pageSlug: string): SectionData[] {
   let sections = [...rawSections];
+
   const dropKeys = SECTION_DROP[pageSlug] ?? [];
   if (dropKeys.length > 0) {
     sections = sections.filter(
       (s) => !dropKeys.includes(s._key) && !dropKeys.includes(`type:${s._type}`),
     );
   }
-  sections = [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+
+  const hoistKeys = SECTION_HOIST[pageSlug] ?? [];
+  if (hoistKeys.length > 0) {
+    const hoisted = hoistKeys
+      .map((k) => sections.find((s) => s._key === k))
+      .filter((s): s is SectionData => Boolean(s));
+    sections = [...hoisted, ...sections.filter((s) => !hoistKeys.includes(s._key))];
+  }
+
+  const inserts = SECTION_INSERT_AFTER[pageSlug];
+  if (inserts) {
+    for (const [afterKey, extra] of Object.entries(inserts)) {
+      const at = sections.findIndex((s) => s._key === afterKey);
+      if (at !== -1) sections = [...sections.slice(0, at + 1), ...extra, ...sections.slice(at + 1)];
+    }
+  }
+
+  return [...sections, ...(SECTION_APPEND[pageSlug] ?? [])];
+}
+
+// The footer seam fills with the FINAL band's color (the sweep at the footer
+// boundary works exactly like every section seam: the band above bulges into
+// the footer's photo treatment). Runs the SAME doctrine pipeline the renderer
+// does, plus the amber-closer rule, so the fill always matches what actually
+// rendered last.
+export function finalBandBg(rawSections: SectionData[], pageSlug: string): string {
+  const sections = applyDoctrine(rawSections, pageSlug);
   const bands = sections.filter((s) => s._type !== 'noticeBarSection');
   const last = bands[bands.length - 1];
   if (!last) return 'white';
