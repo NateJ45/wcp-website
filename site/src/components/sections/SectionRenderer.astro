@@ -24,6 +24,7 @@ import {
   SECTION_DROP,
   SECTION_INSERT_AFTER,
   SECTION_HEADER_OVERRIDES,
+  SECTION_ACTION_HREFS,
   CARDGRID_KEEP_CARDS,
 } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
@@ -138,6 +139,22 @@ if (pageSlug) {
       const o = headerOverrides[s._key];
       if (!o) return s;
       return { ...s, header: { ...(s.header ?? {}), ...o } } as SectionData;
+    });
+  }
+  // Action href overrides (by _key + action INDEX — see SECTION_ACTION_HREFS
+  // for why the index and not the label). Forces linkType:'url' so the stored
+  // page reference can't win over the override.
+  const actionHrefs = SECTION_ACTION_HREFS[pageSlug];
+  if (actionHrefs) {
+    sections = sections.map((s) => {
+      const o = actionHrefs[s._key];
+      if (!o || !Array.isArray(s.actions)) return s;
+      return {
+        ...s,
+        actions: (s.actions as Record<string, unknown>[]).map((a, i) =>
+          o[i] ? { ...a, linkType: 'url', url: o[i] } : a,
+        ),
+      } as SectionData;
     });
   }
 }
@@ -348,6 +365,14 @@ const MAP: Record<string, any> = {
         site={site}
         cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
         pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
+        showFees={
+          // Public pages only (they pass pageSlug). The fee lines need a Sanity
+          // read for the fee schedule, and the hub renders this same section
+          // SSR — a per-request external fetch there breaks the hub speed
+          // contract (it timed out /family-hub outright, 2026-07-19). Enrolled
+          // families don't need the marketing fee breakdown anyway.
+          section._type === 'classCardsSection' ? Boolean(pageSlug) : undefined
+        }
         hideRating={section._type === 'ctaSection' ? hub : undefined}
         isClosing={
           // Public pages only (they pass pageSlug): the hub keeps its navy

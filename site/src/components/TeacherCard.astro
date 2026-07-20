@@ -26,6 +26,18 @@ interface Props {
 const { photo, sanityImage, name, role, email, class: className } = Astro.props;
 ---
 
+{
+  /* The print frame goes on the PHOTO, not the whole card. Wrapping the card
+     made it white paper in both themes while the caption below still used
+     theme tokens (text-heading / text-ink / -ink links), so in dark mode light
+     text landed on white paper and axe failed 9 routes on colour contrast —
+     the documented -ink trap. The card stays theme-reactive; only the photo
+     is a physical object.
+
+     No tilt: data-reveal is on this figure and animates transform, which would
+     cancel a resting rotate() anyway (the ChooserRows lesson), and headshots
+     read better square-on. */
+}
 <figure
   class={cn(
     'overflow-hidden rounded-[var(--radius)] bg-white shadow-sm dark:bg-surface',
@@ -33,7 +45,7 @@ const { photo, sanityImage, name, role, email, class: className } = Astro.props;
   )}
   data-reveal
 >
-  <div class="aspect-[4/3] overflow-hidden">
+  <div class="wcp-photo-print aspect-[4/3] overflow-hidden" style="--print-tilt: 0deg">
     {
       sanityImage ? (
         <SanityImage

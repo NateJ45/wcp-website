@@ -127,6 +127,44 @@ export default defineConfig({
     defaultStrategy: 'viewport',
   },
 
+  // Family Hub sign-in persistence.
+  //
+  // Astro's default session cookie carries no maxAge, which makes it a
+  // BROWSER-SESSION cookie: it dies when the family fully closes their browser,
+  // so "sign in once" would really mean "sign in constantly". A long maxAge
+  // fixes that. 400 days is the ceiling modern browsers will honour (Chrome
+  // caps cookie lifetime there), so in practice this reads as "until something
+  // ends it".
+  //
+  // What ends it is the password, not a timer. The session stores a fingerprint
+  // derived from FAMILY_HUB_PASSWORD (see src/lib/hub-auth.ts), and the
+  // middleware re-derives and compares it on every hub request, so rotating the
+  // secret signs everyone out on their next page view. `ttl` is deliberately
+  // left unset (default: never expires server-side) — the fingerprint is the
+  // expiry mechanism, and a server-side TTL would only add a second, invisible
+  // one that logs families out for no reason they can see.
+  //
+  // `secure` is deliberately NOT set here so Astro keeps its
+  // secure-in-production default; hardcoding it would stop the cookie being set
+  // over http://localhost and break the gate locally.
+  session: {
+    cookie: {
+      maxAge: 60 * 60 * 24 * 400,
+      // Astro sets `secure: true` whenever the build is production, which is
+      // right for the deployed site (always HTTPS) but breaks the hub test
+      // suites: `astro preview` serves that same production build over plain
+      // http://localhost, and WebKit REFUSES to send a Secure cookie over http.
+      // Chromium has a localhost exception, so the symptom was only the
+      // webkit-iphone project failing to sign in while chromium passed.
+      //
+      // The Playwright hub config sets this var for its webServer (build +
+      // preview) so the suites can authenticate. NEVER set it for a real
+      // deploy — it would ship the family session cookie without the Secure
+      // flag.
+      ...(process.env.WCP_INSECURE_COOKIES === '1' ? { secure: false } : {}),
+    },
+  },
+
   // imageService: 'compile' optimizes <Image /> with Sharp at BUILD time into
   // static dist/_astro/*.webp, so no runtime Cloudflare Images binding is
   // needed. (Learned from NCS: the adapter's default runtime image service

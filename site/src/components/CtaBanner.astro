@@ -73,7 +73,10 @@ const bandClass = isNavy
       : 'bg-cream text-heading';
 ---
 
-<section class={cn('relative -mt-px', bandClass, className)} aria-labelledby={titleId}>
+<section
+  class={cn('relative -mt-px', bandClass, isNavy && 'wcp-cta-doodled', className)}
+  aria-labelledby={titleId}
+>
   {seam && <Seam color={tone} variant="trim" />}
   <div class="wcp-container relative py-[var(--wcp-space-xl)] text-center">
     <h2

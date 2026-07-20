@@ -27,6 +27,8 @@ interface Props {
   successMessage?: string;
   formId: string;
 }
+import { FIELD_CLASS } from '@/lib/field-classes';
+
 const {
   topic,
   variant = 'general',
@@ -132,8 +134,7 @@ const VARIANTS: Record<string, Field[]> = {
 };
 const extraFields = VARIANTS[variant] ?? VARIANTS.general;
 
-const field =
-  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+const field = FIELD_CLASS;
 const label = 'block text-sm font-semibold text-heading';
 
 // Turnstile is DORMANT until a site key is set (see docs/FORMS.md). When it
@@ -222,7 +223,7 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
                       type="checkbox"
                       name={f.name}
                       value={opt}
-                      class="h-5 w-5 rounded border-border text-navy focus:ring-2 focus:ring-navy/30"
+                      class="h-5 w-5 rounded border-border text-navy"
                     />
                     {opt}
                   </label>

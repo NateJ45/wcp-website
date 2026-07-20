@@ -3,6 +3,7 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Testimonial from '@/components/Testimonial.astro';
 import TestimonialWall from '@/components/TestimonialWall.astro';
+import Button from '@/components/ui/Button.astro';
 import { getTestimonials } from '@/lib/cms';
 import { photoFor } from '@/lib/testimonial-photos';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
@@ -42,7 +43,12 @@ const limit = typeof section.limit === 'number' ? section.limit : 3;
 const isWall = (section.layout === 'wall' || pageSlug === 'reviews') && pageSlug !== 'why-wcp';
 let items = isWall || section.source === 'manual' ? allItems : allItems.slice(0, limit);
 if (pageSlug === 'why-wcp') items = items.slice(0, 4);
-const readAllLink = pageSlug === 'why-wcp';
+// Any page showing a TEASER of the quotes gets a way through to the full set.
+// This was /why-wcp only, so the home page ended its testimonials with no exit
+// at all — a visitor who just read three glowing quotes had nowhere to go
+// (Nathan, 2026-07-19). /reviews is excluded because it already IS the full
+// set, and walls are excluded for the same reason.
+const readAllLink = Boolean(pageSlug) && pageSlug !== 'reviews' && !isWall;
 const confetti = Boolean(section.confetti);
 ---
 
@@ -82,10 +88,19 @@ const confetti = Boolean(section.confetti);
   }
   {
     readAllLink && (
-      <p class="mt-8 text-center">
-        <a class="font-bold text-sky-ink underline underline-offset-2" href="/reviews">
-          Read every family review →
-        </a>
+      <p class="mt-10 text-center">
+        {/* A real button, not the bare underlined link this used to be: it sits
+            at the end of a band of proof and is the only way onward from it,
+            so it should look like an action. Outline rather than accent keeps
+            the hero's "Schedule a Tour" as the page's one primary CTA. */}
+        {/* Label kept SHORT on purpose: buttonVariants sets whitespace-nowrap,
+            so a long label cannot wrap and simply overflows the viewport. "Read
+            every family review" measured 314px against a 320px screen and broke
+            reflow on 7 routes. */}
+        <Button href="/reviews" variant="outline" size="lg" class="wcp-press">
+          Read all reviews
+          <span aria-hidden="true"> →</span>
+        </Button>
       </p>
     )
   }

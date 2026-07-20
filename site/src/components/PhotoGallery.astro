@@ -47,7 +47,15 @@ const { photos, class: className } = Astro.props;
           `--reveal-delay: ${(i % 6) * 60}ms`
         }
       >
-        <figure class="group overflow-hidden rounded-[var(--radius)] bg-navy shadow-sm">
+        {/* Print treatment: data-reveal is on the <li>, so the tilt is safe
+            here (on the same node it would be cancelled by reveal's transform).
+            Angle cycles by index because nth-of-type sees one figure per li and
+            would give the whole gallery a single tilt. Kept under 1deg: a dense
+            collage with big angles reads as noise. */}
+        <figure
+          class="wcp-photo-print group"
+          style={`--print-tilt: ${[-0.9, 0.7, -0.4, 0.9][i % 4]}deg`}
+        >
           <div class="aspect-[4/3] overflow-hidden">
             {p.sanityImage ? (
               <SanityImage
@@ -70,9 +78,10 @@ const { photos, class: className } = Astro.props;
               )
             )}
           </div>
-          {p.caption && (
-            <figcaption class="px-3 py-2 text-sm text-white/90">{p.caption}</figcaption>
-          )}
+          {/* No text-white here: the figure is white paper now, not the navy
+              tile it used to be. Colour comes from .wcp-photo-print figcaption,
+              which uses the theme-stable navy so it holds in dark mode. */}
+          {p.caption && <figcaption class="px-3 text-sm">{p.caption}</figcaption>}
         </figure>
       </li>
     ))

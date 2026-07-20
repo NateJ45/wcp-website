@@ -93,6 +93,20 @@ const faqJsonLd =
 const footerSeam = finalBandBg((page?.sections ?? []) as never, slug) as never;
 const classAccent =
   slug === 'classes/twos' ? 'amber' : slug === 'classes/threes' ? 'green' : 'orange';
+
+// Notice → hero (2026-07-19). The `noticeBarSection` used to render as a thin
+// cream strip under the hero, where it read as system chrome. It now rides
+// INSIDE the hero as a taped note. Content is untouched Sanity data, so the
+// Board still edits the notice in the Studio; we only move where it draws.
+// Only with a hero to put it in, and only the FIRST one — a page with two
+// notice bars keeps the rest in the normal flow rather than silently dropping
+// them. `heroSections` is what the renderer gets, so it can never draw twice.
+const heroNotice = page?.hero
+  ? (page?.sections ?? []).find((s: { _type?: string }) => s._type === 'noticeBarSection')
+  : undefined;
+const heroSections = heroNotice
+  ? (page?.sections ?? []).filter((s: { _key?: string }) => s._key !== heroNotice._key)
+  : page?.sections;
 ---
 
 <BaseLayout
@@ -106,7 +120,9 @@ const classAccent =
       can retitle a hero while the matching Sanity patch waits on the quota —
       the Visit page leads with the visit ask instead of "take a look around".
       Stopgap; close-out registered in docs/PENDING.md. */
-    page?.hero && <PageHero hero={{ ...page.hero, ...(HERO_OVERRIDES[slug] ?? {}) }} />
+    page?.hero && (
+      <PageHero hero={{ ...page.hero, ...(HERO_OVERRIDES[slug] ?? {}) }} notice={heroNotice} />
+    )
   }
   {
     /* Class pages own their brand color (Act II: Phase 0 found Twos-amber and
@@ -120,7 +136,7 @@ const classAccent =
         style={`--page-accent: var(--color-${classAccent}); --page-accent-ink: var(--color-${classAccent}-ink)`}
       >
         <SectionRenderer
-          sections={page?.sections}
+          sections={heroSections}
           site={siteData}
           pageSlug={slug}
           afterHero={Boolean(page?.hero)}
@@ -128,7 +144,7 @@ const classAccent =
       </div>
     ) : (
       <SectionRenderer
-        sections={page?.sections}
+        sections={heroSections}
         site={siteData}
         pageSlug={slug}
         afterHero={Boolean(page?.hero)}

@@ -15,6 +15,7 @@ import { cmsFetch } from '@/lib/cms';
 import { TUITION_CALC_QUERY } from '@/lib/queries';
 import { classStyles } from '@/lib/class-colors';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { SCHOOL_YEAR_MONTHS, formatMoney, parseMoney } from '@/lib/tuition';
 
 interface CalcClass {
   name?: string;
@@ -34,8 +35,10 @@ const titleId = titleIdFor(section);
 const note = section.note as string | undefined;
 
 const data = await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
-const money = (s?: string): number => (s ? Number(String(s).replace(/[^0-9.]/g, '')) || 0 : 0);
-const fmt = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+// Shared with the class cards and the client script (src/lib/tuition.ts), so
+// the same price can never render differently on two surfaces.
+const money = parseMoney;
+const fmt = formatMoney;
 
 const classes = (data.classes ?? []).filter((c) => c.name && money(c.monthly) > 0);
 const reg = money(data.fees?.registrationFee);
@@ -68,7 +71,7 @@ const oneTime = reg + participation;
         data-participation={participation}
       >
         <div class="grid gap-8 md:grid-cols-2">
-          <fieldset class="rounded-2xl border border-navy/10 bg-white p-5 dark:bg-surface">
+          <fieldset class="rounded-2xl border border-navy/10 bg-white p-5 dark:border-white/20 dark:bg-surface">
             <legend class="px-1 font-semibold text-heading">Choose class(es)</legend>
             <div class="mt-2 space-y-2">
               {classes.map((c) => {
@@ -80,7 +83,7 @@ const oneTime = reg + participation;
                       data-calc-class
                       data-monthly={money(c.monthly)}
                       data-studentfee={money(c.studentFee)}
-                      class="h-5 w-5 shrink-0 rounded border-navy/30"
+                      class="h-5 w-5 shrink-0 rounded border-navy/30 dark:border-white/20"
                     />
                     <span
                       class:list={['h-3 w-3 shrink-0 rounded-full', st.dot]}
@@ -96,12 +99,18 @@ const oneTime = reg + participation;
             </div>
           </fieldset>
 
-          <div class="rounded-2xl border border-navy/10 bg-white p-5 dark:bg-surface">
+          <div class="rounded-2xl border border-navy/10 bg-white p-5 dark:border-white/20 dark:bg-surface">
             <p class="font-semibold text-heading">Your estimate</p>
             <dl class="mt-4 space-y-3" aria-live="polite">
               <div class="flex items-end justify-between gap-4">
                 <dt class="text-ink-muted">Monthly tuition</dt>
                 <dd class="font-display text-2xl text-heading" data-calc-monthly>
+                  {fmt(0)}
+                </dd>
+              </div>
+              <div class="flex items-end justify-between gap-4">
+                <dt class="text-ink-muted">Tuition, {SCHOOL_YEAR_MONTHS} months</dt>
+                <dd class="font-semibold text-heading" data-calc-tuition>
                   {fmt(0)}
                 </dd>
               </div>
@@ -119,6 +128,38 @@ const oneTime = reg + participation;
                   {fmt(0)}
                 </dd>
               </div>
+
+              {/* The headline. A family asking "what will this cost?" wants ONE
+                  number for the year, not four they have to add up themselves. */}
+              <div class="flex items-end justify-between gap-4 border-t border-border pt-3">
+                <dt class="font-bold text-heading">Total for the year</dt>
+                <dd class="font-display text-3xl text-heading" data-calc-total>
+                  {fmt(0)}
+                </dd>
+              </div>
+
+              {participation > 0 && (
+                <div class="flex items-end justify-between gap-4">
+                  {/* Stated plainly because it materially changes the number:
+                      the participation deposit comes back. Publishing only the
+                      gross figure overstates the real cost of the year. */}
+                  <dt class="text-ink-muted">
+                    Less your deposit, returned
+                    <span class="block text-xs">when your co-op hours are done</span>
+                  </dt>
+                  <dd class="font-semibold text-green-ink" data-calc-refund>
+                    {fmt(0)}
+                  </dd>
+                </div>
+              )}
+              {participation > 0 && (
+                <div class="flex items-end justify-between gap-4">
+                  <dt class="font-bold text-heading">What the year really costs</dt>
+                  <dd class="font-display text-2xl text-heading" data-calc-net>
+                    {fmt(0)}
+                  </dd>
+                </div>
+              )}
             </dl>
             <p class="mt-4 border-t border-border pt-3 text-sm text-ink-muted" data-calc-empty>
               Tick a class to see your estimate.

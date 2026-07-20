@@ -83,7 +83,8 @@ const sectionLead = header?.lead ?? (single ? campaigns[0]?.summary : undefined)
           return (
             <div
               class:list={[
-                !single && 'rounded-2xl border border-navy/10 bg-white/70 p-6 dark:bg-white/5',
+                !single &&
+                  'rounded-2xl border border-navy/10 bg-white/70 p-6 dark:border-white/20 dark:bg-white/5',
               ]}
             >
               {/* When several, name each drive; the single-campaign title is in the h2 above. */}

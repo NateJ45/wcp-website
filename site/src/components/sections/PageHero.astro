@@ -6,6 +6,8 @@ import HeroFramed from '@/components/HeroFramed.astro';
 import Underline from '@/components/Underline.astro';
 import ActionButtons from './ActionButtons.astro';
 import SpotsLine from '@/components/SpotsLine.astro';
+import HeroNote from '@/components/HeroNote.astro';
+import { slugHref, linkHref, type SectionData } from './section-helpers';
 import type { ActionData } from './section-helpers';
 import { site } from '@/data/site';
 import { withBase } from '@/lib/utils';
@@ -27,8 +29,21 @@ interface HeroData {
 interface Props {
   hero: HeroData;
   linkBase?: string;
+  /** The page's `noticeBarSection`, hoisted INTO the hero as a taped note
+      (2026-07-19). [...slug].astro passes it and removes it from the section
+      flow, so the content still comes from Sanity and never renders twice. */
+  notice?: SectionData;
 }
-const { hero, linkBase = '' } = Astro.props;
+const { hero, linkBase = '', notice } = Astro.props;
+
+// Same href resolution NoticeBarSection used, so a Board link keeps working
+// unchanged after the move.
+const noticeLabel = notice?.linkLabel as string | undefined;
+const noticeHref = noticeLabel
+  ? notice?.linkType === 'url'
+    ? linkHref({ linkType: 'url', url: notice.url as string }, linkBase)
+    : slugHref(notice?.pageSlug as string | undefined, linkBase)
+  : undefined;
 
 const hasImage = hero.mediaType !== 'none' && Boolean(hero.image);
 const isVideo = hero.mediaType === 'video';
@@ -136,6 +151,9 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
           </a>
         </p>
         <SpotsLine />
+        {notice?.text && (
+          <HeroNote text={notice.text as string} label={noticeLabel} href={noticeHref} />
+        )}
       </Fragment>
     </HeroFramed>
   ) : (
@@ -183,6 +201,9 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
           </a>
         </p>
         <SpotsLine />
+        {notice?.text && (
+          <HeroNote text={notice.text as string} label={noticeLabel} href={noticeHref} />
+        )}
       </Fragment>
     </Hero>
   )

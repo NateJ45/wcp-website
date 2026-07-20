@@ -43,7 +43,7 @@ const longFootnote = (footnote?.trim().length ?? 0) > 70;
         {/* Dashed connector — drawn between badges, not after the last one. */}
         {i !== steps.length - 1 && (
           <span
-            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-navy/40"
+            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-navy/40 dark:border-white/20"
             aria-hidden="true"
           />
         )}

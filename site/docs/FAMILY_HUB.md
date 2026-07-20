@@ -5,22 +5,51 @@ the marketing pages (which are static HTML built ahead of time), every hub page 
 **server-rendered on each request** so it can (a) check you're signed in and (b) read
 private content that must never sit in the public site or in git.
 
-> ⚠️ **TEMPORARY — the gate is currently OPEN for private preview.** `src/middleware.ts`
-> has `const HUB_OPEN = true`, which bypasses the sign-in check so the hub can be previewed
-> without a password while the site isn't public and there is no real family data in Sanity.
-> **Set `HUB_OPEN = false` and redeploy before launch, or before ANY real family PII
-> (directory, health) is entered in the Studio.** Everything below describes the gate as it
-> works when `HUB_OPEN` is `false`.
+> 🔒 **The gate is CLOSED and enforced.** It was not always: `src/middleware.ts` shipped
+> with a `const HUB_OPEN = true` preview bypass that was never flipped back, which left
+> the directory, the photo wall and the health page readable by anyone. Closed 2026-07-19,
+> along with the tests that would have caught it (`tests/hub-gate.spec.ts`).
+> **Never add a bypass flag here again** — the middleware is the only gate, and a flag
+> that silently opens 23 pages of family data is not worth the preview convenience.
+> To browse the hub locally, sign in with the `.dev.vars` password like anyone else.
 
 ## How the gate works
 
-1. **Middleware** (`src/middleware.ts`) runs on every request to a `/family-hub/*` page.
-   If you have no valid session it redirects you to `/family-hub/login`, remembering
-   where you were headed (`?to=…`) so you land there after signing in.
+1. **Middleware** (`src/middleware.ts`) runs on every request to a `/family-hub/*` page
+   and every `/_server-islands/*` render. If you have no valid session it redirects you
+   to `/family-hub/login`, remembering where you were headed (`?to=…`) so you land there
+   after signing in. Server-island requests get a bare `401` instead, because an island
+   fetch cannot follow a redirect.
 2. **Login** (`/family-hub/login`) takes the one shared family password and POSTs it to
    `/api/hub-login`, which compares it (constant-time) to the `FAMILY_HUB_PASSWORD`
-   secret. On a match it sets a signed, `HttpOnly` session cookie and sends you on.
+   secret. On a match it stores a **fingerprint of the password** in the `HttpOnly`
+   session cookie and sends you on.
 3. **Sign out** posts to `/api/hub-logout`, which destroys the session.
+
+### Why a fingerprint and not a `true` flag
+
+The session stores `sha256("wcp-family-hub:v1:" + password)` rather than a boolean, and
+the middleware re-derives and compares it on every request (`src/lib/hub-auth.ts`). That
+is what makes rotation work: change the secret and every existing session stops matching
+on its next page view, with no session store to purge. A static `true` flag would have
+survived rotation forever, so a family who left the school would keep their access.
+
+Two rules follow, and both are enforced by unit tests:
+
+- **It fails closed.** A missing or blank `FAMILY_HUB_PASSWORD` locks the hub rather than
+  opening it. A misconfigured deploy should be loudly broken, not silently public.
+- **Legacy sessions are rejected.** Sessions created before 2026-07-19 hold the boolean
+  `true`, which is not a valid fingerprint, so everyone signs in once more after this
+  change. That is intended.
+
+### Staying signed in
+
+`session.cookie.maxAge` in `astro.config.mjs` is set to 400 days (the ceiling browsers
+honour). Astro's default is no `maxAge` at all, which makes it a browser-session cookie
+that dies when the family closes their browser — "sign in once" would have meant "sign in
+constantly". `session.ttl` is deliberately left unset: the password fingerprint is the
+expiry mechanism, and a second invisible server-side timer would only sign families out
+for reasons they cannot see.
 
 The password is a **single shared password for the whole school**, rotated each year —
 not a per-family login. That matches the old Squarespace hub and keeps it simple for a
@@ -179,8 +208,15 @@ That's it for the gate. Deploy as usual with `npm run deploy`.
 npx wrangler secret put FAMILY_HUB_PASSWORD   # type the new one
 ```
 
-Existing sessions keep working until they expire or the person signs out; new sign-ins
-require the new password. Email the new password to families in the welcome message.
+**Rotating the secret signs everyone out.** Because the session holds a fingerprint of the
+password rather than a "logged in" flag, every existing session stops matching the moment
+the new secret is live, and every family is asked for the new password on their next page
+view. That is the point: it is how a family who has left the school loses access. Email
+the new password to families in the welcome message _before_ you rotate, or you will get
+a round of "the hub stopped working" messages.
+
+No session store needs clearing, and there is nothing to purge in the SESSION KV
+namespace — stale entries simply stop validating.
 
 ## Local development
 

@@ -25,13 +25,24 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         // Navy fill, white text (9.75:1) — the safe default action.
-        primary: 'bg-navy text-white hover:-translate-y-0.5 hover:shadow-lg',
+        // The dark: border is load-bearing, not decoration. `--primary` is
+        // deliberately NOT re-declared in .dark (solid brand fills are
+        // theme-stable islands), so this button keeps its navy fill on the
+        // #0d1219 page — where navy-on-page measures 1.93:1 and the button's
+        // own EDGE effectively disappears. The white text is fine at 9.75:1,
+        // but a control has to be locatable as a control: SC 1.4.11 wants 3:1
+        // for the boundary. A hairline light border restores it without
+        // touching the brand fill.
+        primary:
+          'bg-navy text-white hover:-translate-y-0.5 hover:shadow-lg dark:border dark:border-white/30',
         // True brand-navy fill, white text (9.75:1) — the "Enroll" CTA. Gets a
         // light sheen sweep on hover (wcp-sheen, reduced-motion-safe) since it's
         // the key conversion button; other variants stay calm.
         accent: 'wcp-sheen bg-accent text-accent-foreground hover:-translate-y-0.5 hover:shadow-lg',
         // Sky-ink fill, white text (5.4:1) — secondary emphasis.
-        secondary: 'bg-secondary text-secondary-foreground hover:-translate-y-0.5',
+        // Same boundary reasoning as `primary` above.
+        secondary:
+          'bg-secondary text-secondary-foreground hover:-translate-y-0.5 dark:border dark:border-white/30',
         // Navy outline on light backgrounds. In dark mode the surrounding
         // page surface goes dark, so border/text swap to the light
         // heading-tint (8.8:1 border, 10.3:1 text) and the hover-fill flips

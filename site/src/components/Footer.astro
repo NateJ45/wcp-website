@@ -113,11 +113,23 @@ const consentEnabled =
           <Icon name="phone" class="h-4 w-4 text-amber" />{site.phone}
         </a>
         <br />
+        {
+          /* The global `a[href^='mailto:'] { overflow-wrap: anywhere }` safety net
+            (globals.css) split the address mid-word ("...preschool.o / rg") in the
+            lg 5-track grid, where 1.4fr left the brand column ~10px short of the
+            address. `break-word` does NOT collapse min-content the way `anywhere`
+            does, so the fr track sizes to the full address and it stays on one
+            line, borrowing ~3px from each nav column. Scoped to lg on purpose:
+            below it the brand block spans the full row (the address fits with
+            room to spare at 320), and `anywhere` must stay the fallback there —
+            this footer is `overflow-hidden`, so an address too long for a
+            viewport-capped column would be silently CLIPPED rather than wrapped. */
+        }
         <a
           href={`mailto:${site.email.general}`}
-          class="inline-flex items-center gap-2 hover:underline"
+          class="inline-flex items-center gap-2 hover:underline lg:[overflow-wrap:break-word]"
         >
-          <Icon name="mail" class="h-4 w-4 text-amber" />{site.email.general}
+          <Icon name="mail" class="h-4 w-4 shrink-0 text-amber" />{site.email.general}
         </a>
         <div class="flex items-start gap-2 pt-1 text-white/80">
           <Icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-amber" />
@@ -137,9 +149,9 @@ const consentEnabled =
                 target="_blank"
                 rel="noopener"
                 aria-label={`${site.name} on Facebook`}
-                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-heading"
+                class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-heading"
               >
-                <Icon name="facebook" class="h-4 w-4" />
+                <Icon name="facebook" class="h-5 w-5" />
               </a>
             )}
             {site.social.instagram && (
@@ -148,9 +160,9 @@ const consentEnabled =
                 target="_blank"
                 rel="noopener"
                 aria-label={`${site.name} on Instagram`}
-                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-heading"
+                class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-amber hover:text-heading"
               >
-                <Icon name="instagram" class="h-4 w-4" />
+                <Icon name="instagram" class="h-5 w-5" />
               </a>
             )}
           </div>

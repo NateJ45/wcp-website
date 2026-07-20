@@ -28,7 +28,9 @@ const onNavy = tone === 'navy';
 <div
   class:list={[
     '@container rounded-[var(--radius)] border p-8 text-center',
-    onNavy ? 'border-white/10 bg-white/[0.06]' : 'border-navy/10 bg-navy/[0.04]',
+    onNavy
+      ? 'border-white/10 bg-white/[0.06]'
+      : 'border-navy/10 bg-navy/[0.04] dark:border-white/20',
     className,
   ]}
   data-reveal

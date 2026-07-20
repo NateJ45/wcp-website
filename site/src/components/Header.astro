@@ -99,14 +99,14 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
         <a
           href={`tel:${phoneDigits}`}
           aria-label="Call West Chester Preschool"
-          class="hidden h-11 w-11 items-center justify-center rounded-md text-heading hover:bg-grey min-[23rem]:inline-flex"
+          class="hidden h-11 w-11 items-center justify-center rounded-full text-heading hover:bg-grey min-[23rem]:inline-flex"
         >
           <Icon name="phone" class="h-5 w-5" />
         </a>
         <a
           href={b('/search')}
           aria-label="Search"
-          class="inline-flex h-11 w-11 items-center justify-center rounded-md text-heading hover:bg-grey"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-full text-heading hover:bg-grey"
         >
           <svg
             class="h-5 w-5"
@@ -202,7 +202,7 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
                 aria-label={`${site.name} on Facebook`}
                 class="wcp-icon-btn"
               >
-                <Icon name="facebook" class="h-4 w-4" />
+                <Icon name="facebook" class="h-5 w-5" />
               </a>
             )
           }
@@ -215,7 +215,7 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
                 aria-label={`${site.name} on Instagram`}
                 class="wcp-icon-btn"
               >
-                <Icon name="instagram" class="h-4 w-4" />
+                <Icon name="instagram" class="h-5 w-5" />
               </a>
             )
           }
@@ -224,11 +224,11 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
             aria-label="Email West Chester Preschool"
             class="wcp-icon-btn"
           >
-            <Icon name="mail" class="h-4 w-4" />
+            <Icon name="mail" class="h-5 w-5" />
           </a>
           <a href={b('/search')} aria-label="Search the site" class="wcp-icon-btn">
             <svg
-              class="h-4 w-4"
+              class="h-5 w-5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -241,7 +241,7 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
               <path d="m21 21-4.3-4.3"></path>
             </svg>
           </a>
-          <ThemeToggle tone="onNavy" class="h-9 w-9 hover:bg-white/16" />
+          <ThemeToggle tone="onNavy" class="h-11 w-11 hover:bg-white/16" />
         </div>
 
         {
@@ -351,11 +351,23 @@ const tourHref = '/virtual-tour#sec-pp-tour-form';
      rule in Header.astro's <style> only matches elements Header.astro itself
      renders. Header.astro only renders the elements below directly. */
 
-  /* Round icon buttons (social/email row in the big header). */
+  /* Round icon buttons (social/email row in the big header). Sized up from
+     2.25rem to 2.75rem (2026-07-19): the old site's social buttons were
+     chunkier, and 44px is also the comfortable touch target rather than the
+     24px WCAG 2.5.8 floor these were only clearing thanks to surrounding
+     space. The ThemeToggle in the same row carries a matching h-11 w-11
+     override at its call site — keep the two in step. */
   .wcp-icon-btn {
     display: inline-flex;
-    height: 2.25rem;
-    width: 2.25rem;
+    /* flex: none is load-bearing, not tidiness. These sit in a flex row, so
+       without it they shrink below their own width when the row runs out of
+       space — they were rendering 21px wide by 36px tall, i.e. the border-radius
+       turned them into vertical PILLS rather than circles. That is what "make
+       the pills actual circles" was actually describing; the radius was never
+       the problem. */
+    flex: none;
+    height: 2.75rem;
+    width: 2.75rem;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;

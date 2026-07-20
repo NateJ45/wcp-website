@@ -1,11 +1,20 @@
 ---
 /* ============================================================================
-   ChooserRows — self-segmentation rows ("just looking / comparing / ready")
+   ChooserRows — self-segmentation ("just looking / comparing / ready")
    ============================================================================
    The 2026 benchmark move (Headspace's chooser): IA as a friendly question.
-   Three full-width tappable rows directly under the home hero route each
-   visitor intent to its page — the funnel as furniture, zero JS, native
-   links, ruled editorial rows in the sheet register. Code-owned copy.
+   Three tappable paths directly under the home hero route each visitor intent
+   to its page — the funnel as furniture, zero JS, native links. Code-owned
+   copy; this band is NOT a Sanity section, so editing it is a code change.
+
+   Was three ruled rows, which stopped at ~58% of the band and left the right
+   half empty (Nathan, 2026-07-19). Now three taped paper cards — the
+   Construction Paper register, using the full width. The card treatment lives
+   in globals.css as .wcp-chooser-card, including why a 3-up row is allowed
+   here when the section grammar pushes card grids toward ruled lists.
+
+   The whole card is the target via a stretched-link ::after on the <a>, so the
+   accessible name stays just the link text rather than the whole card.
    ============================================================================ */
 const ROWS = [
   { q: 'Just looking?', label: 'See what a morning here is like', href: '/a-day-at-wcp' },
@@ -16,22 +25,23 @@ const ROWS = [
 
 <nav class="wcp-section bg-white dark:bg-surface" aria-label="Start here">
   <div class="wcp-container py-[var(--wcp-space-lg)]">
-    <ul role="list">
+    <ul role="list" class="grid gap-7 sm:grid-cols-3 sm:gap-6">
       {
-        ROWS.map((r) => (
-          <li class="border-b border-navy/15 last:border-b-0 dark:border-white/15">
-            <a
-              href={r.href}
-              class="group flex min-h-14 flex-wrap items-baseline gap-x-3 gap-y-0 py-4 no-underline"
-            >
-              <span class="font-display text-lg text-heading">{r.q}</span>
-              <span class="font-semibold text-sky-ink group-hover:underline">
+        ROWS.map((r, i) => (
+          <li class="wcp-chooser-slot" data-reveal style={`--reveal-delay: ${i * 80}ms`}>
+            {/* The <a> IS the card, so the whole thing is the target with no
+                stretched-link trick. It also has to be the element that
+                rotates: the <li> owns data-reveal, whose transform would
+                otherwise cancel the tilt. */}
+            <a href={r.href} class="group wcp-chooser-card wcp-tape-tc">
+              {/* Fixed inks, not tokens: this is light paper in both themes. */}
+              <span class="block font-display text-lg [color:#01203a]">{r.q}</span>
+              <span class="mt-1 block font-semibold [color:#166fa8] group-hover:underline">
                 {r.label}
                 <span
                   aria-hidden="true"
                   class="ml-1 inline-block transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
                 >
-                  {' '}
                   →
                 </span>
               </span>

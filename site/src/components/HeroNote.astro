@@ -1,0 +1,38 @@
+---
+/* ============================================================================
+   HeroNote — the school's current notice, as a note taped inside the hero
+   ============================================================================
+   Replaces the thin cream `noticeBarSection` strip that used to sit BELOW the
+   hero, where it read as system chrome and scrolled past unnoticed (Nathan,
+   2026-07-19). Same content, same Sanity fields: [...slug].astro finds the
+   page's first noticeBarSection, hands it here, and drops it from the section
+   flow so it never renders twice. Nothing is hardcoded, so the Board keeps
+   editing the notice in the Studio exactly as before.
+
+   PHYSICAL-OBJECT DOCTRINE: paper is light in BOTH themes, so every ink is a
+   FIXED hex, never a theme token (the -ink trap). Measured on #fff8e1:
+   #01203a title 14.9:1, #3d4b57 body 8.0:1, #a34a00 link 4.9:1.
+
+   The tilt lives on this element while the caller owns any reveal, because the
+   reveal system animates `transform` and would cancel a resting rotate() on the
+   same node (the ChooserRows lesson).
+   ============================================================================ */
+interface Props {
+  text: string;
+  label?: string;
+  href?: string;
+}
+const { text, label, href } = Astro.props;
+---
+
+<aside class="wcp-hero-note wcp-tape-tc" aria-label="School notice">
+  <p class="wcp-hero-note-text">{text}</p>
+  {
+    label && href && (
+      <a href={href} class="wcp-hero-note-link">
+        {label}
+        <span aria-hidden="true"> →</span>
+      </a>
+    )
+  }
+</aside>

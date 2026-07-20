@@ -52,13 +52,23 @@ const logos = await cmsFetch<Logo[]>(isCredentials ? CREDENTIALS_QUERY : PARTNER
               alt={l.logo.alt ?? l.name ?? ''}
               widths={[160, 320]}
               sizes="160px"
-              class="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16"
+              class="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16 dark:opacity-100 dark:grayscale-0"
             />
           ) : (
             <span class="font-display text-lg text-ink-muted">{l.name}</span>
           );
           return (
-            <li>
+            /* Dark mode gets a light PLATE behind each logo rather than any
+               filter on the logo itself. These are Board-uploaded partner
+               marks, typically dark ink on transparent, which simply vanish on
+               the dark page — and `grayscale` was stripping the one thing that
+               might have carried them. Inverting is worse (NN/g: it wrecks
+               multi-colour marks and anything containing a photo), so the fix
+               is to move the BACKGROUND lighter and leave the artwork alone.
+               The site logo already does the equivalent via an asset swap in
+               Header.astro; this is the CMS-supplied case, where we cannot ask
+               for a second file. */
+            <li class="dark:rounded-lg dark:bg-white/90 dark:px-3 dark:py-2">
               {l.url ? (
                 <a href={l.url} target="_blank" rel="noopener" title={l.name}>
                   {img}

@@ -44,7 +44,12 @@ const [fallbackCover] = cover?.asset ? [] : await photosFor(`news-cover-${post.s
 <article
   class="wcp-paper-card group relative flex flex-col overflow-hidden rounded-2xl border border-border shadow-sm transition-shadow hover:shadow-md"
 >
-  <a href={href} class="flex h-full flex-col focus:outline-none">
+  {
+    /* No focus:outline-none: this link had NO focus indicator at all in either
+      theme, because the outline was suppressed here and no focus-within ring
+      was ever added to the card. The global :focus-visible ring applies now. */
+  }
+  <a href={href} class="flex h-full flex-col">
     <div class="relative aspect-[16/9] overflow-hidden bg-grey dark:bg-heading/20">
       {
         cover?.asset ? (

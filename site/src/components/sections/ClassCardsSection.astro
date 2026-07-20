@@ -3,7 +3,14 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ClassCard from '@/components/ClassCard.astro';
 import { titleIdFor, eyebrowTone, bandSize, slugHref, type SectionData } from './section-helpers';
-import { getAllClassCards } from '@/lib/cms';
+import { getAllClassCards, cmsFetch } from '@/lib/cms';
+import { FEE_SCHEDULE_QUERY } from '@/lib/queries';
+import { annualTuition, formatMoney } from '@/lib/tuition';
+
+interface FeeSchedule {
+  registrationFee?: string;
+  participationFee?: string;
+}
 
 interface ClassItem {
   name: string;
@@ -18,8 +25,13 @@ interface ClassItem {
 interface Props {
   section: SectionData;
   linkBase?: string;
+  /** Public pages only (SectionRenderer sets it from pageSlug). Gates the fee
+      breakdown AND the Sanity read behind it: this section also renders inside
+      the SSR Family Hub, where a per-request external fetch violates the hub
+      speed contract in CLAUDE.md. */
+  showFees?: boolean;
 }
-const { section, linkBase = '' } = Astro.props;
+const { section, linkBase = '', showFees = false } = Astro.props;
 const titleId = titleIdFor(section);
 // A synthetic doctrine section (page-doctrine.ts) carries `pullAll` instead of
 // stored refs: fetch every class in Studio order at build time (same read the
@@ -34,6 +46,40 @@ const cols =
 // AM and PM Pre-K classes share the one /classes/pre-k page.
 const pageSlugFor = (slug?: string) =>
   slug === 'pre-k-am' || slug === 'pre-k-pm' ? 'pre-k' : slug;
+
+// ---------------------------------------------------------------------------
+// The real cost of a year (2026-07-19)
+// ---------------------------------------------------------------------------
+// The cards showed "$70 /mo" and a student fee, so a family comparing schools
+// saw a monthly figure and then met $200 of upfront fees later. The old
+// Squarespace /tuition page published all of it, and "our tuition is public" is
+// one of the site's two proof lines, so the honest full picture belongs here.
+//
+// Every number is CMS-owned, none hardcoded: the annual figure is derived from
+// the class doc's monthly price (see src/lib/tuition.ts), and the two flat fees
+// come from the same `feeSchedule` document the /tuition page and the tuition
+// calculator already read. A Board price change updates all three surfaces at
+// once and they cannot drift apart.
+// Guarded by showFees so this read NEVER happens on an SSR hub request.
+// Empty-object fallback, not null: cmsFetch's fallback is typed as the payload,
+// and an empty schedule degrades gracefully — feesFor() simply omits any fee it
+// has no value for, so a Sanity outage costs a line on the card, never a crash.
+const fees = showFees ? await cmsFetch<FeeSchedule>(FEE_SCHEDULE_QUERY, {}, {}) : {};
+const registration = fees?.registrationFee;
+const deposit = fees?.participationFee;
+
+function feesFor(c: ClassItem): string[] {
+  if (!showFees) return c.studentFee ? [`Student fee ${c.studentFee}`] : [];
+  const annual = annualTuition(c.monthly);
+  return [
+    annual > 0 ? `${formatMoney(annual)} for the school year` : '',
+    c.studentFee ? `Student fee ${c.studentFee}` : '',
+    registration ? `Registration ${registration}` : '',
+    // Worth saying plainly: this one comes back, which makes the upfront number
+    // read very differently to a family doing the maths.
+    deposit ? `Deposit ${deposit}, returned after your co-op hours` : '',
+  ].filter(Boolean);
+}
 ---
 
 <Section bg={section.background} seam={section.seam} size={bandSize(section)} labelledby={titleId}>
@@ -60,7 +106,7 @@ const pageSlugFor = (slug?: string) =>
           cadence="/mo"
           schedule={[c.days, c.time].filter(Boolean).join(' · ')}
           age={c.age}
-          features={[c.studentFee ? `Student fee ${c.studentFee}` : ''].filter(Boolean)}
+          features={feesFor(c)}
           href={c.slug ? slugHref(`classes/${pageSlugFor(c.slug)}`, linkBase) : undefined}
           ctaLabel={`See the ${c.name} class`}
           availabilitySlug={c.slug}

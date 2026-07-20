@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { HUB_SESSION_KEY, isFamilyAuthed } from './lib/hub-auth';
 
 // =============================================================================
 // Family Hub gate
@@ -9,30 +10,28 @@ import { defineMiddleware } from 'astro:middleware';
 // See docs/REDIRECTS.md. Nothing to do here.)
 // =============================================================================
 // Everything under /family-hub is for enrolled families only. A visitor must
-// have signed in (shared password → session flag) to see any of it; otherwise
-// they are bounced to the sign-in page. The login page itself is the one
-// public exception. The sign-in/out handlers live at /api/hub-* (outside this
-// prefix, so they are never gated).
+// have signed in (shared password → session fingerprint) to see any of it;
+// otherwise they are bounced to the sign-in page. The login page itself is the
+// one public exception. The sign-in/out handlers live at /api/hub-* (outside
+// this prefix, so they are never gated).
 //
 // Middleware only runs for on-demand (prerender=false) routes at request time.
 // Every /family-hub page is prerender=false for exactly this reason — so the
 // gate actually runs. Prerendered marketing pages skip this check (inHub=false)
 // and never touch the session.
+//
+// THIS IS THE ONLY GATE. No hub page or endpoint does its own auth check, so
+// every hub route depends on this file. Two consequences worth remembering:
+//   - A new hub surface is protected the moment it lives under /family-hub and
+//     sets prerender=false. Miss either and it is public.
+//   - There is no defence in depth here. Do not add a bypass flag. This file
+//     shipped with a `HUB_OPEN = true` preview switch that was never flipped
+//     back, which left the family directory, the children's photo wall and the
+//     health page open to the internet (found and closed 2026-07-19).
 // =============================================================================
 
 const HUB_PREFIX = '/family-hub';
 const PUBLIC_HUB_PATHS = new Set(['/family-hub/login']);
-
-// =============================================================================
-// TEMPORARY — hub gate is OPEN for private preview.
-// =============================================================================
-// The site is not public yet and there is NO real family data in Sanity, so the
-// hub is left ungated so it can be previewed without a password. Flip this back
-// to `false` to re-enable the gate BEFORE the site goes public OR before ANY
-// real family PII (the directory, health info) is entered in the Studio. This
-// one line is the only thing to change; the gate logic below is untouched.
-// =============================================================================
-const HUB_OPEN = true;
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname.replace(/\/+$/, '') || '/';
@@ -43,9 +42,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // the same check. Revisit if a PUBLIC page ever gains a server island.
   const isServerIsland = path.startsWith('/_server-islands/');
 
-  if (!HUB_OPEN && (inHub || isServerIsland) && !PUBLIC_HUB_PATHS.has(path)) {
-    const authed = await context.session?.get('familyAuthed');
-    if (!authed) {
+  if ((inHub || isServerIsland) && !PUBLIC_HUB_PATHS.has(path)) {
+    // Imported lazily, inside the hub branch: `output: 'static'` means this
+    // middleware also runs at BUILD time for prerendered marketing pages, and
+    // those must never try to resolve a Worker-only virtual module.
+    const { env } = await import('cloudflare:workers');
+    const stored = await context.session?.get(HUB_SESSION_KEY);
+
+    if (!(await isFamilyAuthed(stored, env.FAMILY_HUB_PASSWORD))) {
       // An island fetch can't follow a login redirect — just refuse it.
       if (isServerIsland) return new Response('Unauthorized', { status: 401 });
       // Remember where they were headed so we can return them after sign-in.

@@ -17,7 +17,15 @@ export default defineConfig({
   // The hub specs need the SSR /family-hub routes, which don't exist in this
   // static dist/client serve — they have their own config
   // (playwright.hub.config.ts).
-  testIgnore: ['hub-shell.spec.ts', 'hub-home.spec.ts', 'hub-sections.spec.ts'],
+  //
+  // This is a PATTERN, not a list of filenames, on purpose. It used to name the
+  // three hub specs explicitly, and when tests/hub-gate.spec.ts was added
+  // (2026-07-19) it fell straight through the gap: 35 gate assertions ran here
+  // against a static server with no /family-hub routes and still reported green.
+  // A filename allowlist fails OPEN, which is the wrong direction for a suite
+  // whose whole job is catching things. Any tests/hub-*.ts file is the hub
+  // config's business now.
+  testIgnore: /hub-.*\.(spec|setup)\.ts$/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

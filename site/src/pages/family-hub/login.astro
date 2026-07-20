@@ -9,16 +9,25 @@
    ============================================================================ */
 export const prerender = false;
 
+import { env } from 'cloudflare:workers';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { HUB_SESSION_KEY, isFamilyAuthed } from '@/lib/hub-auth';
 
 // Already signed in? Skip the form.
+//
+// This MUST use the same fingerprint check as the middleware, not a plain
+// truthiness test on the session value. After the board rotates the password a
+// stale fingerprint is still a non-empty string: "truthy" would send the family
+// to /family-hub, the middleware would bounce them straight back here, and they
+// would be stuck in a redirect loop instead of being asked for the new password.
 const to = Astro.url.searchParams.get('to');
 const safeTo = to && to.startsWith('/family-hub') ? to : '/family-hub';
-if (await Astro.session?.get('familyAuthed')) {
+const stored = await Astro.session?.get(HUB_SESSION_KEY);
+if (await isFamilyAuthed(stored, env.FAMILY_HUB_PASSWORD)) {
   return Astro.redirect(safeTo);
 }
 const hasError = Astro.url.searchParams.get('error') === '1';

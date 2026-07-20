@@ -45,8 +45,11 @@ Nothing here is needed for workers.dev preview deploys — this is for the real 
 
 ## 4. The gate & secrets
 
-- [ ] `HUB_OPEN = false` in `src/middleware.ts` (the preview bypass MUST be off before
-      real family PII goes in), then verify /family-hub redirects to login.
+- [x] **Gate closed 2026-07-19.** The `HUB_OPEN` preview bypass is gone from
+      `src/middleware.ts` entirely — deleted rather than set to `false`, so it cannot be
+      flipped back by accident. `tests/hub-gate.spec.ts` now asserts every hub page, API
+      and server island refuses an anonymous request; run `npm run test:hub` to re-verify.
+      **This needs a deploy to take effect in production.**
 - [ ] `FAMILY_HUB_PASSWORD` secret set in the production Worker (`wrangler secret put`).
 - [ ] `SANITY_TOKEN` secret present in the production Worker.
 - [ ] Rotate the shared hub password if the cutover coincides with a new school year.

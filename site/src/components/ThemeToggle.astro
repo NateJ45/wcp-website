@@ -29,11 +29,23 @@ const toneClass =
     : 'text-heading hover:bg-navy/8 dark:hover:bg-heading/10';
 ---
 
+{
+  /* aria-label is a STABLE accessible name. It used to swap between "Switch to
+     dark mode" and "Switch to light mode" while aria-pressed ALSO flipped, so a
+     screen reader announced the state change twice, once via the name and once
+     via the pressed state. A toggle button keeps one name and lets aria-pressed
+     carry the state.
+
+     aria-pressed="false" is the correct default (the site is light unless a
+     visitor has chosen otherwise); theme.ts corrects it on load for a returning
+     dark-mode visitor, and globals.css hides this button entirely when JS is
+     off, where it would neither work nor be able to correct itself. */
+}
 <button
   type="button"
   data-theme-toggle
   aria-pressed="false"
-  aria-label="Switch to dark mode"
+  aria-label="Dark mode"
   class={cn(
     // h-10 visual + 44px hit area (after:-inset-0.5) — sits beside other 40px
     // buttons in the hub phone strip; see HubTopBar.

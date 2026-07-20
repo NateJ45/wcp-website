@@ -42,13 +42,18 @@ const rows = (section.rows as Row[] | undefined) ?? [];
     {
       rows.map((r, i) => (
         <div class="grid items-center gap-8 md:grid-cols-2" data-reveal>
+          {/* The photo as a physical print (white frame + tilt), matching the
+              hero's framed film. The tilt alternates per row via an inline
+              custom property rather than nth-of-type, which would give every
+              row the same angle here (this wrapper is the only div of its type
+              in its row). The tilt sits on THIS element and data-reveal on the
+              row above it, because reveal animates transform and would cancel a
+              resting rotate() on the same node. */}
           <div
-            class={cn(
-              'overflow-hidden rounded-[var(--radius)] shadow-sm',
-              i % 2 === 1 && 'md:order-2',
-            )}
+            class={cn('wcp-photo-print', i % 2 === 1 && 'md:order-2')}
+            style={`--print-tilt: ${i % 2 === 0 ? '-1.2deg' : '1deg'}`}
           >
-            <div class="aspect-[4/3]">
+            <div class="aspect-[4/3] overflow-hidden">
               <SanityImage
                 source={r.image as never}
                 alt={r.alt}

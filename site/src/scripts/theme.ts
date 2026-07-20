@@ -20,8 +20,11 @@ function setThemeClass(dark: boolean) {
   document.documentElement.classList.toggle('dark', dark);
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
   document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+    // ONLY aria-pressed. This used to rewrite aria-label too, so activating the
+    // toggle changed the button's accessible NAME and its pressed STATE at the
+    // same time and screen readers announced the change twice. The name is now
+    // a constant "Dark mode" set in the markup.
     btn.setAttribute('aria-pressed', String(dark));
-    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
   });
 }
 

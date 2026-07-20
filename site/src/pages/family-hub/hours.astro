@@ -25,6 +25,7 @@ import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { COOP_HOURS_META_QUERY, COOP_HOURS_FOR_FAMILY_QUERY } from '@/lib/queries';
 import { HOURS_CATEGORIES, categoryLabel, summarizeHours } from '@/lib/coop-hours';
+import { FIELD_CLASS_COMPACT } from '@/lib/field-classes';
 
 interface Entry {
   _id: string;
@@ -78,8 +79,7 @@ const fmtDate = (iso?: string) =>
       })
     : '';
 
-const inputClass =
-  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+const inputClass = FIELD_CLASS_COMPACT;
 ---
 
 <HubShell title="My Co-op Hours" bare pageTitle="My Co-op Hours — WCP Family Hub">

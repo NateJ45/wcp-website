@@ -87,7 +87,12 @@ export const footerNav: NavGroup[] = [
       { label: 'Safety & Wellness', href: '/safety' },
       { label: 'What Families Say', href: '/reviews' },
       { label: 'FAQ', href: '/faq' },
-      { label: 'News', href: '/news' },
+      // News is deliberately unlinked (Nathan, 2026-07-19): two posts is not a
+      // news habit yet. /news, the article pages and /news/rss.xml all still
+      // work and are still in the sitemap, so nothing 404s and no shared link
+      // breaks — restoring it is uncommenting this line. The home-page teaser
+      // is hidden alongside it via SECTION_DROP.home in src/lib/page-doctrine.ts.
+      // { label: 'News', href: '/news' },
       { label: 'Events', href: '/events' },
     ],
   },

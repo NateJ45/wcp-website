@@ -131,7 +131,7 @@ const intro =
               )}
               <a
                 href={linkTo({ sort: sort === 'oldest' ? null : 'oldest' })}
-                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:bg-surface"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:border-white/20 dark:bg-surface"
                 aria-label={`Sorted ${sort === 'oldest' ? 'oldest' : 'newest'} first; switch order`}
               >
                 {sort === 'oldest' ? 'Oldest first' : 'Newest first'}
@@ -193,7 +193,7 @@ const intro =
                   <a
                     href={linkTo({ page: page - 1 })}
                     rel="prev"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:bg-surface"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:border-white/20 dark:bg-surface"
                   >
                     <Icon name="arrow-right" class="h-4 w-4 rotate-180" aria-hidden="true" />
                     Previous
@@ -211,7 +211,7 @@ const intro =
                   <a
                     href={linkTo({ page: page + 1 })}
                     rel="next"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:bg-surface"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-heading transition-colors hover:border-navy/40 dark:border-white/20 dark:bg-surface"
                   >
                     Next
                     <Icon name="arrow-right" class="h-4 w-4" aria-hidden="true" />

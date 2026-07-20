@@ -105,6 +105,14 @@ const currentPath = Astro.url.pathname;
     <!-- viewport-fit=cover lets full-bleed sections run into a phone's notch;
          .wcp-container adds safe-area padding so content never hides under it. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    {
+      /* Belt-and-braces alongside the `color-scheme` declaration in
+        globals.css. That rule is render-blocking and does the real work, but
+        the meta tag is available during head parsing, BEFORE the stylesheet is
+        fetched, so the UA knows the page supports both schemes a moment
+        earlier. Keep both. */
+    }
+    <meta name="color-scheme" content="light dark" />
     <title>{title}</title>
     <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />

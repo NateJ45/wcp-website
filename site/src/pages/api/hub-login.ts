@@ -4,17 +4,9 @@ import type { APIRoute } from 'astro';
 // In `astro dev` this is populated from .dev.vars; in prod from the deployed
 // secret (`wrangler secret put FAMILY_HUB_PASSWORD`).
 import { env } from 'cloudflare:workers';
+import { HUB_SESSION_KEY, passwordFingerprint, safeEqual } from '@/lib/hub-auth';
 
 export const prerender = false;
-
-// Constant-time string compare — avoids leaking the password length/prefix via
-// timing. (Low-stakes shared gate, but cheap to do right.)
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return mismatch === 0;
-}
 
 // Only ever redirect to an in-hub path — never an attacker-supplied URL.
 function safeReturnTo(to: string | null): string {
@@ -32,7 +24,10 @@ export const POST: APIRoute = async (context) => {
   const expected = (env.FAMILY_HUB_PASSWORD ?? '').trim();
 
   if (expected && safeEqual(password, expected)) {
-    context.session?.set('familyAuthed', true);
+    // Store a fingerprint of the password, not a `true` flag: rotating the
+    // secret then invalidates every existing session automatically. See
+    // src/lib/hub-auth.ts for why.
+    context.session?.set(HUB_SESSION_KEY, await passwordFingerprint(expected));
     return context.redirect(to);
   }
 

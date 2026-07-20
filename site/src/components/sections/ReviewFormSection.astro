@@ -9,6 +9,7 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { FIELD_CLASS } from '@/lib/field-classes';
 
 const { section } = Astro.props as { section: SectionData };
 const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
@@ -16,8 +17,7 @@ const titleId = titleIdFor(section);
 const buttonLabel = (section.buttonLabel as string) ?? 'Share your review';
 const formId = `review-${section._key}`;
 
-const field =
-  'mt-1 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-ink shadow-sm focus:border-navy focus:ring-2 focus:ring-navy/30 focus:outline-none dark:bg-surface';
+const field = FIELD_CLASS;
 const labelCls = 'block text-sm font-semibold text-heading';
 ---
 

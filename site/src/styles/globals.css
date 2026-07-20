@@ -311,9 +311,15 @@
      A whisper-faint film grain over the whole page so flat color fills read
      as *paper* rather than #hex — a real perceived-quality lift that stays
      subconscious (if you consciously notice it, it's too strong). A single
-     inlined SVG fractal-noise tile, fixed and non-interactive, blended so it
-     darkens lights and lifts darks a hair. Purely decorative. Cheap: one
-     small repeating tile, no JS, no animation. */
+     inlined SVG fractal-noise tile, fixed and non-interactive. Purely
+     decorative. Cheap: one small repeating tile, no JS, no animation.
+
+     `multiply` can ONLY darken, so on the near-black dark canvas this tile did
+     essentially nothing and dark mode lost the paper feel entirely. (The
+     comment here used to claim it "darkens lights and lifts darks a hair",
+     which multiply cannot do — corrected 2026-07-19.) Dark mode gets
+     `soft-light` below, which lightens and darkens either side of mid-grey and
+     is what the original description was actually reaching for. */
   body::before {
     content: '';
     position: fixed;
@@ -324,6 +330,22 @@
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 140px 140px;
+  }
+  /* See the note above: multiply is a no-op on a dark canvas. Slightly higher
+     opacity because soft-light is a gentler operator at the same value. */
+  .dark body::before {
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+  }
+
+  /* The theme toggle is a JS-only control: with no JS it cannot switch the
+     theme, and it cannot correct its own aria-pressed either (the anti-flash
+     script runs in <head>, before this button exists, so a returning dark-mode
+     visitor would be shown a button permanently claiming "not pressed"). Hide
+     it rather than expose a dead control that lies about its state. `.js` is
+     set on <html> by BaseLayout. */
+  html:not(.js) [data-theme-toggle] {
+    display: none;
   }
 
   /* Headings use Captain Comic and default to navy (9.75:1 on white — safe).
@@ -404,7 +426,12 @@
   /* Email addresses (and other long, space-free strings) are the #1 cause of
      horizontal overflow at narrow widths. Let every mailto link wrap anywhere
      so it can never force a scrollbar at 320px — WCAG 1.4.10 Reflow. One rule,
-     site-wide, instead of per-link classes that are easy to forget. */
+     site-wide, instead of per-link classes that are easy to forget.
+     Trade-off to know: `anywhere` also collapses min-content to a single
+     character, so a mailto inside an auto/fr-sized track never makes that track
+     wide enough for itself and breaks mid-word instead. Where the container CAN
+     grow, override to `break-word` (keeps full min-content, still breaks as a
+     last resort) — see the footer address block. */
   a[href^='mailto:'] {
     overflow-wrap: anywhere;
   }
@@ -663,7 +690,11 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .wcp-cal-day:focus-visible {
-  outline: 2px solid var(--color-navy);
+  /* sky-ink, not navy: navy is deliberately never overridden in .dark (it
+     drives the theme-stable navy bands), so a navy focus outline measured
+     1.59:1 on the dark surface. sky-ink IS theme-reactive and clears the 3:1
+     that SC 1.4.11 requires of a focus indicator in both themes. */
+  outline: 2px solid var(--color-sky-ink);
   outline-offset: -2px;
 }
 /* Clickable agenda card — the card itself already lifts on hover, so the
@@ -672,7 +703,11 @@
   cursor: pointer;
 }
 .wcp-card-trigger:focus-visible {
-  outline: 2px solid var(--color-navy);
+  /* sky-ink, not navy: navy is deliberately never overridden in .dark (it
+     drives the theme-stable navy bands), so a navy focus outline measured
+     1.59:1 on the dark surface. sky-ink IS theme-reactive and clears the 3:1
+     that SC 1.4.11 requires of a focus indicator in both themes. */
+  outline: 2px solid var(--color-sky-ink);
   outline-offset: 2px;
 }
 
@@ -1417,8 +1452,229 @@ li:nth-child(4n + 4) > .hub-note {
   background-color: #fff;
   background-image: var(--wcp-grain);
 }
+/* Paper cards are RAISED objects (they carry a shadow and lift on hover), so in
+   dark mode they take the raised surface — the shadow alone does nothing here.
+   Pairing the surface step with the shadow is the Atlassian rule; this is that
+   pairing applied to the public card primitive. */
 .dark .wcp-paper-card {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-raised);
+}
+
+/* -- Paper in a dim room ----------------------------------------------------
+   The physical-object doctrine says prints and parent notes stay LIGHT paper in
+   both themes, and that stands. But pure #fff against the #0d1219 canvas is
+   18.5:1 — it does not read as paper, it reads as a lightbulb, and Apple's HIG
+   calls out exactly this ("consider slightly darkening the image to prevent the
+   background from glowing in the surrounding Dark Mode context").
+
+   So the paper dims ~6% in dark mode. It is still unambiguously light paper,
+   just lit by a dimmer room, which is the honest physical reading of the same
+   object. Only the LARGE surfaces are dimmed: the small warm-tinted notes
+   (chooser cards, hero note) are neither big enough to glare nor white enough,
+   and their inks sit closer to the AA floor.
+
+   Every fixed ink on these surfaces is re-measured against the dimmed values in
+   src/lib/theme-tokens.test.ts, so this cannot quietly drop text under AA. ----*/
+.dark .wcp-print,
+.dark .wcp-photo-print {
+  background: #f0eee8;
+}
+.dark .wcp-note-paper {
+  background-color: #f0eee8;
+}
+
+/* -- Chooser cards: the home page's three self-segmentation paths ("just
+   looking / comparing / ready to visit") as taped paper instead of three ruled
+   rows that stopped at ~58% width and left the band looking unfinished.
+   (Nathan chose this over the ruled-row fix, 2026-07-19.)
+
+   These are a 3-up row, the shape the Act II grammar pushed cardGridSections
+   AWAY from — the difference that earns it back is that these are physical
+   objects, not icon cards: real paper, real tape, a capped tilt, no icon chips.
+   Keep it that way; the moment this grows an icon and a rounded border it
+   becomes the AI tell the grammar was written to kill.
+
+   PHYSICAL-OBJECT DOCTRINE: light paper in BOTH themes, so every ink inside is
+   a FIXED hex, never a theme token (the -ink trap: those flip to the bright
+   tier in dark mode and would fail on this pale paper). Measured on #fffdf7:
+   #01203a question 15.4:1, #166fa8 link 5.3:1. -------------------------------*/
+/* The tilt is split across TWO elements on purpose. The <li> carries only the
+   angle as a custom property; the <a> inside carries the paper and the actual
+   rotate(). That is because the reveal system animates `transform` on the
+   element holding data-reveal — putting both on the <li> meant reveal's
+   translateY overwrote the rotation outright, and every card rendered flat
+   (caught in the browser, 2026-07-19). Custom properties inherit, so the angle
+   still reaches the child. Anything else that needs a resting transform on a
+   revealed element has the same problem: separate the two elements. */
+.wcp-site-paper .wcp-chooser-slot {
+  --chooser-tilt: -1.2deg;
+}
+/* nth-of-type over the <li> siblings themselves. On a nested wrapper every card
+   would be the only element of its type in its parent, collapsing all three to
+   the same angle (the documented .wcp-print trap). */
+.wcp-site-paper .wcp-chooser-slot:nth-of-type(3n + 1) {
+  --chooser-tilt: -1.2deg;
+}
+.wcp-site-paper .wcp-chooser-slot:nth-of-type(3n + 2) {
+  --chooser-tilt: 0.9deg;
+}
+.wcp-site-paper .wcp-chooser-slot:nth-of-type(3n + 3) {
+  --chooser-tilt: -0.4deg;
+}
+/* -- Content photos as physical prints ---------------------------------------
+   The hero's film sits in a taped print and the scrapbook strips do too, but
+   ordinary content photos (split-media rows, galleries, teacher headshots) were
+   plain rounded rectangles with a soft shadow — so the Construction Paper idea
+   visibly stopped at the hero (Nathan, 2026-07-19).
+
+   Deliberately a SEPARATE class from .wcp-print, scoped to the public body,
+   for two reasons:
+     1. splitMediaSection also renders inside the Family Hub (see
+        HubSectionedBody), and the hub is a different surface that keeps flat
+        imagery. .wcp-print is unscoped, so reusing it would have reached in.
+     2. Tilt comes from an inline --print-tilt at the call site instead of
+        .wcp-print's nth-of-type rotation. These photos are usually the only
+        element of their type inside their row, which collapses nth-of-type to
+        one angle for every photo on the page (the documented .wcp-print trap).
+
+   White paper in BOTH themes: a print is a physical object. -----------------*/
+.wcp-site-paper .wcp-photo-print {
+  --print-tilt: -1.2deg;
+  position: relative;
+  padding: 0.6rem 0.6rem 0.7rem;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(1, 32, 58, 0.14),
+    0 8px 18px rgba(1, 32, 58, 0.13);
+  transform: rotate(var(--print-tilt));
+}
+/* The caption is the frame's lower lip, so it sits on WHITE and must not use a
+   theme-reactive text token. --color-navy is safe here specifically because it
+   is one of the few tokens deliberately never overridden in .dark (it drives
+   the theme-stable navy bands), so it stays 8.6:1 on white in both themes.
+   An -ink token here would flip to the bright tier in dark mode and fail. */
+.wcp-site-paper .wcp-photo-print figcaption {
+  padding-top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-navy);
+  text-align: center;
+}
+/* Hover-straighten, one of the four Act II moves. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-site-paper .wcp-photo-print {
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .wcp-site-paper .wcp-photo-print:hover,
+  .wcp-site-paper .wcp-photo-print:focus-within {
+    --print-tilt: 0deg;
+  }
+}
+
+/* -- Closing CTA band: the navy closer was a flat navy slab, the one large
+   surface on the page carrying none of the construction-paper texture the hero
+   drench and the hub canvas both have (Nathan, 2026-07-19). It now takes the
+   same grain + hand-drawn doodle tile.
+
+   The WHITE-stroke doodle variant, not the navy one: this band is a
+   theme-stable dark island in both themes, so it always needs the light tile.
+   Both layers sit around 5% opacity, far below the text floor, so the 9.75:1
+   white-on-navy contrast is unchanged and the a11y gate holds. ---------------*/
+/* Two selectors because the closing CTA is EXEMPT from the doodle-alternation
+   rule further down this file. That rule ([data-nodoodle] > section.bg-navy)
+   strips the tile from every other doodle-carrying band so the tile never
+   slices its icons where look-alike bands meet — and it was what left the home
+   closer as a bare navy slab. It out-specifies a plain class, hence the
+   explicit second selector here rather than a bare .wcp-cta-doodled.
+
+   The closer earns the exemption: it is the last thing on the page and the one
+   navy band a visitor reads as a destination rather than a divider. If a
+   neighbouring band ever ends up doodled too, drop the tile from THAT band
+   rather than from this one. */
+.wcp-site-paper section.bg-navy.wcp-cta-doodled,
+.wcp-site-paper [data-nodoodle] > section.bg-navy.wcp-cta-doodled {
+  background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+}
+
+/* -- Hero note: the school's current notice as a small taped note inside the
+   hero, replacing the cream strip that used to sit below it. Light paper in
+   BOTH themes with fixed inks (physical-object doctrine).
+
+   In normal flow, not absolutely positioned: the home hero is the FRAMED video
+   variant, which already carries a taped print, and a corner-pinned note either
+   collided with it or with the headline at some width. Sitting under the CTAs
+   it still reads as a pinned note, and it can never overlap anything. --------*/
+.wcp-site-paper .wcp-hero-note {
+  position: relative;
+  width: fit-content;
+  max-width: 22rem;
+  margin: 1.5rem auto 0;
+  padding: 0.9rem 1.1rem 0.85rem;
+  background-color: #fff8e1;
+  background-image: var(--wcp-grain);
+  box-shadow:
+    0 1px 2px rgba(1, 32, 58, 0.2),
+    0 10px 22px rgba(1, 32, 58, 0.24);
+  color: #3d4b57;
+  text-align: center;
+  transform: rotate(-1.6deg);
+}
+.wcp-site-paper .wcp-hero-note-text {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: #01203a;
+}
+.wcp-site-paper .wcp-hero-note-link {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a34a00;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-site-paper .wcp-hero-note {
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .wcp-site-paper .wcp-hero-note:hover,
+  .wcp-site-paper .wcp-hero-note:focus-within {
+    transform: rotate(0deg);
+  }
+}
+
+.wcp-site-paper .wcp-chooser-card {
+  position: relative;
+  display: block;
+  height: 100%;
+  padding: 1.5rem 1.35rem 1.4rem;
+  background-color: #fffdf7;
+  background-image: var(--wcp-grain);
+  box-shadow:
+    0 1px 2px rgba(1, 32, 58, 0.14),
+    0 8px 18px rgba(1, 32, 58, 0.13);
+  color: #2f4258;
+  text-decoration: none;
+  transform: rotate(var(--chooser-tilt));
+}
+/* "Hover-straighten", one of the four Act II moves. Exponential ease-out only,
+   no spring. Reduced-motion users get a still, already-tilted card. */
+@media (prefers-reduced-motion: no-preference) {
+  .wcp-site-paper .wcp-chooser-card {
+    transition:
+      transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .wcp-site-paper .wcp-chooser-card:hover,
+  .wcp-site-paper .wcp-chooser-card:focus-visible {
+    /* Set on the card itself, which is where rotate() reads it — the value
+       inherited from .wcp-chooser-slot is only the resting angle. */
+    --chooser-tilt: 0deg;
+    box-shadow:
+      0 2px 4px rgba(1, 32, 58, 0.16),
+      0 14px 28px rgba(1, 32, 58, 0.16);
+  }
 }
 /* FeatureCard is shared with the hub (card-grid sections), so its paper grain
    is applied HERE, scoped to the public body, leaving hub card grids plain. The
@@ -1903,20 +2159,74 @@ li:nth-child(4n + 4) > .hub-note {
   }
 }
 
-/* -- Schedule timelines: two ruled columns on wide screens (a 7-step single
-   column left ~55% of a 1440 band empty on every class page). Sequence stays
-   readable: steps run down the first column, then the second. -------------- */
+/* -- Schedule timelines ------------------------------------------------------
+   This was `columns: 2` on wide screens, to stop a 7-step single column leaving
+   ~55% of a 1440 band empty. It cost more than it bought: CSS multi-column
+   splits the list mid-flow, so the connector line stopped at the bottom of
+   column one and restarted at the top of column two, and the reading order went
+   ambiguous (down, or across?). A timeline whose line breaks is doing the
+   opposite of its job. Replaced 2026-07-19 with two layouts that each keep ONE
+   unbroken line; ScheduleTimeline.astro picks by step count.
+
+   Both are desktop-only; below 64rem every schedule is the plain stacked spine
+   the markup already describes. ------------------------------------------- */
 .wcp-site-paper [data-stype='scheduleSection'] ol {
   max-width: 42rem;
 }
+
 @media (min-width: 64rem) {
-  .wcp-site-paper [data-stype='scheduleSection'] ol {
-    max-width: 60rem;
-    columns: 2;
-    column-gap: 4.5rem;
+  /* RIBBON (<= 5 steps): the morning runs left to right on one horizontal
+     line. --steps comes from the component so the track count always matches
+     the content. */
+  .wcp-site-paper ol.wcp-schedule-ribbon {
+    --ribbon-gap: 1.5rem;
+    max-width: 72rem;
+    display: grid;
+    grid-template-columns: repeat(var(--steps, 5), minmax(0, 1fr));
+    gap: var(--ribbon-gap);
   }
-  .wcp-site-paper [data-stype='scheduleSection'] ol > li {
-    break-inside: avoid;
+  .wcp-site-paper ol.wcp-schedule-ribbon > li {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0;
+    text-align: center;
+  }
+  /* Chip loses its top nudge so its centre lands exactly on the line. */
+  .wcp-site-paper ol.wcp-schedule-ribbon .wcp-tl-chip {
+    margin-top: 0;
+  }
+  /* Re-aim the connector from vertical to horizontal: it now runs from THIS
+     chip's centre to the NEXT chip's centre. With left:50%, a right of
+     -(50% + gap) resolves to a width of one column plus one gap, which lands
+     the far end dead on the next chip. */
+  .wcp-site-paper ol.wcp-schedule-ribbon .wcp-tl-line {
+    top: 1.25rem;
+    right: calc(-50% - var(--ribbon-gap));
+    bottom: auto;
+    left: 50%;
+    width: auto;
+    height: 0.25rem;
+  }
+  .wcp-site-paper ol.wcp-schedule-ribbon .wcp-tl-body {
+    width: 100%;
+    flex: none;
+  }
+
+  /* SPINE (6+ steps): one vertical line, but the description sits BESIDE the
+     time and title instead of under them. That fills a wide band without a
+     second column, which is what the old two-column rule was really after. */
+  .wcp-site-paper ol.wcp-schedule-spine {
+    max-width: 62rem;
+  }
+  .wcp-site-paper ol.wcp-schedule-spine .wcp-tl-body {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 0 2rem;
+    align-items: baseline;
+  }
+  .wcp-site-paper ol.wcp-schedule-spine .wcp-tl-desc {
+    margin-top: 0;
   }
 }
 
@@ -2485,8 +2795,10 @@ li:nth-child(3n + 3) .wcp-testi {
 /* 6. Semantic tokens ---------------------------------------------------------
    These map shadcn-style semantic names (--background, --primary, ...) onto
    brand values, so shadcn/ui primitives added in Phase 1 pick up WCP colors
-   automatically. Kept light-only for now; the structure supports adding a
-   .dark block later without touching components.
+   automatically. The `.dark` overrides for these live further down this file
+   (search `.dark {`) and have done since dark mode shipped — this comment used
+   to say they were "light-only for now", which contradicted the code about a
+   hundred lines below it. Corrected 2026-07-19.
    ---------------------------------------------------------------------------- */
 @theme inline {
   --color-background: var(--background);
@@ -2623,7 +2935,35 @@ li:nth-child(3n + 3) .wcp-testi {
   --muted: #161f2c;
   --muted-foreground: #99a3b3;
   --border: rgba(255, 255, 255, 0.2);
-  --input: rgba(255, 255, 255, 0.2);
+  /* Raised surface, one tonal step above --color-surface.
+     ------------------------------------------------------------------
+     Dark mode had no elevation language at all. All 107 `shadow-*` utilities
+     are black-based, and a black shadow cannot lift a card off an already-dark
+     page, so every raised card sat visually flat — card-over-band measured
+     1.07:1 against 1.14:1 in light mode. Material and Atlassian both answer this
+     the same way: in dark themes elevation is carried by a LIGHTER SURFACE, with
+     the shadow as a secondary cue rather than the whole story.
+
+     This is deliberately a NEW token rather than a lift of --color-surface.
+     Raising --color-surface itself was tried once and reverted, because
+     `.hub-note--postit` mixes amber INTO it (see the color-mix above) and the
+     lifted composite pushed muted text under AA. Adding a separate step leaves
+     every existing surface — and therefore the postit — exactly where it was.
+     src/lib/theme-tokens.test.ts asserts both that this actually elevates and
+     that the postit still mixes against the UNRAISED token. */
+  --color-surface-raised: #232e3d;
+
+  /* --input is SEPARATE from --border on purpose, and higher.
+     A form field in dark mode has no fill change to distinguish it from the
+     card it sits on, so its border is the only thing identifying the control —
+     that makes it a UI component under WCAG 2.2 SC 1.4.11, which wants 3:1.
+     At 0.2 it composited to #49515a over the #1b2531 surface: 1.92:1. At 0.4 it
+     composites to #767c83: 3.67:1. Measured by src/lib/theme-tokens.test.ts,
+     which fails if this drops back.
+     --border (decorative card edges) is deliberately left at 0.2 for now:
+     raising it changes the elevation language of every card on the site, which
+     is design work, not an accessibility fix. */
+  --input: rgba(255, 255, 255, 0.4);
   --ring: #40aaed;
   --destructive: #ff6b6b; /* 6.8:1 on the dark surface */
 }

@@ -56,7 +56,13 @@ export const SECTION_DROP: Record<string, string[]> = {
   // ($70/mo etc.) and the heritage strip now owns that slot (photo-moments).
   // hp-visit goes too: VisitBlock (photo-moments 'visit') replaces it so the
   // visit details get their photo back — a proseSection has no image slot.
-  home: ['type:statBandSection', 'hp-visit'],
+  // k20 (Latest from WCP) is OFF the home page by Nathan's call 2026-07-19:
+  // two posts is not a news habit yet, and a thin blog teaser between the
+  // testimonials and the Instagram wall reads as an unfinished section. The
+  // /news routes, the post docs and the RSS feed all stay live and reachable;
+  // only the home teaser and the footer nav entry are hidden, so restoring it
+  // is deleting this key. Also dropped from the footer nav in src/data/nav.ts.
+  home: ['type:statBandSection', 'hp-visit', 'k20'],
   // /why-wcp: the stat band said "$70 tuition from" two scrolls above the
   // compare table's "$175-$200" for a 4-year-old (reads as bait), and "100%
   // Ohio licensed" is a binary dressed as a metric. The compare table is the
@@ -90,6 +96,28 @@ export const SECTION_HEADER_OVERRIDES: Record<
       title: 'Start your enrollment',
       lead: 'Send this and we will reach out to set up your tour. You get the enrollment packet there, and we walk you through the rest.',
     },
+  },
+};
+
+/** Action href overrides, by page → section `_key` → ACTION INDEX (STOPGAP
+ *  content-in-code; PENDING.md row).
+ *
+ *  Indexed rather than matched on the button label, because stega encodes every
+ *  display string in the /preview path: `label === 'Schedule a Tour'` is false
+ *  there (see the stega gotcha in CLAUDE.md), so a label-keyed override would
+ *  silently stop applying inside the Studio preview while working in prod. */
+export const SECTION_ACTION_HREFS: Record<string, Record<string, Record<number, string>>> = {
+  home: {
+    // The home closer's SECOND button says "Schedule a Tour" but was stored
+    // pointing at /enroll, so both buttons in the band went to the same page
+    // and the tour ask — the site's primary conversion doctrine — was
+    // unreachable from the band built to make it.
+    //
+    // Only this one was wrong because PageHero SYNTHESIZES its tour action in
+    // code (PageHero.astro), so every hero was immune; CtaSection passes stored
+    // actions straight through. ChooserRows already hardcodes the right URL.
+    // patch-tour-links.mjs persists this into Sanity once the quota clears.
+    k15: { 1: '/virtual-tour#sec-pp-tour-form' },
   },
 };
 
@@ -127,6 +155,26 @@ export const SECTION_APPEND: Record<string, SectionData[]> = {
 /** Synthetic sections spliced in AFTER a named section (by _key), applied
  *  after drops/hoists so the anchor is the final order. */
 export const SECTION_INSERT_AFTER: Record<string, Record<string, SectionData[]>> = {
+  // /tuition: the interactive estimator sits directly under the published fee
+  // table. The tuitionCalculatorSection component already existed but was on NO
+  // page (verified against the built HTML) — it needs a Sanity page edit to
+  // place, which the quota freeze blocks, so it is injected here instead.
+  // It is config-only: every price comes from the Classes + Fee Schedule docs
+  // at build time, so this synthetic section carries no numbers of its own.
+  tuition: {
+    k53: [
+      {
+        _type: 'tuitionCalculatorSection',
+        _key: 'code-tuition-calc',
+        background: 'grey',
+        header: {
+          title: 'What will your year cost?',
+          lead: 'Tick the class you are considering. Every fee is in here, including the deposit you get back.',
+        },
+        note: 'An estimate for planning. Tuition is billed monthly, September through May.',
+      } as unknown as SectionData,
+    ],
+  },
   // /a-day-at-wcp: the four near-identical schedule timelines are replaced by
   // ONE compact answer — the drenched class cards (days, hours, price, link
   // per class), pulled from the class docs at build time. The storyTimeline

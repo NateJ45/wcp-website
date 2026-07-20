@@ -1,10 +1,25 @@
 ---
 /* ============================================================================
-   ScheduleTimeline — a daily schedule as a vertical timeline
+   ScheduleTimeline — a daily schedule as a timeline
    ============================================================================
-   Time + activity title + description, connected by a vertical line with dots.
-   Rendered as an ordered list (it IS a sequence). Decorative dots/line are
-   aria-hidden; the reading order is time -> title -> description.
+   Time + activity title + description, connected by a line with numbered
+   chips. Rendered as an ordered list (it IS a sequence). Decorative chips/line
+   are aria-hidden; the reading order is time -> title -> description.
+
+   TWO desktop layouts, chosen by length (see the CSS in globals.css). Both
+   keep ONE unbroken line, which the previous `columns: 2` did not: CSS
+   multi-column split the list mid-flow, so the connector stopped at the bottom
+   of column one and restarted at the top of column two, and "does step 3 follow
+   step 2 downward or across?" had no answer (Nathan, 2026-07-19).
+
+     - RIBBON (<= 5 steps, e.g. the home page): steps run left to right on one
+       horizontal line, reading as a morning unfolding. Uses the full band
+       instead of leaving half of it empty.
+     - SPINE (6+ steps, e.g. the class pages): one vertical line, but the
+       description sits BESIDE the time and title rather than under them, so a
+       7-step schedule still fills a wide band without a second column.
+
+   Both collapse to the plain stacked spine below 64rem.
    ============================================================================ */
 import { cn } from '@/lib/utils';
 
@@ -22,9 +37,21 @@ interface Props {
   class?: string;
 }
 const { entries, class: className } = Astro.props;
+
+// The threshold is about legible width, not taste: at the 72rem ribbon cap, six
+// steps still give each one ~12rem, but seven drops to ~10rem and the
+// descriptions turn into a column of single words.
+const ribbon = entries.length <= 5;
 ---
 
-<ol class={cn('relative mx-auto max-w-2xl', className)}>
+<ol
+  class={cn(
+    'relative mx-auto max-w-2xl',
+    ribbon ? 'wcp-schedule-ribbon' : 'wcp-schedule-spine',
+    className,
+  )}
+  style={`--steps: ${entries.length}`}
+>
   {
     entries.map((e, i) => (
       <li
@@ -32,39 +59,47 @@ const { entries, class: className } = Astro.props;
         data-reveal
         style={`--reveal-delay: ${i * 70}ms`}
       >
-        {/* Connector line (behind the chips), hidden on the last item. */}
+        {/* Connector line (behind the chips), hidden on the last item. The
+            class is what the ribbon CSS re-aims from vertical to horizontal —
+            don't match it positionally, the last <li> has no line and the chip
+            would become :first-child. */}
         {i < entries.length - 1 && (
-          <span class="absolute top-10 bottom-0 left-[19px] w-1 bg-sky/50" aria-hidden="true" />
+          <span
+            class="wcp-tl-line absolute top-10 bottom-0 left-[19px] w-1 bg-sky/50"
+            aria-hidden="true"
+          />
         )}
         {/* Numbered step chip (boldness pass 2026-07: the old site's chunky
             orange numbered circles). Fixed white numeral on the orange-ink
             fill (5.4:1, theme-stable); decorative because the list IS ordered
             for assistive tech already. */}
         <span
-          class="relative z-10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-white font-display text-base [color:#fff] shadow-[0_0_0_2px_var(--color-sky)] [background:#a85300]"
+          class="wcp-tl-chip relative z-10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-white font-display text-base [color:#fff] shadow-[0_0_0_2px_var(--color-sky)] [background:#a85300]"
           aria-hidden="true"
         >
           {i + 1}
         </span>
-        <div class="min-w-0 flex-1">
-          {e.timePm ? (
-            <p class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm font-bold">
-              <span class="text-orange-ink">
-                <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">AM</span>{' '}
-                {e.time}
-              </span>
-              <span class="text-sky-ink">
-                <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">PM</span>{' '}
-                {e.timePm}
-              </span>
-            </p>
-          ) : (
-            <p class="text-base font-extrabold text-sky-ink">{e.time}</p>
-          )}
-          {/* h3: these entries sit directly under the section's h2 header, so
-              h4 here would skip a level (fails axe/Lighthouse heading-order). */}
-          <h3 class="mt-0.5 text-lg text-heading">{e.title}</h3>
-          {e.desc && <p class="mt-1 leading-relaxed text-ink">{e.desc}</p>}
+        <div class="wcp-tl-body min-w-0 flex-1">
+          <div class="wcp-tl-head">
+            {e.timePm ? (
+              <p class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm font-bold">
+                <span class="text-orange-ink">
+                  <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">AM</span>{' '}
+                  {e.time}
+                </span>
+                <span class="text-sky-ink">
+                  <span class="text-[0.7rem] font-extrabold tracking-wide uppercase">PM</span>{' '}
+                  {e.timePm}
+                </span>
+              </p>
+            ) : (
+              <p class="text-base font-extrabold text-sky-ink">{e.time}</p>
+            )}
+            {/* h3: these entries sit directly under the section's h2 header, so
+                h4 here would skip a level (fails axe/Lighthouse heading-order). */}
+            <h3 class="mt-0.5 text-lg text-heading">{e.title}</h3>
+          </div>
+          {e.desc && <p class="wcp-tl-desc mt-1 leading-relaxed text-ink">{e.desc}</p>}
         </div>
       </li>
     ))
