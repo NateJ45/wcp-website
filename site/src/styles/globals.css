@@ -1233,13 +1233,65 @@ li:nth-child(4n + 4) > .hub-note {
      - grey + cream bands: paper grain.
      - cream bands: + faint navy doodles (the warm accent moments).
      - navy bands: + faint white doodles (matches the hub's navy chrome). */
-.wcp-site-paper section.bg-grey {
+/* The texture rides a MASKED PSEUDO-ELEMENT, not the section's own
+   background-image, so it fades out before it reaches the band's edges.
+   ---------------------------------------------------------------------------
+   Two problems, one cause (Nathan, 2026-07-20). A seam paints a FLAT band
+   colour, but a textured band is that colour PLUS ~5% white doodle strokes, so
+   the band edge is measurably lighter than the seam meant to continue it and
+   you see a step at the boundary. And separately, the doodle tile just stopped
+   dead at the top and bottom edges, slicing its icons mid-shape.
+
+   Fading the texture out over the last few rem fixes both at once: the icons
+   dissolve instead of being cut, and the band's edge resolves to exactly the
+   flat colour the seam is painting, so the seam becomes continuous.
+
+   The fade must be TALLER than the seam sweep it hides behind (h-8 = 2rem on
+   phones, sm:h-12 = 3rem above that), hence 4.5rem.
+
+   z-index:-1 + isolation is the same pattern .wcp-hub-emblem uses: the layer
+   sits above the band's background-color but below its content, and cannot
+   escape into an ancestor stacking context. */
+.wcp-site-paper {
+  --wcp-texture-fade: 4.5rem;
+}
+.wcp-site-paper section.bg-grey,
+.wcp-site-paper section.bg-cream,
+.wcp-site-paper section.bg-navy {
+  position: relative;
+  isolation: isolate;
+  background-image: none;
+}
+.wcp-site-paper section.bg-grey::before,
+.wcp-site-paper section.bg-cream::before,
+.wcp-site-paper section.bg-navy::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--wcp-texture-fade),
+    #000 calc(100% - var(--wcp-texture-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--wcp-texture-fade),
+    #000 calc(100% - var(--wcp-texture-fade)),
+    transparent 100%
+  );
+}
+.wcp-site-paper section.bg-grey::before {
   background-image: var(--wcp-grain);
 }
-.wcp-site-paper section.bg-cream {
+.wcp-site-paper section.bg-cream::before {
   background-image: var(--wcp-grain), var(--wcp-doodles);
 }
-.wcp-site-paper section.bg-navy {
+.wcp-site-paper section.bg-navy::before {
   background-image: var(--wcp-doodles-dark);
 }
 
@@ -1591,8 +1643,8 @@ li:nth-child(4n + 4) > .hub-note {
    navy band a visitor reads as a destination rather than a divider. If a
    neighbouring band ever ends up doodled too, drop the tile from THAT band
    rather than from this one. */
-.wcp-site-paper section.bg-navy.wcp-cta-doodled,
-.wcp-site-paper [data-nodoodle] > section.bg-navy.wcp-cta-doodled {
+.wcp-site-paper section.bg-navy.wcp-cta-doodled::before,
+.wcp-site-paper [data-nodoodle] > section.bg-navy.wcp-cta-doodled::before {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
@@ -1909,11 +1961,14 @@ li:nth-child(4n + 4) > .hub-note {
 /* -- Doodle alternation: among consecutive doodle-carrying bands the tile
    skips every other one (Nathan: doodles stay, but never on two neighbors —
    the tile slices its icons where look-alike bands meet). Cream keeps its
-   grain (uniform noise, cuts invisible); navy goes plain. ------------------- */
-.wcp-site-paper [data-nodoodle] > section.bg-navy {
+   grain (uniform noise, cuts invisible); navy goes plain.
+
+   Targets the ::before, since the texture moved off the section's own
+   background-image so it could be masked (see the band-texture block above). */
+.wcp-site-paper [data-nodoodle] > section.bg-navy::before {
   background-image: none;
 }
-.wcp-site-paper [data-nodoodle] > section.bg-cream {
+.wcp-site-paper [data-nodoodle] > section.bg-cream::before {
   background-image: var(--wcp-grain);
 }
 

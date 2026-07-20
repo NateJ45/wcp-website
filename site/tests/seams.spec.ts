@@ -74,6 +74,46 @@ test.describe('Footer seam continues the last band', () => {
   }
 });
 
+test.describe('Band texture fades before the band edge', () => {
+  // The colour checks above compare background-COLOUR, which is flat. They
+  // could not see the second half of the problem: a textured band paints its
+  // colour PLUS ~5% doodle strokes, so its edge is lighter than the flat colour
+  // the seam paints, and the tile visibly stopped dead at the boundary.
+  //
+  // The texture now rides a masked ::before that fades out over 4.5rem. This
+  // asserts that structurally — a band that carries texture must also carry the
+  // mask, and must NOT have gone back to painting texture on its own
+  // background, where it cannot be faded.
+  for (const route of routes) {
+    test(`${route} textured bands fade at their edges`, async ({ page }) => {
+      await page.goto(route, { waitUntil: 'load' });
+
+      const problems = await page.evaluate(() => {
+        const bad: string[] = [];
+        const bands = document.querySelectorAll<HTMLElement>(
+          'section.bg-navy, section.bg-cream, section.bg-grey',
+        );
+        for (const band of bands) {
+          const own = getComputedStyle(band).backgroundImage;
+          if (own.includes('url(')) {
+            bad.push(`${band.className.slice(0, 40)}: texture on its own background (cannot fade)`);
+            continue;
+          }
+          const before = getComputedStyle(band, '::before');
+          if (!before.backgroundImage.includes('url(')) continue; // untextured band, fine
+          const mask = before.maskImage || before.webkitMaskImage || 'none';
+          if (!mask.includes('gradient')) {
+            bad.push(`${band.className.slice(0, 40)}: textured but no fade mask`);
+          }
+        }
+        return bad;
+      });
+
+      expect(problems, problems.join('\n')).toEqual([]);
+    });
+  }
+});
+
 test.describe('Section seams continue their own band', () => {
   for (const route of routes) {
     test(`${route} section seams match their band`, async ({ page }) => {
