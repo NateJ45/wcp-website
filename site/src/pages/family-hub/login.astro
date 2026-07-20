@@ -2,18 +2,39 @@
 /* ============================================================================
    Family Hub — sign-in (public: the one un-gated /family-hub page)
    ============================================================================
-   Enrolled families enter the single shared password. The form POSTs to
-   /api/hub-login, which verifies it against the FAMILY_HUB_PASSWORD secret and
-   sets the session flag the middleware checks. prerender=false so the session
-   check runs at request time.
+   The THRESHOLD into the private area. Redesigned 2026-07-20 (Nathan): it used
+   to render the full marketing chrome — five nav links and a "Schedule a Tour"
+   CTA — then a hero, then the form, so the one thing the page exists for sat
+   below the fold behind things aimed at a completely different visitor.
+
+   Now it is one screen: a classroom photograph, the school's own paper taped
+   over it, and the password field on the paper. What it deliberately KEEPS is
+   the wordmark and a single route back to the public site. The old Squarespace
+   version had no chrome at all, which looked lovely but leaves a parent on a
+   bare password box with nothing identifying whose site it is.
+
+   On the research behind this (2026-07-20): there is NO evidence that a gated
+   area should look distinct — that is craft convention, and the consistency
+   argument is better evidenced. What is real and replicated is the
+   aesthetic-usability effect, so a considered page genuinely changes how the
+   experience is rated. The phishing worry does not apply: users demonstrably do
+   not verify login-page appearance (Schechter et al. 2007 — 92% signed in after
+   their site-auth image was removed), and the actual control is the origin,
+   which is unchanged. So this is a legitimate call on feel, made without giving
+   up anything in the form.
+
+   THE PHOTO IS A /public PATH, NOT AN ASSET IMPORT. This route is
+   prerender=false, and the Cloudflare adapter's image optimisation is
+   compile-time only, so `astro:assets` here would pass the ORIGINAL file
+   through (the documented trap that once served a 4.1MB image into a 38px
+   slot). /hero/wcp-hero-poster.webp is already pre-sized at 1600x900, 86KB.
    ============================================================================ */
 export const prerender = false;
 
 import { env } from 'cloudflare:workers';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import Hero from '@/components/Hero.astro';
-import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 import { HUB_SESSION_KEY, isFamilyAuthed } from '@/lib/hub-auth';
 
@@ -36,47 +57,140 @@ const hasError = Astro.url.searchParams.get('error') === '1';
 <BaseLayout
   title="Family Sign-In — West Chester Preschool"
   description="Sign in to the West Chester Preschool Family Hub."
+  chrome="bare"
 >
-  <Hero
-    eyebrow="Enrolled Families"
-    title="Family sign-in"
-    lead="Enter the shared family password to reach your hub. New each school year, so check your welcome email or ask the board."
-    height="medium"
-  />
+  <div class="relative isolate flex min-h-screen flex-col">
+    {
+      /* The photograph. Decorative (alt=""), so it is never announced — the page
+        says what it is in the heading. eager + high priority because it is the
+        LCP element on the one page a visitor MUST interact with. */
+    }
+    <img
+      src="/hero/wcp-hero-poster.webp"
+      alt=""
+      width="1600"
+      height="900"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      class="absolute inset-0 -z-10 h-full w-full object-cover"
+    />
+    {
+      /* Fixed navy scrim, the same device Hero.astro uses: white text clears AA
+        no matter how light the photograph is, and navy is theme-stable so this
+        holds in dark mode without a second value.
 
-  <Section bg="grey" label="Sign in">
-    <form
-      method="POST"
-      action="/api/hub-login"
-      class="mx-auto flex max-w-sm flex-col gap-4 rounded-[var(--radius)] bg-white p-8 shadow-sm dark:bg-surface"
-      data-reveal
-    >
-      <input type="hidden" name="to" value={safeTo} />
-      <label class="block text-left">
-        <span class="mb-1 block text-sm font-bold text-heading">Family password</span>
-        <input
-          type="password"
-          name="password"
-          required
-          autocomplete="current-password"
-          autofocus
-          class="w-full rounded-lg border-2 border-border bg-white px-4 py-3 text-heading focus-visible:border-sky-ink dark:bg-surface"
-        />
-      </label>
+        THE OPACITY IS CONTRAST-CRITICAL, and axe cannot check it — it has no
+        way to composite text contrast through a photograph and reports these as
+        incomplete, so this has to be reasoned about rather than tested.
+        Worst case is a pure-white region of the photo. Measured against that:
+        at 0.82, #fff clears 6.04:1 and white/90 clears 5.25:1. white/75 was
+        3.84:1 and FAILED, which is why nothing on this page is dimmer than /90.
+        Lower this value or dim the text further and you break AA invisibly. */
+    }
+    <div class="absolute inset-0 -z-10 bg-navy/[0.82]" aria-hidden="true"></div>
+
+    {/* Minimal chrome: who this is, and one way back. */}
+    <div class="wcp-container flex items-center justify-between gap-4 py-5">
+      <a href="/" class="font-display text-sm text-white no-underline sm:text-base">
+        West Chester Preschool
+      </a>
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-white/85 no-underline hover:text-white hover:underline"
+      >
+        <span aria-hidden="true">&larr;</span> Main site
+      </a>
+    </div>
+
+    <div class="wcp-container flex flex-1 flex-col items-center justify-center py-10 text-center">
+      <p class="text-xs font-extrabold tracking-[0.14em] text-amber uppercase">Enrolled families</p>
+      <h1 class="mt-2 text-white">Family sign-in</h1>
+      <p class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-white/90">
+        One shared password for the whole school. It changes each September.
+      </p>
+
+      <form
+        method="POST"
+        action="/api/hub-login"
+        class="wcp-signin-note wcp-tape-tc mt-8"
+        novalidate
+      >
+        <input type="hidden" name="to" value={safeTo} />
+
+        <label class="wcp-signin-note-label" for="family-password">Family password</label>
+        <div class="mt-1.5 flex items-center gap-2">
+          {
+            /* autocomplete + paste both work: WCAG 2.2 SC 3.3.8 Accessible
+              Authentication, and NIST's "SHALL allow the use of password
+              managers". Never make this field hostile to a password manager. */
+          }
+          <input
+            id="family-password"
+            type="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            aria-invalid={hasError ? 'true' : undefined}
+            aria-describedby={hasError ? 'family-password-error' : undefined}
+            class="min-w-0 flex-1 rounded-lg border-2 [border-color:#c9cfd6] px-3 py-2.5 [color:#01203a] [background:#fff] focus-visible:[border-color:#166fa8]"
+          />
+          {
+            /* Ships hidden; password-toggle.ts reveals it, so no-JS visitors
+              never see a dead control. Hidden-by-default masking is the GOV.UK
+              rule — a family may be signing in somewhere public. */
+          }
+          <button
+            type="button"
+            hidden
+            data-password-toggle
+            aria-controls="family-password"
+            class="shrink-0 rounded-lg px-2.5 py-2 text-sm font-bold [color:#166fa8] hover:underline"
+          >
+            Show
+          </button>
+        </div>
+        <p class="sr-only" role="status" data-password-status="family-password"></p>
+
+        {
+          /* Wired to the input with aria-invalid + aria-describedby rather than
+             leaning on role="alert". This message is present in the DOM at page
+             load (the handler redirects back with ?error=1), and a live region
+             that already exists when the page loads is frequently never
+             announced. Described-by is read when the field takes focus, which is
+             where the family actually is. */
+          hasError && (
+            <p id="family-password-error" class="wcp-signin-note-error mt-2">
+              That password didn’t match. Please try again.
+            </p>
+          )
+        }
+
+        <Button type="submit" variant="primary" size="lg" class="mt-4 w-full">Sign in</Button>
+
+        <p class="wcp-signin-note-help mt-4">
+          {
+            /* Naming the sender and the month is the cheapest reduction in
+              "what's the password?" emails available, and it is the one place a
+              shared-password gate needs copy no design system covers. */
+          }
+          The Board sends it in the welcome email each August.{' '}
+          <a href={`mailto:${site.email.general}`}>Ask us for it</a>.
+        </p>
+      </form>
+
       {
-        hasError && (
-          <p role="alert" class="text-sm font-semibold text-orange-ink">
-            That password didn’t match. Please try again.
-          </p>
-        )
+        /* /90, not /75: see the scrim note above — anything dimmer fails AA
+          against a bright region of the photograph. */
       }
-      <Button type="submit" variant="primary" size="lg" class="w-full">Sign in</Button>
-    </form>
-    <p class="mx-auto mt-6 max-w-sm text-center text-sm text-ink-muted">
-      Don’t have this year’s password? Email
-      <a href={`mailto:${site.email.general}`} class="font-semibold text-sky-ink underline">
-        {site.email.general}
-      </a>.
-    </p>
-  </Section>
+      <p class="mt-8 inline-flex items-center gap-2 text-xs text-white/90">
+        <Icon name="lock" class="h-3.5 w-3.5" />
+        Private area for enrolled families
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import '@/scripts/password-toggle';
+  </script>
 </BaseLayout>

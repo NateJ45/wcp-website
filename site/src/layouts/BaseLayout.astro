@@ -42,7 +42,15 @@ interface Props {
    * (default). 'hub' = the dedicated Family Hub header/footer (its own nav,
    * one link back to the public site). Used by HubShell for gated pages.
    */
-  chrome?: 'site' | 'hub';
+  /**
+   * 'bare' = no header, no footer, no floating CTAs: just the skip link and
+   * <main>. For a single-purpose full-screen page that IS its own destination —
+   * currently only the Family Hub sign-in, where the marketing nav and a tour
+   * CTA compete with the one thing the page exists for. Still gets
+   * `wcp-site-paper` on <body>, so the Construction Paper primitives (taped
+   * notes, prints) work exactly as they do on the public site.
+   */
+  chrome?: 'site' | 'hub' | 'bare';
   /** Current page title, shown in the mobile HubTopBar when chrome='hub'. */
   hubTitle?: string;
   /**
@@ -243,7 +251,7 @@ const currentPath = Astro.url.pathname;
       to the marketing site's warm bands (globals.css "Public paper texture"),
       keeping the hub's own .wcp-hub-canvas the single texture owner there. */
   }
-  <body class:list={['relative', chrome === 'site' && 'wcp-site-paper']}>
+  <body class:list={['relative', chrome !== 'hub' && 'wcp-site-paper']}>
     <!-- Skip link: first focusable element, hidden until focused, then jumps
          keyboard/screen-reader users straight to the page content. Sits above
          the overlay header (z-50) so it's never hidden behind it. -->
@@ -358,6 +366,12 @@ const currentPath = Astro.url.pathname;
             <BackToTop surface="hub" />
           </div>
         </div>
+      ) : chrome === 'bare' ? (
+        /* Nothing but the content. No header, footer, TourPill or BackToTop —
+           the page owns the whole viewport and supplies its own way back. */
+        <main id="main" tabindex="-1" data-pagefind-body>
+          <slot />
+        </main>
       ) : (
         <>
           <Header />

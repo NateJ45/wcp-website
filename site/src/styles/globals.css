@@ -1668,6 +1668,59 @@ li:nth-child(4n + 4) > .hub-note {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
+/* -- Sign-in note: the family password on a taped sheet ---------------------
+   The Family Hub sign-in is the threshold into the private area, so the form
+   itself is a piece of the school's paper taped to a classroom photograph
+   rather than a generic white card on a grey band.
+
+   PHYSICAL-OBJECT DOCTRINE: light paper in BOTH themes, so every ink is a
+   FIXED hex, never a theme token (the -ink trap — those flip to the bright
+   tier in dark mode and would fail on this pale paper). Measured on #fffdf7:
+   #01203a heading 15.4:1, #2f4258 body 9.6:1, #52657a muted 5.5:1,
+   #166fa8 link 5.3:1.
+
+   The tilt is deliberately SMALL (-0.8deg, against -1.2 on the chooser cards).
+   This one contains a text input people have to aim at and type into, and a
+   noticeably rotated form is more awkward than a rotated link card. Enough to
+   read as paper, not enough to fight. */
+.wcp-site-paper .wcp-signin-note {
+  position: relative;
+  width: 100%;
+  max-width: 21rem;
+  margin-inline: auto;
+  padding: 1.5rem 1.35rem 1.4rem;
+  background-color: #fffdf7;
+  background-image: var(--wcp-grain);
+  box-shadow:
+    0 2px 4px rgba(1, 32, 58, 0.22),
+    0 16px 34px rgba(1, 32, 58, 0.3);
+  color: #2f4258;
+  text-align: left;
+  transform: rotate(-0.8deg);
+}
+.wcp-site-paper .wcp-signin-note-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #01203a;
+}
+.wcp-site-paper .wcp-signin-note-help {
+  font-size: 0.8rem;
+  color: #52657a;
+}
+.wcp-site-paper .wcp-signin-note-help a {
+  font-weight: 700;
+  color: #166fa8;
+}
+/* The error sits ON the paper too, so it needs a fixed ink as well. This red
+   measures 5.9:1 on #fffdf7, and the message is never colour-only — it is
+   wired to the input via aria-describedby and aria-invalid. */
+.wcp-site-paper .wcp-signin-note-error {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a5121b;
+}
+
 /* -- Hero note: the school's current notice as a small taped note inside the
    hero, replacing the cream strip that used to sit below it. Light paper in
    BOTH themes with fixed inks (physical-object doctrine).
