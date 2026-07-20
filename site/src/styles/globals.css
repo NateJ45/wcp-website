@@ -1253,7 +1253,15 @@ li:nth-child(4n + 4) > .hub-note {
    sits above the band's background-color but below its content, and cannot
    escape into an ancestor stacking context. */
 .wcp-site-paper {
-  --wcp-texture-fade: 4.5rem;
+  /* Generous on purpose. 4.5rem spanned roughly two icon-heights, which is not
+     enough to DISSOLVE an icon — a doodle straddling that ramp still read as
+     truncated (Nathan, 2026-07-20). 8rem spans four or five, so individual
+     shapes disappear rather than getting sliced.
+
+     Clamped to 22% so short bands keep their texture: with a fixed 8rem, a
+     200px band would be fading from both directions across its entire height
+     and the tile would effectively vanish. */
+  --wcp-texture-fade: min(8rem, 22%);
 }
 .wcp-site-paper section.bg-grey,
 .wcp-site-paper section.bg-cream,
@@ -1270,18 +1278,30 @@ li:nth-child(4n + 4) > .hub-note {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* Eased, not linear. A straight ramp still has a perceptible "front" moving
+     across the icons; the extra stops weight the fade toward the edge so the
+     texture is already almost gone by the time it reaches the seam, and the
+     approach to full strength is gentle. */
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0,
+    rgba(0, 0, 0, 0.12) calc(var(--wcp-texture-fade) * 0.35),
+    rgba(0, 0, 0, 0.55) calc(var(--wcp-texture-fade) * 0.68),
     #000 var(--wcp-texture-fade),
     #000 calc(100% - var(--wcp-texture-fade)),
+    rgba(0, 0, 0, 0.55) calc(100% - var(--wcp-texture-fade) * 0.68),
+    rgba(0, 0, 0, 0.12) calc(100% - var(--wcp-texture-fade) * 0.35),
     transparent 100%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0,
+    rgba(0, 0, 0, 0.12) calc(var(--wcp-texture-fade) * 0.35),
+    rgba(0, 0, 0, 0.55) calc(var(--wcp-texture-fade) * 0.68),
     #000 var(--wcp-texture-fade),
     #000 calc(100% - var(--wcp-texture-fade)),
+    rgba(0, 0, 0, 0.55) calc(100% - var(--wcp-texture-fade) * 0.68),
+    rgba(0, 0, 0, 0.12) calc(100% - var(--wcp-texture-fade) * 0.35),
     transparent 100%
   );
 }
