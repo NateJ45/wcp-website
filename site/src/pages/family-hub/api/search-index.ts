@@ -28,7 +28,6 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { hubNav } from '@/data/hub-nav';
-import { applyHubStopgaps } from '@/lib/hub-stopgaps';
 import { getCalendarEvents, eventDate } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import {
@@ -96,12 +95,7 @@ export const GET: APIRoute = async () => {
       // nowhere.
       const href = hubPageRoute(page.hubKey, knownRoutes);
       if (!href) continue;
-      // Run the SAME stopgaps the pages render through, or code-side content
-      // (the class-pet section, the corrected curriculum months, the Pre-K
-      // sign-off split) would be on the page but unfindable. `twos` needs its
-      // page key for the stopgaps that ADD sections.
-      const sections = applyHubStopgaps(page.sections, page.hubKey);
-      entries.push(...pageEntries(href, page.heading ?? 'Family Hub', sections));
+      entries.push(...pageEntries(href, page.heading ?? 'Family Hub', page.sections));
     }
 
     for (const u of updates) {

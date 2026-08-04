@@ -102,7 +102,11 @@ test.describe('Family Hub shell', () => {
     const bell = topbar.locator('details[data-hub-bell]');
     await bell.locator('summary').click();
     await expect(bell.locator('[data-bell-panel]')).toBeVisible();
-    await expect(bell.locator('a[href="/family-hub/updates"]')).toBeVisible();
+    // .first(): the panel lists recent announcements ABOVE the "All updates"
+    // link and each row links to /family-hub/updates too, so with any real
+    // announcements published this locator matches several elements (strict
+    // mode violation the first time content landed, 2026-08-04).
+    await expect(bell.locator('a[href="/family-hub/updates"]').first()).toBeVisible();
 
     // Axe with the panel open (both themes) — pill/panel contrast gate.
     for (const theme of ['light', 'dark'] as const) {

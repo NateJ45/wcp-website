@@ -18,16 +18,7 @@ import SeptembersWall from '@/components/SeptembersWall.astro';
 import ChooserRows from '@/components/ChooserRows.astro';
 import VisitBlock from '@/components/VisitBlock.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import {
-  SECTION_HOIST,
-  SECTION_APPEND,
-  SECTION_DROP,
-  SECTION_INSERT_AFTER,
-  SECTION_HEADER_OVERRIDES,
-  SECTION_ACTION_HREFS,
-  applyDoctrine,
-  CARDGRID_KEEP_CARDS,
-} from '@/lib/page-doctrine';
+import { applyDoctrine, CARDGRID_KEEP_CARDS } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -100,45 +91,19 @@ const {
 } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
-// is covered at once — the Board's Sanity copy can't be re-seeded while writes
-// are quota-blocked. A no-op once the content itself is em-dash-free.
+// is covered at once. PERMANENT BACKSTOP, not a stopgap: the stored copy was
+// scrubbed at the source (patch-copy-fixes.mjs, 2026-08-04), but volunteers
+// paste text from Word/Docs where em-dashes creep back in — this keeps the
+// house voice regardless of what lands in the Studio.
 let sections = rawSections.map((s) => deEmDashDeep(s));
 
-// Page doctrine (public pages only): hoist named sections to the front (the
-// Visit page's tour form was 7th of 8) and append synthetic sections (the
-// Visit page's contact details). Runs BEFORE the seam computation so edges
-// follow the rendered order. Stopgaps registered in docs/PENDING.md.
+// Page doctrine (public pages only): drop / hoist / insert-after / append, in
+// that order. Shared with finalBandBg() via applyDoctrine so the footer seam
+// can never disagree with the renderer about which band ends the page — it
+// did, and painted grey against a cream band on /enroll (see the note on
+// applyDoctrine).
 if (pageSlug) {
-  // Drop / hoist / insert-after / append, in that order. Shared with
-  // finalBandBg() via applyDoctrine so the footer seam can never disagree with
-  // the renderer about which band ends the page — it did, and painted grey
-  // against a cream band on /enroll (see the note on applyDoctrine).
   sections = applyDoctrine(sections, pageSlug);
-  // Header copy overrides (title/lead/eyebrow by _key).
-  const headerOverrides = SECTION_HEADER_OVERRIDES[pageSlug];
-  if (headerOverrides) {
-    sections = sections.map((s) => {
-      const o = headerOverrides[s._key];
-      if (!o) return s;
-      return { ...s, header: { ...(s.header ?? {}), ...o } } as SectionData;
-    });
-  }
-  // Action href overrides (by _key + action INDEX — see SECTION_ACTION_HREFS
-  // for why the index and not the label). Forces linkType:'url' so the stored
-  // page reference can't win over the override.
-  const actionHrefs = SECTION_ACTION_HREFS[pageSlug];
-  if (actionHrefs) {
-    sections = sections.map((s) => {
-      const o = actionHrefs[s._key];
-      if (!o || !Array.isArray(s.actions)) return s;
-      return {
-        ...s,
-        actions: (s.actions as Record<string, unknown>[]).map((a, i) =>
-          o[i] ? { ...a, linkType: 'url', url: o[i] } : a,
-        ),
-      } as SectionData;
-    });
-  }
 }
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces

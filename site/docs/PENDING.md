@@ -1,109 +1,50 @@
 # Pending work — the live registry
 
-The repo's open loops in one place: content writes queued behind the Sanity
-quota, the temporary code stopgaps papering over them, and setup steps waiting
-on a human. **Keep this file current**: when you queue a patch script, add a
-row; when you run one, delete its row AND remove its stopgap (each row says
-how). A stale row here misleads the next session, which defeats the point.
+The repo's open loops in one place. **Keep this file current**: when you queue a
+patch script, add a row; when you run one, delete its row AND remove its
+stopgap (each row says how). A stale row here misleads the next session, which
+defeats the point.
 
-_Last reviewed: 2026-07-19._
+_Last reviewed: 2026-08-04._
 
-## The blocker: Sanity API quota
+## The 2026-08-04 quota-reset close-out (context)
 
-The free-plan API quota was exhausted 2026-07-15 and still returns
-`402 plan_limit_reached` (as of 2026-07-17 it rejects even plain API reads).
-It resets monthly (or on upgrade at sanity.io/manage). While blocked:
+The Sanity API quota froze 2026-07-15 and reset by 2026-08-04. On reset day the
+ENTIRE queue was run: all standalone patch scripts, the 7-script transformation
+batch (in order), and every code stopgap's Sanity edit — after which the
+stopgaps themselves were deleted (`hub-stopgaps.ts` is gone; `page-doctrine.ts`
+keeps only product-decision drops and the Act II grammar). The Studio is the
+source of truth again everywhere, including the Menus doc (the nav resolver
+reads it; `src/data/nav.ts` is only the empty-doc fallback).
 
-- **All writes fail** — patch scripts AND Studio saves.
-- **The live site is fine** — hub reads ride the authenticated CDN
-  (`useCdn: true`), a separate allowance; the static site reads at build time.
+## Queued patch scripts
 
-## Queued patch scripts (run each once when the quota is back)
+| Script (`site/scripts/`)          | What it does                                                                                                                                                                                           | Blocked on                                                                                                                                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patch-home-visit-splitmedia.mjs` | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.** | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
 
-All idempotent, all read `SANITY_TOKEN` from `.dev.vars`, any order:
+## Remaining code-owned content decisions (not stopgaps)
 
-| Script (`site/scripts/`)              | What it does                                                                                                                                                                                                                                                                                                                                                                                       | After running, also…                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `patch-directory-classes.mjs`         | Directory: swap the two Pre-K children listed in the wrong AM/PM session                                                                                                                                                                                                                                                                                                                           | —                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `patch-teacher-phones.mjs`            | Set `teacherNote.phone` for both teachers (pills currently run on code fallbacks)                                                                                                                                                                                                                                                                                                                  | —                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `restructure-prek-pet-section.mjs`    | Lift the Pre-K class-pet blurb into its own section; reset the closing CTA                                                                                                                                                                                                                                                                                                                         | —                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `patch-drop-fundraising-statband.mjs` | Remove the budget stat band from the fundraising hub doc                                                                                                                                                                                                                                                                                                                                           | Delete `fundraisingDropSuperseded` + its call in `applyHubStopgaps`, and the `applyHubStopgaps` call in `fundraising.astro`                                                                                                                                                                                                                                                                                                             |
-| `patch-calendar-feed-url.mjs`         | Point `siteSettings.calendarFeedUrl` at the new calendar-feed web app (URL in `.dev.vars`)                                                                                                                                                                                                                                                                                                         | Confirm the hub Calendar page shows events, then nothing — old feed can be retired                                                                                                                                                                                                                                                                                                                                                      |
-| `patch-calendar-field-trips.mjs`      | Calendar hub: convert the "How field trips work" proseSection into a policy card grid (matches the class handbooks; the calendar now renders Board sections via HubSectionedBody)                                                                                                                                                                                                                  | Delete the `FIELD_TRIP_CARDS`/`boardSections` stopgap in `calendar.astro` (search `STOPGAP`)                                                                                                                                                                                                                                                                                                                                            |
-| `patch-tour-links.mjs`                | Repoint every in-body/menus "Schedule a Tour" CTA from `/enroll` → the tour form; fix the `/safety` hero CTA (points at `/`). **Dry-run by default; needs `--commit`.** UNTESTED (authored under the quota freeze) — review the dry-run first                                                                                                                                                      | Also patch the draft home doc's hero CTAs if any; confirm `/virtual-tour` keeps the `pp-tour-form` section \_key                                                                                                                                                                                                                                                                                                                        |
-| `patch-twos-curriculum-months.mjs`    | Twos & Threes curriculum: move Easter + food and nutrition out of April back into MARCH, per Erin's curriculum sheet (the stored doc has them a month late). **Dry-run by default; needs `--commit`.**                                                                                                                                                                                             | Delete `twosCurriculumMonths` + its call in `applyHubStopgaps`, and its cases in `hub-stopgaps.test.ts`                                                                                                                                                                                                                                                                                                                                 |
-| `patch-twos-class-pet.mjs`            | Twos & Threes: upload the Kit the Kat photo as a Sanity asset and insert a REAL `splitMediaSection` (photo + blurb) above the closing CTA on `hubPage-twos`, replacing the code stopgap. **Dry-run by default; needs `--commit`.** UNTESTED (authored under the quota freeze) — review the dry-run first                                                                                           | Delete `twosClassPet` + the `page` arg at the `twos-threes.astro` call site, delete `ClassPetSection.astro` and its import/BLEED entry/render branch in `HubSectionedBody.astro`, and delete `src/assets/photos/kit-the-kat-sm.webp`                                                                                                                                                                                                    |
-| `patch-add-summer-announcements.mjs`  | Adds two Announcement-category `update` docs to the hub (fixed ids, `createOrReplace`, no dry-run gate): Lexie's enrollment-paperwork/background-check reminder, and the Board's full summer checklist email (paperwork, background checks, tuition, Family Hub, co-op job requests, calendar). Wording verbatim from the source emails, only headings/bold/lists/links added                      | Both are seeded `pinned: true` + `highlight: true` — un-pin/un-highlight in the Studio once August 1st passes; the "(Click here)" placeholders in the Board email have no real hrefs (none were supplied) — link them to the actual form/page URLs in the Studio once known                                                                                                                                                             |
-| `patch-testimonial-photos.mjs`        | Uploads the 24 family snapshots in `src/assets/testimonials/` as Sanity assets and sets `photo` on each matching `testimonial` document by author name. **Dry-run by default; needs `--commit`.** UNTESTED (authored under the quota freeze) — review the dry-run first                                                                                                                            | **Order matters.** Nothing reads the Sanity `photo` yet, so FIRST project `photo` in both testimonial queries (`queries.ts`) and render it, verify / and /reviews still show photos, and ONLY THEN delete `src/lib/testimonial-photos.ts` + its test, the `photoFor()` threading in `TestimonialSection.astro` AND `TestimonialWall.astro`, and `src/assets/testimonials/`. Drafts are out of scope: check drafted testimonials by hand |
-| `patch-home-visit-splitmedia.mjs`     | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.** UNTESTED (authored under the quota freeze) — review the dry-run first. Also blocked on a human choosing `PHOTO_PATH` (see "Waiting on a human" below) before `--commit` will write anything | Delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts`                                                                                                                                                                                                                                                                                                  |
+| Where                                                     | What                                                                                                                                       | To change                                                                                                                                     |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/page-doctrine.ts` `SECTION_DROP.home` `hp-visit` | The stored visit prose is replaced at render time by `VisitBlock` (photo-moments `'visit'`) so the block keeps its photo                   | Run `patch-home-visit-splitmedia.mjs` (above)                                                                                                 |
+| `src/lib/page-doctrine.ts` `SECTION_DROP.home` `k20`      | News hidden "for now" (Nathan, 2026-07-19): the home teaser and the footer News link are off; `/news`, articles, RSS and sitemap stay live | Nathan's call. Restore: delete `'k20'` + uncomment the News line in `src/data/nav.ts`. Permanent: delete the section from `page-home` instead |
+| `TestimonialSection.astro` co-op-life tag step            | `patch-testimonial-redistribution.mjs` skipped its co-op-life variety step: **0 testimonials carry the "co-op" tag**                       | Tag quotes in the Studio, re-run the script's co-op-life step (or set the section's tag by hand)                                              |
 
-### The transformation batch (AUTHORED 2026-07-17, run IN THIS ORDER on reset day)
+## Waiting on a human (unchanged items)
 
-All seven are **dry-run by default** (`--commit` to apply), share `patch-lib.mjs`,
-are idempotent, and were authored under the quota freeze — **review each dry-run
-before committing**. Every "close out" is a CODE change to make in the same
-sitting, or the Studio and the site drift.
-
-| #   | Script (`site/scripts/`)               | What it does                                                                                                                                                | Close out (code, same sitting)                                                                                                                                                                                                              |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `patch-copy-fixes.mjs`                 | Em-dash strip at the SOURCE (every page doc), seoTitle "—" → "\|", co-op-life hero banned construction, tuition July seasonality line                       | Render-time `deEmDashDeep` stays (defense-in-depth); update its comment in `SectionRenderer.astro` from "stopgap" to "permanent backstop"                                                                                                   |
-| 2   | `patch-tour-links.mjs`                 | Repoint every in-body/menus tour CTA `/enroll` → the tour form; fix the `/safety` hero CTA (points at `/`)                                                  | Confirm `pp-tour-form` still first on the visit page after script 6                                                                                                                                                                         |
-| 3   | `patch-menus-doctrine.mjs`             | Write the five-item funnel nav INTO the Sanity Menus doc (reconcile option a)                                                                               | Swap `resolveNavigation` → `resolveNavigationFromDoc` (src/lib/nav.ts), remove the paused-note callout from the menus guide (`src/sanity/guides/content.ts`)                                                                                |
-| 4   | `patch-enroll-consolidation.mjs`       | ONE step model on /enroll (drop dup cardGrid k219, hoist seed-enroll-steps first), tuition table → pointer to /tuition, hero gains "Send an inquiry" anchor | —                                                                                                                                                                                                                                           |
-| 5   | `patch-testimonial-redistribution.mjs` | /reviews owns the full wall IN THE DOC; /why-wcp wall → 6-quote featured teaser; co-op-life → tag-scoped voices (when tagged)                               | Delete the `pageSlug === 'reviews'` override + `getTestimonials` fetch in `TestimonialSection.astro` (the doc now does it)                                                                                                                  |
-| 6   | `patch-merge-contact-into-visit.mjs`   | /virtual-tour → "Visit Us": hero visit ask, tour form FIRST, absorbs /contact's details + FAQ; redirect doc /contact→/virtual-tour; deletes page-contact    | Delete the `virtual-tour` entries in `src/lib/page-doctrine.ts` (HERO_OVERRIDES + SECTION_HOIST + SECTION_APPEND); drop `/contact` from `tests/routes.ts` + the footer Get Started column; add `/contact` to the astro.config redirects map |
-| 7   | `patch-merge-about-into-why-wcp.mjs`   | /why-wcp absorbs about's story + teachers + facilities; redirect doc /about→/why-wcp; deletes page-about                                                    | Drop `/about` from `tests/routes.ts` + the footer "Our Story" link (`src/data/nav.ts` + rerun script 3 or edit the Menus doc); add `/about` to the astro.config redirects map; update the menus-doctrine script's footer note               |
-
-After the batch: full local gate + deploy, then spot-check /virtual-tour,
-/why-wcp, /enroll, and the header nav in the Studio's Presentation preview.
-API budget note: the batch is ~20-30 writes total; the seed-blog step (Phase 3,
-Board approval pending) should wait a day so the fresh quota is provably calm.
-
-## Code stopgaps (delete each when its Sanity edit lands)
-
-Because the Studio can't save, some content fixes live in code. Each must be
-re-done in Sanity when the quota is back, then the code removed (the Studio
-shows the OLD content until you do). The 2026-07-17 IA additions:
-
-| Where                                                                                                   | What it papers over                                                                                                                                                                                                                                                                                                                                     | To close out                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/page-doctrine.ts` `SECTION_ACTION_HREFS.home.k15` (2026-07-19)                                 | Home closing CTA: the "Schedule a Tour" button was STORED pointing at `/enroll`, so both buttons in the band went to the same page and the tour ask was unreachable from the band built to make it. Overrides action index 1 to `/virtual-tour#sec-pp-tour-form`. Indexed rather than label-matched because stega encodes labels in /preview            | Run `patch-tour-links.mjs --commit` (already authored, UNTESTED — review the dry-run), then delete the `home` entry. If `SECTION_ACTION_HREFS` ends up empty, delete the map and its use in `SectionRenderer.astro`                                                                                                                                                                                        |
-| `src/lib/page-doctrine.ts` `SECTION_DROP.home` = `k20` + `src/data/nav.ts` (2026-07-19)                 | News hidden "for now" (Nathan): the "Latest from WCP" home teaser is dropped at render time and the News entry in the footer About column is commented out. `/news`, the article pages, `rss.xml` and the sitemap entries are all UNTOUCHED and still live                                                                                              | Nathan's call, NOT quota-blocked — this is a product decision, not a stopgap for a queued patch. To restore: delete `'k20'` from `SECTION_DROP.home` and uncomment the News line in `src/data/nav.ts`. If it stays off permanently, do it properly in Sanity (remove the section from `page-home`) and delete both code entries                                                                            |
-| `src/lib/page-doctrine.ts` `SECTION_INSERT_AFTER.tuition` (2026-07-19)                                  | Puts the interactive cost estimator on /tuition, under the fee table. `TuitionCalculatorSection` already existed but was placed on NO page at all; adding it properly needs a Studio edit to `page-tuition`, which the quota blocks. Config-only, so it carries no prices of its own — they all come from the Classes + Fee Schedule docs at build time | In the Studio, add a "Tuition calculator" section to `page-tuition` after the fee table with the same header and lead, then delete this entry                                                                                                                                                                                                                                                              |
-| `src/lib/page-doctrine.ts`                                                                              | Visit-page assembly: hero visit ask, tour form hoisted first, contact details appended                                                                                                                                                                                                                                                                  | Run `patch-merge-contact-into-visit.mjs --commit`, delete its entries                                                                                                                                                                                                                                                                                                                                      |
-| `src/lib/page-doctrine.ts` `SECTION_DROP.enroll` + `SECTION_HOIST.enroll` (redesign branch, 2026-07-18) | /enroll render order: drops the duplicate steps cardGrid (k219), the duplicated fee table (pp-enroll-tuition), and the post-form "Not sure which class fits?" band (k234); hoists seed-enroll-steps first. Mirrors `patch-enroll-consolidation.mjs`                                                                                                     | Extend/run the enroll-consolidation patch to ALSO delete pp-enroll-tuition + k234 in the doc (script currently only drops k219), then delete both doctrine entries                                                                                                                                                                                                                                         |
-| `src/lib/page-doctrine.ts` `SECTION_HOIST.tuition` (redesign branch)                                    | /tuition fee table (k53) hoisted above the co-op explainer so a price paints in mobile viewport 1-2                                                                                                                                                                                                                                                     | Reorder the sections in the Studio (drag k53 above k50), then delete the entry                                                                                                                                                                                                                                                                                                                             |
-| `src/lib/page-doctrine.ts` `SECTION_DROP.home` (redesign branch)                                        | Home statBandSection hidden (numbers duplicate the class cards; the code-owned Heritage strip owns that slot now)                                                                                                                                                                                                                                       | Delete the stat band from page-home in the Studio, then delete the entry                                                                                                                                                                                                                                                                                                                                   |
-| `src/lib/page-doctrine.ts` `SECTION_DROP.safety` (redesign branch, 2026-07-19)                          | /safety statBandSection hidden (Nathan cut it: the 4.8 rides the hero proof line + closer slip; class size/staffing live in the "Secure, on purpose" list)                                                                                                                                                                                              | Delete the stat band from page-safety in the Studio, then delete the entry                                                                                                                                                                                                                                                                                                                                 |
-| `src/lib/page-doctrine.ts` `SECTION_HEADER_OVERRIDES.enroll` (redesign branch)                          | /enroll form header: "Ask about enrolling" → "Start your enrollment" + a lead stating the actual mechanism (packet handed over at the tour)                                                                                                                                                                                                             | Make the same edit on page-enroll's pp-enroll-form header in the Studio, then delete the entry                                                                                                                                                                                                                                                                                                             |
-| `src/lib/page-doctrine.ts` `SECTION_DROP[classes/pre-k]` (redesign branch)                              | Hides the second Pre-K curriculum band (k374 restates k365 in 7 more cards)                                                                                                                                                                                                                                                                             | Delete k374 from page-classes-pre-k in the Studio (or fold its best lines into k365), then delete the entry                                                                                                                                                                                                                                                                                                |
-| `src/lib/page-doctrine.ts` `SECTION_DROP[a-day-at-wcp]` + `SECTION_INSERT_AFTER` (redesign branch)      | Hides the four near-identical schedule timelines (k91/k98/k106/k114, ~5.5 phone viewports) and splices a synthetic pullAll classCardsSection ("When each class meets") after the story timeline                                                                                                                                                         | In the Studio: delete the four scheduleSections from page-a-day-at-wcp and add a real classCardsSection referencing all classes in that slot, then delete both entries + the pullAll branch in ClassCardsSection.astro                                                                                                                                                                                     |
-| `src/lib/page-doctrine.ts` `SECTION_APPEND.reviews` (redesign branch)                                   | /reviews closing tour CTA (the page dead-ended prospects; both stored CTAs were outbound to Google)                                                                                                                                                                                                                                                     | Add a real closing ctaSection to page-reviews in the Studio, then delete the entry                                                                                                                                                                                                                                                                                                                         |
-| `TestimonialSection.astro` why-wcp cap (redesign branch)                                                | /why-wcp shows a curated quote teaser + "Read every family review" link instead of duplicating the full /reviews wall                                                                                                                                                                                                                                   | Covered by `patch-testimonial-redistribution.mjs`; after it runs, delete the pageSlug === why-wcp branches                                                                                                                                                                                                                                                                                                 |
-| `src/lib/nav.ts` (`resolveNavigation`)                                                                  | Serves the code nav doctrine; Sanity Menus doc bypassed (menus guide carries paused note)                                                                                                                                                                                                                                                               | Run `patch-menus-doctrine.mjs --commit`, swap the resolver back                                                                                                                                                                                                                                                                                                                                            |
-| `TestimonialSection.astro` (reviews override)                                                           | /reviews forced to the full wall (stored section only selects 3 featured)                                                                                                                                                                                                                                                                               | Run `patch-testimonial-redistribution.mjs --commit`, delete override                                                                                                                                                                                                                                                                                                                                       |
-| `src/lib/testimonial-photos.ts` + `src/assets/testimonials/`                                            | The 24 family snapshots on testimonial notes. The old Squarespace site showed a photo beside every quote; the images cannot be Sanity assets yet (an upload is a write), so they ship as local files joined by author name                                                                                                                              | Run `patch-testimonial-photos.mjs --commit`, THEN wire `photo` into both testimonial queries in `queries.ts` and render it (nothing reads that field today, so deleting the module first strips all 24 photos from the live site), verify, and only then delete the module, its test, `src/assets/testimonials/`, and the `photoFor()` threading in `TestimonialSection.astro` and `TestimonialWall.astro` |
-| `VisitBlock.astro` + `photo-moments.ts` `'visit'` + `SECTION_DROP.home` `'hp-visit'`                    | The home visit block's photo. `hp-visit` is a `proseSection` with no image slot, and moments inject between sections rather than wrapping one, so the section is replaced wholesale. **Costs volunteer editability of the home address block**                                                                                                          | Run `patch-home-visit-splitmedia.mjs --commit` (needs `PHOTO_PATH` chosen first, see below), then delete `VisitBlock.astro`, the `'visit'` moment and kind, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home`                                                                                                                                                                     |
-
-Earlier stopgaps:
-
-| Where                                                                                   | What it papers over                                                                                                                                                                                         | To close out                                                                                |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `src/lib/hub-stopgaps.ts` (+ imports in `pre-k.astro`, `twos-threes.astro`)             | Pre-K AM/PM schedule merge; Twos comms cards (Facebook→Class photos, ClassDojo link)                                                                                                                        | Make the same edits in Sanity, then delete the file + both call sites                       |
-| `hub-stopgaps.ts` `twosClassPet` + `ClassPetSection.astro` (+ `HubSectionedBody.astro`) | The Kit the Kat class-pet section on Twos & Threes. The PHOTO is the reason it's code-side: `splitMediaSection` renders through `SanityImage`, and uploading an asset is a write                            | Run `patch-twos-class-pet.mjs --commit`, then delete both files' code per that row          |
-| `hub-stopgaps.ts` `twosCurriculumMonths`                                                | Twos & Threes curriculum months: Easter + food and nutrition are stored under April but belong to March (Erin's sheet). Unit-tested in `hub-stopgaps.test.ts`                                               | Run `patch-twos-curriculum-months.mjs --commit`, then delete the function + its tests       |
-| `hub-stopgaps.ts` `prekSplitPetFromCta`                                                 | Pre-K: the closing CTA carries the class-pet blurb, so the teacher sign-off card hangs under pet copy. Lifts it to its own prose section + restores the standard closing (matches Twos). Unit-tested        | Run `restructure-prek-pet-section.mjs` (queued above), then delete the function + its tests |
-| `hub-stopgaps.ts` `fundraisingDropSuperseded` (called by `fundraising.astro`)           | Filters out `statBandSection` + the superseded budget prose. Lives in hub-stopgaps, NOT inline on the page: the search index reads the same doc and deep-linked to a dropped section when it was page-local | Run `patch-drop-fundraising-statband.mjs`, then delete the function + its call              |
-| `documents.astro`                                                                       | Filters out the closing `ctaSection` ("ask a board member / Facebook")                                                                                                                                      | Remove that section from the `hubPage-documents` doc, drop the filter                       |
-| `coop-jobs.astro`                                                                       | Regex-strips "runs the private class Facebook page" from the Class Rep role                                                                                                                                 | Edit the `coopRole` body in Sanity, delete the regex                                        |
-| `getting-started.astro`                                                                 | Rewrites the "Accessible entrance" card body; adds the ClassDojo register link                                                                                                                              | Patch the `hubPage-getting-started` cards in Sanity, delete the stopgap block               |
-| `family-hub/index.astro`                                                                | Overrides `firstDay` 2026-09-10 → 2026-09-09 (countdown targets the kickoff picnics)                                                                                                                        | Set `siteSettings.firstDay = 2026-09-09` in Studio, delete the conditional                  |
-| `family-hub/calendar.astro`                                                             | `boardSections` map rewrites the "How field trips work" proseSection → policy card grid                                                                                                                     | Run `patch-calendar-field-trips.mjs`, delete the `FIELD_TRIP_CARDS`/`boardSections` stopgap |
-
-## Waiting on a human (not quota-blocked)
-
-- **Dark mode: the elevation system still needs a visual call (audit findings 6
-  and 7).** Waves 1-3 of the 2026-07-19 audit are done — every accessibility
+- **Choose the photo for the home visit block** —
+  `patch-home-visit-splitmedia.mjs` has `PHOTO_PATH = null` with a "HUMAN
+  DECISION NEEDED" block; it refuses to write until someone picks the photo
+  (suggested candidates: outdoor-exploration.jpg, about-hero.jpg,
+  gym-playtime.jpg in `src/assets/photos/`, or the Sanity media library). Set
+  `PHOTO_PATH` (and `ALT`) near the top, then `--commit`.
+- **Summer announcements follow-ups** (seeded 2026-08-04, then un-pinned since
+  Aug 1 had passed): the Board email's "(Click here)" placeholders still have
+  no real hrefs — link them to the actual form/page URLs in the Studio once
+  known.
+- **Dark mode: the elevation system still needs a visual call (audit findings
+  6 and 7).** Waves 1-3 of the 2026-07-19 audit are done — every accessibility
   failure is fixed and guarded by `src/lib/theme-tokens.test.ts`. What remains
   is perceptual, not a WCAG failure, and it changes how every card looks, so it
   wants eyes rather than a green suite:
@@ -111,10 +52,9 @@ Earlier stopgaps:
     black shadow cannot lift a card off an already-dark surface, so the entire
     depth system silently disappears in dark mode (including every
     `hover:shadow-md`, so interactive cards lose half their hover feedback). The
-    diagnosis is already written in `BaseLayout.astro` at the hub rail: _"in dark
-    mode the shadow reads as a hard black halo... there's nothing lighter for it
-    to lift OFF of."_ Generalising it means pairing each surface step with its
-    shadow, the way Atlassian's elevation tokens do.
+    diagnosis is already written in `BaseLayout.astro` at the hub rail.
+    Generalising it means pairing each surface step with its shadow, the way
+    Atlassian's elevation tokens do.
   - **Card-over-band separation is roughly halved in dark** (1.07:1 vs 1.14:1
     light). **Known trap:** simply lifting `--color-surface` was tried before and
     REVERTED, because it pushed the postit composite light enough to drop muted
@@ -128,128 +68,92 @@ Earlier stopgaps:
     interacts with the documented `-ink`-on-tint trap, so it should only start
     once the surfaces underneath it have stopped moving.
 - **`logoStripSection` renders on no page today**, so its new dark-mode light
-  plate (added 2026-07-19 for Board-uploaded partner logos, which are usually
-  dark ink on transparent and vanish on the dark canvas) is untested in
+  plate (added 2026-07-19 for Board-uploaded partner logos) is untested in
   practice. Check it the first time a logo strip goes on a page.
 
 - **The /tuition comparative claim now has evidence behind it. Re-check each
   spring.** The page's hero says "the co-op model keeps our tuition lower than
-  most preschools in West Chester". That was an unsourced assumption; it was
-  verified 2026-07-19 and holds comfortably. Non-cooperative, part-week,
-  roughly 2.5-hour morning programs in Butler/Hamilton/Warren counties that
-  publish rates on their own sites ran **$210-$267/month for three mornings**
-  (WCP Threes: $150) and **$230-$323 for four mornings** (WCP Pre-K AM: $200),
-  across four to six schools depending on the band. Nathan's call was to keep
-  the qualitative claim and NOT publish the numbers, to avoid an annual
-  re-verification chore and naming neighbouring church preschools.
+  most preschools in West Chester". Verified 2026-07-19 and holds comfortably:
+  non-cooperative, part-week, roughly 2.5-hour morning programs in
+  Butler/Hamilton/Warren counties that publish rates ran **$210-$267/month for
+  three mornings** (WCP Threes: $150) and **$230-$323 for four mornings**
+  (WCP Pre-K AM: $200). Nathan's call was to keep the qualitative claim and NOT
+  publish the numbers.
   - **Do not cite a percentage.** The widely repeated "co-ops cost 30-50% less"
-    traces only to content farms; the co-op trade body says nothing quantified.
-  - **Do not cite the Ohio Market Rate Survey.** Its "part-time" band is 7-25
-    hrs/week and its sample is 4,150 daycare centres against 84 licensed
-    preschools, so its "part-time preschool" rate is mostly daycare selling
-    reduced hours. It is the full-time-daycare comparison trap in disguise.
-  - **Beware search results for "West Chester preschool tuition".** Roughly
-    sixteen out-of-state schools surface for it, several in West Chester,
-    **Pennsylvania**. Verify the street address before believing any figure.
+    traces only to content farms.
+  - **Do not cite the Ohio Market Rate Survey** — its "part-time" band is
+    mostly daycare selling reduced hours.
+  - **Beware search results for "West Chester preschool tuition"** — several
+    surfaced schools are in West Chester, **Pennsylvania**.
   - If the claim is ever strengthened to a number, it needs a footnote stating
     the hours compared, that only schools publishing rates are included, and
     the parent-labour obligation adjacent to the price.
 
 - **Set `AIRNOW_API_KEY` (EPA AirNow) so the hub's air-quality chip reads real
-  monitors.** Found 2026-07-19: the chip showed "AQI 61 · Decent air, fine for
-  outside play" while EPA monitors in Cincinnati observed **AQI 153,
-  Unhealthy**. It was not a stale cache; Open-Meteo's `us_aqi` is the CAMS
-  global FORECAST MODEL and it missed a real particulate event by ~90 points
-  and two categories. The code now prefers AirNow observations when the key is
-  present and, without it, takes `max(us_aqi, aqiFromPm25)` so a spike surfaces
-  in hours instead of a day, plus the copy no longer authorises outdoor play on
-  a Moderate reading. **The model fallback still under-reads a real event, so
-  this key is the actual fix.** Free, no cost, no card:
-  https://docs.airnowapi.org/account/request/ (Agency: "Other Agency"). Then
-  add `AIRNOW_API_KEY` to `site/.dev.vars` AND run
-  `npx wrangler secret put AIRNOW_API_KEY` for the deployed Worker. Verify
-  afterwards by comparing the hub chip against a phone weather app on a day
-  when air is not Good.
+  monitors.** Found 2026-07-19: Open-Meteo's `us_aqi` is the CAMS global
+  FORECAST MODEL and missed a real particulate event by ~90 points and two
+  categories. The code prefers AirNow observations when the key is present;
+  the model fallback still under-reads a real event, so the key is the actual
+  fix. Free, no card: https://docs.airnowapi.org/account/request/ (Agency:
+  "Other Agency"). Add `AIRNOW_API_KEY` to `site/.dev.vars` AND
+  `npx wrangler secret put AIRNOW_API_KEY`. Verify by comparing the hub chip
+  against a phone weather app on a day when air is not Good.
 
-### Public-site transformation, Phase 0 (added 2026-07-17; see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
+### Public-site transformation, Phase 0 (see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
 
 - **DNS cutover** — www.westchesterpreschool.org still serves the old
-  Squarespace site; every canonical/og:url on the new site points there. This
-  is the single highest-leverage conversion item. Runbook:
+  Squarespace site. The single highest-leverage conversion item. Runbook:
   [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). Verify a Search Console Domain
-  property (DNS TXT) BEFORE the flip so the sitemap submits the moment DNS
-  moves.
+  property (DNS TXT) BEFORE the flip.
+- **Seed the blog batch (Phase 3)** — Board approval pending; also give the
+  fresh quota a day or two of calm before a large seeding run.
 - **Analytics env vars are unset — no analytics is live.** Create a Cloudflare
-  Web Analytics site for the domain and set `PUBLIC_CF_BEACON_TOKEN` in `.env`
-  AND the CI build workflows (ci/lighthouse/deploy pass build env); optionally
-  `PUBLIC_GA_ID` (Google Analytics 4), `PUBLIC_GADS_ID` (Google Ads), and/or
-  `PUBLIC_META_PIXEL_ID` (Meta Pixel) when those go live.
-  NOTE (2026-07-17): setting ANY of those three now ALSO turns on the
-  cookie-consent card sitewide (CookieConsent.astro) — every tracker is
-  consent-gated per category (Analytics / Advertising toggles) and only loads
-  after the visitor grants its category. Remember the env var must reach ALL
-  build workflows (ci/lighthouse/deploy) or the card exists in prod but not
-  under test. When that day comes, also refresh the /privacy page's cookie
-  wording in the Studio (which trackers, which categories, plus the always-on
-  essentials; quota permitting).
+  Web Analytics site and set `PUBLIC_CF_BEACON_TOKEN` in `.env` AND the CI
+  build workflows; optionally `PUBLIC_GA_ID`, `PUBLIC_GADS_ID`,
+  `PUBLIC_META_PIXEL_ID`. Setting ANY of the three GA/Ads/Meta vars also turns
+  on the consent card sitewide; the env var must reach ALL build workflows or
+  the card exists in prod but not under test. Also refresh the /privacy cookie
+  wording in the Studio when that day comes.
 - **Snapshot the July baseline from the forms-inbox Sheet** — count
-  tour-request and enrollment-inquiry rows to date. Sanity holds ZERO
-  submission docs (checked 2026-07-17 via CDN), so the Apps Script Sheet is the
-  only log. Needed so the tour-routing fix's effect is measurable.
+  tour-request and enrollment-inquiry rows to date (the Apps Script Sheet is
+  the only log), so the tour-routing fix's effect is measurable.
 - **Fill the Availability sheet + set its Sheet ID in Site Settings** — the
-  scarcity badges (`/api/availability`) return `[]` in peak enrollment season;
-  hooks are live on home//enroll//classes/pre-k. Sheet ID needs the quota back.
+  scarcity badges (`/api/availability`) return `[]` until then.
 - **Supply the Google Business Profile review short URL** (g.page/r/...) for
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
-- **Cloudflare "Workers Builds" Git integration fails on EVERY commit** (main
-  included). Root cause confirmed from the 2026-07-19 build log: it runs
-  `npx wrangler deploy` from the REPO ROOT with no install/build step — the app
-  lives in `site/`, needs `npm ci && npm run build` (with SANITY_TOKEN) first,
-  and must deploy via `-c dist/server/wrangler.json`. Fix in the dashboard
-  (Workers & Pages → wcp-website → Settings → Build), pick ONE:
-  (a) RECOMMENDED: disconnect the Git integration / toggle builds off — deploys
-  already ride deploy.yml, which also owns the Sanity publish webhook and the
-  weekly cron the integration cannot replace; or (b) keep it for PR preview
-  URLs: root directory `site`, build `npm ci && npm run build`, deploy
-  `npx wrangler deploy -c dist/server/wrangler.json`, build vars SANITY_TOKEN
-  (+ optional INSTAGRAM_TOKEN), and DISABLE production-branch builds for main
-  so merges do not deploy twice.
+- **Cloudflare "Workers Builds" Git integration fails on EVERY commit.** It
+  runs `npx wrangler deploy` from the repo root with no install/build. Fix in
+  the dashboard (Workers & Pages → wcp-website → Settings → Build), pick ONE:
+  (a) RECOMMENDED: disconnect the Git integration — deploys already ride
+  deploy.yml; or (b) keep it for PR previews: root `site`, build
+  `npm ci && npm run build`, deploy
+  `npx wrangler deploy -c dist/server/wrangler.json`, build vars SANITY_TOKEN,
+  and disable production-branch builds.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
-  /faq can answer the questions parents actually screen for (Phase 0 audit:
-  both pages duck them today; the redesign left slots, not invented facts).
+  /faq can answer the questions parents actually screen for.
 - **Board sets the co-op hours goal** (Studio → Site Settings) — until then
-  `/family-hub/hours` shows its designed empty state. Requires the quota back.
-- **Update the Sanity webhook filter in the dashboard** to match the 2026-07-17
-  list in [SANITY.md](SANITY.md) / `deploy.yml` (drop the dead `classNote`, add
-  `hubPage`, `teacherNote`, `presidentNote`, `signupSheet`, `signupEntry`) —
-  until then, publishing those hub-only types burns a needless rebuild. The
-  deploy.yml guard already enforces it; the dashboard filter just saves the
-  webhook call.
+  `/family-hub/hours` shows its designed empty state.
+- **Update the Sanity webhook filter in the dashboard** to match the
+  2026-07-17 list in [SANITY.md](SANITY.md) / `deploy.yml` (drop the dead
+  `classNote`, add `hubPage`, `teacherNote`, `presidentNote`, `signupSheet`,
+  `signupEntry`).
 - **Decide the Celebrations page's fate**: `/family-hub/celebrations` renders
-  fine but NOTHING links to it (not the rail, drawer, tab bar, or home — found
-  in the 2026-07-17 docs audit). Either add it to `hub-nav.ts` (Community
+  fine but NOTHING links to it. Either add it to `hub-nav.ts` (Community
   group) or retire the page.
 - **Re-paste the deployed forms-inbox script**: the checked-in
   `scripts/apps-script/forms-inbox.gs` gained `hours`/`photo` tabs + the photo
   FYI email (2026-07-17); the DEPLOYED copy coerces those kinds into the
-  contact tab until it's updated (Deploy → Manage deployments → new version —
-  same URL).
-- **Google-side ownership**: the school calendar itself and the forms-inbox
-  Sheet/script still live under accounts to inventory and, long-term, move to a
-  co-op-owned account — see [GOOGLE.md](GOOGLE.md).
+  contact tab until updated (Deploy → Manage deployments → new version — same
+  URL).
+- **Google-side ownership**: the school calendar and the forms-inbox
+  Sheet/script still live under accounts to inventory and, long-term, move to
+  a co-op-owned account — see [GOOGLE.md](GOOGLE.md).
 - **On-device iOS checks** from the 2026-07-17 cross-browser pass: tap outside
   the bell menu (pointerdown fix) and drag the backdrop with the drawer open
   (scroll containment) on a real iPhone.
-- **Choose the photo for the home visit block** (added 2026-07-19) —
-  `patch-home-visit-splitmedia.mjs` has `PHOTO_PATH` set to `null` with a
-  "HUMAN DECISION NEEDED" block; it refuses to write until someone picks the
-  photo. It was left open on purpose: `VisitBlock.astro` picks its photo
-  dynamically at build time from the A Day gallery pool via
-  `photosFor('home-visit', 1)`, so there is no single fixed image to carry
-  over into the stored section automatically. Look at `src/assets/photos/`
-  (the script suggests outdoor-exploration.jpg, about-hero.jpg,
-  gym-playtime.jpg as candidates) or the Sanity media library once reachable,
-  set `PHOTO_PATH` (and `ALT`) near the top of the script, then run
-  `--commit`.
+- **Nixon directory pin is street-level** (2026-08-04): OSM has no house
+  number for 7969 Saddleback Pl yet, so the pin sits on Saddleback Place
+  itself. Nudge it by hand in Studio → Family Hub → Directory → Nixon if
+  wanted.

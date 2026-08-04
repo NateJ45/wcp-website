@@ -44,10 +44,10 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "enrollmentCtaSection" => { "pageSlug": page->slug },
     _type == "testimonialSection" => {
       "items": select(
-        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role },
-        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role },
-        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role },
-        source == "manual" => manualItems[]->{ quote, author, role }
+        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role, photo },
+        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role, photo },
+        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role, photo },
+        source == "manual" => manualItems[]->{ quote, author, role, photo }
       )
     },
     _type == "teacherSection" => {
@@ -275,5 +275,5 @@ export function testimonialsQuery(
     featuredOnly ? 'featured == true' : null,
   ].filter(Boolean);
   const range = limit ? `[0...${limit}]` : '';
-  return `*[${filters.join(' && ')}] | order(orderRank)${range}{ quote, author, role, tags, featured }`;
+  return `*[${filters.join(' && ')}] | order(orderRank)${range}{ quote, author, role, tags, featured, photo }`;
 }

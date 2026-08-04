@@ -7,7 +7,6 @@
 // Add a route here when a new PRERENDERED page ships.
 export const routes = [
   '/',
-  '/about',
   '/classes/twos',
   '/classes/threes',
   '/classes/pre-k',
@@ -20,7 +19,6 @@ export const routes = [
   '/faq',
   '/enroll',
   '/enrollment-packet',
-  '/contact',
   '/virtual-tour',
   '/work-with-us',
   '/donate',

@@ -76,13 +76,7 @@ const liveFamilyCount = familyCountResult.status === 'fulfilled' ? familyCountRe
 const title = doc?.heading || 'Family Hub';
 const familyCount = settings?.familyCount ?? liveFamilyCount;
 
-// STOPGAP (Sanity API quota is exhausted, so Studio saves + patch scripts both
-// 402): the board wants the hub countdown to point at the Sep 9 kickoff picnics
-// (when families first gather), not the Sep 10 first class day that Site
-// Settings currently holds. Once the Sanity quota resets, set
-// siteSettings.firstDay = '2026-09-09' in the Studio and DELETE this override.
-// See the memory note project-wcp-pending-directory-patch.
-const firstDay = settings?.firstDay === '2026-09-10' ? '2026-09-09' : settings?.firstDay;
+const firstDay = settings?.firstDay;
 ---
 
 <HubShell title={title} bare pageTitle="Family Hub — West Chester Preschool">

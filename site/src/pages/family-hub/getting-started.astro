@@ -19,7 +19,6 @@ import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
-import { addClassDojoRegisterLink } from '@/lib/hub-stopgaps';
 
 interface HubPageDoc {
   heading?: string;
@@ -42,26 +41,7 @@ const title = doc?.heading || 'Getting Started at WCP';
 const intro =
   doc?.intro ||
   'New to the co-op, or need a refresher? Everything between “we’re in!” and the first day of school lives here.';
-// STOPGAP: correct the "Accessible entrance" card so it names the step-free
-// entrance by the gym. The seed is already updated; this rewrites the live card
-// body while Sanity writes are quota-blocked. Drop it once the doc is re-seeded
-// or patched in the Studio.
-const ACCESSIBLE_ENTRANCE_BODY =
-  'Door 5 has a few steps. If those are tricky with a stroller, wheelchair, or other mobility needs, the entrance by the gym is step-free. Your provided door code opens that one as well.';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sections = addClassDojoRegisterLink(
-  ((doc?.sections ?? []) as any[]).map((s) =>
-    s?._type === 'cardGridSection' && Array.isArray(s.cards)
-      ? {
-          ...s,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          cards: s.cards.map((c: any) =>
-            c?.title === 'Accessible entrance' ? { ...c, body: ACCESSIBLE_ENTRANCE_BODY } : c,
-          ),
-        }
-      : s,
-  ),
-);
+const sections = doc?.sections ?? [];
 
 const readMinutes = estimateReadMinutes(sections);
 const updated = formatMonthYear(doc?._updatedAt);

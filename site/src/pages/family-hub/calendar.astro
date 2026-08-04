@@ -100,57 +100,7 @@ const intro =
 // the shared column, not full-bleed marketing bands. That also makes the old
 // traditions white-vs-grey band a non-issue: HubSectionedBody's `bleed`
 // treatment paints those bands transparent over the hub canvas either way.
-//
-// STOPGAP (Sanity write quota-blocked — see docs/PENDING.md). The live calendar
-// doc still stores "How field trips work" as a proseSection (a bullet list).
-// The seed now builds it as a card grid of policy cards (matching the class
-// handbooks' arrival/dismissal cards), so both Board sections read as icon-card
-// grids. Until the doc can be re-seeded, rewrite that one proseSection into the
-// SAME card grid here. Scoped by its heading so nothing else is touched, and a
-// no-op once the live doc is already a cardGrid. Delete once
-// seed-hub-knowledge.mjs has re-run (docs/PENDING.md).
-const FIELD_TRIP_CARDS = [
-  {
-    _key: 'ft-slip',
-    icon: 'file-pen',
-    chip: 'sky',
-    title: 'Permission slip',
-    body: "Every trip needs a signed slip: your child's name, the date and timeframe, the destination (including whether there's water), your signature, and the date. No slip, no trip.",
-  },
-  {
-    _key: 'ft-ride',
-    icon: 'users',
-    chip: 'sky',
-    title: 'Getting there',
-    body: "Families provide the ride, by parent or parent-arranged carpool (the school doesn't arrange it). Tell the teacher whether your child is coming and how they're getting there.",
-  },
-  {
-    _key: 'ft-meet',
-    icon: 'map-pin',
-    chip: 'sky',
-    title: 'Meet on time',
-    body: 'Meet the teacher at the location at the start time. Parents are fully responsible for their own children for the whole outing.',
-  },
-  {
-    _key: 'ft-out',
-    icon: 'shield-check',
-    chip: 'sky',
-    title: 'Check out before you leave',
-    body: "Check out with the teacher before heading home, with your own child or a carpool, so attendance stays exact. Every trip carries a state-approved first aid kit, a first-aid-trained adult, and each child's health and emergency forms.",
-  },
-];
-const boardSections = (doc?.sections ?? []).map((s) =>
-  s?._type === 'proseSection' && s?.header?.title === 'How field trips work'
-    ? {
-        _type: 'cardGridSection',
-        _key: s._key,
-        header: s.header,
-        columns: 2,
-        layout: 'card',
-        cards: FIELD_TRIP_CARDS,
-      }
-    : s,
-);
+const boardSections = doc?.sections ?? [];
 
 const calEmbedUrl = calId
   ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calId)}&ctz=America/New_York&mode=MONTH&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0`

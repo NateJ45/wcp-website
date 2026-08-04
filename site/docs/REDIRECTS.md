@@ -42,9 +42,11 @@ password; they map 1:1 onto the new gated hub:
 | `/pre-k-am-classroom` | `/family-hub/pre-k-am`    |
 | `/pre-k-pm-classroom` | `/family-hub/pre-k-pm`    |
 
-Pages whose path did **not** change (`/about`, `/tuition`, `/faq`, `/contact`, `/enroll`,
-`/donate`, `/newsletter`, `/work-with-us`, `/why-wcp`, `/a-day-at-wcp`) resolve directly
-and need no redirect. `/families` was the old password-protected families area (returns
+Pages whose path did **not** change (`/tuition`, `/faq`, `/enroll`, `/donate`,
+`/newsletter`, `/work-with-us`, `/why-wcp`, `/a-day-at-wcp`) resolve directly and need no
+redirect. `/about` and `/contact` DID exist on the new site until the 2026-08-04 page
+merges (about → Why WCP?, contact → Visit Us); both now 301 via the static map in
+`astro.config.mjs` plus matching Board-editable redirect docs in the Studio. `/families` was the old password-protected families area (returns
 401, so it wasn't in the sitemap — found via the site nav); it and its dashboards map to
 the new `/family-hub/*` (see the table above). Note `/blog` and `/calendar` were the hub's
 gated meeting blog and calendar, so they point into the hub — not the public `/news` / `/events`.

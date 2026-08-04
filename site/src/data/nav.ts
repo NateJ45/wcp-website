@@ -58,9 +58,8 @@ export const mainNav: NavItem[] = [
     ],
   },
   { label: 'Tuition', href: '/tuition' },
-  // "Visit" becomes the merged Visit Us page (virtual tour + tour form +
-  // contact details) when the quota-queued content patch lands; the slug
-  // stays /virtual-tour so no redirect churn is needed before then.
+  // The merged Visit Us page (virtual tour + tour form + contact details,
+  // merged 2026-08-04); the slug stays /virtual-tour and /contact 301s to it.
   { label: 'Visit', href: '/virtual-tour' },
   { label: 'Enroll', href: '/enroll' },
 ];
@@ -82,7 +81,7 @@ export const footerNav: NavGroup[] = [
   {
     label: 'About',
     children: [
-      { label: 'Our Story', href: '/about' },
+      // "Our Story" (/about) merged into Why WCP? 2026-08-04; /about 301s there.
       { label: 'Why WCP?', href: '/why-wcp' },
       { label: 'Safety & Wellness', href: '/safety' },
       { label: 'What Families Say', href: '/reviews' },
@@ -106,7 +105,6 @@ export const footerNav: NavGroup[] = [
       { label: 'Schedule a Tour', href: '/virtual-tour#sec-pp-tour-form' },
       { label: 'Visit Us', href: '/virtual-tour' },
       { label: 'Enroll', href: '/enroll' },
-      { label: 'Contact', href: '/virtual-tour' },
     ],
   },
   {

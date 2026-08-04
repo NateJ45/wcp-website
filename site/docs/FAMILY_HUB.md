@@ -339,7 +339,8 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   inside every page-builder section — prose, card bodies, FAQ answers, schedule
   rows, and image ALT text — so "snow day" finds the closing-policy section, not
   nothing. Shaping lives in `src/lib/hub-search-index.ts` (unit-tested); the
-  endpoint runs `applyHubStopgaps` first so code-side content is findable too.
+  endpoint indexes the stored sections directly (the quota-era stopgap layer
+  that once rewrote them in code was retired 2026-08-04).
   Three rules hold it together:
   - **The Directory is never indexed.** Family names, emails, and phones are PII
     and this response is cached (board cache + a browser `Cache-Control`). The

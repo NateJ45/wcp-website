@@ -113,14 +113,8 @@ const segments = documentGroups.map((g) => ({
 // Editable heading/intro + closing section(s), from the hubPage doc (falls back
 // to the built-in strings + Drive card if no doc exists yet).
 const doc: HubPageDoc | null = await hubDocPromise;
-// Drop the full-bleed closing `ctaSection` ("Need a file that isn't listed?"):
-// the Board asked to remove it, and its full-bleed treatment is too heavy for
-// this page. Filtered in code because Sanity writes are quota-blocked; remove
-// this filter once the doc is patched in the Studio. (The built-in fallback
-// prompt was removed too — its Drive link is a redacted placeholder, so it can't
-// offer a working link anyway.)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const docSections = ((doc?.sections ?? []) as any[]).filter((s) => s?._type !== 'ctaSection');
+const docSections = (doc?.sections ?? []) as any[];
 const hasSections = docSections.length > 0;
 const title = doc?.heading || 'Handbook & Documents';
 const intro =

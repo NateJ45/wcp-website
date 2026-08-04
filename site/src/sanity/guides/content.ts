@@ -286,12 +286,6 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'callout',
-        tone: 'caution',
-        title: 'Paused during the site redesign (July 2026).',
-        text: 'The site is temporarily using a simplified navigation set in code while the pages are reorganized, so edits made here will NOT show on the site right now. If a menu link needs to change, ask Nathan. This page will say when menu editing is back on.',
-      },
-      {
-        kind: 'callout',
         tone: 'positive',
         title: 'One place for every menu.',
         text: 'The top navigation bar, the footer columns, and the small legal links at the very bottom all come from **Menus (header & footer)**. Change a link once here and it updates everywhere that menu shows.',
@@ -777,7 +771,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'To place the banner: open a **page**, add an **Enrollment status banner** section, and set where its button points (usually your enroll or contact page).',
+          'To place the banner: open a **page**, add an **Enrollment status banner** section, and set where its button points (usually the enroll or Visit Us page).',
           'When enrollment is open, you can set an optional **deadline** in Site Settings, and the banner shows "Apply by ...".',
         ],
       },
@@ -919,7 +913,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Change it once.',
-        text: 'The phone number, email, and address show up in the header, the footer, the contact page, and various buttons. They all read from **Site Settings**, so you update them in one spot.',
+        text: 'The phone number, email, and address show up in the header, the footer, the Visit Us page, and various buttons. They all read from **Site Settings**, so you update them in one spot.',
       },
       {
         kind: 'path',

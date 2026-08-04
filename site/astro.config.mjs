@@ -91,6 +91,12 @@ export default defineConfig({
     // /donate, /newsletter, /work-with-us, /why-wcp, /a-day-at-wcp) resolve
     // directly on the new site and need no redirect.
     '/home': '/',
+    // 2026-08-04 page merges: /contact folded into the Visit Us page and
+    // /about into Why WCP? (the docs are deleted). Sanity also holds matching
+    // Board-editable redirect docs; these static entries keep the 301s alive
+    // even in a build where the CMS redirect read fails.
+    '/contact': '/virtual-tour',
+    '/about': '/why-wcp',
     '/twos-class': '/classes/twos',
     '/threes-class': '/classes/threes',
     '/pre-k-class': '/classes/pre-k',

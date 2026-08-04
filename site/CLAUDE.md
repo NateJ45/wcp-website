@@ -42,7 +42,7 @@ npm run build        # astro build → dist/client (static) + dist/server (Worke
 npm run check        # astro check (types) + oxlint
 npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + reflow at 320/768/1024/1440 (builds fresh, serves dist; Chromium + WebKit-iPhone)
-npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/data (15 suites)
+npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/data (20 suites)
 npm run test:hub     # Playwright: SSR Family Hub — shell + Home + every reskinned section (rail, drawer, 320px, axe light+dark) — separate config, see gotcha
                      # Which suite covers what + the testing gotchas: docs/TESTING.md
 npm run check:links  # linkinator over dist/client
@@ -192,7 +192,7 @@ docs/                        # the deeper docs (see the list at the bottom of th
 - [docs/ROLES.md](docs/ROLES.md) — Sanity roles/access (owner-only admin task); what the tiers allow.
 - [docs/FORMS.md](docs/FORMS.md) — forms: variants, how submissions fan out (Sanity → Google Apps Script inbox → optional Resend), and the one-time Google setup.
 - [docs/REDIRECTS.md](docs/REDIRECTS.md) — mapping old Squarespace URLs → new at domain cutover.
-- [docs/PENDING.md](docs/PENDING.md) — **read this early in a session**: the quota-blocked Sanity patch queue, the code stopgaps papering over it, and open human tasks.
+- [docs/PENDING.md](docs/PENDING.md) — **read this early in a session**: the open patch queue, the remaining code-owned content decisions, and open human tasks. (The 2026-07 quota-freeze stopgap layer was fully retired 2026-08-04.)
 - [docs/GOOGLE.md](docs/GOOGLE.md) — every Google-side dependency (calendar, Apps Scripts, sheets, albums), which account owns it, and the recovery story.
 - [docs/TESTING.md](docs/TESTING.md) — which test suite covers what, and the testing gotchas.
 - [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) — the domain-cutover runbook (status-annotated).

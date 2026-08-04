@@ -14,7 +14,9 @@ import { createClient } from '@sanity/client';
 import { readFileSync } from 'node:fs';
 
 const env = readFileSync(new URL('../.env', import.meta.url), 'utf8');
-const token = (env.match(/SANITY_TOKEN=(.+)/) || [])[1]?.trim();
+// Strip optional surrounding quotes — the .env value is quoted, and passing
+// them through produces a baffling 401 "Session not found".
+const token = (env.match(/SANITY_TOKEN=(.+)/) || [])[1]?.trim().replace(/^"|"$/g, '');
 if (!token) throw new Error('SANITY_TOKEN not found in .env');
 
 const client = createClient({

@@ -26,9 +26,6 @@ import BudgetTable from '@/components/hub/BudgetTable.astro';
 import BudgetSnapshotPanel from '@/components/hub/BudgetSnapshotPanel.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
-// TEMPORARY: Sanity write quota maxed — a few content edits are applied in code
-// until they can be saved in the Studio. Remove with src/lib/hub-stopgaps.ts.
-import { applyHubStopgaps } from '@/lib/hub-stopgaps';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
 import { getStoreProfit } from '@/lib/fourthwall';
 import {
@@ -126,13 +123,7 @@ const STATUS_META: Record<FundraiserStatus, { label: string; kind: 'open' | 'wai
     upcoming: { label: 'Soon', kind: 'waitlist' },
     complete: { label: 'Done', kind: 'past' },
   };
-// Trim the Board-editable sections: drop the old count-up band
-// (statBandSection) AND the "The Budget" prose section — both are superseded by
-// the live BudgetTable below. The filter itself lives in hub-stopgaps.ts with
-// the rest of the quota-blocked content fixes, because anything ELSE reading
-// this doc has to trim it the same way (the search index deep-linked to the
-// dropped section while this filter was page-local).
-const docSections = applyHubStopgaps(doc?.sections, 'fundraising');
+const docSections = doc?.sections ?? [];
 const hasSections = docSections.length > 0;
 // Renamed: this is now the general Budget & Fundraising page. Keep a Board's
 // custom heading if they set one, but replace the old default "Fundraising".

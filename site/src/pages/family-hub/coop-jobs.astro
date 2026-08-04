@@ -93,18 +93,6 @@ try {
   coopTiers = coopTiersFallback;
 }
 
-// STOPGAP: we're not running private class Facebook pages this year, but the
-// live Sanity `coopRole` doc for Class Rep still lists it and can't be edited
-// while writes are quota-blocked. Strip the clause here so the role reads right
-// now; drop this once the doc is patched in the Studio.
-coopTiers = coopTiers.map((tier) => ({
-  ...tier,
-  roles: tier.roles.map((r) => ({
-    ...r,
-    body: r.body.replace(/,\s*runs the private class Facebook page/i, ''),
-  })),
-}));
-
 const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Co-op Jobs';
 const intro =
