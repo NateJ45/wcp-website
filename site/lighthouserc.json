@@ -5,7 +5,6 @@
       "staticDistDir": "./dist/client",
       "url": [
         "http://localhost/index.html",
-        "http://localhost/about/index.html",
         "http://localhost/why-wcp/index.html",
         "http://localhost/classes/twos/index.html",
         "http://localhost/classes/pre-k/index.html",
@@ -19,7 +18,6 @@
         "http://localhost/tuition/index.html",
         "http://localhost/faq/index.html",
         "http://localhost/enroll/index.html",
-        "http://localhost/contact/index.html",
         "http://localhost/news/index.html",
         "http://localhost/news/welcome-to-our-new-website/index.html",
         "http://localhost/events/index.html",
