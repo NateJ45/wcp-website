@@ -545,6 +545,28 @@ docs (idempotent; a `.dir-photos.json` cache avoids re-uploading). **This is rea
 and never enters git** — it lives only in the gated Sanity dataset. Going forward the Board
 adds/edits families directly in the Studio.
 
+Two maintainer scripts handle the start/end-of-year churn in bulk, when the Studio's
+one-at-a-time editing would be tedious. **Both take the family data as ARGUMENTS, never
+hardcoded** — this repo is public, and a list of real family names is exactly what must not be
+committed. Both are dry-run by default and print the full record before touching anything;
+add `--commit` to write.
+
+- `node scripts/add-directory-families.mjs <families.json> [--commit]` — creates one
+  `directoryEntry` per family from a JSON file **kept outside the working tree**. Validates
+  every child's class against the live Class docs (note: `class.slug` is a slug OBJECT here,
+  so the check reads `slug.current`), requires `optedIn` to be set explicitly per family, and
+  writes with `createIfNotExists` so it can never clobber a family a volunteer has since
+  edited. Run `geocode-directory.mjs` afterwards for the pins.
+- `node scripts/remove-directory-families.mjs <Surname> [...] [--commit]` — for families who
+  leave. Deletes the published doc, its draft, and the family photo asset, so no PII lingers.
+  Matching is case-insensitive on `familyName`; an asset still referenced elsewhere is kept
+  and logged rather than failing the run.
+
+`optedIn` mirrors the registration form's "may we print your family's name, address, email and
+phone on the class roster?" question. A family who answered **No** still gets a record (the
+Board needs it) but goes in with `optedIn: false`, so it never renders. That mapping is not
+automated — whoever imports a family is responsible for reading the form answer across.
+
 A family's pin comes from its `location` (a geopoint; the migration set it from the block's
 saved coordinates). For a family added later, a volunteer just types the home `address` and
 runs `node scripts/geocode-directory.mjs`, which geocodes any address with no pin yet (via

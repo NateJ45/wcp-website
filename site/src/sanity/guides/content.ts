@@ -1307,6 +1307,24 @@ export const guides: Guide[] = [
           'Turn on **Show in directory**, then **Publish**.',
         ],
       },
+      { kind: 'h', text: 'When a family leaves the school' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the family in **Directory**.',
+          'If they might come back, or you are not sure, just turn **Show in directory** off and **Publish**. They disappear from the list straight away and nothing is lost.',
+          'If they have left for good, delete the family instead, so their contact details do not sit in the system: open the **⋮** menu at the bottom of the family page and choose **Delete**.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Deleting cannot be undone.',
+        text:
+          'A deleted family cannot be brought back from the Studio. If several families are leaving at once, ask ' +
+          SITE.contactName +
+          ' — there is a script that removes them together and checks each one with you first.',
+      },
       { kind: 'seealso', items: ['Do it yourself vs. ask for help', 'Post a celebration'] },
     ],
   },
