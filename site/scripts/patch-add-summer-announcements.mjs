@@ -225,6 +225,7 @@ const DOCS = [
     _id: 'update-2026-lexie-paperwork-reminder',
     _type: 'update',
     title: 'Enrollment Paperwork & Background Check Reminders',
+    slug: { _type: 'slug', current: 'enrollment-paperwork-reminders-2026' },
     excerpt: 'Reminders on enrollment paperwork and background checks - both due August 1st.',
     publishedAt: '2026-07-18T12:00:00.000Z',
     pinned: true,
@@ -237,6 +238,7 @@ const DOCS = [
     _id: 'update-2026-summer-board-email',
     _type: 'update',
     title: 'Summer Checklist: Paperwork, Background Checks & Tuition (Due August 1st)',
+    slug: { _type: 'slug', current: 'summer-checklist-2026' },
     excerpt:
       'Enrollment paperwork, background checks, and tuition payments - all due August 1st, 2026 - plus the Family Hub, co-op job requests, and the school calendar.',
     publishedAt: '2026-07-18T12:00:01.000Z',
@@ -248,7 +250,10 @@ const DOCS = [
   },
 ];
 
+// createIfNotExists, NOT createOrReplace: this ran for real on 2026-08-04, and
+// the docs have since been edited (un-pinned after Aug 1, slugs added so the
+// cards are clickable). A re-run must never clobber the Studio's current state.
 for (const doc of DOCS) {
-  await apply(`${doc._id} — "${doc.title}"`, () => client.createOrReplace(doc));
+  await apply(`${doc._id} — "${doc.title}"`, () => client.createIfNotExists(doc));
 }
 done(DOCS.length);
