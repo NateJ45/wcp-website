@@ -40,6 +40,17 @@ interface RawNavDoc {
 function hrefOf(link: RawLink): string {
   if (link.linkType === 'url') return link.url ?? '#';
   const slug = link.pageSlug;
+  // A page link with no slug means the Menus doc's `page` reference is missing
+  // or dangling. That once happened to EVERY link at once (2026-08: a patch
+  // script wrote literal slugs instead of references) and the whole nav
+  // silently pointed home. Degrade to "/" so the build still ships, but say so
+  // in the build log where CI and `npm run build` make it visible.
+  if (!slug) {
+    console.warn(
+      `[nav] Menus link "${link.label ?? '(unlabelled)'}" has no page reference — ` +
+        'it will point at the home page. Fix it in Studio → Menus.',
+    );
+  }
   return !slug || slug === 'home' ? '/' : `/${slug}`;
 }
 function toLink(link: RawLink): NavLink {

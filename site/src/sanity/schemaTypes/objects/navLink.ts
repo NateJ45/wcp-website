@@ -41,9 +41,13 @@ export const navLink = defineType({
     }),
     defineField({
       name: 'url',
-      title: 'External URL',
+      title: 'Web address',
       type: 'url',
-      validation: (R) => R.uri({ scheme: ['http', 'https'] }),
+      description: 'A full https:// address, or a path on this site like /events.',
+      // allowRelative: the menus legitimately link code-owned routes that have
+      // no page doc behind them (/events, /colophon, /family-hub, and the
+      // /virtual-tour#sec-pp-tour-form deep link).
+      validation: (R) => R.uri({ scheme: ['http', 'https'], allowRelative: true }),
       hidden: ({ parent }) => parent?.linkType !== 'url',
     }),
   ],

@@ -61,7 +61,17 @@ function doGet() {
   var now = new Date();
   var windowStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   var windowEnd = new Date(now.getFullYear() + 1, now.getMonth(), 1);
-  var events = cal.getEvents(windowStart, windowEnd).map(eventToJson_);
+  // Prospective-family tour bookings ("Tour with <parent> ...") land on this
+  // calendar from the tour booking flow and carry visitor/child names — never
+  // serve them (the site filters them too, but keeping the names out of the
+  // feed entirely means they never leave Google). The weekly Drive backup
+  // still includes them: it is a private full-calendar backup.
+  var events = cal
+    .getEvents(windowStart, windowEnd)
+    .filter(function (e) {
+      return !/^\s*tour with\b/i.test(e.getTitle() || '');
+    })
+    .map(eventToJson_);
   return ContentService.createTextOutput(JSON.stringify(events)).setMimeType(
     ContentService.MimeType.JSON,
   );

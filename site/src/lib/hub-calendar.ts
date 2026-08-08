@@ -42,6 +42,30 @@ export function eventDate(start: string): Date {
   return start.length === 10 ? new Date(`${start}T12:00:00Z`) : new Date(start);
 }
 
+/**
+ * When an event stops counting as "upcoming". Timed events end at `end` (the
+ * feed has carried real end times since 2026-07-17), defaulting to start + 1h
+ * when the source has none — the same default the Add-to-Google link uses.
+ * All-day events hold through the end of their final Eastern calendar day:
+ * their day anchors to noon UTC (see eventDate), and noon UTC + 17h is
+ * midnight ET in winter (UTC-5) / 1 AM ET in summer (UTC-4), so an all-day
+ * event never disappears before its day is actually over.
+ */
+export function eventEndsAt(e: HubEvent): number {
+  const allDay = e.allDay || e.start.length === 10;
+  if (!allDay) {
+    return e.end ? new Date(e.end).getTime() : eventDate(e.start).getTime() + 3_600_000;
+  }
+  return eventDate(e.end ?? e.start).getTime() + 17 * 3_600_000;
+}
+
+/**
+ * Prospective-family tour bookings ("Tour with <parent> …") land on the school
+ * calendar from the tour booking flow. They carry visitor and child names, so
+ * the hub never shows them — filtered out of the feed for every caller.
+ */
+export const isTourBooking = (title: string) => /^\s*tour with\b/i.test(title || '');
+
 /** A date's Eastern calendar day as [year, month0, day]. en-CA gives ISO
  *  "YYYY-MM-DD"; splitting beats parsing back into a Date. */
 export function easternYMD(d: Date): [number, number, number] {
@@ -260,8 +284,11 @@ async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
       },
       { swrMs: 86_400_000 }, // +24h stale — 36h horizon, survives a quiet weekend
     );
+    // The tour filter runs AFTER the cache on purpose: a pattern change takes
+    // effect on deploy without needing a cache-key bump. (The committed Apps
+    // Script drops them at the source too, once redeployed — docs/PENDING.md.)
     const events = (raw ?? [])
-      .filter((e) => e && e.title && e.start)
+      .filter((e) => e && e.title && e.start && !isTourBooking(e.title))
       .sort((a, b) => eventDate(a.start).getTime() - eventDate(b.start).getTime());
     return events.length > 0 ? events : null;
   } catch {
@@ -291,13 +318,15 @@ async function fetchSanityEvents(): Promise<HubEvent[]> {
 
 /**
  * Upcoming events: the Google Calendar feed first, Sanity `event` docs as the
- * fallback. Always sorted soonest-first, filtered to today-or-later (Eastern).
+ * fallback. Always sorted soonest-first, filtered to still-running-or-later —
+ * an event drops off once it ENDS (see eventEndsAt), so a 9:30 AM playdate is
+ * gone from "Next up" by the afternoon instead of lingering until tomorrow.
  * Returns [] only when both sources fail or are empty.
  */
 export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
-  const cutoff = Date.now() - 86_400_000; // yesterday, so late-running events linger a day
+  const now = Date.now();
   const feed = await fetchFeedEvents(feedUrl);
-  const upcoming = (feed ?? []).filter((e) => eventDate(e.start).getTime() >= cutoff);
+  const upcoming = (feed ?? []).filter((e) => eventEndsAt(e) >= now);
   // Feed unreachable, or reachable but with nothing still upcoming → Sanity.
   return upcoming.length > 0 ? upcoming : fetchSanityEvents();
 }

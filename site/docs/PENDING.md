@@ -17,6 +17,13 @@ keeps only product-decision drops and the Act II grammar). The Studio is the
 source of truth again everywhere, including the Menus doc (the nav resolver
 reads it; `src/data/nav.ts` is only the empty-doc fallback).
 
+One casualty surfaced 2026-08-08: the first run of `patch-menus-doctrine.mjs`
+wrote page links as literal slug strings instead of `page` REFERENCES, so every
+nav link resolved to "/" on the live site (the whole public nav pointed home).
+Fixed same day: the script now writes real references and re-ran, and
+`resolveNavigation` warns at build time if a page link ever loses its
+reference again.
+
 ## Queued patch scripts
 
 | Script (`site/scripts/`)          | What it does                                                                                                                                                                                           | Blocked on                                                                                                                                                                                                                                          |
@@ -157,6 +164,15 @@ reads it; `src/data/nav.ts` is only the empty-doc fallback).
 - **Decide the Celebrations page's fate**: `/family-hub/celebrations` renders
   fine but NOTHING links to it. Either add it to `hub-nav.ts` (Community
   group) or retire the page.
+- **Re-paste the deployed calendar-feed script**: the checked-in
+  `scripts/apps-script/calendar-feed.gs` now filters prospective-family tour
+  bookings ("Tour with …" titles carry visitor and child names) out of the
+  feed (2026-08-08). The site filters them too (`isTourBooking` in
+  `src/lib/hub-calendar.ts`), so the hub already hides them — redeploying the
+  script keeps the names from leaving Google at all (Deploy → Manage
+  deployments → new version — same URL). Related but separate: the tour
+  bookings still sit on the PUBLIC school calendar (embed + ICS); moving them
+  to a private calendar is the real fix at the source.
 - **Re-paste the deployed forms-inbox script**: the checked-in
   `scripts/apps-script/forms-inbox.gs` gained `hours`/`photo` tabs + the photo
   FYI email (2026-07-17); the DEPLOYED copy coerces those kinds into the
