@@ -293,6 +293,7 @@ function socialCoverHtml() {
     .backpack .b{font-size:46px;line-height:1;display:block;margin-bottom:12px}
     .backpack p{font-size:29px;font-weight:600;color:#2b2f38;line-height:1.45}
     .backpack strong{color:#a85300}
+    .when{display:inline-flex;align-items:center;gap:12px;background:${NAVY};color:#fff;font-weight:700;font-size:29px;padding:14px 34px;border-radius:44px;margin-top:22px}
     .annot{font-size:42px;transform:rotate(-3deg);margin-top:22px}
     .chips{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;margin-top:auto;padding-top:24px}
     .cchip{color:#fff;font-weight:700;font-size:24px;padding:11px 24px;border-radius:40px}
@@ -306,6 +307,7 @@ function socialCoverHtml() {
       <span class="tape"></span>
       <span class="b">🎒</span>
       <p>${BACKPACK_NOTE} <strong>${DUE_NOTE}</strong></p>
+      <div class="when">📅&nbsp; Orientation is September 3rd</div>
     </div>
     <div class="annot">see you at orientation!</div>
     <div class="chips">${chips}</div>
