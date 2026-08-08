@@ -19,10 +19,9 @@ reads it; `src/data/nav.ts` is only the empty-doc fallback).
 
 ## Queued patch scripts
 
-| Script (`site/scripts/`)            | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Blocked on                                                                                                                                                                                                                                          |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `patch-paypal-student-fee-link.mjs` | Moves the Twos & Threes $45 student-fee button from its old webscr code to Lexie's new-style (NCP) payment link in Sanity (feeSchedule band + class docs). The code fallbacks already carry the new link; this fixes any stored Sanity values that override them. After running: click the $45 button on /family-hub/tuition, confirm the amount, and tell Lexie so she can verify it in QuickBooks. Once she confirms, the OTHER buttons (4 tuition, Pre-K student fee, registration, participation) get recreated in PayPal and their links pasted into the Studio — then the legacy branch in `payUrl` (src/data/classes.ts) can go. | A machine with `SANITY_TOKEN` in `.dev.vars` (authored in a tokenless session, 2026-08-08).                                                                                                                                                         |
-| `patch-home-visit-splitmedia.mjs`   | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.**                                                                                                                                                                                                                                                                                                                                                                                                                                  | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
+| Script (`site/scripts/`)          | What it does                                                                                                                                                                                           | Blocked on                                                                                                                                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patch-home-visit-splitmedia.mjs` | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.** | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
 
 ## Remaining code-owned content decisions (not stopgaps)
 
@@ -32,8 +31,23 @@ reads it; `src/data/nav.ts` is only the empty-doc fallback).
 | `src/lib/page-doctrine.ts` `SECTION_DROP.home` `k20`      | News hidden "for now" (Nathan, 2026-07-19): the home teaser and the footer News link are off; `/news`, articles, RSS and sitemap stay live | Nathan's call. Restore: delete `'k20'` + uncomment the News line in `src/data/nav.ts`. Permanent: delete the section from `page-home` instead |
 | `TestimonialSection.astro` co-op-life tag step            | `patch-testimonial-redistribution.mjs` skipped its co-op-life variety step: **0 testimonials carry the "co-op" tag**                       | Tag quotes in the Studio, re-run the script's co-op-life step (or set the section's tag by hand)                                              |
 
-## Waiting on a human (unchanged items)
+## Waiting on a human
 
+- **Paste the new PayPal student-fee link in the Studio (AFTER this branch
+  deploys).** PayPal's old webscr buttons were causing QuickBooks trouble;
+  Lexie recreated the Twos & Threes $45 student-fee button in PayPal's current
+  system (2026-08-08). Once the `payUrl` link-passthrough change is LIVE, open
+  Studio → Money & payments → Tuition & Fees → student-fee band "Twos &
+  Threes" and replace the old code (`GQZ67ZRZ4W9UN`) with
+  `https://www.paypal.com/ncp/payment/PVP3W4TNLKRPA` (also the "PayPal button —
+  student fee" field on the Twos and Threes class docs, if filled). Ordering
+  matters: pasted before the deploy, the old code wraps the link in the legacy
+  webscr URL and the button 404s. Then click the $45 button on
+  /family-hub/tuition, confirm the amount, and have Lexie verify the
+  transaction in QuickBooks. Once she confirms, recreate the remaining seven
+  buttons (4 tuition, Pre-K student fee, registration, participation) and
+  paste their links the same way — no code changes — then delete the legacy
+  branch in `payUrl` (src/data/classes.ts) and this entry.
 - **Choose the photo for the home visit block** —
   `patch-home-visit-splitmedia.mjs` has `PHOTO_PATH = null` with a "HUMAN
   DECISION NEEDED" block; it refuses to write until someone picks the photo
