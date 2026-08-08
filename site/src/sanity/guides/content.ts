@@ -692,7 +692,7 @@ export const guides: Guide[] = [
         tone: 'caution',
         title: 'PayPal buttons',
         text:
-          'The **PayPal button code** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
+          'The **PayPal button** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
           SITE.contactName +
           ' before filling those in.',
       },
@@ -725,13 +725,13 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The PayPal "Pay" buttons' },
       {
         kind: 'p',
-        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button code"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. Paste only the button code, the short mix of letters and numbers from PayPal, and not a full web link.',
+        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. For a button made in PayPal’s current system, open the button in PayPal, choose **Copy link**, and paste the whole link — it starts with paypal.com/ncp/payment/. (Buttons made in PayPal’s old system used a short code of letters and numbers instead; a code that is already in a box keeps working until that button is replaced.)',
       },
       {
         kind: 'callout',
         tone: 'caution',
         title: 'Double-check a new PayPal button.',
-        text: 'A wrong ID sends a family’s payment to the wrong place. After you change one, open the tuition page, click that Pay button, and confirm it shows the right amount in PayPal before you tell families.',
+        text: 'A wrong link sends a family’s payment to the wrong place. After you change one, open the tuition page, click that Pay button, and confirm it shows the right amount in PayPal before you tell families.',
       },
       {
         kind: 'callout',
@@ -1251,7 +1251,7 @@ export const guides: Guide[] = [
           '**Singleton** — a one-of-a-kind page, like **Site Settings**. There is only ever one, on purpose.',
           '**Field** — one box you type into, like "Phone number".',
           '**Workspace** — a view of the Studio. **Everyday edits** (where you start) shows the usual menu; **Everything** adds the rare extras. Switch with the name in the top-left corner. Both edit the same website.',
-          '**PayPal button code** — the short mix of letters and numbers that connects a Pay button to the school’s PayPal. Not a price and not a web link.',
+          '**PayPal button** — the box that connects a Pay button to the school’s PayPal. Newer buttons are a full payment link (Copy link in PayPal, starts with paypal.com/ncp/payment/); older ones were a short code of letters and numbers, which still works. Never a price.',
         ],
       },
       {
@@ -1434,7 +1434,7 @@ export const guides: Guide[] = [
           'Adding or editing a family in the directory.',
           'Posting a Family Hub announcement.',
           'Updating the phone, email, address, or Facebook and Instagram links in Site Settings.',
-          'Updating a PayPal button code the treasurer gave you (then click the Pay button to check it opens the right amount).',
+          'Updating a PayPal button link the treasurer gave you (then click the Pay button to check it opens the right amount).',
         ],
       },
       { kind: 'h', text: 'Check with the board / ' + SITE.contactName + ' first' },

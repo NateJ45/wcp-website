@@ -4,7 +4,8 @@
 // Single source of truth for class facts used across the Family Hub class pages
 // (and available to refactor the public class pages onto later). Figures mirror
 // the current live tuition block. PayPal `payId` values are the school's real
-// hosted-button ids for the gated pay buttons.
+// pay values for the gated pay buttons — a bare legacy button code or a full
+// new-style payment link, see `payUrl` at the bottom.
 // =============================================================================
 
 export interface WcpClass {
@@ -22,9 +23,9 @@ export interface WcpClass {
   annual: string;
   /** Annual student/enrichment fee for this class. */
   studentFee: string;
-  /** PayPal hosted-button id for this class's monthly tuition. */
+  /** PayPal pay value for this class's monthly tuition (see `payUrl`). */
   payId: string;
-  /** PayPal hosted-button id for this class's student fee. */
+  /** PayPal pay value for this class's student fee (see `payUrl`). */
   studentFeePayId: string;
 }
 
@@ -42,7 +43,7 @@ export const classes: WcpClass[] = [
     annual: '$630',
     studentFee: '$45',
     payId: 'NBFM9AD6GTW7A',
-    studentFeePayId: 'GQZ67ZRZ4W9UN',
+    studentFeePayId: 'https://www.paypal.com/ncp/payment/PVP3W4TNLKRPA',
   },
   {
     slug: 'threes',
@@ -57,7 +58,7 @@ export const classes: WcpClass[] = [
     annual: '$1,350',
     studentFee: '$45',
     payId: 'J7HLQFJU8NRAG',
-    studentFeePayId: 'GQZ67ZRZ4W9UN',
+    studentFeePayId: 'https://www.paypal.com/ncp/payment/PVP3W4TNLKRPA',
   },
   {
     slug: 'pre-k-am',
@@ -96,6 +97,23 @@ export const classBySlug = Object.fromEntries(classes.map((c) => [c.slug, c])) a
   WcpClass
 >;
 
-/** Build the PayPal hosted-button checkout URL for a given button id. */
-export const payUrl = (hostedButtonId: string) =>
-  `https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=${hostedButtonId}`;
+/**
+ * Build the PayPal checkout URL for a stored pay value.
+ *
+ * PayPal has two generations of hosted buttons, and the school is mid-migration
+ * (2026-08, one button at a time so the Treasurer can verify each in
+ * QuickBooks). The stored value's shape says which generation it is:
+ *
+ * - A full link (`https://www.paypal.com/ncp/payment/<ID>`) — a NEW-style
+ *   button's shareable payment link, passed through as-is. New buttons get
+ *   entered this way (PayPal dashboard → the button → "Copy link").
+ * - A bare button code (`GQZ67ZRZ4W9UN`) — an OLD-style button, wrapped in the
+ *   legacy webscr checkout URL. Old and new codes look identical, so the full
+ *   link is the only reliable signal; never enter a new button as a bare code.
+ *
+ * Once every button is migrated the legacy branch can go.
+ */
+export const payUrl = (payIdOrLink: string) =>
+  payIdOrLink.startsWith('https://')
+    ? payIdOrLink
+    : `https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=${payIdOrLink}`;

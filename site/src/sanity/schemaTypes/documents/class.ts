@@ -172,19 +172,19 @@ export const classType = defineType({
     }),
     defineField({
       name: 'payId',
-      title: 'PayPal button code — tuition',
+      title: 'PayPal button — tuition',
       type: 'string',
       group: 'tuition',
       description:
-        'The code from the PayPal button for this class’s tuition (letters and numbers, copied from PayPal — not a price). Changing it changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
+        'The payment link from the PayPal button for this class’s tuition — in PayPal, open the button and Copy link (it starts with paypal.com/ncp/payment/). Paste the whole link. Older buttons used a short code instead; a code still works until that button is replaced. Changing this changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'studentFeePayId',
-      title: 'PayPal button code — student fee',
+      title: 'PayPal button — student fee',
       type: 'string',
       group: 'tuition',
       description:
-        'The code from the PayPal button for this class’s student fee. Step-by-step help: Help & Guide → "Change tuition or fees".',
+        'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
 
     // Page details

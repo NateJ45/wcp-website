@@ -789,7 +789,8 @@ island) — the single album read rides the CDN cache, below the cost of an extr
 | Class pages                            | Fact-card + pay-button layout, teacher modal                                                                                                                                                                                                            | `class` docs (facts, button) + `teacherNote` docs  |
 
 Only the widget **layout** stays in code. All of its content is Board-editable through its own
-doc type: class facts, tuition rates, and PayPal button ids live in the `class` docs and the
+doc type: class facts, tuition rates, and PayPal pay values (a new-style payment link, or a
+legacy button code — see `payUrl` in `src/data/classes.ts`) live in the `class` docs and the
 `feeSchedule` singleton; documents, teacher notes, campaigns, co-op roles, and family cards each
 have their own docs. A mistyped icon name from any of these is guarded by `safeIcon`, so it
 can never crash a page. Everything on every hub page is now Board-editable.

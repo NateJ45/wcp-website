@@ -63,7 +63,7 @@ function singleton(S: StructureBuilder, schemaType: string, title: string, icon:
 // Shared groups — used by BOTH workspaces (Everyday edits + Everything), so
 // each is built once here and never drifts between the two.
 
-// Money & payments — every dollar amount and PayPal button code in one place:
+// Money & payments — every dollar amount and PayPal button in one place:
 // the fee schedule, per-class tuition, and fundraising campaigns.
 function moneyGroup(S: StructureBuilder) {
   return S.listItem()

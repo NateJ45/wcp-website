@@ -46,7 +46,13 @@ interface FeeSchedule {
 
 // Fallbacks — used per field when Sanity is missing a value or the read fails.
 const studentFeesFallback = [
-  { label: 'Twos & Threes', amount: '$45', payId: 'GQZ67ZRZ4W9UN' },
+  // New-style (NCP) button, migrated 2026-08 — a full payment link, not a bare
+  // code (payUrl passes links through; see src/data/classes.ts).
+  {
+    label: 'Twos & Threes',
+    amount: '$45',
+    payId: 'https://www.paypal.com/ncp/payment/PVP3W4TNLKRPA',
+  },
   { label: 'Pre-K AM & PM', amount: '$50', payId: 'A797LM4LL5PGJ' },
 ];
 const enrollmentFeesFallback = [

@@ -36,11 +36,11 @@ export const feeSchedule = defineType({
     }),
     defineField({
       name: 'registrationPayId',
-      title: 'PayPal button code — registration',
+      title: 'PayPal button — registration',
       type: 'string',
       group: 'enrollment',
       description:
-        'The code from the PayPal "registration fee" button (a short mix of letters and numbers, copied from PayPal — not a price). Changing it changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
+        'The payment link from the PayPal "registration fee" button — in PayPal, open the button and Copy link (it starts with paypal.com/ncp/payment/). Paste the whole link. Older buttons used a short code instead; a code still works until that button is replaced. Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'participationFee',
@@ -60,11 +60,11 @@ export const feeSchedule = defineType({
     }),
     defineField({
       name: 'participationPayId',
-      title: 'PayPal button code — participation',
+      title: 'PayPal button — participation',
       type: 'string',
       group: 'enrollment',
       description:
-        'The code from the PayPal "participation deposit" button. Changing it changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
+        'The payment link from the PayPal "participation deposit" button (Copy link in PayPal; older buttons used a short code, which still works). Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
       name: 'annualAdjustmentNote',
@@ -95,10 +95,10 @@ export const feeSchedule = defineType({
             { name: 'amount', title: 'Amount', type: 'string', description: 'e.g. "$45".' },
             {
               name: 'payId',
-              title: 'PayPal button code',
+              title: 'PayPal button',
               type: 'string',
               description:
-                'The code from the matching PayPal button (letters and numbers, copied from PayPal). Help & Guide → "Change tuition or fees".',
+                'The payment link from the matching PayPal button (Copy link in PayPal; older buttons used a short code, which still works). Help & Guide → "Change tuition or fees".',
             },
           ],
           preview: { select: { title: 'label', subtitle: 'amount' } },

@@ -42,7 +42,7 @@ npm run build        # astro build → dist/client (static) + dist/server (Worke
 npm run check        # astro check (types) + oxlint
 npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + reflow at 320/768/1024/1440 (builds fresh, serves dist; Chromium + WebKit-iPhone)
-npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/data (20 suites)
+npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/data (21 suites)
 npm run test:hub     # Playwright: SSR Family Hub — shell + Home + every reskinned section (rail, drawer, 320px, axe light+dark) — separate config, see gotcha
                      # Which suite covers what + the testing gotchas: docs/TESTING.md
 npm run check:links  # linkinator over dist/client
