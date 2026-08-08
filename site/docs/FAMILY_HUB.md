@@ -506,6 +506,14 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined). Edit the
   content there and regenerate; the originals were plain Word exports that still used the
   school's old name.
+- **Supply list.** The same action row carries a **"Supply list (PDF)"** pill on both class
+  pages, linking `public/supplies/supply-list.pdf` — one brand-styled one-pager covering
+  ALL four classes, each list card in its class colour. Like the curriculum guides it is
+  NOT CMS-editable: the items + layout are the SOURCE OF TRUTH in
+  `scripts/generate-supplies.mjs` (`npm run gen:supplies`), which also renders a 1080x1350
+  social carousel (`public/supplies/social/*.png` — cover, one slide per class, wish list)
+  for the Facebook/Instagram back-to-school posts. The filename is deliberately year-less
+  so the pill links never rot; each fall update `YEAR` + the items and regenerate.
 
 ## Updates / meeting blog
 

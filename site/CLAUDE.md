@@ -88,6 +88,7 @@ scripts/
   seed-*.mjs / patch-*.mjs   # idempotent content seeds + queued one-shot patches (open queue: docs/PENDING.md)
   generate-og.mjs            # postbuild: renders /og/*.jpg share cards
   generate-curriculum.mjs    # `npm run gen:curriculum`: renders the branded class Curriculum Guide PDFs → public/curriculum/ (content is the source of truth in this file)
+  generate-supplies.mjs      # `npm run gen:supplies`: renders the branded School Supply List → public/supplies/ (print PDF + the FB/IG social carousel; content is the source of truth in this file)
   apps-script/               # committed source for the deployed Google Apps Scripts (see docs/GOOGLE.md)
 docs/                        # the deeper docs (see the list at the bottom of this file)
 ```

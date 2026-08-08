@@ -148,6 +148,21 @@ const classCards = [
             Threes curriculum (PDF)
           </Button>
           {
+            /* Supply list — one branded one-pager for ALL classes (each class
+              in its own color inside). Static PDF in public/supplies, generated
+              by scripts/generate-supplies.mjs. */
+          }
+          <Button
+            href="/supplies/supply-list.pdf"
+            target="_blank"
+            rel="noopener"
+            variant="outline"
+            size="sm"
+          >
+            <Icon name="clipboard-list" class="h-4 w-4" aria-hidden="true" />
+            Supply list (PDF)
+          </Button>
+          {
             /* Twos and Threes are two separate public program pages (Pre-K AM/PM
               share one), so link each rather than a single "full program" pill. */
           }
