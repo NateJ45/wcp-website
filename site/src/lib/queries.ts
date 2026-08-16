@@ -187,8 +187,20 @@ export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`
 /** The enrollment chair's availability Sheet ID (public class-card badges). */
 export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"][0].availabilitySheetId`;
 
-/** Live count of families visible in the gated Directory (opted-in only). */
-export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true])`;
+/**
+ * Live count of FAMILIES visible in the gated Directory (opted-in only).
+ *
+ * `count(children) > 0` is what makes this a family count rather than an entry
+ * count: the Directory also holds the teachers and the administrator (the
+ * schema's parent `role` field takes a staff title on purpose), and they have
+ * no children entries. Without the filter they were counted as families and the
+ * org chart read "37 enrolled families" against a real roster of 34.
+ *
+ * It still measures the DIRECTORY, not enrollment — a family who opts out is
+ * enrolled but uncounted. Anywhere that needs the true enrolled number should
+ * use the `familyCount` override on siteSettings instead.
+ */
+export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true && count(children) > 0])`;
 
 /** The site-wide alert banner (only meaningful when active). */
 export const CLOSURE_ALERT_QUERY = `*[_type == "closureAlert"][0]{ active, message, tone, linkLabel, linkUrl }`;

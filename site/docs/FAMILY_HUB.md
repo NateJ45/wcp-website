@@ -127,7 +127,11 @@ The greeting hero and progress bar read four optional `siteSettings` fields (Stu
 Settings → School year tab**): `yearStart` and `yearEnd` (drive the school-year progress bar),
 `firstDay` (drives the "N days until school" countdown before the year starts), and
 `familyCount` (an optional override for the family count shown on the dashboard; leave it blank
-to use a live count of opted-in Directory families instead). All four are meant to be **filled
+to use a live count of opted-in Directory families instead — that live count is
+`DIRECTORY_FAMILY_COUNT_QUERY`, which counts opted-in entries **that have children**, so the
+teacher/admin entries in the Directory aren't counted as families. It measures the DIRECTORY,
+not enrollment: a family who opts out is enrolled but uncounted, so set the override here when
+the number needs to be true enrollment). All four are meant to be **filled
 in by hand in the Studio at the start of each school year** — there's no migration script for
 them, unlike the Directory import.
 
