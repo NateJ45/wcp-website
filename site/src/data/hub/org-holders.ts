@@ -123,12 +123,19 @@ export const secretaryBranch: ChairStack[] = [
   },
 ];
 
-/** One rep per class (green tier). Names set each fall. */
+/**
+ * One rep per class (green tier). Names set each fall, from the Board's
+ * enrollment list (the "CLASS REP" rows in its Job column). One rep per class,
+ * so a rep who shares the job with a spouse is still listed as the single named
+ * contact. No email: there is no class-rep role mailbox, and a volunteer's
+ * personal address must never land in this (public) repo — families reach a rep
+ * through the Directory. See the share-link/privacy rules in CLAUDE.md.
+ */
 export const classReps: OrgPerson[] = [
-  { role: 'Twos Rep', icon: 'blocks' },
-  { role: 'Threes Rep', icon: 'sprout' },
-  { role: 'Pre-K AM Rep', icon: 'sun' },
-  { role: 'Pre-K PM Rep', icon: 'moon' },
+  { role: 'Twos Rep', icon: 'blocks', name: 'Laura Gilbert' },
+  { role: 'Threes Rep', icon: 'sprout', name: 'Jordyn Frasier' },
+  { role: 'Pre-K AM Rep', icon: 'sun', name: 'Megan Waid' },
+  { role: 'Pre-K PM Rep', icon: 'moon', name: "Melissa O'Brien" },
 ];
 
 /** The VP's cabinet (right branch of the old chart). */

@@ -481,7 +481,9 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   PM). Each class elects ONE parent rep in the fall; until then the rep card is a designed
   **"To be announced"** placeholder that reserves the seat. Rep names/emails/photos live in
   `src/data/hub/org-holders.ts` (`classReps`, code-owned, so they can be filled in while
-  the Studio is quota-blocked). Below the row, a `ClassAskGuide` box (**"Not sure who to
+  the Studio is quota-blocked); all four seats are named for 2026-27, with no email on any
+  of them (there is no class-rep role mailbox and personal addresses stay out of this
+  public repo). Below the row, a `ClassAskGuide` box (**"Not sure who to
   ask?"**) splits **teacher vs. class rep** questions — grounded in `coop-roles.ts` + the
   class handbooks (teacher = the child, curriculum, routines, attendance, health-in-class;
   rep = the helping schedule, class updates, the class page, parties + Teacher
@@ -812,7 +814,10 @@ President" chip in the hero; "Welcome letter" action on the teacher card) that n
 unhides and wires when the modal is present — JS-only, like the modal itself.
 
 **Org chart holders:** who fills each role each year is `src/data/hub/org-holders.ts` — a
-plain data file (names/emails only render behind the gate). Update it after spring elections.
+plain data file (names/emails only render behind the gate). Update it after spring elections,
+and again once the class reps are settled — the Board's enrollment list is the source of
+truth, in its Job column ("CLASS REP", "President", ...). Three seats are still open for
+2026-27: Facilities Chair, Family Activities Chair, and Copy Room Helper.
 
 ---
 
