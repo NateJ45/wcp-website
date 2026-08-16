@@ -40,6 +40,16 @@ reference again.
 
 ## Waiting on a human
 
+- **Replace the Pre-K class-pet placeholder with a real photo of Pickles.**
+  `scripts/patch-prek-pet-splitmedia.mjs` (run 2026-08-16) converted the Pre-K
+  class-pet blurb from a centered proseSection into a `splitMediaSection`, so it
+  now matches the Twos page's Kit the Kat block. It carries a generated
+  placeholder image ("A photo of Pickles goes here") so the layout is real.
+  Swap it in Studio -> Family Hub -> Pre-K Classroom -> the class-pet section ->
+  the row's image, and rewrite the alt text to describe the actual photo (it
+  currently says it is a placeholder, which a screen reader will read aloud).
+  The PM class has not named its pup yet, so the copy stays as seeded until it does.
+
 - **Paste the new PayPal student-fee link in the Studio (AFTER this branch
   deploys).** PayPal's old webscr buttons were causing QuickBooks trouble;
   Lexie recreated the Twos & Threes $45 student-fee button in PayPal's current

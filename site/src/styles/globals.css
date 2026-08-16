@@ -1643,6 +1643,49 @@ li:nth-child(4n + 4) > .hub-note {
   }
 }
 
+/* -- The hub's take on the same print ---------------------------------------
+   The note above used to end "the hub is a different surface that keeps flat
+   imagery", and that is what shipped: .wcp-photo-print was scoped to
+   .wcp-site-paper, so on a hub class page the class-pet photo rendered as the
+   one bare rectangle on a page whose other photos are all framed prints.
+   Nathan asked for it to match (2026-08-16), so the hub gets the primitive too.
+
+   It is a SEPARATE rule rather than an unscoped one because the two surfaces
+   frame a print differently, and each is right for its own neighbours:
+     - Public: hard-edged white paper, fixed in both themes (physical-object
+       doctrine — those prints sit on warm construction paper).
+     - Hub: rounded and theme-reactive, because the prints families meet first
+       on these pages are StoryTimelineSection's photos (rounded-lg, bg-surface,
+       shadow-md, tilted), and a hard-edged fixed-white frame beside them reads
+       as a different component rather than the same one.
+
+   `body.` is load-bearing: the unscoped `.dark .wcp-photo-print` above pins a
+   light paper colour, and this rule has to outrank it in dark mode rather than
+   depend on which one appears later in the file. -----------------------------*/
+body.wcp-hub-paper .wcp-photo-print {
+  --print-tilt: -1.2deg;
+  position: relative;
+  padding: 0.5rem 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+  transform: rotate(var(--print-tilt));
+}
+body.wcp-hub-paper .wcp-photo-print > * {
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+/* Hover-straighten, the same Act II move the public print uses. */
+@media (prefers-reduced-motion: no-preference) {
+  body.wcp-hub-paper .wcp-photo-print {
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  body.wcp-hub-paper .wcp-photo-print:hover,
+  body.wcp-hub-paper .wcp-photo-print:focus-within {
+    --print-tilt: 0deg;
+  }
+}
+
 /* -- Closing CTA band: the navy closer was a flat navy slab, the one large
    surface on the page carrying none of the construction-paper texture the hero
    drench and the hub canvas both have (Nathan, 2026-07-19). It now takes the

@@ -31,7 +31,9 @@ import { getHubClass } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, DIRECTORY_REP_CONTACTS_QUERY } from '@/lib/queries';
+import { classReps } from '@/data/hub/org-holders';
+import { toContactMap, type RepContact, type RepContactRow } from '@/lib/hub-rep-contacts';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
@@ -54,6 +56,26 @@ try {
 } catch {
   doc = null;
 }
+
+// Rep contact details, in ONE read for both cards on this page. PII, so it
+// passes no cache (see the caching rules in CLAUDE.md) — and it is scoped to
+// this page's two reps rather than all four, so no page carries contact rows it
+// doesn't render. Any failure just drops the links.
+const repNames = classReps
+  .filter((r) => r.role === 'Pre-K AM Rep' || r.role === 'Pre-K PM Rep')
+  .map((r) => r.name)
+  .filter((n): n is string => Boolean(n));
+let repContacts = new Map<string, RepContact>();
+if (repNames.length > 0) {
+  try {
+    repContacts = toContactMap(
+      await sanityFetch<RepContactRow[]>(DIRECTORY_REP_CONTACTS_QUERY, { names: repNames }),
+    );
+  } catch {
+    repContacts = new Map();
+  }
+}
+
 const title = doc?.heading || 'Pre-K Classroom';
 const intro =
   doc?.intro ||
@@ -158,8 +180,18 @@ const classCards = [
       }
       <div class="mb-4 grid gap-4 lg:grid-cols-3">
         <TeacherCard slug="pre-k" />
-        <ClassRepCard slug="pre-k-am" role="Pre-K AM Rep" label="Morning class rep · 2026-27" />
-        <ClassRepCard slug="pre-k-pm" role="Pre-K PM Rep" label="Afternoon class rep · 2026-27" />
+        <ClassRepCard
+          slug="pre-k-am"
+          role="Pre-K AM Rep"
+          label="Morning class rep · 2026-27"
+          contacts={repContacts}
+        />
+        <ClassRepCard
+          slug="pre-k-pm"
+          role="Pre-K PM Rep"
+          label="Afternoon class rep · 2026-27"
+          contacts={repContacts}
+        />
       </div>
 
       {/* Who to ask for what — teacher vs. class rep. */}

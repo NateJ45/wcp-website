@@ -485,9 +485,15 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   PM). Each class elects ONE parent rep in the fall; until then the rep card is a designed
   **"To be announced"** placeholder that reserves the seat. Rep names/emails/photos live in
   `src/data/hub/org-holders.ts` (`classReps`, code-owned, so they can be filled in while
-  the Studio is quota-blocked); all four seats are named for 2026-27, with no email on any
-  of them (there is no class-rep role mailbox and personal addresses stay out of this
-  public repo). Below the row, a `ClassAskGuide` box (**"Not sure who to
+  the Studio is quota-blocked); all four seats are named for 2026-27. Their **contact
+  details are not there** -- a volunteer's email and phone are PII and this repo is public.
+  The card's "Say hi" / "Call or text" links come from the Directory instead, read per
+  request behind the gate: the page does ONE uncached read
+  (`DIRECTORY_REP_CONTACTS_QUERY`) for its two reps and passes the map down, joining on the
+  rep's full name, so the name in `org-holders.ts` must match the adult's name on their
+  Directory entry exactly. Shaping + the `tel:` formatting live in
+  `src/lib/hub-rep-contacts.ts` (pure, unit-tested). A rep who opted out of the Directory,
+  or whose name doesn't match, simply renders without links. Below the row, a `ClassAskGuide` box (**"Not sure who to
   ask?"**) splits **teacher vs. class rep** questions — grounded in `coop-roles.ts` + the
   class handbooks (teacher = the child, curriculum, routines, attendance, health-in-class;
   rep = the helping schedule, class updates, the class page, parties + Teacher

@@ -202,6 +202,22 @@ export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"
  */
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true && count(children) > 0])`;
 
+/**
+ * Contact details for the named class reps, read from the Directory at request
+ * time. CONTAINS PII — never cache the result (see the caching rules in
+ * CLAUDE.md) and never render it outside the gate.
+ *
+ * `optedIn == true` is load-bearing: a rep who opted out of the Directory has
+ * said she doesn't want her contact details listed, and holding a co-op job
+ * doesn't revoke that. Her card simply renders without links.
+ *
+ * The double filter narrows to the matching families first, then to the
+ * matching adults inside them, so the response carries only the reps' rows
+ * rather than every parent in the school. $names is the rep names from
+ * `classReps` (src/data/hub/org-holders.ts), which is the join key.
+ */
+export const DIRECTORY_REP_CONTACTS_QUERY = `*[_type == "directoryEntry" && optedIn == true && count(parents[@.name in $names]) > 0].parents[@.name in $names]{ name, email, phone }`;
+
 /** The site-wide alert banner (only meaningful when active). */
 export const CLOSURE_ALERT_QUERY = `*[_type == "closureAlert"][0]{ active, message, tone, linkLabel, linkUrl }`;
 

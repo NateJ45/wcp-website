@@ -249,9 +249,13 @@ const currentPath = Astro.url.pathname;
   {
     /* wcp-site-paper (public only): scopes the construction-paper texture layer
       to the marketing site's warm bands (globals.css "Public paper texture"),
-      keeping the hub's own .wcp-hub-canvas the single texture owner there. */
+      keeping the hub's own .wcp-hub-canvas the single texture owner there.
+      wcp-hub-paper is its hub counterpart — NOT a texture layer, just the
+      marker that lets globals.css give the hub its own take on a shared
+      primitive (today: .wcp-photo-print, which the two surfaces frame
+      differently). Exactly one of the two is always present. */
   }
-  <body class:list={['relative', chrome !== 'hub' && 'wcp-site-paper']}>
+  <body class:list={['relative', chrome !== 'hub' ? 'wcp-site-paper' : 'wcp-hub-paper']}>
     <!-- Skip link: first focusable element, hidden until focused, then jumps
          keyboard/screen-reader users straight to the page content. Sits above
          the overlay header (z-50) so it's never hidden behind it. -->
