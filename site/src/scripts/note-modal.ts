@@ -76,6 +76,9 @@ function close() {
     /* private browsing — show again next visit, fine */
   }
   lastFocused?.focus();
+  // The first-visit tour (hub-tour.ts) waits for this before it opens: the
+  // President speaks first, the tour guide second.
+  document.dispatchEvent(new CustomEvent('wcp:note-closed'));
 }
 
 function init() {

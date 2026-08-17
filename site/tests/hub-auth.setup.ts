@@ -45,5 +45,13 @@ setup('sign in to the family hub', async ({ page, context }) => {
   // Landing on the hub (not back on the login form) is the proof it worked.
   await expect(page).toHaveURL(/\/family-hub\/?$/);
 
+  // Mark the first-visit tour as seen, so its overlay never blocks the other
+  // suites. tests/hub-tour.spec.ts clears this on purpose to test the tour.
+  await page.evaluate(() => {
+    const tour = document.querySelector('[data-tour-modal]');
+    const version = tour?.getAttribute('data-tour-version') ?? '';
+    localStorage.setItem('wcp-tour-seen', version);
+  });
+
   await context.storageState({ path: AUTH_FILE });
 });

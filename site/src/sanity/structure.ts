@@ -175,6 +175,7 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           // The rail menu, right under the pages it arranges (the public
           // header/footer equivalent lives in Site setup as "Menus").
           singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
+          singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
           singleton(S, 'presidentNote', "President's note", emoji('💌')),
           S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
           S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
@@ -252,6 +253,7 @@ const PLACED = new Set([
   'directoryEntry',
   'hubPage',
   'hubNavMenu',
+  'hubTour',
   'presidentNote',
   'signupSheet',
   'signupEntry',

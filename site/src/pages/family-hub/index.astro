@@ -18,6 +18,7 @@ import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import HubGreeting from '@/components/hub/HubGreeting.astro';
 import ClassHelperRow from '@/components/hub/ClassHelperRow.astro';
 import PresidentNoteModal from '@/components/hub/PresidentNoteModal.astro';
+import HubTourModal from '@/components/hub/HubTourModal.astro';
 import HubEventDialog from '@/components/hub/HubEventDialog.astro';
 import UpcomingEventsWidget from '@/components/hub/UpcomingEventsWidget.astro';
 import WeatherWeekWidget from '@/components/hub/WeatherWeekWidget.astro';
@@ -418,6 +419,7 @@ const firstDay = settings?.firstDay;
 
   {/* The President's welcome letter — pops once per version stamp. */}
   <PresidentNoteModal />
+  <HubTourModal />
 
   {
     /* Event details dialog for the Upcoming Events widget rows — same shared

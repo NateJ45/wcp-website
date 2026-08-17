@@ -1,0 +1,258 @@
+---
+/* ============================================================================
+   HubTourModal — the first-visit tour of the Family Hub
+   ============================================================================
+   A short walkthrough for a family's first sign-in. It renders hidden on the
+   hub home. src/scripts/hub-tour.ts opens it once per version stamp:
+     - after the President's welcome note closes, when that note is due;
+     - directly, when no note is due.
+   Closing it (Skip, Done, X, backdrop, or Esc) stores the version in
+   localStorage, so the tour stays gone until the Board bumps the version.
+   A "Take the tour" chip in the greeting hero reopens it any time.
+
+   The STRUCTURE is code. The step WORDING is Board-editable (the `hubTour`
+   singleton); each committed string below is the fallback for a blank field.
+   Step 2 shows different wayfinding text on phone and desktop (CSS only).
+   Step 3 embeds real class-picker chips that write the same localStorage key
+   as the home picker (wcp-my-classes), wired by hub-tour.ts.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_TOUR_QUERY } from '@/lib/queries';
+
+interface TourDoc {
+  enabled?: boolean;
+  version?: string;
+  [key: string]: unknown;
+}
+let doc: TourDoc | null = null;
+try {
+  doc = await sanityFetch<TourDoc | null>(HUB_TOUR_QUERY, {}, { cache: BOARD_CONTENT_CACHE });
+} catch {
+  doc = null;
+}
+
+// The Board turned the tour off: render nothing at all.
+if (doc?.enabled === false) return;
+
+const version = doc?.version || '2026-27-v1';
+const t = (key: string, fallback: string): string => {
+  const v = doc?.[key];
+  return typeof v === 'string' && v.trim() ? v.trim() : fallback;
+};
+
+// The six steps. `icon` is decorative. Steps 2 and 3 add fixed interactive or
+// responsive content below the Board-editable text (see the markup).
+const STEPS = [
+  {
+    key: 'welcome',
+    icon: 'sun',
+    title: t('welcomeTitle', 'Welcome to the Family Hub!'),
+    body: t(
+      'welcomeBody',
+      'This is the private area for enrolled families. Everything about the school year lives here. This quick tour shows you around. It takes about a minute.',
+    ),
+  },
+  {
+    key: 'navigate',
+    icon: 'compass',
+    title: t('navigateTitle', 'Find your way around'),
+    body: t(
+      'navigateBody',
+      'Every page of the hub is one tap away. The pages are grouped: your classes, news and events, resources, money, and community.',
+    ),
+  },
+  {
+    key: 'classes',
+    icon: 'blocks',
+    title: t('classesTitle', 'Tell us your class'),
+    body: t(
+      'classesBody',
+      'Pick your child’s class and the hub puts your things first: your helper schedule, your photo album, your class page. You can pick more than one. This stays on this device only.',
+    ),
+  },
+  {
+    key: 'helper',
+    icon: 'calendar-days',
+    title: t('helperTitle', 'Helping days & the calendar'),
+    body: t(
+      'helperBody',
+      'The home page has a tile for each class’s helper schedule. That is where you sign up for classroom help. The Calendar page has every school date, and you can filter it.',
+    ),
+  },
+  {
+    key: 'search',
+    icon: 'search',
+    title: t('searchTitle', 'Search finds everything'),
+    body: t(
+      'searchBody',
+      'Not sure where something lives? Search reads every hub page, document, and update.',
+    ),
+  },
+  {
+    key: 'help',
+    icon: 'heart-handshake',
+    title: t('helpTitle', 'Stuck? People can help'),
+    body: t(
+      'helpBody',
+      'The Getting Started page walks new families through the whole first year. Your class rep and your teacher are on your class page, one tap from a hello.',
+    ),
+  },
+];
+
+const CLASS_CHIPS = [
+  { slug: 'twos', label: 'Twos' },
+  { slug: 'threes', label: 'Threes' },
+  { slug: 'pre-k-am', label: 'Pre-K AM' },
+  { slug: 'pre-k-pm', label: 'Pre-K PM' },
+];
+---
+
+<div
+  data-tour-modal
+  data-tour-version={version}
+  hidden
+  class="fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-6"
+>
+  {/* Backdrop — a click closes, like the note modal. */}
+  <div data-tour-close class="absolute inset-0 bg-navy/60 backdrop-blur-[2px]"></div>
+
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tour-title"
+    class="hub-note relative w-full max-w-lg rounded-t-[var(--radius)] border border-border bg-white p-6 shadow-xl sm:rounded-[var(--radius)] sm:p-8 dark:bg-surface"
+  >
+    <button
+      type="button"
+      data-tour-close
+      aria-label="Close the tour"
+      class="absolute top-3 right-3 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-grey hover:text-heading dark:hover:bg-white/10"
+    >
+      <Icon name="x" class="h-5 w-5" />
+    </button>
+
+    {
+      STEPS.map((step, i) => (
+        <section
+          data-tour-step={i}
+          hidden={i !== 0}
+          aria-label={`Step ${i + 1} of ${STEPS.length}`}
+        >
+          <span
+            class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sky/15 text-sky-ink"
+            aria-hidden="true"
+          >
+            <Icon name={step.icon} class="h-6 w-6" />
+          </span>
+          {/* One shared heading id — the visible step owns it for the dialog label. */}
+          <h2 id={i === 0 ? 'tour-title' : undefined} class="font-display text-2xl text-heading">
+            {step.title}
+          </h2>
+          <p class="mt-2 leading-relaxed text-ink-muted">{step.body}</p>
+
+          {step.key === 'navigate' && (
+            <>
+              {/* Phone and desktop wayfinding differ; CSS picks the right one. */}
+              <p class="mt-3 rounded-xl bg-grey/70 p-3 text-sm text-ink lg:hidden dark:bg-white/5">
+                <Icon
+                  name="menu"
+                  class="mr-1 inline h-4 w-4 align-text-bottom"
+                  aria-hidden="true"
+                />
+                On your phone: the <strong>menu button</strong> (top left) opens every page. The
+                <strong> bar at the bottom</strong> keeps the big four one thumb away.
+              </p>
+              <p class="mt-3 hidden rounded-xl bg-grey/70 p-3 text-sm text-ink lg:block dark:bg-white/5">
+                <Icon
+                  name="panel-left"
+                  class="mr-1 inline h-4 w-4 align-text-bottom"
+                  aria-hidden="true"
+                />
+                The <strong>menu on the left</strong> lists every page. It stays put while you move
+                around.
+              </p>
+            </>
+          )}
+
+          {step.key === 'classes' && (
+            <div class="mt-3 flex flex-wrap gap-2">
+              {CLASS_CHIPS.map((c) => (
+                <button
+                  type="button"
+                  data-tour-class-pick={c.slug}
+                  aria-pressed="false"
+                  class="cursor-pointer rounded-full border border-border bg-white px-4 py-2 font-semibold text-ink transition-colors hover:border-navy hover:text-heading aria-pressed:border-navy aria-pressed:bg-navy aria-pressed:text-white dark:bg-surface"
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step.key === 'search' && (
+            <p class="mt-3 rounded-xl bg-grey/70 p-3 text-sm text-ink dark:bg-white/5">
+              <Icon
+                name="search"
+                class="mr-1 inline h-4 w-4 align-text-bottom"
+                aria-hidden="true"
+              />
+              <span class="lg:hidden">
+                Tap the <strong>magnifying glass</strong> in the top bar.
+              </span>
+              <span class="hidden lg:inline">
+                Press{' '}
+                <kbd class="rounded border border-border bg-white px-1.5 dark:bg-surface">Ctrl</kbd>{' '}
+                + <kbd class="rounded border border-border bg-white px-1.5 dark:bg-surface">K</kbd>{' '}
+                anywhere, or click the search box at the top.
+              </span>
+            </p>
+          )}
+        </section>
+      ))
+    }
+
+    {/* Progress dots + controls. The script moves the steps and the labels. */}
+    <div class="mt-6 flex items-center justify-between gap-3">
+      <div class="flex gap-1.5" aria-hidden="true">
+        {
+          STEPS.map((_, i) => (
+            <span
+              data-tour-dot={i}
+              class="h-2 w-2 rounded-full bg-border transition-colors data-[active]:bg-navy dark:data-[active]:bg-sky"
+            />
+          ))
+        }
+      </div>
+      <p class="sr-only" aria-live="polite" data-tour-progress></p>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          data-tour-skip
+          class="cursor-pointer px-2 py-2 text-sm font-semibold text-ink-muted hover:text-heading"
+        >
+          Skip
+        </button>
+        <button
+          type="button"
+          data-tour-back
+          hidden
+          class="cursor-pointer rounded-full border border-border px-4 py-2 text-sm font-bold text-heading hover:bg-grey dark:hover:bg-white/10"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          data-tour-next
+          class="wcp-press cursor-pointer rounded-full bg-navy px-5 py-2 text-sm font-bold text-white hover:bg-navy/90"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import '@/scripts/hub-tour';
+</script>

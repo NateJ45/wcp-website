@@ -134,6 +134,15 @@ onPageLoad(() => {
   document
     .querySelector<HTMLButtonElement>('[data-my-class-change]')
     ?.addEventListener('click', () => syncStrips(picks, true));
+
+  // The first-visit tour writes the same key through its own chips. Re-read
+  // and re-apply on its event so the page behind the modal follows along.
+  // The handler is idempotent, so this script's own dispatches are harmless.
+  document.addEventListener('wcp:my-classes', () => {
+    picks = getPicks();
+    syncStrips(picks, false);
+    apply(picks);
+  });
 });
 
 export {};

@@ -116,6 +116,17 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
 }`;
 
 /**
+ * The first-visit tour (Studio → Family Hub → First-visit tour): the on/off
+ * switch, the version stamp, and the step wording overrides. Structure and
+ * fallback wording live in HubTourModal.astro.
+ */
+export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
+  enabled, version,
+  welcomeTitle, welcomeBody, navigateTitle, navigateBody, classesTitle, classesBody,
+  helperTitle, helperBody, searchTitle, searchBody, helpTitle, helpBody
+}`;
+
+/**
  * The Board-editable hub menu (Studio → Family Hub → Family Hub menu).
  * Page links dereference inline so the rail needs exactly one read; the
  * resolver (src/lib/hub-nav-doc.ts) drops anything that dereferences to

@@ -34,6 +34,7 @@ export const TYPE_LABELS: Record<string, string> = {
   operatingBudget: 'Operating budget',
   coopGuidance: 'How the co-op works',
   hubNavMenu: 'Family Hub menu',
+  hubTour: 'First-visit tour',
   siteMicrocopy: 'Small bits of wording',
   roleHolder: 'Who’s who this year',
   venue: 'Location / venue',

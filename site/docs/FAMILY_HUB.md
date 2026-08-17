@@ -890,6 +890,20 @@ DERIVED from the class docs by `src/lib/student-fees.ts` — classes sharing an 
 pay link collapse into one button, labelled from the class names. `feeSchedule.studentFeeBands`
 is hidden and read-only; its rows are kept as a record but nothing reads them.
 
+**The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): a
+six-step walkthrough that opens once per device, AFTER the President's note closes when that
+note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly
+when no note is due. Dismissal stores the version stamp under `wcp-tour-seen`; the Board
+re-shows it by bumping `version` on the `hubTour` singleton (Family Hub → First-visit tour),
+which also holds the on/off switch and per-step wording overrides (committed strings are the
+fallback). Step 2's wayfinding hints are viewport-split in CSS (phone: topbar + tab bar;
+desktop: rail). Step 3 embeds class-picker chips that write the SAME `wcp-my-classes` key as
+the home picker and dispatch the same `wcp:my-classes` event — `my-class.ts` listens and
+re-personalizes the page behind the modal, so the home tiles are already reordered when the
+tour closes. The greeting hero's "Take the tour" chip reopens it any time. The hub test
+storageState pre-seeds `wcp-tour-seen` so the other suites never fight the overlay;
+`tests/hub-tour.spec.ts` clears it deliberately.
+
 **Org chart holders:** WHO fills each role is Board-editable in the Studio — **Family Hub →
 "Who's who this year"** (`roleHolder` documents, one per seat, seeded by
 `scripts/seed-role-holders.mjs`). The post-election update needs no deploy.

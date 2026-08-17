@@ -345,6 +345,39 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'first-visit-tour',
+    title: 'The first-visit tour',
+    icon: '🎈',
+    lead: 'A short walkthrough that greets each family on their first sign-in to the Family Hub.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'A family’s first visit to the hub starts with the **President’s welcome note**. When they close it, a six-step **tour** opens: what the hub is, how to find your way, how to pick your class, helping days, search, and where to get help. It works the same on a phone and a computer, and each family sees it once per device.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'First-visit tour', 'edit', 'Publish'],
+      },
+      {
+        kind: 'p',
+        text: 'You can rewrite the **heading and text of every step**. Leave a field blank to keep the standard wording. The class buttons and the phone/computer hints inside the steps are fixed, so the tour always matches how the hub really works.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Changed the hub a lot? Show the tour again.',
+        text: 'Change the **version stamp** (e.g. to "2027-28") and every family sees the tour one more time on their next visit. Turn **Show the tour** off to retire it entirely.',
+      },
+      {
+        kind: 'p',
+        text: 'A family can rerun it any time: the **Take the tour** chip sits in the hub home’s greeting, next to the President’s note chip.',
+      },
+      { kind: 'seealso', items: ['Edit a Family Hub page', 'Edit the menus'] },
+    ],
+  },
+
+  {
     slug: 'edit-menus',
     title: 'Edit the menus',
     icon: '🔗',

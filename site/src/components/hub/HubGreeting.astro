@@ -262,6 +262,21 @@ const firstDayLabel =
             A note from your President
           </button>
         </li>
+        {
+          /* Reopen pill for the first-visit tour — same pattern as the note's:
+            hidden until hub-tour.ts confirms the modal is on the page. */
+        }
+        <li hidden data-tour-open-wrap>
+          <button
+            type="button"
+            data-tour-open
+            hidden
+            class="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-white/25"
+          >
+            <Icon name="compass" class="h-4 w-4 text-amber" />
+            Take the tour
+          </button>
+        </li>
       </ul>
     </div>
 
