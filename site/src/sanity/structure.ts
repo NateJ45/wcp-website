@@ -177,6 +177,12 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
           singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
           singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
+          // The two PDF sources: edits here regenerate the branded PDFs on the
+          // next deploy (the publish webhook fires one).
+          S.documentTypeListItem('curriculumGuide')
+            .title('Curriculum guides (PDF content)')
+            .icon(emoji('📚')),
+          singleton(S, 'supplyList', 'School supply list (PDF content)', emoji('🎒')),
           singleton(S, 'presidentNote', "President's note", emoji('💌')),
           S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
           S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
@@ -256,6 +262,8 @@ const PLACED = new Set([
   'hubNavMenu',
   'hubTour',
   'hubDelights',
+  'curriculumGuide',
+  'supplyList',
   'presidentNote',
   'signupSheet',
   'signupEntry',

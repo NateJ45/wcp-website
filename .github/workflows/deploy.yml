@@ -69,6 +69,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The postbuild PDF generators (curriculum + supply list) render with
+      # Playwright's Chromium so a Studio edit regenerates the PDFs on every
+      # deploy. Without the browser they skip and the committed PDFs ship.
+      - name: Install Playwright Chromium (PDF generators)
+        run: npx playwright install --with-deps chromium
+
       # SANITY_TOKEN is read via `import.meta.env.SANITY_TOKEN` at build time
       # by src/lib/cms.ts (public-page reads) — see site/.env locally. Setting
       # it as a real env var here does the same job without a checked-in file.

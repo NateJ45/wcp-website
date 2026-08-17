@@ -107,8 +107,8 @@ scripts/
   migrate-pagebuilder.mjs    # idempotent: transcribes all pages + nav into Sanity (+ pagebuilder-lib.mjs)
   seed-*.mjs / patch-*.mjs   # idempotent content seeds + queued one-shot patches (open queue: docs/PENDING.md)
   generate-og.mjs            # postbuild: renders /og/*.jpg share cards
-  generate-curriculum.mjs    # `npm run gen:curriculum`: renders the branded class Curriculum Guide PDFs → public/curriculum/ (content is the source of truth in this file)
-  generate-supplies.mjs      # `npm run gen:supplies`: renders the branded School Supply List → public/supplies/ (print PDF + the FB/IG social carousel; content is the source of truth in this file)
+  generate-curriculum.mjs    # renders the branded class Curriculum Guide PDFs. CONTENT is Board-editable (Studio → curriculumGuide docs; committed data = fallback + seed source). Runs in postbuild with --dist (regenerates on every deploy; skips gracefully without a browser) or by hand → public/curriculum/
+  generate-supplies.mjs      # renders the School Supply List (print PDF + social carousel). CONTENT is Board-editable (Studio → supplyList singleton). Same postbuild --dist behavior → public/supplies/
   apps-script/               # committed source for the deployed Google Apps Scripts (see docs/GOOGLE.md)
 docs/                        # the deeper docs (see the list at the bottom of this file)
 ```

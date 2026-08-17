@@ -24,7 +24,11 @@ import { dirname, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE = resolve(__dirname, '..');
-const OUT_DIR = resolve(SITE, 'public/curriculum');
+// `--dist` (the postbuild path) writes into the built site, so a Studio edit
+// plus the publish-webhook deploy regenerates the PDFs with no code change.
+// A plain run keeps writing to public/ for local work.
+const DIST = process.argv.includes('--dist');
+const OUT_DIR = resolve(SITE, DIST ? 'dist/client/curriculum' : 'public/curriculum');
 
 // ---- Brand assets, inlined -------------------------------------------------
 const dataUri = (path, mime) =>
@@ -551,7 +555,57 @@ const PREK = {
   },
 };
 
+// Exported: the committed content is the FALLBACK and the seed source. The
+// Studio (curriculumGuide documents) is the live source of truth; see
+// fetchStudioCurricula() below and scripts/seed-curriculum-guides.mjs.
 const CURRICULA = [TWOS, THREES, PREK];
+// ---- Studio content --------------------------------------------------------
+// Board edits live in `curriculumGuide` documents (one per class). Field-for-
+// field the same shape as the committed objects above, minus file/color (design
+// stays code-owned). A missing document, field, or token falls back committed.
+async function fetchStudioCurricula() {
+  const token =
+    process.env.SANITY_TOKEN ??
+    (() => {
+      for (const file of ['.dev.vars', '.env']) {
+        try {
+          const m = readFileSync(resolve(SITE, file), 'utf8').match(/SANITY_TOKEN="?([^"\n]+)"?/);
+          if (m) return m[1];
+        } catch {
+          /* keep looking */
+        }
+      }
+      return null;
+    })();
+  if (!token) return null;
+  const query = encodeURIComponent(
+    '*[_type == "curriculumGuide"]{ "slug": class, kicker, title, intro, standardsNote, sections, conceptual }',
+  );
+  const res = await fetch(
+    `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) return null;
+  const rows = (await res.json()).result ?? [];
+  return rows.length ? rows : null;
+}
+
+/** Committed entry overlaid with its Studio document, where one exists. */
+function mergedCurricula(studioRows) {
+  if (!studioRows) return CURRICULA;
+  return CURRICULA.map((base) => {
+    const doc = studioRows.find((r) => r.slug === base.slug);
+    if (!doc) return base;
+    return {
+      ...base,
+      kicker: doc.kicker ?? base.kicker,
+      title: doc.title ?? base.title,
+      intro: doc.intro ?? base.intro,
+      sections: doc.sections?.length ? doc.sections : base.sections,
+      conceptual: doc.conceptual?.groups?.length ? doc.conceptual : base.conceptual,
+    };
+  });
+}
 export { CURRICULA };
 
 // ---- HTML helpers ----------------------------------------------------------
@@ -716,10 +770,17 @@ const footer = (title) => `
   </div>`;
 
 async function main() {
+  const studio = await fetchStudioCurricula();
+  const curricula = mergedCurricula(studio);
+  console.log(
+    studio
+      ? `Curriculum content: Studio (${studio.length} document${studio.length === 1 ? '' : 's'})`
+      : 'Curriculum content: committed fallback (no Studio read)',
+  );
   mkdirSync(OUT_DIR, { recursive: true });
   const browser = await chromium.launch();
   try {
-    for (const data of CURRICULA) {
+    for (const data of curricula) {
       const page = await browser.newPage();
       await page.setContent(html(data), { waitUntil: 'networkidle' });
       await page.emulateMedia({ media: 'print' });
@@ -744,8 +805,14 @@ async function main() {
 
 // Only render when run directly (`node scripts/generate-curriculum.mjs`), so the
 // template/data can be imported by a screenshot/preview helper without side effects.
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
+    if (DIST) {
+      // The postbuild path must never fail the deploy: without a browser the
+      // dist keeps the committed public/ PDFs, which the build already copied.
+      console.warn(`[curriculum] skipped (${err?.message ?? err}) — shipping the committed PDFs`);
+      process.exit(0);
+    }
     console.error(err);
     process.exit(1);
   });

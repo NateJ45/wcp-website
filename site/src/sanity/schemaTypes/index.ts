@@ -31,6 +31,8 @@ import { siteMicrocopy } from './singletons/siteMicrocopy';
 import { hubNavMenu } from './singletons/hubNavMenu';
 import { hubTour } from './singletons/hubTour';
 import { hubDelights } from './singletons/hubDelights';
+import { curriculumGuide } from './documents/curriculumGuide';
+import { supplyList } from './singletons/supplyList';
 import { navigation } from './singletons/navigation';
 import { closureAlert } from './singletons/closureAlert';
 import { presidentNote } from './singletons/presidentNote';
@@ -101,6 +103,8 @@ export const schemaTypes = [
   hubNavMenu,
   hubTour,
   hubDelights,
+  curriculumGuide,
+  supplyList,
   navigation,
   closureAlert,
   presidentNote,
@@ -156,6 +160,8 @@ export const SINGLETON_TYPES = new Set([
   'hubNavMenu',
   'hubTour',
   'hubDelights',
+  'supplyList',
+  'curriculumGuide',
   'navigation',
   'closureAlert',
   'presidentNote',

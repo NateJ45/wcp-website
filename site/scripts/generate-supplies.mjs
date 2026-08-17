@@ -27,7 +27,10 @@ import { dirname, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE = resolve(__dirname, '..');
-const OUT_DIR = resolve(SITE, 'public/supplies');
+// `--dist` (postbuild): write into the built site so a Studio edit plus the
+// publish-webhook deploy regenerates the assets. Plain runs keep public/.
+const DIST = process.argv.includes('--dist');
+const OUT_DIR = resolve(SITE, DIST ? 'dist/client/supplies' : 'public/supplies');
 const SOCIAL_DIR = resolve(OUT_DIR, 'social');
 
 // ---- Brand assets, inlined -------------------------------------------------
@@ -63,14 +66,14 @@ const THEMES = {
 // CONTENT — the 2026-27 list, transcribed from the teachers' Google Doc.
 // `optional` renders as a marked note under the class's items.
 // ---------------------------------------------------------------------------
-const YEAR = '2026–27';
-const BACKPACK_NOTE =
+export let YEAR = '2026–27';
+export let BACKPACK_NOTE =
   'Please provide your child with a backpack large enough to fit a regular size folder or an art project.';
-const DUE_NOTE = 'All items are due at orientation.';
-const WATER_NOTE =
+export let DUE_NOTE = 'All items are due at orientation.';
+export let WATER_NOTE =
   'Optional: one disposable bottle of water to keep in your child’s cubby, in case a refillable water bottle is forgotten at snack time.';
 
-const LISTS = [
+export let LISTS = [
   {
     slug: 'twos',
     name: 'Twos',
@@ -136,7 +139,7 @@ const LISTS = [
   },
 ];
 
-const WISH_LIST = {
+export let WISH_LIST = {
   heading: 'Classroom wish list',
   note: 'Optional extras for every class. Pre-opened items from your craft closet are welcome!',
   items: [
@@ -387,7 +390,70 @@ const footer = `
     <span>westchesterpreschool.org</span>
   </div>`;
 
+// ---- Studio content --------------------------------------------------------
+// Board edits live in the `supplyList` singleton — the same shape as the
+// committed lists (design stays code-owned). Missing doc/fields fall back.
+async function fetchStudioSupplies() {
+  const token =
+    process.env.SANITY_TOKEN ??
+    (() => {
+      for (const file of ['.dev.vars', '.env']) {
+        try {
+          const m = readFileSync(resolve(SITE, file), 'utf8').match(/SANITY_TOKEN="?([^"\n]+)"?/);
+          if (m) return m[1];
+        } catch {
+          /* keep looking */
+        }
+      }
+      return null;
+    })();
+  if (!token) return null;
+  const query = encodeURIComponent(
+    '*[_type == "supplyList"][0]{ year, backpackNote, dueNote, waterNote, lists, wishList }',
+  );
+  const res = await fetch(
+    `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) return null;
+  return (await res.json()).result ?? null;
+}
+
+/** The committed values, overlaid with the Studio document where set. */
+function mergedContent(doc) {
+  const lists = doc?.lists?.length
+    ? LISTS.map((base) => {
+        const row = doc.lists.find((l) => l.slug === base.slug);
+        if (!row) return base;
+        return { ...base, items: row.items?.length ? row.items : base.items };
+      })
+    : LISTS;
+  return {
+    year: doc?.year ?? YEAR,
+    backpackNote: doc?.backpackNote ?? BACKPACK_NOTE,
+    dueNote: doc?.dueNote ?? DUE_NOTE,
+    waterNote: doc?.waterNote ?? WATER_NOTE,
+    lists,
+    wishList: doc?.wishList?.items?.length ? { ...WISH_LIST, ...doc.wishList } : WISH_LIST,
+  };
+}
+
 async function main() {
+  const doc = await fetchStudioSupplies();
+  if (doc) {
+    const merged = mergedContent(doc);
+    ({
+      year: YEAR,
+      backpackNote: BACKPACK_NOTE,
+      dueNote: DUE_NOTE,
+      waterNote: WATER_NOTE,
+    } = merged);
+    LISTS = merged.lists.map((l) =>
+      l.optional !== undefined ? { ...l, optional: merged.waterNote } : l,
+    );
+    WISH_LIST = merged.wishList;
+  }
+  console.log(doc ? 'Supply content: Studio' : 'Supply content: committed fallback');
   mkdirSync(SOCIAL_DIR, { recursive: true });
   const browser = await chromium.launch();
   try {
@@ -425,6 +491,12 @@ async function main() {
 // side effects (mirrors generate-curriculum.mjs).
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
+    if (DIST) {
+      // The postbuild path must never fail the deploy: the dist keeps the
+      // committed public/ assets the build already copied.
+      console.warn(`[supplies] skipped (${err?.message ?? err}) — shipping the committed assets`);
+      process.exit(0);
+    }
     console.error(err);
     process.exit(1);
   });
