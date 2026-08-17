@@ -22,7 +22,6 @@ export const hubPage = defineType({
   groups: [
     { name: 'content', title: 'Content', default: true },
     { name: 'settings', title: 'Settings' },
-    { name: 'nav', title: 'Where it appears' },
   ],
   fields: [
     defineField({
@@ -102,38 +101,14 @@ export const hubPage = defineType({
           }),
     }),
     defineField({
-      name: 'navGroup',
-      title: 'Which part of the menu',
-      type: 'string',
-      group: 'nav',
-      description:
-        'Where this page appears in the Family Hub menu. Leave empty to create the page WITHOUT a menu link (useful while you are still writing it — you can still reach it by its web address).',
-      options: {
-        list: [
-          { title: 'Classes', value: 'Classes' },
-          { title: 'News & Events', value: 'News & Events' },
-          { title: 'Resources', value: 'Resources' },
-          { title: 'Money', value: 'Money' },
-          { title: 'Community', value: 'Community' },
-        ],
-      },
-    }),
-    defineField({
       name: 'navIcon',
-      title: 'Menu icon',
+      title: 'Page icon',
       type: 'string',
-      group: 'nav',
-      description: 'The little picture beside the menu link.',
+      group: 'settings',
+      description:
+        'The little picture at the top of the page, and beside its menu link if you add one (Family Hub menu).',
       options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
       initialValue: 'file-text',
-    }),
-    defineField({
-      name: 'navOrder',
-      title: 'Position in that part of the menu',
-      type: 'number',
-      group: 'nav',
-      description:
-        'Lower numbers sit higher. Pages that came with the site are listed first; leave this empty and yours go to the bottom in alphabetical order.',
     }),
 
     defineField({

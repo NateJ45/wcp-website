@@ -115,9 +115,20 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
   }
 }`;
 
-/** Every Board-created hub page, for the rail nav and the search index. */
-export const HUB_BOARD_PAGES_QUERY = `*[_type == "hubPage" && defined(slug) && !defined(hubKey)]{
-  title, slug, navGroup, navIcon, navOrder
+/**
+ * The Board-editable hub menu (Studio → Family Hub → Family Hub menu).
+ * Page links dereference inline so the rail needs exactly one read; the
+ * resolver (src/lib/hub-nav-doc.ts) drops anything that dereferences to
+ * nothing and falls back to the committed menu when the doc yields nothing.
+ */
+export const HUB_NAV_MENU_QUERY = `*[_type == "hubNavMenu"][0]{
+  groups[]{
+    label, accent,
+    links[]{
+      _type, target, label, hidden, url, icon,
+      "page": page->{ title, heading, slug, navIcon }
+    }
+  }
 }`;
 
 // -----------------------------------------------------------------------------

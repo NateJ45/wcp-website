@@ -311,13 +311,13 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Open the **Where it appears** tab and pick **Which part of the menu**. Your page joins that group in the Family Hub menu, underneath the pages that came with the site. **Position** lets you order it against any other pages you have added; leave it empty and yours sort alphabetically at the bottom.',
+        text: 'Open **Family Hub → Family Hub menu**, pick a section (or make a new one), add a link of the kind **Page you made**, and choose your page. Drag it wherever you want in the section — your pages and the ones that came with the site order together. The next guide, "Edit the menus", covers everything the menu can do.',
       },
       {
         kind: 'callout',
         tone: 'positive',
-        title: 'Not ready to announce it? Leave the menu box empty.',
-        text: 'The page still works at its address, so you can share the link with a couple of people and keep drafting. Pick a menu section when you are ready for everyone to see it.',
+        title: 'Not ready to announce it? Just don’t add the menu link yet.',
+        text: 'The page still works at its address, so you can share the link with a couple of people and keep drafting. Add it to the menu when you are ready for everyone to see it.',
       },
       {
         kind: 'h',
@@ -351,6 +351,20 @@ export const guides: Guide[] = [
     lead: 'The links along the top of the site and down in the footer live in one place.',
     diy: 'self',
     body: [
+      {
+        kind: 'h',
+        text: 'The Family Hub menu is its own document',
+      },
+      {
+        kind: 'p',
+        text: 'The menu on the Family Hub’s left side is edited in **Family Hub → Family Hub menu** — same idea, hub-side. You can rename its sections, reorder them, move links between them, rename a link, temporarily hide one, add pages you have made, or add an outside link. **Home stays put on its own** so it can never be lost, and section colours are picked from four pre-checked choices so every label stays readable on the navy.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Think twice before hiding Tuition or the Directory.',
+        text: 'Families lean on those daily, and the Studio will warn you if the menu no longer shows them. Emptying the whole menu is safe — the hub falls back to the standard one.',
+      },
       {
         kind: 'callout',
         tone: 'positive',

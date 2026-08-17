@@ -848,10 +848,19 @@ The rules live in `src/lib/hub-pages.ts` (pure, 20 unit tests):
   volunteer. The Studio rejects it, the route 404s on it as a second line, and a **test asserts
   the list matches the route files on disk**, so adding a hub route without updating the list
   fails CI instead of shipping a trap.
-- **`mergeHubNav`** places Board pages into the rail from their own `navGroup` / `navOrder` /
-  `navIcon`. A page with no `navGroup` is left OUT of the nav but still works at its address —
-  that is the deliberate "still drafting it" state. A `navGroup` the rail doesn't have is
-  ignored rather than invented, because rail groups carry AA-checked accent colours.
+- **The rail menu itself is Board-editable** — Studio → **Family Hub → Family Hub menu**
+  (`hubNavMenu` singleton, seeded by `scripts/seed-hub-nav-menu.mjs`), resolved by
+  `src/lib/hub-nav-doc.ts` (pure, 15 unit tests) over the committed fallback in
+  `src/data/hub-nav.ts`. Groups can be renamed, reordered, added and removed; built-in links
+  reordered, relabelled, moved between groups, or hidden; Board pages and external links
+  added anywhere. The guardrails: **Home is pinned in code** and not part of the document;
+  **accents are a fixed AA-checked set** (an unknown value resolves to sky, never an
+  unreadable invention); **built-in links are stored by route from a dropdown**, so they can
+  be renamed but never pointed at nowhere; a broken row (deleted page, dead target) is
+  dropped rather than rendered; a doc that yields nothing falls back to the committed menu,
+  so the rail is never blank; and the Studio warns when the menu no longer shows Tuition or
+  the Directory. A page not added to the menu still works at its address — the deliberate
+  "still drafting it" state.
 
 **Gating is structural, not per-page:** the catch-all lives under `/family-hub` and sets
 `prerender = false`, so `src/middleware.ts` protects it like everything else.

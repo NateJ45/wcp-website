@@ -1,0 +1,232 @@
+import { defineType, defineField, defineArrayMember } from 'sanity';
+import { ICON_NAMES } from '../objects/_shared';
+import { BUILTIN_HUB_LINKS } from '../../../lib/hub-nav-doc';
+
+// =============================================================================
+// hubNavMenu — the Family Hub menu, Board-editable
+// =============================================================================
+// The hub-side sibling of the public `navigation` singleton: the groups on the
+// rail, what each contains, what order, what it's called. Until now this was
+// all hardcoded (src/data/hub-nav.ts, which remains the fallback when this
+// document is missing or emptied).
+//
+// What a volunteer can do here: rename/reorder/add/remove groups, reorder and
+// relabel the built-in links, move one to another group, hide one, and add
+// links to Board-created pages or outside sites.
+//
+// What they deliberately cannot do:
+//   - Touch the HOME link — pinned in code, so the front door can't be lost.
+//   - Type a colour. Accents are a fixed set, each pre-checked for contrast
+//     as label text on the rail's navy.
+//   - Point a built-in link at a made-up address. Targets are a dropdown of
+//     the routes that actually exist.
+// =============================================================================
+
+export const hubNavMenu = defineType({
+  name: 'hubNavMenu',
+  title: 'Family Hub menu',
+  type: 'document',
+  icon: () => '🧭',
+  fields: [
+    defineField({
+      name: 'groups',
+      title: 'Menu sections',
+      type: 'array',
+      description:
+        'The sections of the Family Hub menu, in order. Home stays at the top on its own — it is not listed here so it can never be lost. Empty sections are skipped; empty the whole list to go back to the standard menu.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'navGroup',
+          fields: [
+            defineField({
+              name: 'label',
+              title: 'Section name',
+              type: 'string',
+              description: 'e.g. "Resources", "Committees".',
+              validation: (R) => R.required().error('Every section needs a name.'),
+            }),
+            defineField({
+              name: 'accent',
+              title: 'Section colour',
+              type: 'string',
+              description:
+                'The colour of the section name and its icons. These four are the only choices because each has been checked for readability on the menu’s navy.',
+              options: {
+                list: [
+                  { title: 'Sky blue', value: 'sky' },
+                  { title: 'Amber', value: 'amber' },
+                  { title: 'Green', value: 'green' },
+                  { title: 'Orange', value: 'orange' },
+                ],
+              },
+              initialValue: 'sky',
+            }),
+            defineField({
+              name: 'links',
+              title: 'Links',
+              type: 'array',
+              of: [
+                // -- A page that came with the site -------------------------
+                defineArrayMember({
+                  type: 'object',
+                  name: 'builtinLink',
+                  title: 'Page that came with the site',
+                  fields: [
+                    defineField({
+                      name: 'target',
+                      title: 'Which page',
+                      type: 'string',
+                      options: {
+                        list: BUILTIN_HUB_LINKS.map((l) => ({ title: l.label, value: l.href })),
+                      },
+                      validation: (R) => R.required().error('Pick which page this links to.'),
+                    }),
+                    defineField({
+                      name: 'label',
+                      title: 'Shown as (optional)',
+                      type: 'string',
+                      description:
+                        'A different name for the menu link. Leave empty for the usual one.',
+                    }),
+                    defineField({
+                      name: 'hidden',
+                      title: 'Hide from the menu',
+                      type: 'boolean',
+                      initialValue: false,
+                      description:
+                        'Takes it out of the menu without deleting the row. The page itself keeps working at its address.',
+                    }),
+                  ],
+                  preview: {
+                    select: { target: 'target', label: 'label', hidden: 'hidden' },
+                    prepare({ target, label, hidden }) {
+                      const base = BUILTIN_HUB_LINKS.find((l) => l.href === target);
+                      return {
+                        title:
+                          (label || base?.label || target || 'Pick a page') +
+                          (hidden ? ' (hidden)' : ''),
+                        subtitle: 'Came with the site',
+                      };
+                    },
+                  },
+                }),
+                // -- A Board-created page -----------------------------------
+                defineArrayMember({
+                  type: 'object',
+                  name: 'pageLink',
+                  title: 'Page you made',
+                  fields: [
+                    defineField({
+                      name: 'page',
+                      title: 'Which page',
+                      type: 'reference',
+                      to: [{ type: 'hubPage' }],
+                      options: {
+                        // Only free-standing Board pages: a built-in page is
+                        // linked with the option above, by its real route.
+                        filter: 'defined(slug) && !defined(hubKey)',
+                      },
+                      validation: (R) => R.required().error('Pick which page this links to.'),
+                    }),
+                    defineField({
+                      name: 'label',
+                      title: 'Shown as (optional)',
+                      type: 'string',
+                      description: 'Leave empty to use the page’s own name.',
+                    }),
+                  ],
+                  preview: {
+                    select: { title: 'page.title', label: 'label' },
+                    prepare({ title, label }) {
+                      return { title: label || title || 'Pick a page', subtitle: 'Page you made' };
+                    },
+                  },
+                }),
+                // -- An outside link ----------------------------------------
+                defineArrayMember({
+                  type: 'object',
+                  name: 'externalLink',
+                  title: 'Outside link',
+                  fields: [
+                    defineField({
+                      name: 'label',
+                      title: 'Shown as',
+                      type: 'string',
+                      validation: (R) => R.required().error('Give the link a name.'),
+                    }),
+                    defineField({
+                      name: 'url',
+                      title: 'Address',
+                      type: 'url',
+                      description: 'e.g. the store, or a sign-up site the school uses.',
+                      validation: (R) =>
+                        R.required()
+                          .uri({ scheme: ['http', 'https'] })
+                          .error('Paste a full web address.'),
+                    }),
+                    defineField({
+                      name: 'icon',
+                      title: 'Icon',
+                      type: 'string',
+                      options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
+                      initialValue: 'external-link',
+                    }),
+                  ],
+                  preview: {
+                    select: { title: 'label', subtitle: 'url' },
+                  },
+                }),
+              ],
+            }),
+          ],
+          preview: {
+            select: { title: 'label', links: 'links' },
+            prepare({ title, links }) {
+              const n = Array.isArray(links) ? links.length : 0;
+              return {
+                title: title || 'Untitled section',
+                subtitle: `${n} link${n === 1 ? '' : 's'}`,
+              };
+            },
+          },
+        }),
+      ],
+      // The pages a family cannot do without should take a deliberate second
+      // look to remove — a warning, not an error, because a redesign might
+      // genuinely relocate them.
+      validation: (R) =>
+        R.custom((groups) => {
+          if (!Array.isArray(groups) || groups.length === 0) return true;
+          const visible = new Set(
+            groups.flatMap((g) =>
+              (
+                ((g as { links?: { _type?: string; target?: string; hidden?: boolean }[] }).links ??
+                  []) as {
+                  _type?: string;
+                  target?: string;
+                  hidden?: boolean;
+                }[]
+              )
+                .filter((l) => l._type === 'builtinLink' && !l.hidden && l.target)
+                .map((l) => l.target as string),
+            ),
+          );
+          const missing = ['/family-hub/tuition', '/family-hub/directory'].filter(
+            (href) => !visible.has(href),
+          );
+          if (missing.length === 0) return true;
+          return {
+            message: `Heads up: the menu no longer shows ${missing
+              .map((m) => m.replace('/family-hub/', ''))
+              .join(' or ')}. Families rely on those — make sure that is on purpose.`,
+          };
+        }).warning(),
+    }),
+  ],
+  preview: {
+    prepare() {
+      return { title: 'Family Hub menu', subtitle: 'Sections and links on the hub’s left rail' };
+    },
+  },
+});

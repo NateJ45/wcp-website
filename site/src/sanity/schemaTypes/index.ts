@@ -28,6 +28,7 @@ import { feeSchedule } from './singletons/feeSchedule';
 import { operatingBudget } from './singletons/operatingBudget';
 import { coopGuidance } from './singletons/coopGuidance';
 import { siteMicrocopy } from './singletons/siteMicrocopy';
+import { hubNavMenu } from './singletons/hubNavMenu';
 import { navigation } from './singletons/navigation';
 import { closureAlert } from './singletons/closureAlert';
 import { presidentNote } from './singletons/presidentNote';
@@ -95,6 +96,7 @@ export const schemaTypes = [
   operatingBudget,
   coopGuidance,
   siteMicrocopy,
+  hubNavMenu,
   navigation,
   closureAlert,
   presidentNote,
@@ -147,6 +149,7 @@ export const SINGLETON_TYPES = new Set([
   'operatingBudget',
   'coopGuidance',
   'siteMicrocopy',
+  'hubNavMenu',
   'navigation',
   'closureAlert',
   'presidentNote',

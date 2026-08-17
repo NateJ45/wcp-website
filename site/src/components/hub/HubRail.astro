@@ -19,10 +19,9 @@
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
-import { hubNav } from '@/data/hub-nav';
-import { mergeHubNav } from '@/lib/hub-pages';
+import { resolveHubNav, type HubNavDoc } from '@/lib/hub-nav-doc';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_BOARD_PAGES_QUERY } from '@/lib/queries';
+import { HUB_NAV_MENU_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 // Pre-sized webp + plain <img> (not astro:assets): SSR pages can't resize at
 // request time on the Cloudflare adapter, so <Image> served the 4.1MB
@@ -39,22 +38,23 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const norm = (p: string) => p.replace(/\/+$/, '') || '/';
 const isActive = (href: string) => norm(href) === path;
 
-// Board-created pages join the rail from their own "Where it appears" fields.
-// The rail renders TWICE per page (desktop rail + the drawer's copy), so this
-// read must stay cheap: no PII, changes rarely, and it rides the shared
-// Board-content cache, which is an in-isolate Map — the second render is free.
-// Any failure leaves the committed rail exactly as it is.
-let boardPages: Parameters<typeof mergeHubNav>[1] = [];
+// The menu is Board-editable (Studio → Family Hub menu), resolved over the
+// committed fallback in src/data/hub-nav.ts. The rail renders TWICE per page
+// (desktop rail + the drawer's copy), so this read must stay cheap: no PII,
+// changes rarely, and it rides the shared Board-content cache, which is an
+// in-isolate Map — the second render is free. Any failure (or an empty doc)
+// leaves the committed rail exactly as it is.
+let navDoc: HubNavDoc | null = null;
 try {
-  boardPages = await sanityFetch<NonNullable<Parameters<typeof mergeHubNav>[1]>>(
-    HUB_BOARD_PAGES_QUERY,
+  navDoc = await sanityFetch<HubNavDoc | null>(
+    HUB_NAV_MENU_QUERY,
     {},
     { cache: BOARD_CONTENT_CACHE },
   );
 } catch {
-  boardPages = [];
+  navDoc = null;
 }
-const nav = mergeHubNav(hubNav, boardPages);
+const nav = resolveHubNav(navDoc);
 
 const homeLink = nav[0].links[0];
 const groups = nav.slice(1);

@@ -62,28 +62,30 @@ has been closed` under full-suite load. Re-run the single test in isolation
   `npx astro check` · `npm run lint` · `npm run format:check` ·
   `npm run build` · `npm run check:links` · `npm test` · `npm run test:unit`.
 
-## Windows gotcha: mass 60s timeouts from the hub suite's OWN webServer
+## Windows gotcha: mass 60s timeouts — the local server DEGRADES with request volume
 
-Seen 2026-08-16, twice, deterministically: the full hub suite run the normal way
-(Playwright builds and starts wrangler itself) had EVERY signed-in page render time out at
-60s (~64 failures, ~34min), while every signed-out gate check, the sign-in setup, and the
-API tests passed. The IDENTICAL dist served by a manually started `npm run preview` passed
-the full suite in under a minute (`reuseExistingServer` picks it up on port 4321), and the
-same pages were instant in a real browser and via curl. So the failures said nothing about
-the code — the pathology lives in the Playwright-managed server lifecycle on Windows (a
-fresh multi-thousand-file build immediately served, plus miniflare's per-session KV disk
-writes, is exactly the shape antivirus scan-on-access punishes; unproven but the best fit —
-both bad runs were late at night).
+Diagnosed properly 2026-08-17 (an earlier version of this note blamed the Playwright-managed
+server lifecycle; that was wrong). The local `wrangler`/miniflare preview stack degrades as
+requests accumulate: after a few hundred, response BODIES stall in transit — the server log
+prints `GET /family-hub/twos-threes 200 OK (242ms)` while the same response takes 70s to
+reach curl. Headers arrive instantly, the body hangs, so Playwright's `goto waitUntil:'load'`
+times out at 60s. A restarted server serves the identical pages in 0.2-0.6s.
 
-If the hub suite mass-times-out on signed-in pages while the gate project passes:
+Consequences and the recipe:
 
-1. Don't debug the app first. Check the shape: gate green + content all-timeout = this.
-2. Start the server yourself (`npm run preview`, after a fresh `npm run build`) and rerun —
-   `reuseExistingServer` uses it. A green run this way is a valid verdict on the code: same
-   dist, same wrangler command, only the spawner differs.
-3. Also check the OTHER stale-server trap (a leftover process on 4321 serving old code) —
-   `netstat -ano | findstr :4321` — and note that killing a backgrounded test task on
-   Windows does NOT kill its playwright/wrangler process tree; orphans keep building and
-   competing. `taskkill /F /T /PID <pid>` the tree.
-4. Never trust `cmd | tail` exit codes for a verdict — the pipe reports tail's exit, not
-   Playwright's. Read `test-results/.last-run.json`.
+- **Long runs rot midway, short runs finish clean.** The full two-browser suite (~105 tests)
+  sits right at the edge; a mass-timeout tail after a green start is THIS, not the app.
+- **Restart the preview server, then run the suite immediately** — fresh server + one suite
+  fits inside the healthy window. Split projects (`--project=chromium`, then webkit) if the
+  tail still degrades.
+- **The signature that clears the app:** server log fast, wire slow. If wrangler's own log
+  shows millisecond render times while clients hang, stop debugging the code.
+- **This is the LOCAL stack only.** Production is real workerd on Cloudflare's edge and does
+  not share the proxy path that degrades; the deployed hub stays fast under the same code.
+- WebKit-only failures that land on the login page are a DIFFERENT, documented trap: a dist
+  built without `WCP_INSECURE_COOKIES=1` sets Secure cookies WebKit won't send over http.
+  Check which failure you have before acting.
+- Never trust `cmd | tail` exit codes for a verdict — the pipe reports tail's exit, not
+  Playwright's. Read `test-results/.last-run.json`.
+- Killing a backgrounded test task on Windows does NOT kill its playwright/wrangler process
+  tree; orphans keep running and competing for port 4321. `taskkill /F /T /PID <pid>`.
