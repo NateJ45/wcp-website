@@ -1,7 +1,9 @@
 // =============================================================================
 // Parent testimonials — real, named quotes from WCP families
 // =============================================================================
-// CONTENT (moves to Sanity later). Every quote here is verbatim from a real
+// FALLBACK ONLY. This content is Board-editable in the Studio (testimonial documents);
+// src/lib/cms.ts getTestimonials() reads those and uses this array only when Sanity
+// has none or the read fails. Edit the Studio, not this file. Every quote here is verbatim from a real
 // WCP family as published on the live site's "Family Stories" wall. Do not
 // invent or reword quotes — they are real people's words.
 //

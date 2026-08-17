@@ -1,7 +1,9 @@
 // =============================================================================
 // The WCP school year — events & celebrations (Sept–May)
 // =============================================================================
-// CONTENT (moves to Sanity later). The rhythm of a year at WCP: the community
+// FALLBACK ONLY. This content is Board-editable in the Studio (schoolYearEvent documents);
+// src/lib/cms.ts getSchoolYearEvents() reads those and uses this array only when Sanity
+// has none or the read fails. Edit the Studio, not this file. The rhythm of a year at WCP: the community
 // moments families talk about long after their kids graduate. Verbatim from
 // the live site. Icons are Lucide names resolved by Icon.astro.
 // =============================================================================
