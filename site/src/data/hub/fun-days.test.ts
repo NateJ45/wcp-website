@@ -31,3 +31,28 @@ describe('todaysGiggle', () => {
     expect(g.punchline.length).toBeGreaterThan(0);
   });
 });
+
+describe('board-added fun days', () => {
+  const feb14 = new Date('2026-02-14T15:00:00Z');
+
+  it('a Board row wins over the committed list on the same date', () => {
+    expect(todaysFunDay(feb14, [{ date: '02-14', label: 'WCP Friendship Day' }])).toBe(
+      'WCP Friendship Day',
+    );
+  });
+
+  it('a Board row fills a date the committed list does not know', () => {
+    expect(
+      todaysFunDay(new Date('2026-03-03T15:00:00Z'), [{ date: '03-03', label: 'Hat Day' }]),
+    ).toBe('Hat Day');
+  });
+
+  it('blank or malformed rows never surface', () => {
+    expect(
+      todaysFunDay(new Date('2026-03-03T15:00:00Z'), [
+        { date: '03-03', label: '  ' },
+        { date: null, label: 'Nameless' },
+      ]),
+    ).toBeNull();
+  });
+});

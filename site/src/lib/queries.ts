@@ -240,6 +240,15 @@ export const SITE_MICROCOPY_QUERY = `*[_type == "siteMicrocopy"][0]{
   footerSignOff
 }`;
 
+/** The Board's extra fun days + giggles (Family Hub → Little delights). */
+export const HUB_DELIGHTS_QUERY = `*[_type == "hubDelights"][0]{
+  funDays[]{ date, label },
+  giggles[]{ setup, punchline }
+}`;
+
+/** The current Family Handbook PDF (Site Settings → School year). */
+export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "siteSettings"][0].familyHandbook.asset->url`;
+
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */

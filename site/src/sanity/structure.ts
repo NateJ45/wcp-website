@@ -176,6 +176,7 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           // header/footer equivalent lives in Site setup as "Menus").
           singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
           singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
+          singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
           singleton(S, 'presidentNote', "President's note", emoji('💌')),
           S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
           S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
@@ -254,6 +255,7 @@ const PLACED = new Set([
   'hubPage',
   'hubNavMenu',
   'hubTour',
+  'hubDelights',
   'presidentNote',
   'signupSheet',
   'signupEntry',

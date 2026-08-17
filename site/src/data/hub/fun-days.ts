@@ -60,11 +60,25 @@ const FUN_DAYS: Record<string, string> = {
   '12-28': 'National Card Playing Day',
 };
 
-/** Today's curated fun day (Eastern), or null when there's no entry. */
-export function todaysFunDay(now: Date = new Date()): string | null {
+/** One Board-added fun day, as the `hubDelights` document stores it. */
+export interface FunDayRow {
+  date?: string | null;
+  label?: string | null;
+}
+
+/**
+ * Today's fun day (Eastern), or null when there's no entry. Board rows from
+ * the Studio (Family Hub → Little delights) come FIRST, so the Board can add
+ * a day or override a committed one; the committed list stays the floor.
+ */
+export function todaysFunDay(
+  now: Date = new Date(),
+  boardRows?: FunDayRow[] | null,
+): string | null {
   // "07/16" in Eastern → "07-16". Month/day only, so it's year-agnostic.
   const key = now
     .toLocaleDateString('en-US', { timeZone: 'America/New_York', month: '2-digit', day: '2-digit' })
     .replace('/', '-');
-  return FUN_DAYS[key] ?? null;
+  const board = (boardRows ?? []).find((r) => r?.date?.trim() === key && r.label?.trim());
+  return board?.label?.trim() ?? FUN_DAYS[key] ?? null;
 }

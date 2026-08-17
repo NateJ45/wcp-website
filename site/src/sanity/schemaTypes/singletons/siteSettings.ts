@@ -283,6 +283,15 @@ export const siteSettings = defineType({
         'How many volunteer hours each family is asked to give this school year. Drives the progress bar on the Family Hub "My Co-op Hours" page. Leave blank or 0 to hide the hours tracker.',
     }),
     defineField({
+      name: 'familyHandbook',
+      title: 'Family Handbook (PDF)',
+      type: 'file',
+      group: 'year',
+      options: { accept: '.pdf' },
+      description:
+        'The current Family Handbook. Upload the new one each year and every hub link to it updates by itself (the topbar button and the hub home card).',
+    }),
+    defineField({
       name: 'familyCount',
       title: 'Family count (optional override)',
       type: 'number',

@@ -902,6 +902,13 @@ download card, building the URL straight from the asset ref (`fileUrlFromRef` in
 `src/lib/image.ts`), so queries need no dereference. Existing plain-text bodies stay valid;
 the change is additive.
 
+**The daily delights and the handbook link are Board-extendable** (2026-08-17): `hubDelights`
+(Family Hub → Little delights) adds fun days and giggles on top of the committed kid-safe
+lists — a Board fun day wins over a committed one on the same date, and Board giggles join
+the deterministic daily pool. The Family Handbook button (topbar + hub home card) follows the
+PDF uploaded at Site Settings → School year → Family Handbook, with the committed URL as the
+fallback, so the yearly re-upload needs no code edit.
+
 **The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): a
 six-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly

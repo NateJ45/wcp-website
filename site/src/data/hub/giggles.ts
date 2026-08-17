@@ -58,13 +58,19 @@ const GIGGLES: Giggle[] = [
   { setup: 'What do you call a boomerang that won’t come back?', punchline: 'A stick!' },
 ];
 
-/** The day's giggle (Eastern date drives a stable daily pick). */
-export function todaysGiggle(now: Date = new Date()): Giggle {
+/**
+ * The day's giggle (Eastern date drives a stable daily pick). Board giggles
+ * from the Studio (Family Hub → Little delights) JOIN the committed pool, so
+ * a growing collection spreads across the calendar on its own.
+ */
+export function todaysGiggle(now: Date = new Date(), boardRows?: Giggle[] | null): Giggle {
+  const extras = (boardRows ?? []).filter((g) => g?.setup?.trim() && g.punchline?.trim());
+  const pool = [...GIGGLES, ...extras];
   const [m, d] = now
     .toLocaleDateString('en-US', { timeZone: 'America/New_York', month: '2-digit', day: '2-digit' })
     .split('/')
     .map(Number);
   // A simple deterministic spread across the year; changes each day.
-  const idx = (m * 31 + d) % GIGGLES.length;
-  return GIGGLES[idx];
+  const idx = (m * 31 + d) % pool.length;
+  return pool[idx];
 }

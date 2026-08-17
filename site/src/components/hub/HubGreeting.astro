@@ -44,7 +44,9 @@ import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/h
 import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
 import { getFundraisers } from '@/lib/gsheets';
 import { getWeather } from '@/lib/hub-weather';
-import { todaysFunDay } from '@/data/hub/fun-days';
+import { todaysFunDay, type FunDayRow } from '@/data/hub/fun-days';
+import { BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_DELIGHTS_QUERY } from '@/lib/queries';
 import { getAirQuality } from '@/lib/hub-air-quality';
 import { getActiveAlert } from '@/lib/hub-alerts';
 import { sanityFetch } from '@/lib/sanity';
@@ -74,7 +76,22 @@ const todayLabel = now.toLocaleDateString('en-US', {
 });
 
 // A playful "Today is ..." observance (curated, Eastern date), or null.
-const funDay = todaysFunDay(now);
+// Board-added fun days join the committed list (Family Hub → Little
+// delights). Cached; a failure just means the committed list alone.
+let boardFunDays: FunDayRow[] | null = null;
+try {
+  boardFunDays =
+    (
+      await sanityFetch<{ funDays?: FunDayRow[] } | null>(
+        HUB_DELIGHTS_QUERY,
+        {},
+        { cache: BOARD_CONTENT_CACHE },
+      )
+    )?.funDays ?? null;
+} catch {
+  boardFunDays = null;
+}
+const funDay = todaysFunDay(now, boardFunDays);
 
 const daysToFirstDay = daysUntil(firstDay, now);
 const daysToYearEnd = daysUntil(yearEnd, now);

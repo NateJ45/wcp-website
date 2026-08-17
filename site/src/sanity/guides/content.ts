@@ -384,6 +384,31 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'little-delights',
+    title: 'Fun days & the daily giggle',
+    icon: '🎉',
+    lead: 'The "Today is National Kazoo Day" line and the joke at the foot of the hub home.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Little delights', 'add a row', 'Publish'],
+      },
+      {
+        kind: 'p',
+        text: 'The site ships with a few dozen **fun days** and kid-safe **giggles**. Anything you add here joins them: a fun day needs a date (like 02-14) and a name, and your entry wins if the site already had that date. A giggle needs a setup and a punchline; the day’s pick spreads across the calendar on its own.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Keep them preschool-safe.',
+        text: 'These render to every family with no review step. If a joke makes you hesitate, it does not go in.',
+      },
+      { kind: 'seealso', items: ['Edit a Family Hub page'] },
+    ],
+  },
+
+  {
     slug: 'edit-menus',
     title: 'Edit the menus',
     icon: '🔗',

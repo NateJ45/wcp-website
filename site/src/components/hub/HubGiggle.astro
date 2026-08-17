@@ -7,9 +7,25 @@
    deterministic (src/data/hub/giggles.ts) — zero external fetches, zero KV.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { todaysGiggle } from '@/data/hub/giggles';
+import { todaysGiggle, type Giggle } from '@/data/hub/giggles';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_DELIGHTS_QUERY } from '@/lib/queries';
 
-const g = todaysGiggle();
+// Board giggles join the committed pool (Family Hub → Little delights).
+let boardGiggles: Giggle[] | null = null;
+try {
+  boardGiggles =
+    (
+      await sanityFetch<{ giggles?: Giggle[] } | null>(
+        HUB_DELIGHTS_QUERY,
+        {},
+        { cache: BOARD_CONTENT_CACHE },
+      )
+    )?.giggles ?? null;
+} catch {
+  boardGiggles = null;
+}
+const g = todaysGiggle(new Date(), boardGiggles);
 ---
 
 <p class="mt-8 flex items-center justify-center gap-2 px-4 text-center text-xs text-ink-muted">

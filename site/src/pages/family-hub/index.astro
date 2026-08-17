@@ -34,7 +34,23 @@ import HubGiggle from '@/components/hub/HubGiggle.astro';
 import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY, SITE_SETTINGS_QUERY, DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
-import { site, familyHandbookUrl } from '@/data/site';
+import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
+import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
+
+// The handbook link follows the Studio upload (Site Settings → School year),
+// so the yearly re-upload never needs a code edit. The committed URL is the
+// fallback. Cached: no PII, changes once a year.
+let familyHandbookUrl = familyHandbookFallback;
+try {
+  const uploaded = await sanityFetch<string | null>(
+    FAMILY_HANDBOOK_URL_QUERY,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+  if (uploaded) familyHandbookUrl = uploaded;
+} catch {
+  familyHandbookUrl = familyHandbookFallback;
+}
 // Pre-sized webp of the Family Handbook cover (SSR page — the Cloudflare
 // adapter can't resize at request time, so a plain <img> over a committed
 // sized asset, never astro:assets <Image>).
