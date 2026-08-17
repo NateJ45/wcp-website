@@ -6,6 +6,7 @@ import HeroFramed from '@/components/HeroFramed.astro';
 import Underline from '@/components/Underline.astro';
 import ActionButtons from './ActionButtons.astro';
 import SpotsLine from '@/components/SpotsLine.astro';
+import { TOUR_EXEMPT_PAGES } from '@/lib/page-doctrine';
 import HeroNote from '@/components/HeroNote.astro';
 import { slugHref, linkHref, type SectionData } from './section-helpers';
 import type { ActionData } from './section-helpers';
@@ -34,12 +35,15 @@ interface Props {
       (2026-07-19). [...slug].astro passes it and removes it from the section
       flow, so the content still comes from Sanity and never renders twice. */
   notice?: SectionData;
+  /** Page slug, for the tour-doctrine exemption (legal/utility pages). */
+  pageSlug?: string;
 }
 // The Google rating shows under every hero and goes stale on its own as
 // families leave reviews, so it is Board-editable (Site Settings -> Social);
 // src/data/site.ts stays the build-time fallback.
 const site = await getSiteSettings(siteFallback);
-const { hero, linkBase = '', notice } = Astro.props;
+const { hero, linkBase = '', notice, pageSlug } = Astro.props;
+const exemptFromTour = pageSlug !== undefined && TOUR_EXEMPT_PAGES.has(pageSlug);
 
 // Same href resolution NoticeBarSection used, so a Board link keeps working
 // unchanged after the move.
@@ -79,10 +83,11 @@ const TOUR_ACTION: ActionData = {
 const isTourAction = (a: ActionData) =>
   /\btour\b/i.test(a.label) || (a.linkType === 'url' && /virtual-tour/.test(a.url ?? ''));
 const storedSecondary = (hero.actions ?? []).find((a) => !isTourAction(a));
-const actions: ActionData[] = [
-  TOUR_ACTION,
-  ...(storedSecondary ? [{ ...storedSecondary, style: 'ghost' }] : []),
-];
+// Exempt pages (legal/utility — see TOUR_EXEMPT_PAGES) render exactly the
+// stored actions: no synthesized tour CTA, and below, no proof line or spots.
+const actions: ActionData[] = exemptFromTour
+  ? ((hero.actions ?? []) as ActionData[])
+  : [TOUR_ACTION, ...(storedSecondary ? [{ ...storedSecondary, style: 'ghost' }] : [])];
 
 // The accent-word title fragment, shared by both hero layouts. Hyphenated
 // tokens inside the accent phrase get a nowrap wrapper (the ClassCard pattern)
@@ -145,17 +150,22 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
         {/* The framed hero's band is the navy drench now — remap the seeded
             action styles for a dark surface (amber fills, white outlines). */}
         <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
-        <p class="wcp-proof-line mt-3 w-full">
-          <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
-            ★★★★★
-          </span>
-          <span class="sr-only">Rated {site.google.rating} out of 5:</span>
-          {site.google.rating} on Google ·{' '}
-          <a href={withBase('/tuition', linkBase)} class="text-white underline underline-offset-2">
-            our tuition is public
-          </a>
-        </p>
-        <SpotsLine />
+        {!exemptFromTour && (
+          <p class="wcp-proof-line mt-3 w-full">
+            <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
+              ★★★★★
+            </span>
+            <span class="sr-only">Rated {site.google.rating} out of 5:</span>
+            {site.google.rating} on Google ·{' '}
+            <a
+              href={withBase('/tuition', linkBase)}
+              class="text-white underline underline-offset-2"
+            >
+              our tuition is public
+            </a>
+          </p>
+        )}
+        {!exemptFromTour && <SpotsLine />}
         {notice?.text && (
           <HeroNote text={notice.text as string} label={noticeLabel} href={noticeHref} />
         )}
@@ -195,17 +205,22 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
             photo) — remap navy-invisible action styles (a seeded `primary`
             rendered navy-on-navy on the tuition drench, caught 2026-07-17). */}
         <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone="navy" />
-        <p class="wcp-proof-line mt-3 w-full">
-          <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
-            ★★★★★
-          </span>
-          <span class="sr-only">Rated {site.google.rating} out of 5:</span>
-          {site.google.rating} on Google ·{' '}
-          <a href={withBase('/tuition', linkBase)} class="text-white underline underline-offset-2">
-            our tuition is public
-          </a>
-        </p>
-        <SpotsLine />
+        {!exemptFromTour && (
+          <p class="wcp-proof-line mt-3 w-full">
+            <span class="wcp-proof-stars mr-1.5" aria-hidden="true">
+              ★★★★★
+            </span>
+            <span class="sr-only">Rated {site.google.rating} out of 5:</span>
+            {site.google.rating} on Google ·{' '}
+            <a
+              href={withBase('/tuition', linkBase)}
+              class="text-white underline underline-offset-2"
+            >
+              our tuition is public
+            </a>
+          </p>
+        )}
+        {!exemptFromTour && <SpotsLine />}
         {notice?.text && (
           <HeroNote text={notice.text as string} label={noticeLabel} href={noticeHref} />
         )}

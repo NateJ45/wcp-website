@@ -121,7 +121,11 @@ const heroSections = heroNotice
       the Visit page leads with the visit ask instead of "take a look around".
       Stopgap; close-out registered in docs/PENDING.md. */
     page?.hero && (
-      <PageHero hero={{ ...page.hero, ...(HERO_OVERRIDES[slug] ?? {}) }} notice={heroNotice} />
+      <PageHero
+        hero={{ ...page.hero, ...(HERO_OVERRIDES[slug] ?? {}) }}
+        notice={heroNotice}
+        pageSlug={slug}
+      />
     )
   }
   {

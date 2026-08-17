@@ -10,6 +10,16 @@
 // =============================================================================
 import type { SectionData } from '@/components/sections/section-helpers';
 
+/**
+ * Pages exempt from the tour-first hero doctrine (PageHero synthesizes a
+ * "Schedule a Tour" CTA + the proof line onto every CMS hero — see the Act II
+ * conversion doctrine in CLAUDE.md). Legal and utility pages are not part of
+ * the funnel: star ratings and a tour button on the Terms of Use read as a
+ * sales pitch stapled to the fine print (Nathan, 2026-08-17). Their heroes
+ * render exactly what the Studio stores — for these pages, nothing.
+ */
+export const TOUR_EXEMPT_PAGES = new Set(['privacy', 'terms', 'accessibility']);
+
 /** Hero field overrides. Empty since the 2026-08-04 close-out — the mechanism
  *  stays for the next time a page's hero needs a code-side call before its
  *  Sanity edit can land. Register any new entry in docs/PENDING.md. */

@@ -41,6 +41,6 @@ if (!page) {
 ---
 
 <PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode} pageId={pageId}>
-  {page.hero && <PageHero hero={page.hero} linkBase="/preview" />}
+  {page.hero && <PageHero hero={page.hero} linkBase="/preview" pageSlug={slug} />}
   <SectionRenderer sections={page.sections} linkBase="/preview" site={site} />
 </PreviewLayout>
