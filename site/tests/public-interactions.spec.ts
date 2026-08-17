@@ -266,3 +266,31 @@ test('announcement bar dismisses and stays dismissed after reload', async ({ pag
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator(`[data-ann="${id}"]`)).toBeHidden();
 });
+
+test.describe('mailto fallback — a click with no mail app never ends in silence', () => {
+  // Headless Chromium has no mailto handler, which makes it the exact stand-in
+  // for a visitor with no default mail app: the click does nothing, the page
+  // keeps focus, and the script must copy the address and say so.
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+  test('a labeled email button pops the Copied! token', async ({ page, browserName }) => {
+    // Clipboard permissions are a Chromium-only Playwright API.
+    test.skip(browserName !== 'chromium', 'clipboard permissions are chromium-only here');
+
+    await page.goto('/enroll/', { waitUntil: 'load' });
+    await settle(page);
+
+    const button = page.locator('a[href^="mailto:"]', { hasText: /email us/i }).first();
+    await button.scrollIntoViewIfNeeded();
+    await button.click();
+
+    // The token waits ~1.2s to be sure no mail app took the click.
+    const toast = page.locator('.wcp-copy-toast.is-shown');
+    await expect(toast).toBeVisible({ timeout: 4000 });
+    await expect(toast).toHaveText(/Copied!|westchesterpreschool\.org/);
+
+    // And the address really is on the clipboard.
+    const clip = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clip).toContain('@westchesterpreschool.org');
+  });
+});

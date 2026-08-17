@@ -7,9 +7,16 @@
 //      links / inputs / code are skipped, so nothing is double-wrapped.
 //   2. COPY: on DESKTOP, clicking a link whose visible text IS an address copies
 //      it to the clipboard and pops a "Copied!" token by the cursor (instead of
-//      firing a mailto the machine may have no handler for). On touch devices,
-//      and for labeled buttons like "Email the Administrator", the mailto opens
-//      the mail app as usual.
+//      firing a mailto the machine may have no handler for).
+//   3. FALLBACK for everything else (labeled buttons like "Email the
+//      Treasurer", and touch devices): the mailto fires as usual, but the
+//      address is copied EAGERLY inside the click (Safari's clipboard rules
+//      require the user gesture), and if the page still has focus once the
+//      mailto has had its chance — meaning no mail app took over — the
+//      "Copied!" token appears so the click never ends in silent nothing.
+//      If a mail app did open, the page blurs and the token never shows; the
+//      eager copy is invisible. If the clipboard write itself failed, the
+//      token shows the ADDRESS instead, so the visitor can still act on it.
 // Skipped in Sanity's /preview so stega click-to-edit text nodes stay intact.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
@@ -65,14 +72,14 @@ function linkifyEmails(root: ParentNode): void {
 
 let toastEl: HTMLElement | null = null;
 let toastTimer: number | undefined;
-function showToast(x: number, y: number): void {
+function showToast(x: number, y: number, text = 'Copied!'): void {
   if (!toastEl) {
     toastEl = document.createElement('div');
     toastEl.className = 'wcp-copy-toast';
     toastEl.setAttribute('role', 'status');
-    toastEl.textContent = 'Copied!';
     document.body.appendChild(toastEl);
   }
+  toastEl.textContent = text;
   toastEl.style.left = `${x}px`;
   toastEl.style.top = `${y - 14}px`;
   toastEl.classList.remove('is-shown');
@@ -96,14 +103,42 @@ function wireCopyOnce(): void {
     // Only intercept links whose visible text IS the address; labeled buttons
     // ("Email the Administrator") keep firing the mailto.
     const showsEmail = Boolean(a.dataset.email) || EMAIL.test((a.textContent || '').trim());
-    if (!showsEmail || !desktop) return; // touch, or labeled: open the mail app
-    e.preventDefault();
+
+    // Keyboard activation reports (0,0) — anchor the token to the link itself.
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x === 0 && y === 0) {
+      const r = a.getBoundingClientRect();
+      x = r.left + r.width / 2;
+      y = r.top;
+    }
+
+    if (showsEmail && desktop) {
+      // The visible-address case: don't even fire the mailto, just copy.
+      e.preventDefault();
+      try {
+        await navigator.clipboard.writeText(email);
+        showToast(x, y);
+      } catch {
+        window.location.href = href; // clipboard blocked: fall back to the mailto
+      }
+      return;
+    }
+
+    // Labeled buttons + touch: the mailto proceeds. Copy NOW (inside the
+    // gesture), then wait for the handoff. A mail app opening blurs the page
+    // or hides the tab; if neither happened, nothing handled the click.
+    let copied = false;
     try {
       await navigator.clipboard.writeText(email);
-      showToast(e.clientX, e.clientY);
+      copied = true;
     } catch {
-      window.location.href = href; // clipboard blocked: fall back to the mailto
+      copied = false;
     }
+    window.setTimeout(() => {
+      if (!document.hasFocus() || document.visibilityState !== 'visible') return;
+      showToast(x, y, copied ? 'Copied!' : email);
+    }, 1200);
   });
 }
 
