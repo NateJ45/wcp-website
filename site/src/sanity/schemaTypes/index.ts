@@ -26,6 +26,7 @@ import { SECTION_OBJECT_TYPES } from './sections';
 import { siteSettings } from './singletons/siteSettings';
 import { feeSchedule } from './singletons/feeSchedule';
 import { operatingBudget } from './singletons/operatingBudget';
+import { coopGuidance } from './singletons/coopGuidance';
 import { navigation } from './singletons/navigation';
 import { closureAlert } from './singletons/closureAlert';
 import { presidentNote } from './singletons/presidentNote';
@@ -91,6 +92,7 @@ export const schemaTypes = [
   siteSettings,
   feeSchedule,
   operatingBudget,
+  coopGuidance,
   navigation,
   closureAlert,
   presidentNote,
@@ -141,6 +143,7 @@ export const SINGLETON_TYPES = new Set([
   'siteSettings',
   'feeSchedule',
   'operatingBudget',
+  'coopGuidance',
   'navigation',
   'closureAlert',
   'presidentNote',

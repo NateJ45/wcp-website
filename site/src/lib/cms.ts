@@ -199,6 +199,9 @@ interface SiteSettingsDoc {
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
+  googleRating?: string;
+  googleReviews?: number;
+  googleUrl?: string;
   storeUrl?: string;
   license?: string;
   licenseAuthority?: string;
@@ -229,6 +232,7 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     licenseAuthority: string;
     calendar: string;
     social: { facebook: string; instagram: string };
+    google: { rating: string; reviews: number; url: string };
   };
 
   return {
@@ -259,6 +263,12 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       ...f.social,
       facebook: doc.facebook ?? f.social.facebook,
       instagram: doc.instagram ?? f.social.instagram,
+    },
+    google: {
+      ...f.google,
+      rating: doc.googleRating ?? f.google.rating,
+      reviews: doc.googleReviews ?? f.google.reviews,
+      url: doc.googleUrl ?? f.google.url,
     },
   } as unknown as T;
 }

@@ -16,7 +16,8 @@
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
-import { site } from '@/data/site';
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings } from '@/lib/cms';
 import { displayTitleHtml } from '@/lib/typography';
 
 interface Props {
@@ -38,6 +39,10 @@ interface Props {
   underlineAccent?: boolean;
   class?: string;
 }
+// The Google rating shows under every hero and goes stale on its own as
+// families leave reviews, so it is Board-editable (Site Settings -> Social);
+// src/data/site.ts stays the build-time fallback.
+const site = await getSiteSettings(siteFallback);
 const {
   title,
   titleId = 'cta-title',

@@ -307,6 +307,31 @@ export const siteSettings = defineType({
       group: 'social',
       description: 'The full link to the school’s Instagram profile.',
     }),
+    // The star line under every hero's Schedule a Tour button. It goes stale on
+    // its own as families leave reviews, so it cannot be code-owned.
+    defineField({
+      name: 'googleRating',
+      title: 'Google rating',
+      type: 'string',
+      group: 'social',
+      description:
+        'The star rating on the school’s Google listing, e.g. "4.8". Shown under the Schedule a Tour button on every page, so keep it honest — check the listing before you change it.',
+    }),
+    defineField({
+      name: 'googleReviews',
+      title: 'Number of Google reviews',
+      type: 'number',
+      group: 'social',
+      description: 'How many reviews that rating is based on, e.g. 19.',
+      validation: (R) => R.min(0),
+    }),
+    defineField({
+      name: 'googleUrl',
+      title: 'Google listing link',
+      type: 'url',
+      group: 'social',
+      description: 'The public Google Maps link families click to read or leave a review.',
+    }),
     defineField({
       name: 'storeUrl',
       title: 'Merch store link',

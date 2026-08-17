@@ -17,9 +17,12 @@ import Button from '@/components/ui/Button.astro';
 import OrgChart from '@/components/hub/OrgChart.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { site } from '@/data/site';
-import { coopPrinciples, coopTiers as coopTiersFallback } from '@/data/hub/coop-roles';
+import {
+  coopPrinciples as coopPrinciplesFallback,
+  coopTiers as coopTiersFallback,
+} from '@/data/hub/coop-roles';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, COOP_GUIDANCE_QUERY } from '@/lib/queries';
 
 interface HubPageDoc {
   heading?: string;
@@ -67,6 +70,13 @@ const hubDocPromise = sanityFetch<HubPageDoc | null>(
   { cache: BOARD_CONTENT_CACHE },
 ).catch(() => null);
 
+// Independent of the roles read — start it alongside, await after.
+const guidancePromise = sanityFetch<{ principles?: typeof coopPrinciplesFallback } | null>(
+  COOP_GUIDANCE_QUERY,
+  {},
+  { cache: BOARD_CONTENT_CACHE },
+).catch(() => null);
+
 let coopTiers = coopTiersFallback;
 try {
   const roleDocs = await sanityFetch<CoopRoleDoc[]>(
@@ -92,6 +102,11 @@ try {
 } catch {
   coopTiers = coopTiersFallback;
 }
+
+const guidance = await guidancePromise;
+// A cleared list falls back rather than dropping the row entirely — the four
+// rules are the co-op commitment, not decoration.
+const coopPrinciples = guidance?.principles?.length ? guidance.principles : coopPrinciplesFallback;
 
 const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Co-op Jobs';

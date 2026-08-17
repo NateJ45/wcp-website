@@ -9,7 +9,8 @@ import SpotsLine from '@/components/SpotsLine.astro';
 import HeroNote from '@/components/HeroNote.astro';
 import { slugHref, linkHref, type SectionData } from './section-helpers';
 import type { ActionData } from './section-helpers';
-import { site } from '@/data/site';
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings } from '@/lib/cms';
 import { withBase } from '@/lib/utils';
 
 interface HeroData {
@@ -34,6 +35,10 @@ interface Props {
       flow, so the content still comes from Sanity and never renders twice. */
   notice?: SectionData;
 }
+// The Google rating shows under every hero and goes stale on its own as
+// families leave reviews, so it is Board-editable (Site Settings -> Social);
+// src/data/site.ts stays the build-time fallback.
+const site = await getSiteSettings(siteFallback);
 const { hero, linkBase = '', notice } = Astro.props;
 
 // Same href resolution NoticeBarSection used, so a Board link keeps working

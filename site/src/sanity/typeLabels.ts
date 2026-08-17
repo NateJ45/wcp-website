@@ -32,6 +32,7 @@ export const TYPE_LABELS: Record<string, string> = {
   signupSheet: 'Sign-up sheet',
   coopRole: 'Co-op role',
   operatingBudget: 'Operating budget',
+  coopGuidance: 'How the co-op works',
   roleHolder: 'Who’s who this year',
   venue: 'Location / venue',
   announcement: 'Announcement',

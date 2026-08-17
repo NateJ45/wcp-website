@@ -10,27 +10,54 @@
    relays class updates and coordinates class social life + Teacher
    Appreciation. Content is class-agnostic, so both class pages
    share it verbatim.
+
+   The two lists are Board-editable in the Studio (Family Hub → How the co-op
+   works), read per request; the arrays below are the committed fallback. Moving
+   a topic from one column to the other is exactly the kind of edit that should
+   not need a developer, and it used to.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { cn } from '@/lib/utils';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { COOP_GUIDANCE_QUERY } from '@/lib/queries';
 
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props;
 
-const teacherAsks = [
+const teacherAsksFallback = [
   'How your child is doing, and what they’re learning',
   'A worry about your child, or extra support they need',
   'Drop-off, pick-up, running late, or an absence',
   'Allergies, health, or anything they need in class',
 ];
-const repAsks = [
+const repAsksFallback = [
   'Your classroom helping schedule, or swapping a day',
   'Getting to know the other families in the class',
   'Class parties and Teacher Appreciation Week',
   'Your co-op job, or passing something to the Board',
 ];
+
+// No PII, changes about once a year — rides the shared Board-content cache.
+// A blank list in the Studio falls back rather than rendering an empty column:
+// half a "who to ask" guide is worse than the committed one.
+interface Guidance {
+  teacherAsks?: string[];
+  repAsks?: string[];
+}
+let guidance: Guidance | null = null;
+try {
+  guidance = await sanityFetch<Guidance | null>(
+    COOP_GUIDANCE_QUERY,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  guidance = null;
+}
+const teacherAsks = guidance?.teacherAsks?.length ? guidance.teacherAsks : teacherAsksFallback;
+const repAsks = guidance?.repAsks?.length ? guidance.repAsks : repAsksFallback;
 ---
 
 <div

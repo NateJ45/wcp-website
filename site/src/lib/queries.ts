@@ -177,7 +177,7 @@ export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, emai
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image }, license, licenseAuthority }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image }, license, licenseAuthority }`;
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
@@ -210,6 +210,17 @@ export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" &
 export const OPERATING_BUDGET_QUERY = `*[_type == "operatingBudget"][0]{
   year, priorYear, enrollment, netNote, source,
   groups[]{ label, kind, icon, lines[]{ label, now, was, note } }
+}`;
+
+/**
+ * The two co-op explainer blocks (Studio → Family Hub → How the co-op works):
+ * the four commitment cards on Co-op Jobs, and the teacher-vs-rep "who to ask"
+ * lists on the class pages. Layout stays in code; only the words are here.
+ */
+export const COOP_GUIDANCE_QUERY = `*[_type == "coopGuidance"][0]{
+  principles[]{ icon, title, body },
+  teacherAsks,
+  repAsks
 }`;
 
 /**

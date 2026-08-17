@@ -195,6 +195,8 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           // Sits directly under Co-op Roles on purpose: that list is what each
           // job IS, this one is who HOLDS it this year. The pairing is the
           // whole mental model, and this is the list that changes every spring.
+          // The rules families live by, next to the roles they describe.
+          singleton(S, 'coopGuidance', 'How the co-op works', emoji('🧭')),
           S.documentTypeListItem('roleHolder')
             .title('Who’s who this year (update each fall)')
             .icon(emoji('🪪')),
@@ -226,6 +228,7 @@ const PLACED = new Set([
   'photoSubmission',
   'coopRole',
   'roleHolder',
+  'coopGuidance',
   'hoursLog',
   'program',
   'boardMember',
