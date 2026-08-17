@@ -10,19 +10,21 @@
    filled in even while the Studio is unavailable); pass the `role` that matches
    a classReps entry. Always renders — the empty seat is the point.
 
-   Contact links mirror TeacherCard's row ("Say hi" / "Call or text"), but the
-   details come from the gated Directory at request time, NOT from org-holders:
-   a volunteer's email and phone are PII and this repo is public. The page does
-   the one read for both of its reps and passes the map down (see
-   DIRECTORY_REP_CONTACTS_QUERY + src/lib/hub-rep-contacts.ts); no map, no
-   match, or a rep who opted out of the Directory all degrade to a card with
-   the name and no links.
+   WHO the rep is, and how to reach her, both come from the Studio (Family Hub →
+   "Who's who this year"), read per request behind the gate and merged over the
+   committed fallback by src/lib/hub-org.ts. Her email and phone are never typed
+   here: the role document LINKS to her Directory entry and the query resolves
+   them from it, so they live in exactly one place and this public repo holds
+   none of them. Contact links mirror TeacherCard's row ("Say hi" / "Call or
+   text"). No document, no Directory link, or a family who opted out all degrade
+   to a card with the name and no links.
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import { classReps } from '@/data/hub/org-holders';
 import { classStyles } from '@/lib/class-colors';
-import { telHref, type RepContact } from '@/lib/hub-rep-contacts';
+import { urlForImage, type SanityImageSource } from '@/lib/image';
+import { telHref, applyHolder, type Holder } from '@/lib/hub-org';
 
 interface Props {
   /** Class slug for the accent color (e.g. 'pre-k-am', 'twos'). */
@@ -31,27 +33,42 @@ interface Props {
   role: string;
   /** Subtitle under the name, e.g. 'Morning class rep · 2026-27'. */
   label: string;
-  /** Directory contacts by adult name, from the page's single read. */
-  contacts?: Map<string, RepContact>;
+  /** Role holders from the page's single read, keyed by role label. */
+  holders?: Map<string, Holder>;
 }
-const { slug, role, label, contacts } = Astro.props;
+const { slug, role, label, holders } = Astro.props;
 
-const person = classReps.find((r) => r.role === role);
+const fallback = classReps.find((r) => r.role === role);
+const person = fallback ? applyHolder(fallback, holders) : undefined;
 const cc = classStyles(slug);
 const named = Boolean(person?.name);
 
-// Studio-owned contact details win; the code-owned `email` (a role mailbox, if
-// a class ever gets one) is the fallback so this never regresses to nothing.
-const contact = person?.name ? contacts?.get(person.name) : undefined;
-const email = contact?.email || person?.email;
-const tel = telHref(contact?.phone);
+const email = person?.email;
+const tel = telHref(person?.phone);
+// A headshot the Board uploaded to the role document. Sized through the Sanity
+// CDN, not astro:assets — this is an SSR page and the adapter cannot resize at
+// request time (it would serve the full-size upload into an 80px circle).
+const photoUrl = person?.sanityPhoto?.asset
+  ? urlForImage(person.sanityPhoto as SanityImageSource)
+      .width(160)
+      .url()
+  : null;
 ---
 
 <div
   class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
 >
   {
-    person?.photo ? (
+    photoUrl ? (
+      <img
+        src={photoUrl}
+        alt={`${person!.name}, class rep`}
+        width="80"
+        height="80"
+        loading="lazy"
+        class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
+      />
+    ) : person?.photo ? (
       <Image
         src={person.photo}
         alt={`${person.name}, class rep`}

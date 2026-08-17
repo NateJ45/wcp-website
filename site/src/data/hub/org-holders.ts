@@ -2,11 +2,20 @@
 // Org chart holders — who fills each co-op role this school year
 // =============================================================================
 // Powers the Co-op Jobs page's org chart (src/components/hub/OrgChart.astro),
-// carried over from the old site's chart. UPDATE EACH FALL after elections:
-// swap names/emails here (leave `name` off for a role that's still open —
-// the chart shows it as an open role). Role DESCRIPTIONS are separate and
-// Board-editable (Sanity `coopRole` docs / coop-roles.ts); this file is only
-// the who's-who. Names render behind the gate only, like the old site.
+// carried over from the old site's chart.
+//
+// THIS IS NO LONGER WHERE NAMES ARE UPDATED. Who holds each seat is now
+// Board-editable in the Studio (Family Hub → "Who's who this year", the
+// `roleHolder` documents), merged over this list at request time by
+// src/lib/hub-org.ts. The names below are the FALLBACK that renders if Sanity
+// is unreachable, and a Studio document always wins — including an empty one,
+// so clearing a role there really does vacate the seat.
+//
+// What this file still owns is the chart's SHAPE: the tiers, the two cabinet
+// branches, the icons, and the committee labels and sizes. That is layout, and
+// the brand-lock rule keeps layout out of the Studio. Role DESCRIPTIONS are
+// separate again and Board-editable (`coopRole` docs / coop-roles.ts).
+// Names render behind the gate only, like the old site.
 // =============================================================================
 
 import type { ImageMetadata } from 'astro';
@@ -20,6 +29,12 @@ import rachelPhoto from '@/assets/org/RachelPresident.jpg';
 export interface OrgPerson {
   /** Role label shown on the card, e.g. "President". */
   role: string;
+  /**
+   * Join key for the Studio's `roleHolder` document, when the displayed label
+   * is ambiguous. Both teachers show as "Teacher" on the chart but need their
+   * own documents, so they carry a key; everything else joins on `role`.
+   */
+  key?: string;
   /** Lucide icon for the role chip. */
   icon: string;
   /** Holder's name. Omit while the role is unfilled. */
@@ -76,6 +91,7 @@ export const officers: OrgPerson[] = [
 export const paidStaff: OrgPerson[] = [
   {
     role: 'Teacher',
+    key: 'Teacher — Pre-K',
     icon: 'book-open',
     name: 'Mrs. Lisa Cortez',
     photo: lisaPhoto,
@@ -83,6 +99,7 @@ export const paidStaff: OrgPerson[] = [
   },
   {
     role: 'Teacher',
+    key: 'Teacher — Twos & Threes',
     icon: 'book-open',
     name: 'Mrs. Erin Schmerr',
     photo: erinPhoto,

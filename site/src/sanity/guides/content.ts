@@ -829,6 +829,70 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'whos-who',
+    title: 'Update who holds each co-op job',
+    icon: '🪪',
+    lead: 'The org chart on the Co-op Jobs page, and the class rep on each class page. This is the once-a-year job after elections.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'This used to need a developer. It does not any more.',
+        text: 'Every name on the org chart is now yours to change. Edit it here and the Family Hub updates by itself within a minute or two — nobody has to publish any code.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Who’s who this year', 'pick the role', 'edit', 'Publish'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Family Hub → Who’s who this year**. There is one card per seat on the chart.',
+          'Click the role that changed and type the new person’s name in **Who holds it**.',
+          'Nobody has taken the job yet? Leave the name **empty**. The chart shows it as an open role, which is exactly how someone notices it needs filling.',
+          '**Publish**. Give it a minute, then reload the Family Hub to see it.',
+        ],
+      },
+      {
+        kind: 'h',
+        text: 'Class reps: link the family instead of typing an email',
+      },
+      {
+        kind: 'p',
+        text: 'A class rep has no school email address, so her card uses her own. Rather than typing it here (where it would go stale the moment she updates the Directory), open her role and set **Their family in the Directory**. Her **Say hi** and **Call or text** links then come straight from her Directory entry, so her details are only ever kept in one place.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'A family who opted out of the Directory stays private.',
+        text: 'If she chose not to be listed, her name still appears on the chart but her contact links do not. That is deliberate — taking on a co-op job does not undo her privacy choice.',
+      },
+      {
+        kind: 'p',
+        text: 'For a role that DOES have its own school mailbox — President, Treasurer, and so on — use the **Role email address** field instead. That address belongs to the job rather than the person, so it keeps working when the job changes hands.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The roles are a fixed list.',
+        text:
+          'You pick a role from a dropdown rather than typing one, because the chart has to know where to put it. Need a seat that is not on the list, or one retired? That is a chart change — ask ' +
+          SITE.contactName +
+          '.',
+      },
+      {
+        kind: 'p',
+        text: 'A **photo** is optional on every one of these. Without one the card shows their initials, which looks perfectly fine — never hold up the update chasing headshots.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Edit a Family Hub page', 'Add or edit a teacher', 'Photos and images'],
+      },
+    ],
+  },
+
+  {
     slug: 'edit-testimonial',
     title: 'Add a parent quote',
     icon: '💬',

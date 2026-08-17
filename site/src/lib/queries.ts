@@ -203,20 +203,25 @@ export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true && count(children) > 0])`;
 
 /**
- * Contact details for the named class reps, read from the Directory at request
- * time. CONTAINS PII — never cache the result (see the caching rules in
- * CLAUDE.md) and never render it outside the gate.
+ * WHO holds each co-op role this year (Studio → Family Hub → Who's who), for
+ * the org chart and the class-rep cards. The chart's SHAPE stays in code
+ * (src/data/hub/org-holders.ts); these documents supply only the people, so the
+ * Board can do the post-election update without a deploy.
  *
- * `optedIn == true` is load-bearing: a rep who opted out of the Directory has
- * said she doesn't want her contact details listed, and holding a co-op job
- * doesn't revoke that. Her card simply renders without links.
+ * `contactFrom` resolves the linked Directory entry inline, so a class rep's
+ * email and phone are typed once (in the Directory) and reused here. The
+ * `optedIn` guard is applied to the JOINED entry: a family who opted out of the
+ * Directory resolves to null and the card shows no contact links.
  *
- * The double filter narrows to the matching families first, then to the
- * matching adults inside them, so the response carries only the reps' rows
- * rather than every parent in the school. $names is the rep names from
- * `classReps` (src/data/hub/org-holders.ts), which is the join key.
+ * CONTAINS PII once a rep is linked — never cache this result.
  */
-export const DIRECTORY_REP_CONTACTS_QUERY = `*[_type == "directoryEntry" && optedIn == true && count(parents[@.name in $names]) > 0].parents[@.name in $names]{ name, email, phone }`;
+export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && defined(role)]{
+  role,
+  person,
+  email,
+  photo,
+  "contact": contactFrom->{ optedIn, "parents": parents[]{ name, email, phone } }
+}`;
 
 /** The site-wide alert banner (only meaningful when active). */
 export const CLOSURE_ALERT_QUERY = `*[_type == "closureAlert"][0]{ active, message, tone, linkLabel, linkUrl }`;

@@ -5,15 +5,22 @@
    Headshot (or initials fallback) with a tier-colored ring (decorative), role
    chip in the tier's `-ink` tone (AA on the card in both themes), the
    holder's name (or "Open role" while unfilled), and an optional mail-icon
-   link to the role's mailbox. Holders come from src/data/hub/org-holders.ts;
-   headshots live in src/assets/org/.
+   link to the role's mailbox.
+
+   Two photo sources, Studio first: `sanityPhoto` is a headshot the Board
+   uploaded to the role's "Who's who" document, `photo` is the committed
+   fallback in src/assets/org/. The Sanity one goes through urlForImage rather
+   than astro:assets because this renders on an SSR hub page, where the
+   Cloudflare adapter cannot resize at request time (the documented trap — it
+   would serve the ORIGINAL upload into a 56px slot).
    ============================================================================ */
 import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
+import { urlForImage, type SanityImageSource } from '@/lib/image';
 import type { OrgPerson } from '@/data/hub/org-holders';
 
 interface Props {
-  person: OrgPerson;
+  person: OrgPerson & { sanityPhoto?: { asset?: unknown; alt?: string } | null };
   /** Ring/role tint classes, e.g. { ring: 'border-[#ffa334]', role: 'text-amber-ink' }. */
   ring: string;
   role: string;
@@ -21,6 +28,13 @@ interface Props {
   large?: boolean;
 }
 const { person, ring, role, large = false } = Astro.props;
+
+const px = large ? 160 : 112; // 2x the rendered 80px / 56px circle.
+const sanityPhotoUrl = person.sanityPhoto?.asset
+  ? urlForImage(person.sanityPhoto as SanityImageSource)
+      .width(px)
+      .url()
+  : null;
 
 const initials = person.name
   ? person.name
@@ -37,7 +51,16 @@ const initials = person.name
   class="flex min-w-36 flex-col items-center rounded-[var(--radius)] border border-border bg-white p-3 shadow-sm dark:bg-surface"
 >
   {
-    person.photo ? (
+    sanityPhotoUrl ? (
+      <img
+        src={sanityPhotoUrl}
+        alt=""
+        width={px}
+        height={px}
+        loading="lazy"
+        class={`rounded-full border-4 object-cover object-top ${ring} ${large ? 'h-20 w-20' : 'h-14 w-14'}`}
+      />
+    ) : person.photo ? (
       <Image
         src={person.photo}
         alt=""

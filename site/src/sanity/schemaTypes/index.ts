@@ -49,6 +49,7 @@ import { testimonialSubmission } from './documents/testimonialSubmission';
 import { photoSubmission } from './documents/photoSubmission';
 import { trashedItem } from './documents/trashedItem';
 import { coopRole } from './documents/coopRole';
+import { roleHolder } from './documents/roleHolder';
 import { hoursLog } from './documents/hoursLog';
 import {
   program,
@@ -111,6 +112,7 @@ export const schemaTypes = [
   photoSubmission,
   trashedItem,
   coopRole,
+  roleHolder,
   hoursLog,
   // Future-proofing collections (surfaced via community.ts sections)
   program,
@@ -173,6 +175,7 @@ export const ARCHIVABLE_TYPES = new Set([
   'newsletterIssue',
   'signupSheet',
   'coopRole',
+  'roleHolder',
   'venue',
   'announcement',
   'redirect',

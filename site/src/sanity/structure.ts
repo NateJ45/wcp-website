@@ -188,6 +188,12 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
             title: 'Co-op Roles',
             icon: emoji('🤝'),
           }),
+          // Sits directly under Co-op Roles on purpose: that list is what each
+          // job IS, this one is who HOLDS it this year. The pairing is the
+          // whole mental model, and this is the list that changes every spring.
+          S.documentTypeListItem('roleHolder')
+            .title('Who’s who this year (update each fall)')
+            .icon(emoji('🪪')),
           S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
         ]),
     );
@@ -214,6 +220,7 @@ const PLACED = new Set([
   'testimonialSubmission',
   'photoSubmission',
   'coopRole',
+  'roleHolder',
   'hoursLog',
   'program',
   'boardMember',

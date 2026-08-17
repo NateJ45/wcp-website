@@ -6,8 +6,11 @@
    file-tree. Executive Board (president over the three officers) → Paid
    Staff → the two cabinet branches ("Reports to Secretary" / "Reports to
    VP", each chair with the committees it leads) → every family, with a live
-   Directory count. WHO holds each role comes from src/data/hub/org-holders.ts
-   (update each fall); role descriptions stay in the section above the chart.
+   Directory count. WHO holds each role is Board-editable in the Studio
+   (Family Hub → "Who's who this year"), merged over the committed fallback in
+   src/data/hub/org-holders.ts by src/lib/hub-org.ts — so the post-election
+   update needs no deploy. This file and org-holders own only the chart's SHAPE.
+   Role descriptions stay in the section above the chart.
 
    Tier colors follow the old chart's key — president orange, board navy,
    staff sky, chairs amber, class reps green — as avatar RINGS (decorative)
@@ -19,14 +22,15 @@ import OrgPersonCard from '@/components/hub/OrgPersonCard.astro';
 // at request time on the Cloudflare adapter (see HubRail's note).
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { sanityFetch } from '@/lib/sanity';
-import { DIRECTORY_FAMILY_COUNT_QUERY } from '@/lib/queries';
+import { DIRECTORY_FAMILY_COUNT_QUERY, ROLE_HOLDERS_QUERY } from '@/lib/queries';
+import { toHolderMap, applyHolder, applyHolders, type RoleHolderRow } from '@/lib/hub-org';
 import {
-  president,
-  officers,
-  paidStaff,
-  secretaryBranch,
-  vpBranch,
-  classReps,
+  president as presidentFallback,
+  officers as officersFallback,
+  paidStaff as paidStaffFallback,
+  secretaryBranch as secretaryBranchFallback,
+  vpBranch as vpBranchFallback,
+  classReps as classRepsFallback,
 } from '@/data/hub/org-holders';
 
 const TIER = {
@@ -37,12 +41,29 @@ const TIER = {
   rep: { ring: 'border-[#22c55e]', role: 'text-green-ink' },
 } as const;
 
-let familyCount: number | null = null;
-try {
-  familyCount = await sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY);
-} catch {
-  familyCount = null;
-}
+// The two reads are independent — start both, await after (2026-07 hub-speed
+// pass). The holders read carries PII once a rep is linked to the Directory, so
+// it passes NO cache; the count is a scalar and could, but there is nothing to
+// gain caching one of a pair.
+const countPromise = sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY).catch(() => null);
+const holdersPromise = sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY).catch(() => null);
+
+const familyCount = await countPromise;
+
+// WHO holds each seat comes from the Studio ("Who's who this year"); the tiers,
+// branches, icons and committee sizes below stay code-owned. An unreachable
+// Sanity leaves `holders` empty, and every seat falls back to the committed
+// names — the chart is never blank.
+const holders = toHolderMap(await holdersPromise);
+const president = applyHolder(presidentFallback, holders);
+const officers = applyHolders(officersFallback, holders);
+const paidStaff = applyHolders(paidStaffFallback, holders);
+const classReps = applyHolders(classRepsFallback, holders);
+const secretaryBranch = secretaryBranchFallback.map((s) => ({
+  ...s,
+  chair: applyHolder(s.chair, holders),
+}));
+const vpBranch = vpBranchFallback.map((s) => ({ ...s, chair: applyHolder(s.chair, holders) }));
 ---
 
 <div class="org-chart text-center">

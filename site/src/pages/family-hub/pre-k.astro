@@ -31,9 +31,8 @@ import { getHubClass } from '@/lib/hub-classes';
 import { classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_QUERY, DIRECTORY_REP_CONTACTS_QUERY } from '@/lib/queries';
-import { classReps } from '@/data/hub/org-holders';
-import { toContactMap, type RepContact, type RepContactRow } from '@/lib/hub-rep-contacts';
+import { HUB_PAGE_QUERY, ROLE_HOLDERS_QUERY } from '@/lib/queries';
+import { toHolderMap, type Holder, type RoleHolderRow } from '@/lib/hub-org';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { helperScheduleFallback, photoAlbumFallback } from '@/data/hub/live-links';
@@ -57,23 +56,16 @@ try {
   doc = null;
 }
 
-// Rep contact details, in ONE read for both cards on this page. PII, so it
-// passes no cache (see the caching rules in CLAUDE.md) — and it is scoped to
-// this page's two reps rather than all four, so no page carries contact rows it
-// doesn't render. Any failure just drops the links.
-const repNames = classReps
-  .filter((r) => r.role === 'Pre-K AM Rep' || r.role === 'Pre-K PM Rep')
-  .map((r) => r.name)
-  .filter((n): n is string => Boolean(n));
-let repContacts = new Map<string, RepContact>();
-if (repNames.length > 0) {
-  try {
-    repContacts = toContactMap(
-      await sanityFetch<RepContactRow[]>(DIRECTORY_REP_CONTACTS_QUERY, { names: repNames }),
-    );
-  } catch {
-    repContacts = new Map();
-  }
+// Who the reps are and how to reach them, in ONE read for both cards on this
+// page (Studio → Family Hub → Who's who). It resolves each rep's linked
+// Directory entry, so it carries PII and passes NO cache — see the caching
+// rules in CLAUDE.md. Any failure leaves the cards on their committed
+// fallback names with no contact links.
+let repHolders = new Map<string, Holder>();
+try {
+  repHolders = toHolderMap(await sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY));
+} catch {
+  repHolders = new Map();
 }
 
 const title = doc?.heading || 'Pre-K Classroom';
@@ -184,13 +176,13 @@ const classCards = [
           slug="pre-k-am"
           role="Pre-K AM Rep"
           label="Morning class rep · 2026-27"
-          contacts={repContacts}
+          holders={repHolders}
         />
         <ClassRepCard
           slug="pre-k-pm"
           role="Pre-K PM Rep"
           label="Afternoon class rep · 2026-27"
-          contacts={repContacts}
+          holders={repHolders}
         />
       </div>
 

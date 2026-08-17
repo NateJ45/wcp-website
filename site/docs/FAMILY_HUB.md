@@ -823,11 +823,36 @@ each page with a note also renders a hidden `[data-note-open]` reopen pill ("A n
 President" chip in the hero; "Welcome letter" action on the teacher card) that note-modal.ts
 unhides and wires when the modal is present — JS-only, like the modal itself.
 
-**Org chart holders:** who fills each role each year is `src/data/hub/org-holders.ts` — a
-plain data file (names/emails only render behind the gate). Update it after spring elections,
-and again once the class reps are settled — the Board's enrollment list is the source of
-truth, in its Job column ("CLASS REP", "President", ...). Three seats are still open for
-2026-27: Facilities Chair, Family Activities Chair, and Copy Room Helper.
+**Org chart holders:** WHO fills each role is Board-editable in the Studio — **Family Hub →
+"Who's who this year"** (`roleHolder` documents, one per seat, seeded by
+`scripts/seed-role-holders.mjs`). The post-election update needs no deploy.
+
+The chart is deliberately split:
+
+|                                                | Owner                                | Why                                            |
+| ---------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| Tiers, branches, icons, committee labels/sizes | code (`src/data/hub/org-holders.ts`) | layout — brand-lock keeps it out of the Studio |
+| Names, photos, contact                         | Sanity (`roleHolder`)                | changes every spring                           |
+
+`src/lib/hub-org.ts` merges the two (pure, unit-tested). Rules worth knowing:
+
+- **Sanity wins, including when it's empty.** Clearing a name really does vacate the seat, so
+  a volunteer who steps down disappears from the chart via the Studio. A role with no document
+  at all keeps the committed name, which is what makes `org-holders.ts` a working fallback if
+  Sanity is unreachable — the chart is never blank.
+- **A role label that matches nothing is ignored**, so a Studio typo cannot break the page.
+- **Two seats share the displayed label "Teacher"**, so they carry a `key` (`Teacher — Pre-K`,
+  `Teacher — Twos & Threes`) that the join uses instead.
+- **Class reps link to a Directory entry** (`contactFrom`) rather than storing an email/phone,
+  so the details live in exactly one place and none of them land in this public repo. The
+  query resolves the adult whose name matches the holder. A family who opted **out** of the
+  Directory resolves to nothing: the name shows, the contact links don't.
+- **The read carries PII once a rep is linked, so it is never cached.** Both class pages and
+  the org chart each do one uncached read.
+
+Three seats are open for 2026-27 (Facilities Chair, Family Activities Chair, Copy Room
+Helper) and are seeded as named documents with no holder, so the vacancy is visible in the
+Studio rather than just missing.
 
 ---
 
