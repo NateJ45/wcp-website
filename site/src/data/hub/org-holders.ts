@@ -15,16 +15,10 @@
 // branches, the icons, and the committee labels and sizes. That is layout, and
 // the brand-lock rule keeps layout out of the Studio. Role DESCRIPTIONS are
 // separate again and Board-editable (`coopRole` docs / coop-roles.ts).
-// Names render behind the gate only, like the old site.
+// Names render behind the gate only, like the old site. Photos live ONLY in
+// the Studio (each roleHolder's Photo field) — no committed headshots. A seat
+// with no Studio photo shows initials, which is the designed state.
 // =============================================================================
-
-import type { ImageMetadata } from 'astro';
-import erinPhoto from '@/assets/org/ErinTwoThrees.jpg';
-import lexiePhoto from '@/assets/org/LexieAdmin.jpg';
-import lisaPhoto from '@/assets/org/LisaPreK.jpg';
-import nathanPhoto from '@/assets/org/NathanPublicity.jpg';
-import nicolePhoto from '@/assets/org/NicoleFundraising.jpg';
-import rachelPhoto from '@/assets/org/RachelPresident.jpg';
 
 export interface OrgPerson {
   /** Role label shown on the card, e.g. "President". */
@@ -41,8 +35,6 @@ export interface OrgPerson {
   name?: string;
   /** Role mailbox (shown as a mail icon link). */
   email?: string;
-  /** Headshot (src/assets/org/); the card falls back to initials without one. */
-  photo?: ImageMetadata;
 }
 
 export interface OrgTeam {
@@ -62,7 +54,6 @@ export const president: OrgPerson = {
   role: 'President',
   icon: 'award',
   name: 'Rachel Gumpert',
-  photo: rachelPhoto,
   email: 'president@westchesterpreschool.org',
 };
 
@@ -94,7 +85,6 @@ export const paidStaff: OrgPerson[] = [
     key: 'Teacher — Pre-K',
     icon: 'book-open',
     name: 'Mrs. Lisa Cortez',
-    photo: lisaPhoto,
     email: 'lisa@westchesterpreschool.org',
   },
   {
@@ -102,14 +92,12 @@ export const paidStaff: OrgPerson[] = [
     key: 'Teacher — Twos & Threes',
     icon: 'book-open',
     name: 'Mrs. Erin Schmerr',
-    photo: erinPhoto,
     email: 'erin@westchesterpreschool.org',
   },
   {
     role: 'Administrator',
     icon: 'building-2',
     name: 'Mrs. Lexie Lenavitt',
-    photo: lexiePhoto,
     email: 'admin@westchesterpreschool.org',
   },
 ];
@@ -121,7 +109,6 @@ export const secretaryBranch: ChairStack[] = [
       role: 'Publicity Chair',
       icon: 'megaphone',
       name: 'Nathan Nixon',
-      photo: nathanPhoto,
       email: 'publicity@westchesterpreschool.org',
     },
     teams: [{ label: 'Publicity Assistants', size: '4 members' }],
@@ -173,7 +160,6 @@ export const vpBranch: ChairStack[] = [
       role: 'Fundraising Chair',
       icon: 'hand-heart',
       name: 'Nicole Hagedorn',
-      photo: nicolePhoto,
       email: 'fundraising@westchesterpreschool.org',
     },
     teams: [{ label: 'Fundraising Committee', size: '2 members' }],

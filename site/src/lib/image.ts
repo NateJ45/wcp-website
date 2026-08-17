@@ -44,3 +44,16 @@ export function imageSrcSet(
 ): string {
   return widths.map((w) => `${urlForImage(source).width(w).url()} ${w}w`).join(', ');
 }
+
+/**
+ * A download URL for a Sanity FILE asset, straight from its reference.
+ * A ref reads `file-<hash>-<ext>`; the CDN serves it at
+ * https://cdn.sanity.io/files/<projectId>/<dataset>/<hash>.<ext>.
+ * Built from the ref so portable-text bodies need no GROQ dereference.
+ * Returns null for anything that is not a file ref.
+ */
+export function fileUrlFromRef(ref: string | undefined | null): string | null {
+  const m = /^file-([A-Za-z0-9]+)-([a-z0-9]+)$/.exec(ref ?? '');
+  if (!m) return null;
+  return `https://cdn.sanity.io/files/${projectId}/${dataset}/${m[1]}.${m[2]}`;
+}

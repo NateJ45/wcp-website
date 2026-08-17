@@ -19,7 +19,6 @@
    text"). No document, no Directory link, or a family who opted out all degrade
    to a card with the name and no links.
    ============================================================================ */
-import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import { classReps } from '@/data/hub/org-holders';
 import { classStyles } from '@/lib/class-colors';
@@ -66,14 +65,6 @@ const photoUrl = person?.sanityPhoto?.asset
         width="80"
         height="80"
         loading="lazy"
-        class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-      />
-    ) : person?.photo ? (
-      <Image
-        src={person.photo}
-        alt={`${person.name}, class rep`}
-        widths={[80, 160]}
-        sizes="5rem"
         class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
       />
     ) : (

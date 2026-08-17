@@ -4,9 +4,9 @@ import { defineType, defineArrayMember } from 'sanity';
 // postBody — long-form rich text for blog/news posts
 // =============================================================================
 // Like richProse (h2/h3, quote, lists, bold/italic/link) but also allows
-// inline images inside the flow of a post — the one place a volunteer writes
-// a full article. Still no raw HTML, colours, or fonts. Renders through
-// renderPostBody() in src/lib/portable-text.ts.
+// inline images and file attachments inside the flow of a post. Used by News
+// posts, newsletter issues, and hub Updates. Still no raw HTML, colours, or
+// fonts. Renders through renderPostBody() in src/lib/portable-text.ts.
 // =============================================================================
 export const postBody = defineType({
   name: 'postBody',
@@ -65,6 +65,34 @@ export const postBody = defineType({
         },
         { name: 'caption', type: 'string', title: 'Caption (optional)' },
       ],
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'fileAttachment',
+      title: 'Attachment',
+      fields: [
+        {
+          name: 'file',
+          type: 'file',
+          title: 'File',
+          description: 'A PDF, a form, a flyer. Families download it with one tap.',
+          validation: (R) => R.required(),
+        },
+        {
+          name: 'title',
+          type: 'string',
+          title: 'Shown as',
+          description: 'e.g. "Field trip permission form (PDF)".',
+          validation: (R) =>
+            R.required().error('Name the attachment so families know what they tap.'),
+        },
+      ],
+      preview: {
+        select: { title: 'title' },
+        prepare({ title }: { title?: string }) {
+          return { title: title || 'Attachment', subtitle: 'File download' };
+        },
+      },
     }),
   ],
 });

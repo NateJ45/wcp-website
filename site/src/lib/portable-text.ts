@@ -10,7 +10,13 @@
 import { toHTML, type PortableTextHtmlComponents } from '@portabletext/to-html';
 import type { PortableTextBlock } from '@portabletext/types';
 import { withBase } from '@/lib/utils';
-import { imageUrl, imageSrcSet, type SanityImageSource, type SanityImageValue } from '@/lib/image';
+import {
+  imageUrl,
+  imageSrcSet,
+  fileUrlFromRef,
+  type SanityImageSource,
+  type SanityImageValue,
+} from '@/lib/image';
 
 function escapeAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -175,6 +181,27 @@ export function renderPostBody(blocks: PortableTextBlock[] | undefined, linkBase
           ? `<figcaption>${escapeAttr(source.caption)}</figcaption>`
           : '';
         return `<figure><img src="${escapeAttr(src)}" srcset="${escapeAttr(srcset)}" sizes="(max-width: 768px) 100vw, 768px" alt="${alt}" loading="lazy" decoding="async" />${caption}</figure>`;
+      },
+      // An attachment renders as a download card: paperclip, the Board's own
+      // label, and the file extension so nobody taps a mystery. The URL comes
+      // straight from the asset ref (fileUrlFromRef), so the query needs no
+      // dereference. A row with no valid file renders nothing.
+      fileAttachment: ({ value }) => {
+        const v = value as { title?: string; file?: { asset?: { _ref?: string } } };
+        const href = fileUrlFromRef(v?.file?.asset?._ref);
+        const title = typeof v?.title === 'string' ? v.title.trim() : '';
+        if (!href || !title) return '';
+        const ext = (href.split('.').pop() ?? '').toUpperCase();
+        return (
+          `<p class="not-prose"><a href="${escapeAttr(href)}" target="_blank" rel="noopener" download ` +
+          `class="inline-flex max-w-full items-center gap-2.5 rounded-[var(--radius)] border border-border bg-grey/60 px-4 py-3 font-bold text-heading no-underline hover:border-navy dark:bg-white/5">` +
+          `<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-sky-ink" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>` +
+          `<span class="min-w-0 truncate">${escapeAttr(deEmDash(title))}</span>` +
+          (ext
+            ? `<span class="shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-ink-muted dark:bg-surface">${escapeAttr(ext)}</span>`
+            : '') +
+          `</a></p>`
+        );
       },
     },
   };

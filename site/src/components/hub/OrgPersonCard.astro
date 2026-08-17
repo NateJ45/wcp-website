@@ -7,14 +7,12 @@
    holder's name (or "Open role" while unfilled), and an optional mail-icon
    link to the role's mailbox.
 
-   Two photo sources, Studio first: `sanityPhoto` is a headshot the Board
-   uploaded to the role's "Who's who" document, `photo` is the committed
-   fallback in src/assets/org/. The Sanity one goes through urlForImage rather
-   than astro:assets because this renders on an SSR hub page, where the
-   Cloudflare adapter cannot resize at request time (the documented trap — it
-   would serve the ORIGINAL upload into a 56px slot).
+   The photo is the Board's upload on the role's "Who's who" document — the
+   ONE source (no committed headshots; removed 2026-08-17). It goes through
+   urlForImage rather than astro:assets because this renders on an SSR hub
+   page, where the Cloudflare adapter cannot resize at request time (the
+   documented trap — it would serve the ORIGINAL upload into a 56px slot).
    ============================================================================ */
-import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import type { OrgPerson } from '@/data/hub/org-holders';
@@ -59,14 +57,6 @@ const initials = person.name
         height={px}
         loading="lazy"
         class={`rounded-full border-4 object-cover object-top ${ring} ${large ? 'h-20 w-20' : 'h-14 w-14'}`}
-      />
-    ) : person.photo ? (
-      <Image
-        src={person.photo}
-        alt=""
-        widths={[80, 160]}
-        sizes="5rem"
-        class={`rounded-full border-4 object-cover ${ring} ${large ? 'h-20 w-20' : 'h-14 w-14'}`}
       />
     ) : (
       <span

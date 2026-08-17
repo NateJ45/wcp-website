@@ -105,7 +105,9 @@ export const update = defineType({
       components: { input: ClassAudienceInput },
       initialValue: 'all',
     }),
-    defineField({ name: 'body', title: 'Body', type: 'blockContent', group: 'content' }),
+    // The same editor News posts use: text, pictures, and attachments.
+    // Existing bodies are plain blocks, which stay valid — additive only.
+    defineField({ name: 'body', title: 'Body', type: 'postBody', group: 'content' }),
   ],
   orderings: [
     { title: 'Newest first', name: 'newest', by: [{ field: 'publishedAt', direction: 'desc' }] },

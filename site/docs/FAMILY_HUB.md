@@ -890,6 +890,18 @@ DERIVED from the class docs by `src/lib/student-fees.ts` — classes sharing an 
 pay link collapse into one button, labelled from the class names. `feeSchedule.studentFeeBands`
 is hidden and read-only; its rows are kept as a record but nothing reads them.
 
+**Role photos are Studio-only** (2026-08-17): the six org headshots that lived in
+`src/assets/org/` were uploaded to their `roleHolder` documents and the committed files and
+code fallback deleted. `OrgPersonCard`/`ClassRepCard` render the Studio photo through the
+Sanity CDN or fall back to initials — the designed state for a seat with no upload.
+
+**Hub Updates carry pictures and attachments** (2026-08-17): `update.body` switched from
+`blockContent` to `postBody` — the same editor News posts and newsletter issues use — and
+`postBody` gained a `fileAttachment` block (file + label). `renderPostBody` renders it as a
+download card, building the URL straight from the asset ref (`fileUrlFromRef` in
+`src/lib/image.ts`), so queries need no dereference. Existing plain-text bodies stay valid;
+the change is additive.
+
 **The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): a
 six-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly

@@ -256,6 +256,12 @@ export const guides: Guide[] = [
         text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
       {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Updates can carry pictures and attachments now.',
+        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption) or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it.',
+      },
+      {
         kind: 'p',
         text: 'For something every family must notice (a closure, a deadline), also turn on **Highlight in the bell menu** on that Update. It sits at the top of the hub’s bell menu with an "Important" tag until you turn it off — so do turn it off once it has run its course.',
       },
@@ -542,7 +548,7 @@ export const guides: Guide[] = [
           'Click **News** in the left menu, then the **＋** (new) button.',
           'Type a **Title**, then click **Generate** next to the slug to make its web address.',
           'Pick a **Category**, add a short **Summary** (this shows on the News list and when the post is shared), and a **Cover image** if you have one.',
-          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos.',
+          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos or an **Attachment** (a PDF or form families download with one tap).',
           'Add **Alt text** to any photo you place in the body.',
           '**Publish** when you are ready for it to go live (usually within a minute or two).',
         ],

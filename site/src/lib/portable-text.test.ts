@@ -78,3 +78,55 @@ describe('renderPostBody — always normalizes (full article directly under h1)'
     expect(headingSeq(renderPostBody(body))).toEqual(['h2', 'h3']);
   });
 });
+
+describe('renderPostBody — inline images and attachments', () => {
+  const textBlock = (text: string) => ({
+    _type: 'block',
+    _key: 'b1',
+    style: 'normal',
+    children: [{ _type: 'span', _key: 's1', text, marks: [] }],
+    markDefs: [],
+  });
+
+  test('renders an attachment as a download card from the asset ref alone', () => {
+    const html = renderPostBody([
+      textBlock('See the form below.'),
+      {
+        _type: 'fileAttachment',
+        _key: 'f1',
+        title: 'Field trip permission form (PDF)',
+        file: { asset: { _ref: 'file-abc123DEF456-pdf' } },
+      },
+    ] as never);
+    expect(html).toContain('https://cdn.sanity.io/files/');
+    expect(html).toContain('/abc123DEF456.pdf');
+    expect(html).toContain('Field trip permission form (PDF)');
+    expect(html).toContain('download');
+    expect(html).toContain('>PDF<');
+  });
+
+  test('renders nothing for an attachment with no file or no title', () => {
+    const html = renderPostBody([
+      { _type: 'fileAttachment', _key: 'f1', title: 'No file behind me' },
+      { _type: 'fileAttachment', _key: 'f2', file: { asset: { _ref: 'file-abc-pdf' } } },
+      textBlock('Still here.'),
+    ] as never);
+    expect(html).not.toContain('cdn.sanity.io/files');
+    expect(html).toContain('Still here.');
+  });
+
+  test('renders an inline image with alt and caption', () => {
+    const html = renderPostBody([
+      {
+        _type: 'image',
+        _key: 'i1',
+        asset: { _ref: 'image-deadbeef-800x600-jpg', _type: 'reference' },
+        alt: 'Kids painting at the art table',
+        caption: 'Art morning',
+      },
+    ] as never);
+    expect(html).toContain('<figure>');
+    expect(html).toContain('alt="Kids painting at the art table"');
+    expect(html).toContain('<figcaption>Art morning</figcaption>');
+  });
+});

@@ -16,7 +16,7 @@ import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { classLabel } from '@/lib/class-colors';
-import { renderPortableText } from '@/lib/portable-text';
+import { renderPostBody } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 import type { SanityImageValue } from '@/lib/image';
 
@@ -46,7 +46,9 @@ const fmtDate = (iso: string) =>
 // The body is the whole article, rendered directly under the page <h1>, so
 // normalize its heading levels (blockContent's "Heading" is h3) up to h2 — else
 // h1 -> h3 trips WCAG heading-order. See src/lib/portable-text.ts.
-const bodyHtml = renderPortableText(post.body, '', { normalizeHeadings: true });
+// The same renderer News uses: text, inline pictures, attachments.
+// It normalizes heading levels unconditionally, as this call did before.
+const bodyHtml = renderPostBody(post.body);
 ---
 
 <HubShell
