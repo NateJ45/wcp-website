@@ -59,7 +59,14 @@ export const site = {
   ],
 
   email: {
-    general: 'president@westchesterpreschool.org',
+    // The general inbox is contact@ (the Secretary's box), matching the value
+    // the Board set in Site Settings — this fallback used to say president@,
+    // which made every surface reading the RAW data file (the hub pages, the
+    // no-JS contact fallback) quietly email the President while the resolved
+    // public chrome said contact@. Found 2026-08-17 via the mislabelled
+    // "Email the Treasurer" button. Title-specific buttons should use the
+    // specific keys below, never `general`.
+    general: 'contact@westchesterpreschool.org',
     admin: 'admin@westchesterpreschool.org',
     contact: 'contact@westchesterpreschool.org',
     treasurer: 'treasurer@westchesterpreschool.org', // donations / tax questions
