@@ -62,30 +62,39 @@ has been closed` under full-suite load. Re-run the single test in isolation
   `npx astro check` · `npm run lint` · `npm run format:check` ·
   `npm run build` · `npm run check:links` · `npm test` · `npm run test:unit`.
 
-## Windows gotcha: mass 60s timeouts — the local server DEGRADES with request volume
+## Windows gotcha: mass 60s timeouts are the webServer REBUILDING, not the app
 
-Diagnosed properly 2026-08-17 (an earlier version of this note blamed the Playwright-managed
-server lifecycle; that was wrong). The local `wrangler`/miniflare preview stack degrades as
-requests accumulate: after a few hundred, response BODIES stall in transit — the server log
-prints `GET /family-hub/twos-threes 200 OK (242ms)` while the same response takes 70s to
-reach curl. Headers arrive instantly, the body hangs, so Playwright's `goto waitUntil:'load'`
-times out at 60s. A restarted server serves the identical pages in 0.2-0.6s.
+Diagnosed properly 2026-08-17 (two earlier versions of this note blamed the Playwright
+webServer lifecycle, then "the local server degrades with request volume" — both wrong, and
+both cost hours). The real cause: `playwright.hub.config.ts` has
 
-Consequences and the recipe:
+    webServer: { command: 'npm run build && npm run preview', reuseExistingServer: !CI }
 
-- **Long runs rot midway, short runs finish clean.** The full two-browser suite (~105 tests)
-  sits right at the edge; a mass-timeout tail after a green start is THIS, not the app.
-- **Restart the preview server, then run the suite immediately** — fresh server + one suite
-  fits inside the healthy window. Split projects (`--project=chromium`, then webkit) if the
-  tail still degrades.
-- **The signature that clears the app:** server log fast, wire slow. If wrangler's own log
-  shows millisecond render times while clients hang, stop debugging the code.
-- **This is the LOCAL stack only.** Production is real workerd on Cloudflare's edge and does
-  not share the proxy path that degrades; the deployed hub stays fast under the same code.
-- WebKit-only failures that land on the login page are a DIFFERENT, documented trap: a dist
-  built without `WCP_INSECURE_COOKIES=1` sets Secure cookies WebKit won't send over http.
-  Check which failure you have before acting.
-- Never trust `cmd | tail` exit codes for a verdict — the pipe reports tail's exit, not
-  Playwright's. Read `test-results/.last-run.json`.
-- Killing a backgrounded test task on Windows does NOT kill its playwright/wrangler process
-  tree; orphans keep running and competing for port 4321. `taskkill /F /T /PID <pid>`.
+When nothing is listening on 4321, Playwright runs that command — a FULL rebuild, which now
+also runs the two PDF generators in postbuild and launches Chromium twice more. The rebuild
+wipes and repopulates `dist/`, so every page load during it fails, and the run burns ~9
+minutes with almost every test timing out at 60s on `page.goto`.
+
+Proof it is not the app: with a preview server already running, the same suite is
+**115 passed in 53s**, and a bare Playwright script loads the hub home in ~500ms.
+
+The recipe, and it is quick:
+
+1. `npm run build` (add `WCP_INSECURE_COOKIES=1` so the WebKit project can send its cookie).
+2. Start the server yourself: `WCP_INSECURE_COOKIES=1 npm run preview` — leave it running.
+3. Run the suite. `reuseExistingServer` picks it up and the tests start immediately.
+
+Diagnosing, in order:
+
+- **Look at the run header.** `[WebServer] npm notice run build` means it is rebuilding —
+  that is the whole problem, not a hint about the code.
+- **Time a request yourself** while the suite fails: `curl -o /dev/null -w '%{time_total}'`
+  against `/family-hub` with a session cookie. Fast server + failing tests = harness.
+- **Never trust `cmd | tail` exit codes** — the pipe reports tail's exit, not Playwright's.
+  Read `test-results/.last-run.json`.
+- **Killing a backgrounded test task does NOT kill its process tree** on Windows. Orphaned
+  playwright/wrangler/chromium processes then compete for port 4321 and for CPU. Clear them:
+  `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine
+-match 'playwright|wrangler|astro' }` then `taskkill /F /T /PID <id>`.
+- WebKit-only failures that land on the login page are a different, documented trap: a dist
+  built without `WCP_INSECURE_COOKIES=1` sets a Secure cookie WebKit will not send over http.
