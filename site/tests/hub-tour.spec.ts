@@ -34,11 +34,11 @@ test.describe('First-visit tour', () => {
     await expect(page.locator('#tour-title')).toHaveText(/Welcome to the Family Hub/i);
   });
 
-  test('walks forward and back through all six steps', async ({ page }) => {
+  test('walks forward and back through all eight steps', async ({ page }) => {
     await openTourFresh(page);
 
     const next = page.locator('[data-tour-next]');
-    for (let i = 0; i < 5; i++) await next.click();
+    for (let i = 0; i < 7; i++) await next.click();
     await expect(next).toHaveText('Done');
     // The last step hides Skip: Done is the one way out.
     await expect(page.locator('[data-tour-skip]')).toBeHidden();
@@ -148,7 +148,18 @@ test.describe('First-visit tour', () => {
       )
       .toBe('wrapped');
 
-    // The last step returns to the centered card.
+    // The bell step follows the tiles; then money, search, and the centered
+    // last step.
+    await next.click();
+    await next.click();
+    await expect
+      .poll(async () => {
+        const s = await spot.boundingBox();
+        const bell = await page.locator('[data-hub-bell]').first().boundingBox();
+        if (!s || !bell) return 'no boxes';
+        return Math.abs(s.y + 8 - bell.y) < 24 ? 'wrapped' : `off by ${Math.round(s.y - bell.y)}`;
+      })
+      .toBe('wrapped');
     await next.click();
     await next.click();
     await next.click();

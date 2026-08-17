@@ -909,13 +909,22 @@ the deterministic daily pool. The Family Handbook button (topbar + hub home card
 PDF uploaded at Site Settings → School year → Family Handbook, with the committed URL as the
 fallback, so the yearly re-upload needs no code edit.
 
-**The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): a
-six-step walkthrough that opens once per device, AFTER the President's note closes when that
+**The curriculum guides and the supply list are Board-editable** (2026-08-17): their content
+moved from the generator scripts into `curriculumGuide` documents (one per class) and the
+`supplyList` singleton, seeded by `scripts/seed-pdf-content.mjs`. The generators read the
+Studio at build time (committed content = fallback) and run in postbuild with `--dist`, so a
+publish regenerates the PDFs on the next deploy; the deploy workflow installs Playwright's
+Chromium for the render, and a build without a browser skips gracefully and ships the
+committed copies. Curriculum sections support both plain objective lists and labelled
+sub-lists (`groups`) — the round-trip drops neither.
+
+**The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): an
+eight-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly
 when no note is due. Dismissal stores the version stamp under `wcp-tour-seen`; the Board
 re-shows it by bumping `version` on the `hubTour` singleton (Family Hub → First-visit tour),
 which also holds the on/off switch and per-step wording overrides (committed strings are the
-fallback). Steps 2-5 SPOTLIGHT the real page element (`data-target-lg`/`data-target-sm` selectors on
+fallback). Steps 2-7 SPOTLIGHT the real page element (`data-target-lg`/`data-target-sm` selectors on
 each step; first visible match wins, a missing target falls back to the centered card): the
 page dims through a cutout ring, the card docks to the bottom edge, a pointer bobs at the
 target, and the target scrolls into view. All movement is reduced-motion-gated, and Done

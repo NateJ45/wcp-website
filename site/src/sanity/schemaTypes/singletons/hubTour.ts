@@ -72,8 +72,10 @@ export const hubTour = defineType({
       'The class buttons are fixed; this wording sits above them.',
     ),
     ...stepFields('helper', 'Step 4: Helping & calendar', ''),
-    ...stepFields('search', 'Step 5: Search', ''),
-    ...stepFields('help', 'Step 6: Where to get help', ''),
+    ...stepFields('updates', 'Step 5: What’s new', 'The bell and the Updates page.'),
+    ...stepFields('money', 'Step 6: Tuition', ''),
+    ...stepFields('search', 'Step 7: Search', ''),
+    ...stepFields('help', 'Step 8: Where to get help', ''),
   ],
   preview: {
     select: { enabled: 'enabled', version: 'version' },

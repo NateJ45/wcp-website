@@ -95,6 +95,27 @@ const STEPS = [
     ),
   },
   {
+    key: 'updates',
+    targetLg: '[data-hub-bell]',
+    targetSm: '[data-hub-bell]',
+    icon: 'bell',
+    title: t('updatesTitle', 'Never miss a beat'),
+    body: t(
+      'updatesBody',
+      'Announcements, meeting minutes, and reminders land in Updates all year. The bell shows what is new since your last visit, and the important ones carry an amber tag.',
+    ),
+  },
+  {
+    key: 'money',
+    targetLg: 'nav[aria-label="Family Hub"] a[href="/family-hub/tuition"]',
+    icon: 'circle-dollar-sign',
+    title: t('moneyTitle', 'Tuition, without the hunt'),
+    body: t(
+      'moneyBody',
+      'The Tuition page keeps the amounts, the due dates, and the pay buttons in one place. Money questions go to the Treasurer, one tap away.',
+    ),
+  },
+  {
     key: 'search',
     targetLg: '[data-hub-search-open]',
     targetSm: '[data-hub-search-open]',

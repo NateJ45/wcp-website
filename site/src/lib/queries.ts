@@ -123,7 +123,8 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
 export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
   enabled, version,
   welcomeTitle, welcomeBody, navigateTitle, navigateBody, classesTitle, classesBody,
-  helperTitle, helperBody, searchTitle, searchBody, helpTitle, helpBody
+  helperTitle, helperBody, updatesTitle, updatesBody, moneyTitle, moneyBody,
+  searchTitle, searchBody, helpTitle, helpBody
 }`;
 
 /**

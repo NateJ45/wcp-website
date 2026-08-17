@@ -359,7 +359,7 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'p',
-        text: 'A family’s first visit to the hub starts with the **President’s welcome note**. When they close it, a six-step **tour** opens: what the hub is, how to find your way, how to pick your class, helping days, search, and where to get help. It works the same on a phone and a computer, and each family sees it once per device.',
+        text: 'A family’s first visit to the hub starts with the **President’s welcome note**. When they close it, an eight-step **tour** opens: what the hub is, how to find your way, how to pick your class, helping days, what’s new and the bell, tuition, search, and where to get help. It works the same on a phone and a computer, and each family sees it once per device.',
       },
       {
         kind: 'path',
@@ -403,6 +403,44 @@ export const guides: Guide[] = [
         tone: 'primary',
         title: 'Keep them preschool-safe.',
         text: 'These render to every family with no review step. If a joke makes you hesitate, it does not go in.',
+      },
+      { kind: 'seealso', items: ['Edit a Family Hub page'] },
+    ],
+  },
+
+  {
+    slug: 'pdf-content',
+    title: 'Edit the curriculum guides & supply list',
+    icon: '📚',
+    lead: 'The branded PDFs on the class pages. Edit the words here; the files rebuild themselves.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You edit words, not files.',
+        text: 'The Curriculum Guide PDFs and the School Supply List are generated from what you write here. Publish a change and the site rebuilds the PDFs within a few minutes — same fonts, same colours, no design tools needed.',
+      },
+      {
+        kind: 'path',
+        items: [
+          'Family Hub',
+          'Curriculum guides (PDF content) / School supply list',
+          'edit',
+          'Publish',
+        ],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and **Publish**.',
+          'For the supply list: update the **School year**, the per-class items, or the wish list, and **Publish**.',
+          'Give the site a few minutes to rebuild, then open the PDF from the class page to check it.',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'Each fall the supply list needs its **School year** bumped and the items reviewed — that is the whole yearly refresh now.',
       },
       { kind: 'seealso', items: ['Edit a Family Hub page'] },
     ],
