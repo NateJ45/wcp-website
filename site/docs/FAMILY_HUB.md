@@ -908,8 +908,12 @@ note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it
 when no note is due. Dismissal stores the version stamp under `wcp-tour-seen`; the Board
 re-shows it by bumping `version` on the `hubTour` singleton (Family Hub → First-visit tour),
 which also holds the on/off switch and per-step wording overrides (committed strings are the
-fallback). Step 2's wayfinding hints are viewport-split in CSS (phone: topbar + tab bar;
-desktop: rail). Step 3 embeds class-picker chips that write the SAME `wcp-my-classes` key as
+fallback). Steps 2-5 SPOTLIGHT the real page element (`data-target-lg`/`data-target-sm` selectors on
+each step; first visible match wins, a missing target falls back to the centered card): the
+page dims through a cutout ring, the card docks to the bottom edge, a pointer bobs at the
+target, and the target scrolls into view. All movement is reduced-motion-gated, and Done
+fires the one-shot `celebrate()` burst. Step 2's wayfinding hints are viewport-split in CSS
+(phone: topbar + tab bar; desktop: rail). Step 3 embeds class-picker chips that write the SAME `wcp-my-classes` key as
 the home picker and dispatch the same `wcp:my-classes` event — `my-class.ts` listens and
 re-personalizes the page behind the modal, so the home tiles are already reordered when the
 tour closes. The greeting hero's "Take the tour" chip reopens it any time. The hub test

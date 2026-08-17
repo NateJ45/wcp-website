@@ -105,6 +105,56 @@ test.describe('First-visit tour', () => {
     ).toBeVisible();
   });
 
+  test('spotlights the real page elements as the steps advance', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openTourFresh(page);
+
+    const modal = page.locator('[data-tour-modal]');
+    const spot = page.locator('[data-tour-spot]');
+    const next = page.locator('[data-tour-next]');
+
+    // Step 2 points at the rail menu.
+    await next.click();
+    await expect(modal).toHaveClass(/is-spot/);
+    await expect(spot).toBeVisible();
+    const rail = page.locator('nav[aria-label="Family Hub"]').first();
+    await expect
+      .poll(async () => {
+        const s = await spot.boundingBox();
+        const r = await rail.boundingBox();
+        if (!s || !r) return 'no boxes';
+        return Math.abs(s.y + 8 - r.y) < 24 && s.width >= r.width
+          ? 'wrapped'
+          : `off by ${s.y - r.y}`;
+      })
+      .toBe('wrapped');
+
+    // Step 3 moves to the class picker area, scrolled into view.
+    await next.click();
+    await expect
+      .poll(
+        async () => {
+          const s = await spot.boundingBox();
+          const picker = await page
+            .locator('[data-my-class-picker], [data-my-class-current]')
+            .first()
+            .boundingBox();
+          if (!s || !picker) return 'no boxes';
+          return Math.abs(s.y + 8 - picker.y) < 24
+            ? 'wrapped'
+            : `off by ${Math.round(s.y - picker.y)}`;
+        },
+        { timeout: 4000 },
+      )
+      .toBe('wrapped');
+
+    // The last step returns to the centered card.
+    await next.click();
+    await next.click();
+    await next.click();
+    await expect(modal).not.toHaveClass(/is-spot/);
+  });
+
   test('Esc closes it and focus returns to the opener', async ({ page }) => {
     await page.goto('/family-hub', { waitUntil: 'load' });
     await settle(page);
