@@ -1,0 +1,105 @@
+---
+/* ============================================================================
+   Family Hub — Board-created pages (GATED, catch-all)
+   ============================================================================
+   Every other hub page is a hand-written route, because each carries a
+   code-owned widget (the calendar embed, the PayPal buttons, the directory
+   map, class facts). That made the hub the one part of the site a future board
+   could not grow: adding a page meant a developer, a new .astro file, a new
+   `hubKey` option, and a hardcoded link in hub-nav.ts.
+
+   This route closes that. A volunteer creates a `hubPage` in the Studio, leaves
+   `hubKey` empty, gives it a web address, and the page exists here — built from
+   the same hub-safe section palette as every other hub page, inside the same
+   shell, and placed in the rail from the document's own "Where it appears"
+   fields (src/lib/hub-pages.ts merges it in).
+
+   GATING: this lives under /family-hub and sets `prerender = false`, which is
+   the whole contract — src/middleware.ts protects it exactly like every other
+   hub route, with no per-page auth code. Do not add a prerendered branch here.
+   tests/hub-gate.spec.ts asserts a Board page 302s to the login page for a
+   signed-out visitor, so that protection cannot silently lapse.
+
+   Astro matches static routes BEFORE a catch-all, so a document whose slug
+   collides with a built-in page would simply never render. Rather than let that
+   be a silent mystery, RESERVED_HUB_SLUGS rejects those slugs in the Studio,
+   and this route 404s on one as a second line of defence.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_PAGE_BY_SLUG_QUERY } from '@/lib/queries';
+import { estimateReadMinutes } from '@/lib/hub-reading-time';
+import { formatMonthYear } from '@/lib/hub-dashboard-dates';
+import { isUsableHubSlug } from '@/lib/hub-pages';
+
+interface HubPageDoc {
+  title?: string;
+  heading?: string;
+  intro?: string;
+  navIcon?: string;
+  _updatedAt?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+
+// `[...slug]` gives "a" for /family-hub/a and "a/b" for a nested path. Board
+// pages are deliberately one level deep: a rest parameter is how Astro spells
+// "catch-all", not an invitation to nest, and a hub with folders is a hub
+// nobody can find their way around.
+const raw = Astro.params.slug ?? '';
+const slug = Array.isArray(raw) ? raw.join('/') : raw;
+
+let doc: HubPageDoc | null = null;
+if (isUsableHubSlug(slug)) {
+  try {
+    doc = await sanityFetch<HubPageDoc | null>(
+      HUB_PAGE_BY_SLUG_QUERY,
+      { slug },
+      { cache: BOARD_CONTENT_CACHE },
+    );
+  } catch {
+    doc = null;
+  }
+}
+
+// No document, an unusable slug, or a slug that shadows a real route: a genuine
+// 404. Returning the hub's own 404 rather than an empty shell means a mistyped
+// address behaves like a mistyped address everywhere else on the site.
+if (!doc) return new Response(null, { status: 404 });
+
+const title = doc.heading || doc.title || 'Family Hub';
+const sections = doc.sections ?? [];
+const readMinutes = estimateReadMinutes(sections);
+const updated = formatMonthYear(doc._updatedAt);
+---
+
+<HubShell
+  title={title}
+  bare
+  current={`/family-hub/${slug}`}
+  pageTitle={`${title} — WCP Family Hub`}
+>
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader
+        title={title}
+        subtitle={doc.intro}
+        icon={doc.navIcon || 'file-text'}
+        readMinutes={readMinutes}
+        updated={updated}
+      />
+
+      {
+        /* The same Board-editable body every other hub page uses, so a page
+          created in 2035 behaves exactly like one shipped in 2026 — including
+          the "On this page" TOC once it has enough sections. */
+      }
+      <HubSectionedBody sections={sections} label={`${title} sections`} class="mt-8" />
+    </div>
+  </Section>
+</HubShell>

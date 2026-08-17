@@ -27,6 +27,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { isUsableHubSlug } from '@/lib/hub-pages';
 import { hubNav } from '@/data/hub-nav';
 import { getCalendarEvents, eventDate } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
@@ -42,6 +43,8 @@ import {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface HubPageRow {
   hubKey?: string;
+  slug?: string;
+  title?: string;
   heading?: string;
   sections?: any[];
 }
@@ -62,7 +65,7 @@ export const GET: APIRoute = async () => {
       // indexes itself instead of waiting for someone to remember a registry.
       // hubPageRoute() below still has the final say on where each one links.
       sanityFetch<HubPageRow[]>(
-        `*[_type == "hubPage" && !(hubKey in $denied)]{ hubKey, heading, sections }`,
+        `*[_type == "hubPage" && !(hubKey in $denied)]{ hubKey, slug, title, heading, sections }`,
         { denied: [...HUB_PAGE_DENY] },
         { cache: BOARD_CONTENT_CACHE },
       ),
@@ -89,13 +92,21 @@ export const GET: APIRoute = async () => {
 
     const knownRoutes = hubRoutesFromNav(hubNav);
     for (const page of pages) {
-      if (!page.hubKey) continue;
-      // Null when the doc has no page to land on — a deleted route, or a doc
-      // created before its page exists. Better silent than hits that go
-      // nowhere.
-      const href = hubPageRoute(page.hubKey, knownRoutes);
+      // Two kinds of hub page. A BUILT-IN one resolves its hubKey to a route;
+      // a BOARD-CREATED one is served by the catch-all at its own slug. Both
+      // index the same way, so a page the Board adds in ten years is findable
+      // in the palette the day they publish it, with no registry to update.
+      let href: string | null = null;
+      if (page.hubKey) {
+        // Null when the doc has no page to land on — a deleted route, or a doc
+        // created before its page exists. Better silent than hits that go
+        // nowhere.
+        href = hubPageRoute(page.hubKey, knownRoutes);
+      } else if (isUsableHubSlug(page.slug)) {
+        href = `/family-hub/${page.slug!.trim()}`;
+      }
       if (!href) continue;
-      entries.push(...pageEntries(href, page.heading ?? 'Family Hub', page.sections));
+      entries.push(...pageEntries(href, page.heading ?? page.title ?? 'Family Hub', page.sections));
     }
 
     for (const u of updates) {

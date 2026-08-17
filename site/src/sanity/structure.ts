@@ -166,7 +166,12 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
       S.list()
         .title('Family Hub')
         .items([
-          S.documentTypeListItem('hubPage').title('Hub pages (edit content)').icon(emoji('🧱')),
+          // "edit content OR add a page": the list is now where a board CREATES
+          // a hub page too (a doc with a slug and no hubKey, served by the
+          // gated catch-all), so the label should not imply editing only.
+          S.documentTypeListItem('hubPage')
+            .title('Hub pages (edit content, or add a page)')
+            .icon(emoji('🧱')),
           singleton(S, 'presidentNote', "President's note", emoji('💌')),
           S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
           S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),

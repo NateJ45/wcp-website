@@ -38,6 +38,12 @@ const HUB_PAGES = [
   '/family-hub/threes',
   '/family-hub/pre-k-am',
   '/family-hub/pre-k-pm',
+  // Board-created pages (the gated catch-all). Both an EXISTING page and a
+  // made-up address: the catch-all must send a signed-out visitor to the login
+  // page either way. If it ever 404'd before the gate ran, the 404 itself would
+  // leak which hub pages exist.
+  '/family-hub/example-committee',
+  '/family-hub/no-such-page-exists',
 ];
 
 /** Hub API endpoints. None of these do their own auth check. */

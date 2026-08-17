@@ -21,7 +21,7 @@ import { AUTH_FILE } from './tests/auth-file';
 // fresh `npm run build` first (bundled into the command below).
 export default defineConfig({
   testDir: './tests',
-  testMatch: /(hub-(shell|home|sections|gate)\.spec|hub-auth\.setup)\.ts$/,
+  testMatch: /(hub-(shell|home|sections|gate|pages)\.spec|hub-auth\.setup)\.ts$/,
   // 60s, not the usual 30s. The hub HOME page fans out to several external
   // origins server-side (Apps Script calendar, two gviz sheets, the store),
   // each with its own 8s timeout, and `cached()` cannot help on the first hit
@@ -71,15 +71,17 @@ export default defineConfig({
     // shell/home specs assert desktop-rail layout and drive their own viewports.
     {
       name: 'chromium',
-      testMatch: /hub-(shell|home|sections)\.spec\.ts$/,
+      testMatch: /hub-(shell|home|sections|pages)\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
       dependencies: ['setup'],
     },
     {
       name: 'webkit-iphone',
       use: { ...devices['iPhone 14'], storageState: AUTH_FILE },
-      testMatch: /hub-sections\.spec\.ts$/,
-      grep: /renders an app header/,
+      // A Board-created page gets Safari coverage too: it is the route most
+      // likely to rot unnoticed, and phones are where the hub is actually read.
+      testMatch: /hub-(sections|pages)\.spec\.ts$/,
+      grep: /renders an app header|renders through the catch-all/,
       dependencies: ['setup'],
     },
   ],

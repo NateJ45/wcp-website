@@ -93,6 +93,33 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
   }
 }`;
 
+/**
+ * A Board-CREATED hub page, by its web address (the gated catch-all route).
+ *
+ * `!defined(hubKey)` is load-bearing: a built-in page has its own route and its
+ * own widgets, so if someone ever set both a hubKey and a slug on one document,
+ * serving it here would render the content WITHOUT those widgets and quietly
+ * shadow the real page. Only genuinely free-standing pages match.
+ */
+export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && !defined(hubKey)][0]{
+  title, heading, intro, navIcon, _updatedAt,
+  sections[]{
+    ...,
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url },
+    _type == "faqSection" => {
+      "items": select(
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
+        source == "inline" => inlineItems[]{ question, answer }
+      )
+    }
+  }
+}`;
+
+/** Every Board-created hub page, for the rail nav and the search index. */
+export const HUB_BOARD_PAGES_QUERY = `*[_type == "hubPage" && defined(slug) && !defined(hubKey)]{
+  title, slug, navGroup, navIcon, navOrder
+}`;
+
 // -----------------------------------------------------------------------------
 // Blog / News
 // -----------------------------------------------------------------------------

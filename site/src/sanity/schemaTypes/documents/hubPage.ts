@@ -1,5 +1,7 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { HUB_SECTION_TYPE_NAMES } from '../sections';
+import { ICON_NAMES } from '../objects/_shared';
+import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 
 // =============================================================================
 // hubPage — a Family Hub page, built from sections (GATED, editable)
@@ -20,6 +22,7 @@ export const hubPage = defineType({
   groups: [
     { name: 'content', title: 'Content', default: true },
     { name: 'settings', title: 'Settings' },
+    { name: 'nav', title: 'Where it appears' },
   ],
   fields: [
     defineField({
@@ -35,7 +38,8 @@ export const hubPage = defineType({
       title: 'Which hub page',
       type: 'string',
       group: 'settings',
-      description: 'Links this content to a hub page. Set once — do not change it later.',
+      description:
+        'Only for the pages that came with the site. Pick the one this content belongs to, and set it once — do not change it later. Making a BRAND-NEW page instead? Leave this empty and fill in the web address below.',
       options: {
         list: [
           { title: 'Hub home', value: 'home' },
@@ -53,8 +57,85 @@ export const hubPage = defineType({
           { title: 'Pre-K PM classroom', value: 'pre-k-pm' },
         ],
       },
-      validation: (R) => R.required(),
     }),
+
+    // --- New pages ----------------------------------------------------------
+    defineField({
+      name: 'slug',
+      title: 'Web address (new pages only)',
+      type: 'string',
+      group: 'settings',
+      description:
+        'Lowercase words joined by hyphens, e.g. "playground-committee". The page will live at /family-hub/playground-committee. Leave empty for a page that came with the site.',
+      // A plain string + regex, not Sanity's slug type: the same reason the
+      // public pages use one (slugify strips characters we depend on), plus we
+      // can spell out the rule in the error a volunteer actually reads.
+      validation: (R) =>
+        R.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+          name: 'web address',
+          invert: false,
+        })
+          .error('Use lowercase letters, numbers and hyphens only — e.g. "playground-committee".')
+          .custom(async (slug, context) => {
+            const value = typeof slug === 'string' ? slug.trim() : '';
+            if (!value) return true;
+
+            // A page that came with the site already owns this address. Astro
+            // serves the real route first, so this page would simply never
+            // appear — silent, and baffling to whoever made it.
+            if (RESERVED_HUB_SLUGS.includes(value)) {
+              return `“${value}” is already used by a page that came with the site. Pick a different web address.`;
+            }
+
+            // Two pages at one address: the site can only serve one of them,
+            // and which one it picks is arbitrary. Catch it here instead.
+            const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
+            const taken = await context
+              .getClient({ apiVersion: '2025-01-01' })
+              .fetch<string | null>(
+                `*[_type == "hubPage" && slug == $slug && !(_id in [$id, "drafts." + $id])][0].title`,
+                { slug: value, id },
+              );
+            return taken
+              ? `“${value}” is already used by the page “${taken}”. Pick a different web address.`
+              : true;
+          }),
+    }),
+    defineField({
+      name: 'navGroup',
+      title: 'Which part of the menu',
+      type: 'string',
+      group: 'nav',
+      description:
+        'Where this page appears in the Family Hub menu. Leave empty to create the page WITHOUT a menu link (useful while you are still writing it — you can still reach it by its web address).',
+      options: {
+        list: [
+          { title: 'Classes', value: 'Classes' },
+          { title: 'News & Events', value: 'News & Events' },
+          { title: 'Resources', value: 'Resources' },
+          { title: 'Money', value: 'Money' },
+          { title: 'Community', value: 'Community' },
+        ],
+      },
+    }),
+    defineField({
+      name: 'navIcon',
+      title: 'Menu icon',
+      type: 'string',
+      group: 'nav',
+      description: 'The little picture beside the menu link.',
+      options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
+      initialValue: 'file-text',
+    }),
+    defineField({
+      name: 'navOrder',
+      title: 'Position in that part of the menu',
+      type: 'number',
+      group: 'nav',
+      description:
+        'Lower numbers sit higher. Pages that came with the site are listed first; leave this empty and yours go to the bottom in alphabetical order.',
+    }),
+
     defineField({
       name: 'heading',
       title: 'Page heading',
@@ -88,9 +169,18 @@ export const hubPage = defineType({
       description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
   ],
+  // A hubPage is EITHER a built-in page (hubKey) or a new one (slug). With
+  // neither it is an orphan: nothing routes to it and it renders nowhere, which
+  // is a confusing thing to let someone save and walk away from.
+  validation: (R) =>
+    R.custom((doc) => {
+      const d = doc as { hubKey?: string; slug?: string } | undefined;
+      if (d?.hubKey || d?.slug?.trim()) return true;
+      return 'Pick which hub page this is, OR give it a web address to make it a new page.';
+    }),
   preview: {
-    select: { title: 'title', hubKey: 'hubKey' },
-    prepare({ title, hubKey }) {
+    select: { title: 'title', hubKey: 'hubKey', slug: 'slug' },
+    prepare({ title, hubKey, slug }) {
       const labels: Record<string, string> = {
         home: 'Hub home',
         calendar: 'Calendar',
@@ -108,7 +198,11 @@ export const hubPage = defineType({
       };
       return {
         title: title || '(untitled hub page)',
-        subtitle: hubKey ? (labels[hubKey] ?? hubKey) : '',
+        subtitle: hubKey
+          ? (labels[hubKey] ?? hubKey)
+          : slug
+            ? `New page · /family-hub/${slug}`
+            : 'Not set up yet — pick a page, or give it a web address',
       };
     },
   },

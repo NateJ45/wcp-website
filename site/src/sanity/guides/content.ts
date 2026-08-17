@@ -278,6 +278,73 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'new-hub-page',
+    title: 'Add a new Family Hub page',
+    icon: '🆕',
+    lead: 'Make a whole new page for families — a committee, a programme, anything the school grows into.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You can do this yourself.',
+        text: 'Adding a page to the Family Hub used to need a developer. It does not any more. Everything below happens in the Studio.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Hub pages', '＋ new', 'fill it in', 'Publish'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Family Hub → Hub pages** and click **＋** to make a new one.',
+          'Give it a **Page name** so you can find it in the list later.',
+          'Leave **Which hub page** EMPTY. That box is only for the pages that came with the site.',
+          'In **Web address**, type lowercase words joined by hyphens, e.g. `playground-committee`. Your page will live at `/family-hub/playground-committee`.',
+          'Add your content in **Content** — the same sections every other hub page uses.',
+          '**Publish**. Give it a minute and open the address to see it.',
+        ],
+      },
+      {
+        kind: 'h',
+        text: 'Putting it in the menu',
+      },
+      {
+        kind: 'p',
+        text: 'Open the **Where it appears** tab and pick **Which part of the menu**. Your page joins that group in the Family Hub menu, underneath the pages that came with the site. **Position** lets you order it against any other pages you have added; leave it empty and yours sort alphabetically at the bottom.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Not ready to announce it? Leave the menu box empty.',
+        text: 'The page still works at its address, so you can share the link with a couple of people and keep drafting. Pick a menu section when you are ready for everyone to see it.',
+      },
+      {
+        kind: 'h',
+        text: 'A few rules the Studio will hold you to',
+      },
+      {
+        kind: 'p',
+        text: 'The **web address** must be lowercase letters, numbers and hyphens — no spaces or capitals. And it cannot be one already used by a page that came with the site (`calendar`, `directory`, `tuition` and so on); the Studio will tell you if you pick one. That is not fussiness: a clashing address would make your page silently never appear.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'There is a worked example to copy.',
+        text: 'Look for **Example page (safe to delete)** in the Hub pages list. It is a real page built this way, with a few sections to show what is possible. Duplicate it as a starting point, or delete it — nothing else depends on it.',
+      },
+      {
+        kind: 'p',
+        text: 'Your new page is gated like the rest of the Family Hub, so only signed-in families can read it, and it turns up in the hub search straight away. Deleting the page removes it and its menu link together.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Edit a Family Hub page', 'Edit the menus', 'Delete something (and get it back)'],
+      },
+    ],
+  },
+
+  {
     slug: 'edit-menus',
     title: 'Edit the menus',
     icon: '🔗',

@@ -823,6 +823,46 @@ each page with a note also renders a hidden `[data-note-open]` reopen pill ("A n
 President" chip in the hero; "Welcome letter" action on the teacher card) that note-modal.ts
 unhides and wires when the modal is present — JS-only, like the modal itself.
 
+### Adding a hub page (no developer required)
+
+Until 2026-08 every hub page was a hand-written `.astro` route, a fixed `hubKey` option, and a
+hardcoded link in `src/data/hub-nav.ts`. That made the hub the one part of the site a future
+board could not grow. There are now **two kinds of hub page**:
+
+|                            | Built-in                                                 | Board-created                              |
+| -------------------------- | -------------------------------------------------------- | ------------------------------------------ |
+| Identified by              | `hubKey` (fixed list)                                    | `slug`                                     |
+| Route                      | its own `src/pages/family-hub/*.astro`                   | the catch-all `family-hub/[...slug].astro` |
+| Carries code-owned widgets | yes (calendar embed, PayPal, directory map, class facts) | no                                         |
+| Created by                 | a developer                                              | **a volunteer, in the Studio**             |
+
+A Board page is a `hubPage` with a slug and **no** `hubKey` — `HUB_PAGE_BY_SLUG_QUERY` requires
+`!defined(hubKey)`, so a document that somehow had both could never shadow a built-in page and
+render it without its widgets. It gets the same shell, the same hub-safe section palette, the
+same TOC, and it self-indexes into the ⌘K palette.
+
+The rules live in `src/lib/hub-pages.ts` (pure, 20 unit tests):
+
+- **`RESERVED_HUB_SLUGS`** blocks any slug owned by a real route. Astro matches static routes
+  first, so a colliding page would silently never appear — the worst kind of bug to hand a
+  volunteer. The Studio rejects it, the route 404s on it as a second line, and a **test asserts
+  the list matches the route files on disk**, so adding a hub route without updating the list
+  fails CI instead of shipping a trap.
+- **`mergeHubNav`** places Board pages into the rail from their own `navGroup` / `navOrder` /
+  `navIcon`. A page with no `navGroup` is left OUT of the nav but still works at its address —
+  that is the deliberate "still drafting it" state. A `navGroup` the rail doesn't have is
+  ignored rather than invented, because rail groups carry AA-checked accent colours.
+
+**Gating is structural, not per-page:** the catch-all lives under `/family-hub` and sets
+`prerender = false`, so `src/middleware.ts` protects it like everything else.
+`tests/hub-gate.spec.ts` asserts that both an existing Board page and a made-up address redirect
+a signed-out visitor, so a 404 can never leak which hub pages exist.
+
+`scripts/seed-example-hub-page.mjs` seeds **Example page (safe to delete)** at
+`/family-hub/example-committee` — a worked template for volunteers and the fixture
+`tests/hub-pages.spec.ts` runs against (render, sections, axe light+dark, 320px, 404,
+shadow-protection, search). It has no `navGroup`, so families never see a link to it.
+
 **The operating budget** (Budget & Fundraising page) is Board-editable in the Studio —
 **Money & payments → Operating budget (yearly)** (`operatingBudget` singleton, seeded by
 `scripts/seed-operating-budget.mjs`). `src/data/hub/budget.ts` is now only the committed

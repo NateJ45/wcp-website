@@ -61,3 +61,29 @@ has been closed` under full-suite load. Re-run the single test in isolation
 - Before committing a nontrivial change, the full local gate (from CLAUDE.md):
   `npx astro check` · `npm run lint` · `npm run format:check` ·
   `npm run build` · `npm run check:links` · `npm test` · `npm run test:unit`.
+
+## Windows gotcha: mass 60s timeouts from the hub suite's OWN webServer
+
+Seen 2026-08-16, twice, deterministically: the full hub suite run the normal way
+(Playwright builds and starts wrangler itself) had EVERY signed-in page render time out at
+60s (~64 failures, ~34min), while every signed-out gate check, the sign-in setup, and the
+API tests passed. The IDENTICAL dist served by a manually started `npm run preview` passed
+the full suite in under a minute (`reuseExistingServer` picks it up on port 4321), and the
+same pages were instant in a real browser and via curl. So the failures said nothing about
+the code — the pathology lives in the Playwright-managed server lifecycle on Windows (a
+fresh multi-thousand-file build immediately served, plus miniflare's per-session KV disk
+writes, is exactly the shape antivirus scan-on-access punishes; unproven but the best fit —
+both bad runs were late at night).
+
+If the hub suite mass-times-out on signed-in pages while the gate project passes:
+
+1. Don't debug the app first. Check the shape: gate green + content all-timeout = this.
+2. Start the server yourself (`npm run preview`, after a fresh `npm run build`) and rerun —
+   `reuseExistingServer` uses it. A green run this way is a valid verdict on the code: same
+   dist, same wrangler command, only the spawner differs.
+3. Also check the OTHER stale-server trap (a leftover process on 4321 serving old code) —
+   `netstat -ano | findstr :4321` — and note that killing a backgrounded test task on
+   Windows does NOT kill its playwright/wrangler process tree; orphans keep building and
+   competing. `taskkill /F /T /PID <pid>` the tree.
+4. Never trust `cmd | tail` exit codes for a verdict — the pipe reports tail's exit, not
+   Playwright's. Read `test-results/.last-run.json`.

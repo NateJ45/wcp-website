@@ -20,6 +20,9 @@
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import { hubNav } from '@/data/hub-nav';
+import { mergeHubNav } from '@/lib/hub-pages';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_BOARD_PAGES_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 // Pre-sized webp + plain <img> (not astro:assets): SSR pages can't resize at
 // request time on the Cloudflare adapter, so <Image> served the 4.1MB
@@ -36,8 +39,25 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const norm = (p: string) => p.replace(/\/+$/, '') || '/';
 const isActive = (href: string) => norm(href) === path;
 
-const homeLink = hubNav[0].links[0];
-const groups = hubNav.slice(1);
+// Board-created pages join the rail from their own "Where it appears" fields.
+// The rail renders TWICE per page (desktop rail + the drawer's copy), so this
+// read must stay cheap: no PII, changes rarely, and it rides the shared
+// Board-content cache, which is an in-isolate Map — the second render is free.
+// Any failure leaves the committed rail exactly as it is.
+let boardPages: Parameters<typeof mergeHubNav>[1] = [];
+try {
+  boardPages = await sanityFetch<NonNullable<Parameters<typeof mergeHubNav>[1]>>(
+    HUB_BOARD_PAGES_QUERY,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  boardPages = [];
+}
+const nav = mergeHubNav(hubNav, boardPages);
+
+const homeLink = nav[0].links[0];
+const groups = nav.slice(1);
 ---
 
 <div class="flex h-full flex-col gap-1 bg-navy px-3 py-4 text-white/85">
