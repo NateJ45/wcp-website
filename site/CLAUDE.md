@@ -10,11 +10,13 @@ The **West Chester Preschool** website — a volunteer-run cooperative preschool
 
 The whole public site is a **Sanity page-builder**: non-technical volunteers log into the Studio and edit every page Squarespace-style (click-to-edit, add/reorder sections, build new pages) with no code changes. See [docs/PAGE_BUILDER.md](docs/PAGE_BUILDER.md).
 
-## How to talk to Nathan (chat responses)
+## How to talk to Nathan (chat responses and code comments)
 
-Use ASD-STE100 Simplified Technical English in all chat responses to Nathan. These rules
-apply to conversation only. They do not change the site copy voice, code comments, commit
-messages, or the volunteer guide.
+Use ASD-STE100 Simplified Technical English in all chat responses to Nathan, and in all
+code comments that you write or change. The rules do not change the site copy voice, commit
+messages, or the volunteer guide. Do not rewrite old comments only to change their style.
+Keep the comment density the codebase already has — the rules change the sentences, not
+how much you explain.
 
 - Write short sentences. Use a maximum of 20 words in an instruction. Use a maximum of 25
   words in a description.
