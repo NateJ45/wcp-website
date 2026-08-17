@@ -25,6 +25,7 @@ import { SECTION_OBJECT_TYPES } from './sections';
 // Singletons (single-instance settings)
 import { siteSettings } from './singletons/siteSettings';
 import { feeSchedule } from './singletons/feeSchedule';
+import { operatingBudget } from './singletons/operatingBudget';
 import { navigation } from './singletons/navigation';
 import { closureAlert } from './singletons/closureAlert';
 import { presidentNote } from './singletons/presidentNote';
@@ -89,6 +90,7 @@ export const schemaTypes = [
   // Singletons
   siteSettings,
   feeSchedule,
+  operatingBudget,
   navigation,
   closureAlert,
   presidentNote,
@@ -138,6 +140,7 @@ export const schemaTypes = [
 export const SINGLETON_TYPES = new Set([
   'siteSettings',
   'feeSchedule',
+  'operatingBudget',
   'navigation',
   'closureAlert',
   'presidentNote',

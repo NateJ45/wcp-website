@@ -203,6 +203,16 @@ export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true && count(children) > 0])`;
 
 /**
+ * The member-approved operating budget (Studio → Money & payments → Operating
+ * budget). Totals are NOT stored — src/lib/budget.ts derives them from the
+ * lines, so the summary can never disagree with the table.
+ */
+export const OPERATING_BUDGET_QUERY = `*[_type == "operatingBudget"][0]{
+  year, priorYear, enrollment, netNote, source,
+  groups[]{ label, kind, icon, lines[]{ label, now, was, note } }
+}`;
+
+/**
  * WHO holds each co-op role this year (Studio → Family Hub → Who's who), for
  * the org chart and the class-rep cards. The chart's SHAPE stays in code
  * (src/data/hub/org-holders.ts); these documents supply only the people, so the

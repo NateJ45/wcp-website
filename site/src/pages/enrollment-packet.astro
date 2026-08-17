@@ -16,6 +16,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { cmsFetch } from '@/lib/cms';
 import { ENROLLMENT_PACKET_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
+import { deriveStudentFeeBands } from '@/lib/student-fees';
 
 interface ClassRow {
   name?: string;
@@ -72,6 +73,13 @@ const data = await cmsFetch<Packet>(ENROLLMENT_PACKET_QUERY, {}, {} as Packet);
 const s = data.settings ?? {};
 const fees = data.fees ?? {};
 const classes = (data.classes ?? []).filter((c) => c.name);
+// Student-fee bands come from the class documents, the one place the fee is
+// set — the same derivation the hub Tuition page uses, so the packet can never
+// print an amount the site disagrees with. (feeSchedule.studentFeeBands is
+// retired; see src/lib/student-fees.ts.)
+const studentFeeBands = deriveStudentFeeBands(
+  classes.map((c) => ({ name: c.name, studentFee: String(c.studentFee ?? '') })),
+);
 const calendar = (data.calendar ?? []).filter((c) => c.month || c.title);
 
 const schoolName = s.name || site.name;
@@ -248,9 +256,7 @@ const checklist = [
 
       {/* 4. Fees & payments */}
       {
-        (fees.registrationFee ||
-          fees.participationFee ||
-          (fees.studentFeeBands ?? []).length > 0) && (
+        (fees.registrationFee || fees.participationFee || studentFeeBands.length > 0) && (
           <section class="packet-section">
             <h2 class="font-display text-xl text-heading">Fees &amp; payments</h2>
             <dl class="mt-3 space-y-3 text-sm">
@@ -272,11 +278,11 @@ const checklist = [
                   )}
                 </div>
               )}
-              {(fees.studentFeeBands ?? []).length > 0 && (
+              {studentFeeBands.length > 0 && (
                 <div>
                   <dt class="font-semibold text-heading">Student fees</dt>
                   <dd class="text-ink-muted">
-                    {(fees.studentFeeBands ?? [])
+                    {studentFeeBands
                       .map((b) => [b.label, b.amount].filter(Boolean).join(': '))
                       .filter(Boolean)
                       .join(' · ')}

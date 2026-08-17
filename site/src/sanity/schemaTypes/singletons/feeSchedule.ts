@@ -78,10 +78,20 @@ export const feeSchedule = defineType({
     // Student fees
     defineField({
       name: 'studentFeeBands',
-      title: 'Student fee bands',
+      title: 'Student fee bands (retired — set the fee on each class instead)',
       type: 'array',
       group: 'student',
-      description: 'e.g. "Twos & Threes — $45", "Pre-K AM & PM — $50".',
+      // HIDDEN, not deleted: the stored rows are kept as a record of what the
+      // bands used to say, but nothing reads them any more. They duplicated the
+      // amount and the PayPal link already held on each class document, and the
+      // two drifted — the retired button code sat on the class docs for weeks
+      // after these rows moved to the new-style link, and no page read the class
+      // field to reveal it. The bands are now DERIVED from the class documents
+      // (src/lib/student-fees.ts), so the fee is set in exactly one place.
+      hidden: true,
+      readOnly: true,
+      description:
+        'Retired. Set each class’s student fee and PayPal button on the class itself (Classes → the class → Tuition); the Tuition page builds these bands from them.',
       of: [
         defineArrayMember({
           type: 'object',

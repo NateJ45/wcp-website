@@ -19,6 +19,7 @@ import Button from '@/components/ui/Button.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { payUrl } from '@/data/classes';
 import { getHubClasses } from '@/lib/hub-classes';
+import { deriveStudentFeeBands } from '@/lib/student-fees';
 import { classStyles } from '@/lib/class-colors';
 import { safeIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
@@ -124,16 +125,14 @@ const classRows = await getHubClasses();
 // Fee amounts, notes, PayPal button ids, and the payment FAQ, from the
 // feeSchedule singleton (falls back to the arrays above, per field).
 const fee: FeeSchedule | null = await feePromise;
-const studentBands =
-  fee?.studentFeeBands && fee.studentFeeBands.length > 0
-    ? fee.studentFeeBands
-    : studentFeesFallback;
-// Normalize so label/amount/payId are always strings (fall back by index).
-const studentFees = studentBands.map((b, i) => ({
-  label: b.label ?? studentFeesFallback[i]?.label ?? '',
-  amount: b.amount ?? studentFeesFallback[i]?.amount ?? '',
-  payId: b.payId ?? studentFeesFallback[i]?.payId ?? '',
-}));
+// The student-fee buttons are DERIVED from the class documents, which is where
+// the amount and the pay link are set. They used to be typed a second time into
+// feeSchedule.studentFeeBands, and the two copies drifted (the retired PayPal
+// code lived on the class docs long after the bands moved to the new link).
+// Classes charging the same amount through the same button collapse into one
+// band — see src/lib/student-fees.ts.
+const derivedBands = deriveStudentFeeBands(classRows);
+const studentFees = derivedBands.length > 0 ? derivedBands : studentFeesFallback;
 const enrollmentFees = [
   {
     ...enrollmentFeesFallback[0],

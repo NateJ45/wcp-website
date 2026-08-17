@@ -2,26 +2,70 @@
 /* ============================================================================
    BudgetTable — the member-approved operating budget, as a polished hub table
    ============================================================================
-   Renders src/data/hub/budget.ts: a summary trio (target revenue / total
-   expenses / net) with a revenue-vs-expenses balance bar, then one card per
-   budget group (tuition & fees, fundraising, operating expenses, programs &
-   payroll) with every line's this-year figure, last-year comparison, and note,
-   plus a derived subtotal. Revenue groups accent green, expenses navy. Full
-   width (fills the doc column — no dangling reading-cap gap), responsive by
-   flex rows (no fixed table columns), reduced-motion-safe.
+   A summary trio (target revenue / total expenses / net) with a
+   revenue-vs-expenses balance bar, then one card per budget section with every
+   line's this-year figure, last-year comparison, and note, plus a subtotal.
+   Revenue groups accent green, expenses navy. Full width (fills the doc column
+   — no dangling reading-cap gap), responsive by flex rows (no fixed table
+   columns), reduced-motion-safe.
+
+   The budget is Board-editable in the Studio (Money & payments → Operating
+   budget), read here per request; src/data/hub/budget.ts is the committed
+   fallback for when Sanity has nothing or is unreachable. It used to be the only
+   source, which meant the Treasurer could not update her own approved budget
+   without a developer.
+
+   EVERY total is derived from the lines by src/lib/budget.ts — group subtotals
+   and all three headline figures. Nothing here is typed twice, so the summary
+   cannot contradict the table under it.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import HubCard from '@/components/hub/HubCard.astro';
-import { budgetGroups, budgetMeta } from '@/data/hub/budget';
+import { budgetGroups as budgetGroupsFallback, budgetMeta } from '@/data/hub/budget';
 import { cn } from '@/lib/utils';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { OPERATING_BUDGET_QUERY } from '@/lib/queries';
+import { budgetTotals, groupTotal, groupPriorTotal, type BudgetGroup } from '@/lib/budget';
 
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 const signed = (n: number) => (n < 0 ? `−${money(Math.abs(n))}` : money(n));
-const sumNow = (lines: { now: number }[]) => lines.reduce((s, l) => s + l.now, 0);
-const sumWas = (lines: { was?: number }[]) => lines.reduce((s, l) => s + (l.was ?? 0), 0);
 
-const { targetRevenue, totalExpenses, net } = budgetMeta;
-const barMax = Math.max(targetRevenue, totalExpenses);
+interface BudgetDoc {
+  year?: string;
+  priorYear?: string;
+  enrollment?: string;
+  netNote?: string;
+  source?: string;
+  groups?: BudgetGroup[];
+}
+// No PII here, so it rides the shared Board-content cache like the other
+// singletons — the budget changes about once a year.
+let doc: BudgetDoc | null = null;
+try {
+  doc = await sanityFetch<BudgetDoc | null>(
+    OPERATING_BUDGET_QUERY,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  doc = null;
+}
+
+// Per field, so a half-filled document still renders rather than blanking the
+// page: Studio value, else the committed budget.
+const groups: BudgetGroup[] =
+  doc?.groups && doc.groups.length > 0 ? doc.groups : (budgetGroupsFallback as BudgetGroup[]);
+const meta = {
+  year: doc?.year || budgetMeta.year,
+  enrollment: doc?.enrollment || budgetMeta.enrollment,
+  netNote: doc?.netNote || budgetMeta.netNote,
+  source: doc?.source || budgetMeta.source,
+};
+
+const { revenue: targetRevenue, expenses: totalExpenses, net } = budgetTotals(groups);
+// Guard the balance bar's divisor: an empty budget would divide by zero and
+// render width:NaN%.
+const barMax = Math.max(targetRevenue, totalExpenses) || 1;
 
 // Per-group accent + icon (kind drives the color; key picks the glyph).
 const GROUP_ICON: Record<string, string> = {
@@ -39,8 +83,8 @@ const accentFor = (kind: 'revenue' | 'expense') =>
 <section aria-labelledby="budget-heading" class="mt-12">
   <h2 id="budget-heading" class="text-xl font-extrabold text-heading">The full budget</h2>
   <p class="mt-1 max-w-2xl text-ink-muted">
-    Our member-approved {budgetMeta.year} operating budget, line by line, with last year for comparison.
-    {budgetMeta.enrollment}; every extra summer enrollment moves us further into the black.
+    Our member-approved {meta.year} operating budget, line by line, with last year for comparison.
+    {meta.enrollment}; every extra summer enrollment moves us further into the black.
   </p>
 
   {/* Summary — target revenue / total expenses / net, plus a balance bar. */}
@@ -59,7 +103,7 @@ const accentFor = (kind: 'revenue' | 'expense') =>
       <div class="rounded-xl bg-amber/15 p-4">
         <p class="text-xs font-semibold tracking-wide text-orange-ink uppercase">Net position</p>
         <p class="mt-1 font-display text-3xl text-orange-ink tabular-nums">{signed(net)}</p>
-        <p class="mt-0.5 text-xs text-ink-muted">{budgetMeta.netNote}</p>
+        <p class="mt-0.5 text-xs text-ink-muted">{meta.netNote}</p>
       </div>
     </div>
 
@@ -93,10 +137,10 @@ const accentFor = (kind: 'revenue' | 'expense') =>
   {/* One card per budget group. */}
   <div class="mt-4 grid gap-4">
     {
-      budgetGroups.map((g) => {
-        const a = accentFor(g.kind);
-        const now = sumNow(g.lines);
-        const was = sumWas(g.lines);
+      groups.map((g) => {
+        const a = accentFor(g.kind === 'revenue' ? 'revenue' : 'expense');
+        const now = groupTotal(g);
+        const was = groupPriorTotal(g);
         return (
           <HubCard class="min-w-0 overflow-hidden p-0" style={`--note-accent: ${a.tint}`}>
             <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -108,7 +152,14 @@ const accentFor = (kind: 'revenue' | 'expense') =>
                   )}
                   aria-hidden="true"
                 >
-                  <Icon name={GROUP_ICON[g.key] ?? 'circle-dollar-sign'} class="h-4.5 w-4.5" />
+                  <Icon
+                    name={
+                      g.icon ||
+                      GROUP_ICON[(g as { key?: string }).key ?? ''] ||
+                      'circle-dollar-sign'
+                    }
+                    class="h-4.5 w-4.5"
+                  />
                 </span>
                 <span class="font-display text-lg leading-tight text-heading">{g.label}</span>
               </span>
@@ -120,7 +171,7 @@ const accentFor = (kind: 'revenue' | 'expense') =>
               </span>
             </div>
             <ul class="divide-y divide-border px-5">
-              {g.lines.map((l) => (
+              {(g.lines ?? []).map((l) => (
                 <li class="flex items-start justify-between gap-4 py-3">
                   <span class="min-w-0">
                     <span class="block font-semibold text-heading">{l.label}</span>
@@ -131,8 +182,12 @@ const accentFor = (kind: 'revenue' | 'expense') =>
                     )}
                   </span>
                   <span class="shrink-0 text-right">
-                    <span class="block font-bold text-heading tabular-nums">{money(l.now)}</span>
-                    {l.was !== undefined && (
+                    <span class="block font-bold text-heading tabular-nums">
+                      {money(l.now ?? 0)}
+                    </span>
+                    {/* A brand-new line has no prior figure — show nothing
+                        rather than "was $0", which reads as a real number. */}
+                    {typeof l.was === 'number' && (
                       <span class="block text-xs text-ink-muted tabular-nums">
                         was {money(l.was)}
                       </span>

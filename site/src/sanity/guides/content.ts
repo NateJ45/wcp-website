@@ -716,12 +716,23 @@ export const guides: Guide[] = [
         kind: 'path',
         items: ['Money & payments', 'Class tuition (open a class)', 'Tuition & payment tab'],
       },
-      { kind: 'h', text: 'Registration, participation, and student fees' },
+      { kind: 'h', text: 'Registration and participation fees' },
       {
         kind: 'p',
-        text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**, inside **Money & payments** — the one folder that gathers every dollar amount on the site (fees, class tuition, fundraising campaigns).',
+        text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**, inside **Money & payments** — the one folder that gathers every dollar amount on the site (fees, class tuition, the yearly budget, fundraising campaigns).',
       },
       { kind: 'path', items: ['Money & payments', 'Tuition & Fees'] },
+      { kind: 'h', text: 'The student fee' },
+      {
+        kind: 'p',
+        text: 'The student fee is set **on the class**, next to its tuition — one number per class, in one place. The class page, the Tuition page’s pay button, and the printed enrolment packet all read it from there.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You no longer type this twice.',
+        text: 'It used to be entered on the class AND again as a "fee band" in Tuition & Fees, and the two drifted — a retired PayPal button sat on the class pages for weeks. The Tuition page now groups classes charging the same amount into one button by itself, so setting the fee on each class is all there is to do.',
+      },
       { kind: 'h', text: 'The PayPal "Pay" buttons' },
       {
         kind: 'p',
@@ -743,6 +754,53 @@ export const guides: Guide[] = [
           ' before you publish. Editing the number is easy; the point is to make sure it is the agreed number.',
       },
       { kind: 'seealso', items: ['Add or change a class', 'Enrollment status & cost calculator'] },
+    ],
+  },
+
+  {
+    slug: 'edit-budget',
+    title: 'Update the yearly budget',
+    icon: '📊',
+    lead: 'The member-approved operating budget families see on the Budget & Fundraising page.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'The Treasurer owns this now.',
+        text: 'The budget used to be written into the code, so changing it meant asking a developer. It is yours to edit, and the Family Hub picks it up within a minute or two.',
+      },
+      {
+        kind: 'path',
+        items: ['Money & payments', 'Operating budget (yearly)', 'edit', 'Publish'],
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Money & payments → Operating budget (yearly)**.',
+          'Set the **Budget year** and the **Comparison year** the "last year" column refers to.',
+          'Under **The budget**, each section is either money coming in or money going out. Open one and edit its lines.',
+          'Each line has a name, **This year**, an optional **Last year**, and an optional note. Type plain numbers — 54810, not $54,810.',
+          '**Publish**.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Never add up a total yourself.',
+        text: 'Section subtotals, total income, total costs, and the surplus or shortfall are all worked out from the lines when the page loads. Change a line and every total follows, so the summary can never disagree with the table beneath it.',
+      },
+      {
+        kind: 'p',
+        text: 'Adding a new line? Leave **Last year** empty — the page then shows no comparison for it rather than printing "was $0", which would read as a real figure.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Publish the approved version.',
+        text: 'This is the budget the membership voted on, so it should match the approved document. If you are drafting next year’s, wait until it passes before publishing it here.',
+      },
+      { kind: 'seealso', items: ['Change tuition or fees'] },
     ],
   },
 

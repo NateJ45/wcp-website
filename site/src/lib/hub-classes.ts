@@ -18,7 +18,8 @@ import { classes, classBySlug, type WcpClass } from '@/data/classes';
 // Only the fields the hub actually shows. `slug` matches the data-file slug.
 // (No `icon` — that stays code-owned, see the note above.)
 const CLASS_FACTS = `{
-  "slug": slug.current, name, days, time, age, monthly, annual, studentFee, payId
+  "slug": slug.current, name, days, time, age, monthly, annual, studentFee, payId,
+  studentFeePayId
 }`;
 const ALL_CLASSES_QUERY = `*[_type == "class"]${CLASS_FACTS}`;
 const ONE_CLASS_QUERY = `*[_type == "class" && slug.current == $slug][0]${CLASS_FACTS}`;
@@ -33,6 +34,7 @@ interface ClassRow {
   annual?: string;
   studentFee?: string;
   payId?: string;
+  studentFeePayId?: string;
 }
 
 /** Overlay a Sanity row onto the data-file class, field by field. */
@@ -49,6 +51,7 @@ function merge(base: WcpClass, s?: ClassRow | null): WcpClass {
     annual: s.annual ?? base.annual,
     studentFee: s.studentFee ?? base.studentFee,
     payId: s.payId ?? base.payId,
+    studentFeePayId: s.studentFeePayId ?? base.studentFeePayId,
   };
 }
 

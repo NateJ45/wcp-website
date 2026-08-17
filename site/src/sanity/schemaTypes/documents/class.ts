@@ -168,7 +168,8 @@ export const classType = defineType({
       title: 'Student fee (per year)',
       type: 'string',
       group: 'tuition',
-      description: 'e.g. "$45".',
+      description:
+        'e.g. "$45". This is the ONLY place the student fee is set. The class page, the Tuition page’s pay button, and the enrolment packet all read it from here, and the Tuition page groups classes that charge the same amount into one button by itself.',
     }),
     defineField({
       name: 'payId',
@@ -184,7 +185,7 @@ export const classType = defineType({
       type: 'string',
       group: 'tuition',
       description:
-        'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). Step-by-step help: Help & Guide → "Change tuition or fees".',
+        'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). This is the ONLY place it is set — the Tuition page’s student-fee button reads it from here. Classes sharing an amount AND this link are shown as one button. Changing this changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
 
     // Page details

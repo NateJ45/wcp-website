@@ -823,6 +823,24 @@ each page with a note also renders a hidden `[data-note-open]` reopen pill ("A n
 President" chip in the hero; "Welcome letter" action on the teacher card) that note-modal.ts
 unhides and wires when the modal is present — JS-only, like the modal itself.
 
+**The operating budget** (Budget & Fundraising page) is Board-editable in the Studio —
+**Money & payments → Operating budget (yearly)** (`operatingBudget` singleton, seeded by
+`scripts/seed-operating-budget.mjs`). `src/data/hub/budget.ts` is now only the committed
+fallback. **No total is stored:** group subtotals and all three headline figures are derived
+from the lines by `src/lib/budget.ts` (pure, unit-tested against the real 2026-27 numbers), so
+the summary can never disagree with the table under it. A section with no `kind` counts as a
+COST, deliberately — being wrong in the direction that flatters the budget is the wrong way to
+be wrong about money.
+
+**The student fee is set in ONE place: the class document.** It used to be typed on each class
+AND again as a hand-written band in `feeSchedule.studentFeeBands`, and the two drifted — the
+retired PayPal code `GQZ67ZRZ4W9UN` sat on the Twos/Threes class docs long after the bands had
+moved to the new-style link, and nothing on the site read the class field to reveal it (the
+field was in the schema and in the Studio form, but no query asked for it). The bands are now
+DERIVED from the class docs by `src/lib/student-fees.ts` — classes sharing an amount _and_ a
+pay link collapse into one button, labelled from the class names. `feeSchedule.studentFeeBands`
+is hidden and read-only; its rows are kept as a record but nothing reads them.
+
 **Org chart holders:** WHO fills each role is Board-editable in the Studio — **Family Hub →
 "Who's who this year"** (`roleHolder` documents, one per seat, seeded by
 `scripts/seed-role-holders.mjs`). The post-election update needs no deploy.

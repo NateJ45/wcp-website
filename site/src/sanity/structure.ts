@@ -75,6 +75,10 @@ function moneyGroup(S: StructureBuilder) {
         .title('Money & payments')
         .items([
           singleton(S, 'feeSchedule', 'Tuition & Fees', emoji('💳')),
+          // The Treasurer's own approved budget. It sits with the other money
+          // so she never has to hunt for it, and it is the page the Board reads
+          // at the annual meeting.
+          singleton(S, 'operatingBudget', 'Operating budget (yearly)', emoji('📊')),
           S.documentTypeListItem('class')
             .id('class-tuition')
             .title('Class tuition (open a class)')
@@ -205,6 +209,7 @@ const PLACED = new Set([
   'navigation',
   'closureAlert',
   'feeSchedule',
+  'operatingBudget',
   'class',
   'staff',
   'faqItem',
