@@ -9,7 +9,8 @@ import { Image } from 'astro:assets';
 import Icon from '@/components/Icon.astro';
 import wcpLogoWhite from '@/assets/brand/wcp-logo-white.png';
 import { site as siteFallback } from '@/data/site';
-import { getSiteSettings, getNavigation } from '@/lib/cms';
+import { getSiteSettings, getNavigation, cmsFetch } from '@/lib/cms';
+import { SITE_MICROCOPY_QUERY } from '@/lib/queries';
 import { photosFor } from '@/lib/photo-registry';
 import { imageUrl } from '@/lib/image';
 import { withBase } from '@/lib/utils';
@@ -26,6 +27,10 @@ const href = (h: string) => withBase(h, linkBase);
 // merged over the static fallback here. Menus come from Sanity (Menus doc)
 // with the static nav.ts as fallback.
 const site = await getSiteSettings(siteFallback);
+// Board-editable sign-off; the committed line is the fallback.
+const signOff =
+  (await cmsFetch<{ footerSignOff?: string } | null>(SITE_MICROCOPY_QUERY, {}, null))
+    ?.footerSignOff || 'See you at drop-off!';
 const { footerNav, legalNav } = await getNavigation();
 // Seasonal footer decorations (Site Settings → "Seasonal touches"; build-time).
 // The old site's footer sat on a navy-tinted classroom photo (Nathan,
@@ -209,7 +214,7 @@ const consentEnabled =
       centered only on the wide layout, where the columns span the row. */
   }
   <div class="wcp-container relative -mt-1 pb-6 text-left lg:text-center">
-    <p class="font-display text-2xl text-amber">See you at drop-off!</p>
+    <p class="font-display text-2xl text-amber">{signOff}</p>
     <p class="mt-1 text-sm text-white/70">— The WCP Community</p>
   </div>
 

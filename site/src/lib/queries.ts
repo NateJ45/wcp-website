@@ -177,7 +177,19 @@ export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, emai
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image }, license, licenseAuthority }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image }, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
+
+/**
+ * The handful of strings on code-owned utility pages (thank-you, 404, the
+ * footer sign-off). Every field is optional — a blank one falls back to the
+ * wording committed in the page.
+ */
+export const SITE_MICROCOPY_QUERY = `*[_type == "siteMicrocopy"][0]{
+  thanksEyebrow, thanksTitle, thanksLead, thanksNote,
+  tourThanksEyebrow, tourThanksLead, tourThanksNote,
+  notFoundChip, notFoundHeading, notFoundBody,
+  footerSignOff
+}`;
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 

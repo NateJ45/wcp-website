@@ -401,3 +401,26 @@ A volunteer publishes in the Studio → the Sanity webhook fires
 `repository_dispatch` → the Deploy workflow rebuilds and redeploys → the static page
 updates ~1-2 minutes later. The Presentation preview reflects the draft instantly; the
 public page waits for the rebuild. See [SANITY.md](SANITY.md) for the webhook.
+
+## Copy that lives outside the page builder
+
+Almost every public string is a page-builder section a volunteer edits directly. A few are
+not, because they belong to code-owned utility pages, and those are Board-editable too:
+
+| Wording                                       | Studio home                                  |
+| --------------------------------------------- | -------------------------------------------- |
+| Thank-you page (and its tour-request variant) | Small bits of wording → After a form is sent |
+| Page-not-found chip, heading, explanation     | Small bits of wording → Page not found       |
+| Footer sign-off ("See you at drop-off!")      | Small bits of wording → Footer               |
+| Google rating, review count, listing link     | Site Settings → Social & store               |
+| Class hours for Google's listing (schema.org) | Site Settings → Location                     |
+
+Every one of those falls back to the string committed in the page, so clearing a field
+restores the default rather than emptying the page. The tour-request variant of the
+thank-you copy is handed to its client script as `data-` attributes rather than
+interpolated into it, which keeps that script a plain module.
+
+**What stays code-owned on purpose:** the tour-first hero CTA and its proof line (a
+conversion decision with evidence behind it — see the Act II doctrine in CLAUDE.md), the
+header/footer navigation IA, and every layout, colour and spacing choice. Brand-lock gives
+volunteers content control, not design control.

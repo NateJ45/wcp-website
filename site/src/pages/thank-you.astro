@@ -19,24 +19,54 @@ import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import { site } from '@/data/site';
+import { cmsFetch } from '@/lib/cms';
+import { SITE_MICROCOPY_QUERY } from '@/lib/queries';
+
+// Board-editable wording, with the committed strings as the fallback. This page
+// is prerendered, so this is a build-time read. The TOUR variants are handed to
+// the client script as data attributes rather than interpolated into it, so the
+// script stays a plain module (no inline `define:vars`).
+interface Microcopy {
+  thanksEyebrow?: string;
+  thanksTitle?: string;
+  thanksLead?: string;
+  thanksNote?: string;
+  tourThanksEyebrow?: string;
+  tourThanksLead?: string;
+  tourThanksNote?: string;
+}
+const copy = (await cmsFetch<Microcopy | null>(SITE_MICROCOPY_QUERY, {}, null)) ?? {};
+
+const thanksTitle = copy.thanksTitle || 'Thank you';
+const thanksEyebrow = copy.thanksEyebrow || 'Message received';
+const thanksLead = copy.thanksLead || 'Thanks for reaching out. We will be in touch soon.';
+const thanksNote =
+  copy.thanksNote ||
+  'A member of our volunteer board will get back to you as soon as we can. In the meantime, feel free to look around.';
+const tourEyebrow = copy.tourThanksEyebrow || 'Tour request received';
+const tourLead =
+  copy.tourThanksLead || 'Thank you! We will reach out about your visit within a day or two.';
+const tourNote =
+  copy.tourThanksNote ||
+  'A volunteer board member will email you soon to pick a time that works. We are excited to show you and your child around.';
 ---
 
 {
   /* noindex: a form-landing page should never rank (it also keeps the ?topic=
     analytics URLs out of the index). Pipe separator per the title convention. */
 }
-<BaseLayout title={`Thank you | ${site.name}`} description="Thanks for reaching out." noindex>
-  <Hero
-    title="Thank you"
-    eyebrow="Message received"
-    lead="Thanks for reaching out. We will be in touch soon."
-    height="medium"
-  />
+<BaseLayout title={`${thanksTitle} | ${site.name}`} description={thanksLead} noindex>
+  <Hero title={thanksTitle} eyebrow={thanksEyebrow} lead={thanksLead} height="medium" />
   <Section bg="white" seam>
     <div class="mx-auto max-w-xl text-center">
-      <p class="text-lg text-ink-muted" data-thanks-note>
-        A member of our volunteer board will get back to you as soon as we can. In the meantime,
-        feel free to look around.
+      <p
+        class="text-lg text-ink-muted"
+        data-thanks-note
+        data-tour-eyebrow={tourEyebrow}
+        data-tour-lead={tourLead}
+        data-tour-note={tourNote}
+      >
+        {thanksNote}
       </p>
       <div class="mt-6 flex flex-wrap justify-center gap-4">
         {
@@ -64,13 +94,13 @@ import { site } from '@/data/site';
     const title = document.getElementById('hero-title');
     const eyebrow = title?.previousElementSibling;
     const lead = title?.nextElementSibling;
-    if (eyebrow instanceof HTMLParagraphElement) eyebrow.textContent = 'Tour request received';
-    if (lead instanceof HTMLParagraphElement)
-      lead.textContent = 'Thank you! We will reach out about your visit within a day or two.';
-
-    const note = document.querySelector('[data-thanks-note]');
-    if (note)
-      note.textContent =
-        'A volunteer board member will email you soon to pick a time that works. We are excited to show you and your child around.';
+    // The tour wording rides on the note element's data attributes, so the
+    // Board edits it in the Studio like everything else here.
+    const note = document.querySelector<HTMLElement>('[data-thanks-note]');
+    if (eyebrow instanceof HTMLParagraphElement && note?.dataset.tourEyebrow)
+      eyebrow.textContent = note.dataset.tourEyebrow;
+    if (lead instanceof HTMLParagraphElement && note?.dataset.tourLead)
+      lead.textContent = note.dataset.tourLead;
+    if (note?.dataset.tourNote) note.textContent = note.dataset.tourNote;
   });
 </script>

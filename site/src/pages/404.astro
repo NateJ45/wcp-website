@@ -21,6 +21,22 @@ const QUICK_LINKS = [
   { label: 'Schedule a tour', href: '/virtual-tour#sec-pp-tour-form' },
   { label: 'Visit or contact us', href: '/virtual-tour' },
 ];
+
+import { cmsFetch } from '@/lib/cms';
+import { SITE_MICROCOPY_QUERY } from '@/lib/queries';
+
+// Board-editable wording; the strings below are the committed fallback.
+interface Microcopy {
+  notFoundChip?: string;
+  notFoundHeading?: string;
+  notFoundBody?: string;
+}
+const copy = (await cmsFetch<Microcopy | null>(SITE_MICROCOPY_QUERY, {}, null)) ?? {};
+const chip = copy.notFoundChip || 'Page not found';
+const heading = copy.notFoundHeading || 'Even our best finders couldn’t find that one.';
+const body =
+  copy.notFoundBody ||
+  'The link may be old or mistyped. If it came from our previous website, the page has probably moved to a new home here.';
 ---
 
 <BaseLayout
@@ -30,14 +46,9 @@ const QUICK_LINKS = [
 >
   <section class="wcp-hero-drench relative" aria-labelledby="nf-title">
     <div class="wcp-container pt-40 pb-[var(--wcp-space-xl)] lg:pt-56">
-      <p class="wcp-taped-chip wcp-tape-tc relative mb-5">Page not found</p>
-      <h1 id="nf-title" class="max-w-[18ch] text-balance text-white">
-        Even our best finders couldn't find that one.
-      </h1>
-      <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90">
-        The link may be old or mistyped. If it came from our previous website, the page has probably
-        moved to a new home here.
-      </p>
+      <p class="wcp-taped-chip wcp-tape-tc relative mb-5">{chip}</p>
+      <h1 id="nf-title" class="max-w-[18ch] text-balance text-white">{heading}</h1>
+      <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90">{body}</p>
 
       {/* Inline search: a plain GET form, works with zero JS on this page. */}
       <form action="/search" method="get" role="search" class="mt-8 flex max-w-xl gap-3">

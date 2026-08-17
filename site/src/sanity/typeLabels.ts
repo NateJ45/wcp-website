@@ -33,6 +33,7 @@ export const TYPE_LABELS: Record<string, string> = {
   coopRole: 'Co-op role',
   operatingBudget: 'Operating budget',
   coopGuidance: 'How the co-op works',
+  siteMicrocopy: 'Small bits of wording',
   roleHolder: 'Who’s who this year',
   venue: 'Location / venue',
   announcement: 'Announcement',

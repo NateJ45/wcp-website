@@ -166,6 +166,73 @@ export const siteSettings = defineType({
       description:
         'Shown in the enrollment banner while enrollment is open, e.g. "Apply by March 1".',
     }),
+    // Feeds the schema.org openingHoursSpecification Google reads. Structured
+    // rather than free text: a malformed time silently invalidates the markup,
+    // and nothing on the page would look wrong.
+    defineField({
+      name: 'openingHours',
+      title: 'Class hours (for Google)',
+      type: 'array',
+      group: 'location',
+      description:
+        'One row per schedule the school runs — e.g. mornings Mon-Thu 9:15-12:00, and the afternoon Pre-K Mon-Wed 12:30-15:15. Google shows these on the school’s listing. Leave empty to use the committed hours.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'days',
+              title: 'Days',
+              type: 'array',
+              of: [{ type: 'string' }],
+              options: {
+                list: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+              },
+              validation: (R) => R.required().min(1).error('Pick at least one day.'),
+            },
+            {
+              name: 'opens',
+              title: 'Starts',
+              type: 'string',
+              description: '24-hour clock, e.g. 09:15.',
+              validation: (R) =>
+                R.required()
+                  .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+                  .error('Use a 24-hour time like 09:15 or 12:30.'),
+            },
+            {
+              name: 'closes',
+              title: 'Ends',
+              type: 'string',
+              description: '24-hour clock, e.g. 12:00.',
+              validation: (R) =>
+                R.required()
+                  .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+                  .error('Use a 24-hour time like 12:00 or 15:15.'),
+            },
+          ],
+          preview: {
+            select: { days: 'days', opens: 'opens', closes: 'closes' },
+            prepare({ days, opens, closes }) {
+              const list = Array.isArray(days) ? days : [];
+              const short = list.map((d) => d.slice(0, 3)).join(', ');
+              return {
+                title: short || 'No days picked',
+                subtitle: `${opens || '?'} to ${closes || '?'}`,
+              };
+            },
+          },
+        },
+      ],
+    }),
     defineField({
       name: 'closureStatement',
       title: 'Weather-closure statement',

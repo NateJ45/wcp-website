@@ -199,6 +199,7 @@ interface SiteSettingsDoc {
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
+  openingHours?: { days?: string[]; opens?: string; closes?: string }[];
   googleRating?: string;
   googleReviews?: number;
   googleUrl?: string;
@@ -233,6 +234,7 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     calendar: string;
     social: { facebook: string; instagram: string };
     google: { rating: string; reviews: number; url: string };
+    hours: { days: string[]; opens: string; closes: string }[];
   };
 
   return {
@@ -264,6 +266,13 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       facebook: doc.facebook ?? f.social.facebook,
       instagram: doc.instagram ?? f.social.instagram,
     },
+    // Only accept COMPLETE rows: a half-filled one would emit invalid
+    // schema.org markup, which is worse than the committed hours.
+    hours: doc.openingHours?.filter((h) => h?.days?.length && h.opens && h.closes).length
+      ? doc.openingHours
+          .filter((h) => h?.days?.length && h.opens && h.closes)
+          .map((h) => ({ days: h.days!, opens: h.opens!, closes: h.closes! }))
+      : f.hours,
     google: {
       ...f.google,
       rating: doc.googleRating ?? f.google.rating,
