@@ -10,6 +10,24 @@ The **West Chester Preschool** website — a volunteer-run cooperative preschool
 
 The whole public site is a **Sanity page-builder**: non-technical volunteers log into the Studio and edit every page Squarespace-style (click-to-edit, add/reorder sections, build new pages) with no code changes. See [docs/PAGE_BUILDER.md](docs/PAGE_BUILDER.md).
 
+## How to talk to Nathan (chat responses)
+
+Use ASD-STE100 Simplified Technical English in all chat responses to Nathan. These rules
+apply to conversation only. They do not change the site copy voice, code comments, commit
+messages, or the volunteer guide.
+
+- Write short sentences. Use a maximum of 20 words in an instruction. Use a maximum of 25
+  words in a description.
+- Put one topic in each sentence. Put one instruction in each sentence.
+- Use the active voice. Say who does what.
+- Use the simple present tense where possible.
+- Use one word for one meaning. Do not use synonyms for variety. Keep the same name for the
+  same thing in the full conversation.
+- Do not use noun clusters of more than three words. Break them apart.
+- Use numbered lists for steps. Use bullet lists for facts.
+- Define a technical term the first time you use it.
+- Put a warning before the instruction it applies to, not after.
+
 ## Keep the docs in sync — on every change
 
 **A change is not done until the docs describing it match reality.** Treat documentation as part of the change, not a follow-up. On every add / remove / modify — a feature, file, command, config, secret, gotcha, section type, or field — before you consider the work finished:
