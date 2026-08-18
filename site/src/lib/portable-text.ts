@@ -10,6 +10,7 @@
 import { toHTML, type PortableTextHtmlComponents } from '@portabletext/to-html';
 import type { PortableTextBlock } from '@portabletext/types';
 import { withBase } from '@/lib/utils';
+import { formatEventWhen, eventPlace, googleCalendarUrl, type EventDoc } from '@/lib/events';
 import { parseVideo } from '@/lib/embeds';
 import {
   imageUrl,
@@ -228,6 +229,108 @@ export function renderPostBody(blocks: PortableTextBlock[] | undefined, linkBase
       // label, and the file extension so nobody taps a mystery. The URL comes
       // straight from the asset ref (fileUrlFromRef), so the query needs no
       // dereference. A row with no valid file renders nothing.
+      // A callout renders with the same look as the site-wide Callout.astro
+      // (sky = info, warm = important). Line breaks in the textarea survive
+      // as <br>.
+      calloutBlock: ({ value }) => {
+        const v = value as { tone?: string; text?: string };
+        const text = typeof v?.text === 'string' ? v.text.trim() : '';
+        if (!text) return '';
+        const toneClass =
+          v?.tone === 'warm' ? 'border-orange/25 bg-cream' : 'border-sky/30 bg-sky-soft';
+        const body = escapeAttr(deEmDash(text)).replace(/\n/g, '<br />');
+        return `<div class="not-prose wcp-callout rounded-[var(--radius)] border p-5 ${toneClass}"><div class="leading-relaxed text-ink">${body}</div></div>`;
+      },
+      // The one brand button (the amber pill the site CTAs use). External
+      // links open a new tab; site links pass through withBase so preview
+      // stays inside /preview/*.
+      buttonBlock: ({ value }) => {
+        const v = value as { label?: string; url?: string };
+        const label = typeof v?.label === 'string' ? v.label.trim() : '';
+        const raw = typeof v?.url === 'string' ? v.url.trim() : '';
+        if (!label || !raw) return '';
+        const href = withBase(raw, linkBase);
+        const external = /^https?:\/\//.test(href);
+        const rel = external ? ' target="_blank" rel="noopener"' : '';
+        return (
+          `<p class="not-prose"><a href="${escapeAttr(href)}"${rel} ` +
+          `class="wcp-press inline-flex min-h-12 items-center rounded-full bg-amber px-6 font-bold text-[#01203a] no-underline shadow-md">` +
+          `${escapeAttr(deEmDash(label))}</a></p>`
+        );
+      },
+      // A sign-up card links to the hub sign-ups page and shows whether the
+      // sheet is open. The status label stays neutral text (a colored dot
+      // carries the color) — the dark-mode AA rule for tinted text.
+      signupCard: ({ value }) => {
+        const v = value as { sheet?: { _id?: string; title?: string; open?: boolean } | null };
+        const title = typeof v?.sheet?.title === 'string' ? v.sheet.title.trim() : '';
+        if (!title) return '';
+        const open = v.sheet?.open !== false;
+        const href = withBase('/family-hub/sign-ups', linkBase);
+        const dot = open ? 'bg-green' : 'bg-border';
+        const status = open ? 'Open' : 'Closed';
+        return (
+          `<p class="not-prose"><a href="${escapeAttr(href)}" ` +
+          `class="flex max-w-full items-center gap-3 rounded-[var(--radius)] border border-border bg-grey/60 px-4 py-3 no-underline hover:border-navy dark:bg-white/5">` +
+          `<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-sky-ink" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>` +
+          `<span class="min-w-0 flex-1"><span class="block truncate font-bold text-heading">${escapeAttr(deEmDash(title))}</span>` +
+          `<span class="block text-sm text-ink-muted">Sign-up sheet</span></span>` +
+          `<span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-ink-muted dark:bg-surface">` +
+          `<span class="h-2 w-2 rounded-full ${dot}" aria-hidden="true"></span>${status}</span></a></p>`
+        );
+      },
+      // An event card shows when and where, plus both add-to-calendar paths:
+      // the Google template URL and the .ics download (/api/event-ics).
+      eventCard: ({ value }) => {
+        const v = value as { event?: (EventDoc & { _id?: string }) | null };
+        const e = v?.event;
+        if (!e?.title || !e.startDate) return '';
+        const when = formatEventWhen(e);
+        const place = eventPlace(e);
+        const gcal = googleCalendarUrl(e);
+        const ics = withBase(`/api/event-ics?id=${encodeURIComponent(e._id ?? '')}`, linkBase);
+        return (
+          `<div class="not-prose rounded-[var(--radius)] border border-border bg-grey/60 p-4 dark:bg-white/5">` +
+          `<p class="font-bold text-heading">${escapeAttr(deEmDash(e.title))}</p>` +
+          `<p class="mt-1 text-sm text-ink">${escapeAttr(when)}</p>` +
+          (place ? `<p class="text-sm text-ink-muted">${escapeAttr(deEmDash(place))}</p>` : '') +
+          `<p class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold">` +
+          `<a href="${escapeAttr(gcal)}" target="_blank" rel="noopener" class="text-sky-ink underline">Add to Google Calendar</a>` +
+          `<a href="${escapeAttr(ics)}" class="text-sky-ink underline">Download .ics</a></p></div>`
+        );
+      },
+      // A table scrolls inside its own container (the site-wide wide-content
+      // rule) so the page body never scrolls sideways.
+      tableBlock: ({ value }) => {
+        const v = value as { headerRow?: boolean; rows?: { cells?: string[] }[] };
+        const rows = (v?.rows ?? []).filter((r) => (r?.cells ?? []).some((c) => c?.trim()));
+        if (!rows.length) return '';
+        const header = v?.headerRow !== false;
+        const cell = (text: string, th: boolean) =>
+          th
+            ? `<th scope="col" class="border-b-2 border-border px-3 py-2 font-bold text-heading">${escapeAttr(deEmDash(text))}</th>`
+            : `<td class="border-b border-border px-3 py-2 align-top text-ink">${escapeAttr(deEmDash(text))}</td>`;
+        const bodyRows = header ? rows.slice(1) : rows;
+        const thead = header
+          ? `<thead><tr>${(rows[0]?.cells ?? []).map((c) => cell(c ?? '', true)).join('')}</tr></thead>`
+          : '';
+        const tbody = `<tbody>${bodyRows
+          .map((r) => `<tr>${(r.cells ?? []).map((c) => cell(c ?? '', false)).join('')}</tr>`)
+          .join('')}</tbody>`;
+        return `<div class="not-prose overflow-x-auto"><table class="w-full min-w-[24rem] border-collapse text-left text-sm">${thead}${tbody}</table></div>`;
+      },
+      // Two columns of the constrained rich text, side by side. Phones stack
+      // them (the grid collapses below md). No not-prose here on purpose —
+      // the nested blocks keep the article's prose styling. Headings inside a
+      // column normalize like the article's own: a column that starts at h3
+      // would otherwise skip a level under the page <h1> (WCAG heading-order).
+      twoColumns: ({ value }) => {
+        const v = value as { left?: PortableTextBlock[]; right?: PortableTextBlock[] };
+        const left = renderPortableText(v?.left, linkBase, { normalizeHeadings: true });
+        const right = renderPortableText(v?.right, linkBase, { normalizeHeadings: true });
+        if (!left && !right) return '';
+        return `<div class="grid gap-x-8 gap-y-4 md:grid-cols-2"><div>${left}</div><div>${right}</div></div>`;
+      },
       fileAttachment: ({ value }) => {
         const v = value as { title?: string; file?: { asset?: { _ref?: string } } };
         const href = fileUrlFromRef(v?.file?.asset?._ref);

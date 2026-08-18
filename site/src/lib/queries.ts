@@ -161,9 +161,18 @@ export const POSTS_QUERY = `*[_type == "post" && defined(slug.current) && publis
 /** The most recent posts, for the homepage "Latest news" section. */
 export const LATEST_POSTS_QUERY = `*[_type == "post" && defined(slug.current) && publishedAt <= now()] | order(publishedAt desc)[0...12]{${POST_CARD_FIELDS}}`;
 
+// A post/newsletter/update `body` needs two references expanded: the sign-up
+// card's sheet and the event card's event. Every body fetch interpolates this
+// fragment so the renderer gets plain objects, not refs.
+export const POST_BODY_PROJECTION = `body[]{
+  ...,
+  _type == "signupCard" => { "sheet": sheet->{ _id, title, open } },
+  _type == "eventCard" => { "event": event->{ _id, title, startDate, endDate, allDay, location, "venue": venue->{ name, address, note } } }
+}`;
+
 /** One full post by slug (News article page + preview). */
 export const POST_BY_SLUG_QUERY = `*[_type == "post" && slug.current == $slug][0]{
-  title, "slug": slug.current, publishedAt, _updatedAt, category, excerpt, body, coverImage,
+  title, "slug": slug.current, publishedAt, _updatedAt, category, excerpt, "body": ${POST_BODY_PROJECTION}, coverImage,
   ogImage, seoTitle, seoDescription,
   "author": author->{ "name": name, honorific, role }
 }`;
@@ -182,7 +191,7 @@ export const NEWSLETTER_LIST_QUERY = `*[_type == "newsletterIssue" && defined(sl
 
 /** One full issue by slug (the /newsletter/[slug] page). */
 export const NEWSLETTER_BY_SLUG_QUERY = `*[_type == "newsletterIssue" && slug.current == $slug][0]{
-  title, "slug": slug.current, publishedAt, preheader, body, coverImage, ogImage, seoDescription
+  title, "slug": slug.current, publishedAt, preheader, "body": ${POST_BODY_PROJECTION}, coverImage, ogImage, seoDescription
 }`;
 
 /** The single most recent published issue — the /api/newsletter send feed. */

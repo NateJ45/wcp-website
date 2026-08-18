@@ -944,6 +944,19 @@ PDFs by their Studio titles, and `wcp-email-copy` gives `tel:` links the same ne
 treatment as mailto (visible numbers copy on desktop; labeled buttons eager-copy with the
 focus-heuristic toast).
 
+**Six more post blocks** (2026-08-17): `postBody` also offers a **callout box** (sky/warm,
+mirrors `Callout.astro`), a **button** (the one amber brand pill — no style knobs), a
+**sign-up sheet card** (a `signupSheet` reference; the card shows the open/closed state and
+links to `/family-hub/sign-ups`), an **event card** (an `event` reference; shows when/where
+plus "Add to Google Calendar" and a ".ics" download from the new public
+`/api/event-ics?id=<_id>` route — `src/lib/ics.ts` builds the file, date-only starts anchor
+to noon UTC), a **table** (rows of cells + a header-row switch; renders inside its own
+`overflow-x-auto` scroller), and **two columns** (two constrained rich-text columns that
+stack below `md`). The two reference blocks need their refs expanded at query time:
+`POST_BODY_PROJECTION` in `src/lib/queries.ts` is the shared body projection — every new
+body fetch must interpolate it, or the cards render nothing. All handlers live in
+`renderPostBody` (unit-tested in `src/lib/portable-text.test.ts` + `src/lib/ics.test.ts`).
+
 **The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): an
 eight-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly

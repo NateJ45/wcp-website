@@ -178,3 +178,109 @@ describe('renderPostBody — video and gallery blocks', () => {
     expect(html).toBe('');
   });
 });
+
+// A custom (non-block) body item for the six 2026-08 post blocks.
+const custom = (obj: Record<string, unknown>): PortableTextBlock =>
+  ({ _key: `c${k++}`, ...obj }) as unknown as PortableTextBlock;
+
+describe('renderPostBody — callout / button / table / columns', () => {
+  test('callout mirrors the Callout.astro tones and keeps line breaks', () => {
+    const sky = renderPostBody([
+      custom({ _type: 'calloutBlock', tone: 'sky', text: 'Line one\nLine two' }),
+    ]);
+    expect(sky).toContain('bg-sky-soft');
+    expect(sky).toContain('Line one<br />Line two');
+    const warm = renderPostBody([custom({ _type: 'calloutBlock', tone: 'warm', text: 'Note' })]);
+    expect(warm).toContain('bg-cream');
+    expect(renderPostBody([custom({ _type: 'calloutBlock', text: '  ' })])).toBe('');
+  });
+
+  test('button renders the amber pill; external links open a new tab', () => {
+    const ext = renderPostBody([
+      custom({ _type: 'buttonBlock', label: 'RSVP', url: 'https://example.com' }),
+    ]);
+    expect(ext).toContain('bg-amber');
+    expect(ext).toContain('target="_blank"');
+    const local = renderPostBody([
+      custom({ _type: 'buttonBlock', label: 'Sign up', url: '/family-hub/sign-ups' }),
+    ]);
+    expect(local).not.toContain('target="_blank"');
+    expect(local).toContain('href="/family-hub/sign-ups"');
+    expect(renderPostBody([custom({ _type: 'buttonBlock', label: 'No link' })])).toBe('');
+  });
+
+  test('button link passes through withBase for the preview surface', () => {
+    const html = renderPostBody(
+      [custom({ _type: 'buttonBlock', label: 'Go', url: '/events' })],
+      '/preview',
+    );
+    expect(html).toContain('href="/preview/events"');
+  });
+
+  test('table wraps in its own horizontal scroller with an optional header row', () => {
+    const rows = [{ cells: ['Class', 'Day'] }, { cells: ['Twos', 'Tuesday'] }];
+    const html = renderPostBody([custom({ _type: 'tableBlock', headerRow: true, rows })]);
+    expect(html).toContain('overflow-x-auto');
+    expect(html).toContain('<th scope="col"');
+    expect(html).toContain('Tuesday');
+    const flat = renderPostBody([custom({ _type: 'tableBlock', headerRow: false, rows })]);
+    expect(flat).not.toContain('<th');
+    // An all-empty table renders nothing.
+    expect(renderPostBody([custom({ _type: 'tableBlock', rows: [{ cells: ['', ''] }] })])).toBe('');
+  });
+
+  test('two columns render side-by-side blocks that keep prose styling', () => {
+    const html = renderPostBody([
+      custom({
+        _type: 'twoColumns',
+        left: [block('normal', 'Left text')],
+        right: [block('normal', 'Right text')],
+      }),
+    ]);
+    expect(html).toContain('md:grid-cols-2');
+    expect(html).toContain('Left text');
+    expect(html).toContain('Right text');
+    expect(renderPostBody([custom({ _type: 'twoColumns' })])).toBe('');
+  });
+});
+
+describe('renderPostBody — sign-up and event cards (dereferenced)', () => {
+  test('sign-up card links to the hub sign-ups page and shows the open state', () => {
+    const open = renderPostBody([
+      custom({
+        _type: 'signupCard',
+        sheet: { _id: 's1', title: 'Fall Festival helpers', open: true },
+      }),
+    ]);
+    expect(open).toContain('href="/family-hub/sign-ups"');
+    expect(open).toContain('Fall Festival helpers');
+    expect(open).toContain('>Open<');
+    const closed = renderPostBody([
+      custom({ _type: 'signupCard', sheet: { _id: 's1', title: 'Old sheet', open: false } }),
+    ]);
+    expect(closed).toContain('>Closed<');
+    // A dangling reference (deleted sheet) renders nothing.
+    expect(renderPostBody([custom({ _type: 'signupCard', sheet: null })])).toBe('');
+  });
+
+  test('event card shows when/where and both add-to-calendar links', () => {
+    const html = renderPostBody([
+      custom({
+        _type: 'eventCard',
+        event: {
+          _id: 'evt1',
+          title: 'Open House',
+          startDate: '2026-10-03T22:00:00Z',
+          endDate: '2026-10-04T00:00:00Z',
+          location: 'The preschool',
+        },
+      }),
+    ]);
+    expect(html).toContain('Open House');
+    expect(html).toContain('The preschool');
+    expect(html).toContain('calendar.google.com');
+    expect(html).toContain('/api/event-ics?id=evt1');
+    // A dangling reference renders nothing.
+    expect(renderPostBody([custom({ _type: 'eventCard', event: null })])).toBe('');
+  });
+});

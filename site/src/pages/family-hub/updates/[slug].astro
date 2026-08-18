@@ -15,6 +15,7 @@ import HubCard from '@/components/hub/HubCard.astro';
 import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { POST_BODY_PROJECTION } from '@/lib/queries';
 import { classLabel } from '@/lib/class-colors';
 import { renderPostBody } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
@@ -33,7 +34,7 @@ const { slug } = Astro.params;
 let post: UpdatePost | null = null;
 try {
   post = await sanityFetch<UpdatePost | null>(
-    `*[_type == "update" && slug.current == $slug][0]{ _id, title, publishedAt, audience, image, body }`,
+    `*[_type == "update" && slug.current == $slug][0]{ _id, title, publishedAt, audience, image, ${POST_BODY_PROJECTION} }`,
     { slug },
   );
 } catch {

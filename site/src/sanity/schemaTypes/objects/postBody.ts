@@ -69,6 +69,166 @@ export const postBody = defineType({
     }),
     defineArrayMember({
       type: 'object',
+      name: 'calloutBlock',
+      title: 'Callout box',
+      fields: [
+        {
+          name: 'tone',
+          type: 'string',
+          title: 'Look',
+          options: {
+            list: [
+              { title: 'Info (sky)', value: 'sky' },
+              { title: 'Important (warm)', value: 'warm' },
+            ],
+            layout: 'radio',
+          },
+          initialValue: 'sky',
+        },
+        {
+          name: 'text',
+          type: 'text',
+          rows: 3,
+          title: 'Text',
+          validation: (R) => R.required().error('Write the callout text.'),
+        },
+      ],
+      preview: {
+        select: { title: 'text', tone: 'tone' },
+        prepare({ title, tone }) {
+          return { title: title || 'Callout', subtitle: tone === 'warm' ? 'Important' : 'Info' };
+        },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'buttonBlock',
+      title: 'Button',
+      fields: [
+        {
+          name: 'label',
+          type: 'string',
+          title: 'Button text',
+          validation: (R) => R.required().error('Give the button a label.'),
+        },
+        {
+          name: 'url',
+          type: 'url',
+          title: 'Where it goes',
+          description: 'A page on this site (/family-hub/sign-ups) or a full web address.',
+          validation: (R) =>
+            R.required()
+              .uri({ scheme: ['http', 'https', 'mailto', 'tel'], allowRelative: true })
+              .error('Give the button a link.'),
+        },
+      ],
+      preview: {
+        select: { title: 'label', subtitle: 'url' },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'signupCard',
+      title: 'Sign-up sheet card',
+      fields: [
+        {
+          name: 'sheet',
+          type: 'reference',
+          title: 'Which sign-up sheet',
+          to: [{ type: 'signupSheet' }],
+          validation: (R) => R.required().error('Pick the sheet.'),
+        },
+      ],
+      preview: {
+        select: { title: 'sheet.title' },
+        prepare({ title }) {
+          return { title: title || 'Sign-up sheet card', subtitle: 'Sign-up card' };
+        },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'eventCard',
+      title: 'Event card',
+      fields: [
+        {
+          name: 'event',
+          type: 'reference',
+          title: 'Which event',
+          to: [{ type: 'event' }],
+          validation: (R) => R.required().error('Pick the event.'),
+        },
+      ],
+      preview: {
+        select: { title: 'event.title' },
+        prepare({ title }) {
+          return { title: title || 'Event card', subtitle: 'Event card' };
+        },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'tableBlock',
+      title: 'Table',
+      fields: [
+        {
+          name: 'headerRow',
+          type: 'boolean',
+          title: 'First row is headings',
+          initialValue: true,
+        },
+        {
+          name: 'rows',
+          type: 'array',
+          title: 'Rows',
+          of: [
+            {
+              type: 'object',
+              name: 'tableRow',
+              fields: [
+                {
+                  name: 'cells',
+                  type: 'array',
+                  title: 'Cells',
+                  of: [{ type: 'string' }],
+                },
+              ],
+              preview: {
+                select: { cells: 'cells' },
+                prepare({ cells }: { cells?: string[] }) {
+                  return { title: (cells ?? []).join(' · ') || 'Empty row' };
+                },
+              },
+            },
+          ],
+          validation: (R) => R.min(2).error('A table needs at least two rows.'),
+        },
+      ],
+      preview: {
+        select: { rows: 'rows' },
+        prepare({ rows }) {
+          const n = Array.isArray(rows) ? rows.length : 0;
+          return { title: 'Table', subtitle: `${n} row${n === 1 ? '' : 's'}` };
+        },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
+      name: 'twoColumns',
+      title: 'Two columns',
+      description: 'Two text columns side by side. Phones stack them.',
+      fields: [
+        { name: 'left', type: 'blockContent', title: 'Left column' },
+        { name: 'right', type: 'blockContent', title: 'Right column' },
+      ],
+      preview: {
+        prepare() {
+          return { title: 'Two columns' };
+        },
+      },
+    }),
+    defineArrayMember({
+      type: 'object',
       name: 'videoEmbed',
       title: 'Video',
       fields: [

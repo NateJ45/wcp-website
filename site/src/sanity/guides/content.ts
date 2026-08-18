@@ -258,8 +258,8 @@ export const guides: Guide[] = [
       {
         kind: 'callout',
         tone: 'positive',
-        title: 'Updates can carry pictures and attachments now.',
-        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption), a **photo gallery**, a **video** (YouTube or Vimeo — it loads only when a family taps play), or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it.',
+        title: 'Updates can carry pictures, attachments, and more.',
+        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption), a **photo gallery**, a **video** (YouTube or Vimeo — it loads only when a family taps play), or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it. You can also add a **Callout box** (a tinted note for something important), a **Button** (a big tappable link), a **Sign-up sheet card** (pick a sheet — the card shows if it is open and links families to it), an **Event card** (pick an event — the card shows when and where, with add-to-calendar links), a **Table**, and **Two columns** of text.',
       },
       {
         kind: 'p',
@@ -644,7 +644,7 @@ export const guides: Guide[] = [
           'Click **News** in the left menu, then the **＋** (new) button.',
           'Type a **Title**, then click **Generate** next to the slug to make its web address.',
           'Pick a **Category**, add a short **Summary** (this shows on the News list and when the post is shared), and a **Cover image** if you have one.',
-          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos or an **Attachment** (a PDF or form families download with one tap).',
+          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos or an **Attachment** (a PDF or form families download with one tap). The **＋** menu also offers a **Callout box**, a **Button**, a **Sign-up sheet card**, an **Event card**, a **Table**, and **Two columns**.',
           'Add **Alt text** to any photo you place in the body.',
           '**Publish** when you are ready for it to go live (usually within a minute or two).',
         ],
