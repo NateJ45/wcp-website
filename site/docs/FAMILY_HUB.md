@@ -918,6 +918,32 @@ Chromium for the render, and a build without a browser skips gracefully and ship
 committed copies. Curriculum sections support both plain objective lists and labelled
 sub-lists (`groups`) — the round-trip drops neither.
 
+**Feature hints** (`HubHint.astro` + `src/scripts/hub-hints.ts`): one-shot pointers at a
+single control — the Directory map, the Calendar filters — shown once per device
+(`wcp-hint-<id>`), a beat after load, never while a dialog is open. Placement is code (the
+page renders its `HubHint` with a target selector + fallback wording); the Board controls the
+master switch, per-hint switches, and wording in **Family Hub → Feature hints** (`hubHints`
+singleton). Adding a hint = render `<HubHint>` on the page AND add its id to the schema
+dropdown. Covered by `tests/hub-hints.spec.ts`.
+
+**Link health** (`scripts/check-live-links.mjs` + `.github/workflows/link-health.yml`): every
+Monday the workflow pings each Board-entered Google link (helper schedules, albums, budget
+gviz, calendar feed, Documents links) and writes the result to the read-only `linkHealth`
+singleton (**Family Hub → Link health**). A Google link that died often still answers 200 via
+a sign-in redirect, so a landing on accounts.google.com counts as dead, and the gviz/JSON
+feeds must parse. The public Actions log prints labels and statuses only — never URLs (the
+repo is public); full URLs live only in the private Sanity document. Any failure exits 1, so
+the red run mails the owner. Its FIRST run found a real 403 (see PENDING).
+
+**Post bodies carry video + galleries** (2026-08-17): `postBody` gained a `videoEmbed`
+(click-to-load facade — same `[data-embed-video]` contract as VideoSection, wired by
+`scripts/embeds` which the three body pages now import) and a `postGallery` (a quiet
+two-column figure grid; the pinned-print look stays reserved for the photo wall).
+`renderPostBody` renders both; unit-tested. The ⌘K index now also lists the four generated
+PDFs by their Studio titles, and `wcp-email-copy` gives `tel:` links the same never-silent
+treatment as mailto (visible numbers copy on desktop; labeled buttons eager-copy with the
+focus-heuristic toast).
+
 **The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): an
 eight-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly

@@ -259,7 +259,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Updates can carry pictures and attachments now.',
-        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption) or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it.',
+        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption), a **photo gallery**, a **video** (YouTube or Vimeo — it loads only when a family taps play), or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it.',
       },
       {
         kind: 'p',
@@ -379,6 +379,10 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'A family can rerun it any time: the **Take the tour** chip sits in the hub home’s greeting, next to the President’s note chip.',
       },
+      {
+        kind: 'p',
+        text: 'Beyond the tour, small **feature hints** point at one control on a page the first time a family lands there — the Directory map, the Calendar filters. Each shows once per device. You control them in **Family Hub → Feature hints**: a master switch, a per-hint switch, and the wording.',
+      },
       { kind: 'seealso', items: ['Edit a Family Hub page', 'Edit the menus'] },
     ],
   },
@@ -441,6 +445,35 @@ export const guides: Guide[] = [
       {
         kind: 'p',
         text: 'Each fall the supply list needs its **School year** bumped and the items reviewed — that is the whole yearly refresh now.',
+      },
+      { kind: 'seealso', items: ['Edit a Family Hub page'] },
+    ],
+  },
+
+  {
+    slug: 'link-health',
+    title: 'The weekly link check',
+    icon: '🩺',
+    lead: 'Every Monday the site tests the Google links families rely on and reports what it finds.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The hub leans on shared Google links: the helper schedules, the photo albums, the budget sheet, the calendar feed, and the Documents page. When one dies, a parent used to find it first. Now a weekly check pings every one of them.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Link health (weekly check)'],
+      },
+      {
+        kind: 'p',
+        text: 'Open it after a Monday and read the summary. A red row names the broken link in plain English. To fix one: open that file in Google, share it again ("Anyone with the link"), copy the fresh link, and paste it where the site keeps it — the class page fields, Site Settings, or the Documents list.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'This page is a report, not a form.',
+        text: 'The check writes it; you cannot edit it. Fix the link at its home and the next Monday run turns the row green.',
       },
       { kind: 'seealso', items: ['Edit a Family Hub page'] },
     ],

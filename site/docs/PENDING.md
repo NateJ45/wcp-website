@@ -40,6 +40,12 @@ reference again.
 
 ## Waiting on a human
 
+- **Re-share the Orientation Slide Deck.** The first link-health run (2026-08-17) found the
+  Documents page's "Orientation Slide Deck" link answering HTTP 403 — families who tap it get
+  Google's access-denied page. Open the file in Google, set sharing back to "Anyone with the
+  link", and paste the fresh link into Studio → Family Hub → Documents & Forms → that entry.
+  The next Monday check (Family Hub → Link health) should show the row green.
+
 - **Replace the Pre-K class-pet placeholder with a real photo of Pickles.**
   `scripts/patch-prek-pet-splitmedia.mjs` (run 2026-08-16) converted the Pre-K
   class-pet blurb from a centered proseSection into a `splitMediaSection`, so it

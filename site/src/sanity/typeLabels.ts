@@ -35,6 +35,8 @@ export const TYPE_LABELS: Record<string, string> = {
   coopGuidance: 'How the co-op works',
   hubNavMenu: 'Family Hub menu',
   hubTour: 'First-visit tour',
+  hubHints: 'Feature hints',
+  linkHealth: 'Link health',
   hubDelights: 'Little delights',
   curriculumGuide: 'Curriculum guide (PDF)',
   supplyList: 'School supply list',

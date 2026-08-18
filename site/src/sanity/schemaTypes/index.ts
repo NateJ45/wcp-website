@@ -30,6 +30,8 @@ import { coopGuidance } from './singletons/coopGuidance';
 import { siteMicrocopy } from './singletons/siteMicrocopy';
 import { hubNavMenu } from './singletons/hubNavMenu';
 import { hubTour } from './singletons/hubTour';
+import { hubHints } from './singletons/hubHints';
+import { linkHealth } from './singletons/linkHealth';
 import { hubDelights } from './singletons/hubDelights';
 import { curriculumGuide } from './documents/curriculumGuide';
 import { supplyList } from './singletons/supplyList';
@@ -102,6 +104,8 @@ export const schemaTypes = [
   siteMicrocopy,
   hubNavMenu,
   hubTour,
+  hubHints,
+  linkHealth,
   hubDelights,
   curriculumGuide,
   supplyList,
@@ -159,6 +163,8 @@ export const SINGLETON_TYPES = new Set([
   'siteMicrocopy',
   'hubNavMenu',
   'hubTour',
+  'hubHints',
+  'linkHealth',
   'hubDelights',
   'supplyList',
   'curriculumGuide',

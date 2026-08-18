@@ -176,6 +176,9 @@ function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolv
           // header/footer equivalent lives in Site setup as "Menus").
           singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
           singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
+          singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
+          // Written by the weekly link-health workflow; a report, not a form.
+          singleton(S, 'linkHealth', 'Link health (weekly check)', emoji('🩺')),
           singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
           // The two PDF sources: edits here regenerate the branded PDFs on the
           // next deploy (the publish webhook fires one).
@@ -261,6 +264,8 @@ const PLACED = new Set([
   'hubPage',
   'hubNavMenu',
   'hubTour',
+  'hubHints',
+  'linkHealth',
   'hubDelights',
   'curriculumGuide',
   'supplyList',

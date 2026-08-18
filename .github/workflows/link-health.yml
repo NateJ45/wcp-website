@@ -1,0 +1,31 @@
+# Weekly health check for the Board's "anyone with the link" Google resources:
+# helper schedules, photo albums, the budget Sheet, the calendar feed, and the
+# Documents links. The script writes the full result to the Studio (Family Hub
+# -> Link health) and exits 1 on any failure, so a red run mails the owner.
+# The public log carries labels and statuses only, never the URLs.
+name: Link health
+on:
+  schedule:
+    - cron: '30 8 * * 1' # Mondays 08:30 UTC, after the weekly deploy
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: site
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Check every Board-entered link
+        run: node scripts/check-live-links.mjs
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
