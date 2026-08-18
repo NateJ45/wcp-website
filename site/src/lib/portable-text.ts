@@ -10,6 +10,7 @@
 import { toHTML, type PortableTextHtmlComponents } from '@portabletext/to-html';
 import type { PortableTextBlock } from '@portabletext/types';
 import { withBase } from '@/lib/utils';
+import { parseVideo } from '@/lib/embeds';
 import {
   imageUrl,
   imageSrcSet,
@@ -181,6 +182,47 @@ export function renderPostBody(blocks: PortableTextBlock[] | undefined, linkBase
           ? `<figcaption>${escapeAttr(source.caption)}</figcaption>`
           : '';
         return `<figure><img src="${escapeAttr(src)}" srcset="${escapeAttr(srcset)}" sizes="(max-width: 768px) 100vw, 768px" alt="${alt}" loading="lazy" decoding="async" />${caption}</figure>`;
+      },
+      // A video renders as the site-wide click-to-load facade: thumbnail +
+      // play button now, the iframe only after a tap (scripts/embeds wires
+      // [data-embed-video] — the pages that render bodies import it).
+      videoEmbed: ({ value }) => {
+        const v = value as { url?: string; title?: string };
+        const video = parseVideo(v?.url);
+        if (!video.embedUrl) return '';
+        const title = escapeAttr(v?.title?.trim() || 'Video');
+        const thumb = video.thumbnailUrl
+          ? `<img src="${escapeAttr(video.thumbnailUrl)}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />`
+          : '';
+        return (
+          `<div class="wcp-embed not-prose relative aspect-video overflow-hidden rounded-2xl bg-navy" data-embed-video="${escapeAttr(video.embedUrl)}" data-embed-title="${title}">` +
+          `<button type="button" class="wcp-embed-play group absolute inset-0 flex h-full w-full items-center justify-center" aria-label="Play video: ${title}">` +
+          thumb +
+          `<span class="absolute inset-0 bg-navy/25 transition-colors group-hover:bg-navy/10"></span>` +
+          `<span class="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/95 shadow-lg transition-transform group-hover:scale-105">` +
+          `<svg class="ml-1 h-7 w-7 text-navy" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>` +
+          `</span></button></div>`
+        );
+      },
+      // A gallery renders as a simple two-column grid of figures. The big
+      // pinned-print look stays reserved for the photo wall; a post gallery is
+      // quiet by design.
+      postGallery: ({ value }) => {
+        const v = value as { images?: (SanityImageValue & { caption?: string })[] };
+        const figures = (v?.images ?? [])
+          .filter((img) => img?.asset)
+          .map((img) => {
+            const alt = escapeAttr(typeof img.alt === 'string' ? img.alt : '');
+            const src = imageUrl(img as SanityImageSource, 600);
+            const srcset = imageSrcSet(img as SanityImageSource, [400, 600, 900]);
+            const cap = img.caption
+              ? `<figcaption class="mt-1 text-center text-sm text-ink-muted">${escapeAttr(deEmDash(img.caption))}</figcaption>`
+              : '';
+            return `<figure class="m-0"><img src="${escapeAttr(src)}" srcset="${escapeAttr(srcset)}" sizes="(max-width: 640px) 50vw, 320px" alt="${alt}" loading="lazy" decoding="async" class="aspect-[4/3] w-full rounded-xl object-cover" />${cap}</figure>`;
+          })
+          .join('');
+        if (!figures) return '';
+        return `<div class="not-prose grid grid-cols-2 gap-3">${figures}</div>`;
       },
       // An attachment renders as a download card: paperclip, the Board's own
       // label, and the file extension so nobody taps a mystery. The URL comes

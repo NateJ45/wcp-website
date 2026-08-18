@@ -130,3 +130,51 @@ describe('renderPostBody — inline images and attachments', () => {
     expect(html).toContain('<figcaption>Art morning</figcaption>');
   });
 });
+
+describe('renderPostBody — video and gallery blocks', () => {
+  test('renders a YouTube link as the click-to-load facade, never an iframe', () => {
+    const html = renderPostBody([
+      {
+        _type: 'videoEmbed',
+        _key: 'v1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'Morning circle',
+      },
+    ] as never);
+    expect(html).toContain('data-embed-video=');
+    expect(html).toContain('youtube-nocookie.com');
+    expect(html).toContain('Play video: Morning circle');
+    expect(html).not.toContain('<iframe');
+  });
+
+  test('renders nothing for a link that is not a video', () => {
+    const html = renderPostBody([
+      { _type: 'videoEmbed', _key: 'v1', url: 'https://example.com/not-a-video' },
+    ] as never);
+    expect(html).toBe('');
+  });
+
+  test('renders a gallery as a grid of figures with alt text', () => {
+    const html = renderPostBody([
+      {
+        _type: 'postGallery',
+        _key: 'g1',
+        images: [
+          { asset: { _ref: 'image-a1-800x600-jpg' }, alt: 'Painting', caption: 'Art' },
+          { asset: { _ref: 'image-b2-800x600-jpg' }, alt: 'Blocks' },
+        ],
+      },
+    ] as never);
+    expect(html).toContain('grid-cols-2');
+    expect(html).toContain('alt="Painting"');
+    expect(html).toContain('alt="Blocks"');
+    expect(html).toContain('<figcaption');
+  });
+
+  test('skips gallery rows with no uploaded asset', () => {
+    const html = renderPostBody([
+      { _type: 'postGallery', _key: 'g1', images: [{ alt: 'ghost' }] },
+    ] as never);
+    expect(html).toBe('');
+  });
+});
