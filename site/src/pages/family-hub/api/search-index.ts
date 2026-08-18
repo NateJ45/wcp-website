@@ -60,7 +60,7 @@ export const GET: APIRoute = async () => {
   }
 
   try {
-    const [pages, updates, documents, sheets] = await Promise.all([
+    const [pages, updates, documents, sheets, guides, supplies] = await Promise.all([
       // EVERY hub page except the denied ones, so a page the Board gains later
       // indexes itself instead of waiting for someone to remember a registry.
       // hubPageRoute() below still has the final say on where each one links.
@@ -88,7 +88,41 @@ export const GET: APIRoute = async () => {
         {},
         { cache: BOARD_CONTENT_CACHE },
       ),
+      // The generated PDFs, findable by their Studio titles.
+      sanityFetch<{ cls?: string; title?: string }[]>(
+        `*[_type == "curriculumGuide"]{ "cls": class, title }`,
+        {},
+        { cache: BOARD_CONTENT_CACHE },
+      ),
+      sanityFetch<{ year?: string } | null>(
+        `*[_type == "supplyList"][0]{ year }`,
+        {},
+        { cache: BOARD_CONTENT_CACHE },
+      ),
     ]);
+
+    // The branded PDFs (public static assets, regenerated each deploy). Titles
+    // come from the Studio documents; the committed names are the fallback, so
+    // the entries exist even before the documents do.
+    const PDF_NAMES: Record<string, string> = {
+      twos: 'Twos Curriculum Guide',
+      threes: 'Threes Curriculum Guide',
+      'pre-k': 'Pre-K Curriculum Guide',
+    };
+    for (const [cls, file] of [
+      ['twos', 'twos-curriculum.pdf'],
+      ['threes', 'threes-curriculum.pdf'],
+      ['pre-k', 'pre-k-curriculum.pdf'],
+    ] as const) {
+      const title = guides.find((g) => g.cls === cls)?.title || PDF_NAMES[cls];
+      entries.push({ title, href: `/curriculum/${file}`, kind: 'document', sub: 'PDF' });
+    }
+    entries.push({
+      title: `School Supply List${supplies?.year ? ` (${supplies.year})` : ''}`,
+      href: '/supplies/supply-list.pdf',
+      kind: 'document',
+      sub: 'PDF',
+    });
 
     const knownRoutes = hubRoutesFromNav(hubNav);
     for (const page of pages) {

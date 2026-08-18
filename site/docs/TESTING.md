@@ -78,11 +78,19 @@ minutes with almost every test timing out at 60s on `page.goto`.
 Proof it is not the app: with a preview server already running, the same suite is
 **115 passed in 53s**, and a bare Playwright script loads the hub home in ~500ms.
 
+A second finding (2026-08-17, evening): the preview server ALSO decays under sustained
+BROWSER traffic on this machine — after a few minutes of Playwright load, the document
+response stalls for browser connections while curl stays instant, and a bare Playwright
+`goto` hangs on pages that loaded in ~1s on a fresh server. Restarting the server fixes it
+every time. So the working recipe is per-RUN, not per-session:
+
 The recipe, and it is quick:
 
 1. `npm run build` (add `WCP_INSECURE_COOKIES=1` so the WebKit project can send its cookie).
 2. Start the server yourself: `WCP_INSECURE_COOKIES=1 npm run preview` — leave it running.
-3. Run the suite. `reuseExistingServer` picks it up and the tests start immediately.
+3. Run the suite immediately. `reuseExistingServer` picks the server up.
+4. Between runs, restart the server (kill the PID on 4321, `npm run preview` again). A
+   degraded server shows the same mass-timeout shape as the rebuild trap.
 
 Diagnosing, in order:
 

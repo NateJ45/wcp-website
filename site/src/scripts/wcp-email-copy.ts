@@ -1,7 +1,7 @@
 // ============================================================================
-// wcp-email-copy — clickable email addresses + desktop copy-to-clipboard
+// wcp-email-copy — email + phone links that never end in silent nothing
 // ============================================================================
-// Two jobs, site-wide (loaded from BaseLayout, so public + hub):
+// Three jobs, site-wide (loaded from BaseLayout, so public + hub):
 //   1. LINKIFY: turn plain-text email addresses in the page content into real
 //      `mailto:` links (most were flat text you had to hand-copy). Existing
 //      links / inputs / code are skipped, so nothing is double-wrapped.
@@ -17,11 +17,17 @@
 //      If a mail app did open, the page blurs and the token never shows; the
 //      eager copy is invisible. If the clipboard write itself failed, the
 //      token shows the ADDRESS instead, so the visitor can still act on it.
+//   4. PHONE NUMBERS get the same treatment as emails: a desktop click on a
+//      tel: link has no handler on most machines (or pops a "pick an app"
+//      dialog), so a visible number copies with the token, and a labeled
+//      button ("Call or text") uses the same eager-copy + focus fallback.
 // Skipped in Sanity's /preview so stega click-to-edit text nodes stay intact.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
 
 const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+// A visible phone number: 7+ digits with the usual punctuation between them.
+const PHONE = /\d[\d\s().+-]{6,}\d/;
 const EMAIL_G = new RegExp(EMAIL.source, 'g');
 const SKIP = new Set([
   'A',
@@ -96,13 +102,20 @@ function wireCopyOnce(): void {
   const desktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   document.addEventListener('click', async (e) => {
     const target = e.target as Element | null;
-    const a = target?.closest?.('a[href^="mailto:"]') as HTMLAnchorElement | null;
+    const a = target?.closest?.('a[href^="mailto:"], a[href^="tel:"]') as HTMLAnchorElement | null;
     if (!a) return;
     const href = a.getAttribute('href') as string;
-    const email = a.dataset.email || href.replace(/^mailto:/, '').split('?')[0];
-    // Only intercept links whose visible text IS the address; labeled buttons
-    // ("Email the Administrator") keep firing the mailto.
-    const showsEmail = Boolean(a.dataset.email) || EMAIL.test((a.textContent || '').trim());
+    const isTel = href.startsWith('tel:');
+    // What lands on the clipboard: the address, or the number as displayed
+    // (falling back to the href digits when the label hides it).
+    const email = isTel
+      ? (a.textContent || '').match(PHONE)?.[0]?.trim() || href.replace(/^tel:/, '')
+      : a.dataset.email || href.replace(/^mailto:/, '').split('?')[0];
+    // Only intercept links whose visible text IS the address/number; labeled
+    // buttons ("Email the Administrator", "Call or text") keep firing.
+    const showsEmail = isTel
+      ? PHONE.test((a.textContent || '').trim())
+      : Boolean(a.dataset.email) || EMAIL.test((a.textContent || '').trim());
 
     // Keyboard activation reports (0,0) — anchor the token to the link itself.
     let x = e.clientX;

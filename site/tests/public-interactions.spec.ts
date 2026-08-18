@@ -294,3 +294,26 @@ test.describe('mailto fallback — a click with no mail app never ends in silenc
     expect(clip).toContain('@westchesterpreschool.org');
   });
 });
+
+test.describe('tel fallback — a phone click with no dialer copies the number', () => {
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+  test('the header phone icon pops the Copied! token', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'clipboard permissions are chromium-only here');
+
+    await page.goto('/', { waitUntil: 'load' });
+    await settle(page);
+
+    // The mobile header's call icon is a labeled tel link (aria-label, no
+    // visible number), so it takes the eager-copy + focus-heuristic path.
+    await page.setViewportSize({ width: 414, height: 800 });
+    const tel = page.locator('a[href^="tel:"]').first();
+    await tel.click();
+
+    const toast = page.locator('.wcp-copy-toast.is-shown');
+    await expect(toast).toBeVisible({ timeout: 4000 });
+
+    const clip = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clip.replace(/\D/g, '')).toContain('5132026187');
+  });
+});
