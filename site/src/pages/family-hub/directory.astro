@@ -8,6 +8,7 @@
    ============================================================================ */
 export const prerender = false;
 
+import HubHint from '@/components/hub/HubHint.astro';
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
@@ -508,4 +509,9 @@ const intro =
       mapTab?.addEventListener('click', () => show(true));
     });
   </script>
+  <HubHint
+    id="directory-map"
+    target='nav[aria-label="Filter families by class"], #wcp-dirmap'
+    text="These chips show just one class's families. Only families who opted in appear here."
+  />
 </HubShell>

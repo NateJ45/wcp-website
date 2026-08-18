@@ -14,6 +14,7 @@
    ============================================================================ */
 export const prerender = false;
 
+import HubHint from '@/components/hub/HubHint.astro';
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
@@ -313,4 +314,9 @@ const icalUrl = calId
     import '@/scripts/hub-calendar-grid';
     import '@/scripts/hub-event-dialog';
   </script>
+  <HubHint
+    id="calendar-filters"
+    target='nav[aria-label="Filter events by type"]'
+    text="These chips narrow the list to one kind of event, like closures or class events."
+  />
 </HubShell>

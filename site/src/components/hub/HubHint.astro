@@ -1,0 +1,51 @@
+---
+/* ============================================================================
+   HubHint — a one-shot pointer at one feature on this page
+   ============================================================================
+   Renders a HIDDEN seed element; src/scripts/hub-hints.ts turns it into a
+   small dismissible bubble anchored to the target, once per device (the
+   dismissal is stored under `wcp-hint-<id>`). One hint per page at most, and
+   never while a modal is open — the tour outranks a hint.
+
+   The Board controls hints in the Studio (Family Hub → Feature hints): a
+   master switch, a per-hint switch, and wording overrides. This component does
+   the one cached read and simply renders nothing when a switch is off, so a
+   disabled hint costs the page nothing.
+   ============================================================================ */
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+
+interface Props {
+  /** The hint's id — must also exist in the hubHints schema's dropdown. */
+  id: string;
+  /** CSS selector for the element the bubble points at. */
+  target: string;
+  /** The standard wording; the Studio can override it. */
+  text: string;
+}
+const { id, target, text } = Astro.props;
+
+interface HintsDoc {
+  enabled?: boolean;
+  hints?: { id?: string; enabled?: boolean; text?: string }[];
+}
+let doc: HintsDoc | null = null;
+try {
+  doc = await sanityFetch<HintsDoc | null>(
+    `*[_type == "hubHints"][0]{ enabled, hints }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  doc = null;
+}
+
+const row = doc?.hints?.find((h) => h.id === id);
+const enabled = doc?.enabled !== false && row?.enabled !== false;
+const wording = row?.text?.trim() || text;
+---
+
+{enabled && <div data-hub-hint={id} data-hint-target={target} data-hint-text={wording} hidden />}
+
+<script>
+  import '@/scripts/hub-hints';
+</script>
