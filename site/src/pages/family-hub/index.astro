@@ -318,43 +318,96 @@ const firstDay = settings?.firstDay;
     </div>
 
     {
-      /* Become a Super Helper — a prominent, warm call to action to get
-        certified for the classroom (the school's top volunteer ask). Full-width
-        amber banner so it stands apart from the widget grid. */
+      /* Become a Super Helper — the school's top volunteer ask, so this banner
+        previews the certification path itself: the three requirements from
+        /family-hub/super-helper as mini-cards, plus the one-time reassurance
+        and a renewal pointer. The pill is the ONE link; its after:inset-0
+        overlay stretches the click target across the whole card while the
+        accessible link name stays short. Keep the copy in step with the
+        super-helper page when its requirements change. */
     }
     <section aria-labelledby="hub-super-heading" class="mt-4" data-reveal>
-      <a
-        href="/family-hub/super-helper"
-        class="wcp-lift hub-note group relative isolate flex flex-col items-start gap-4 overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 no-underline sm:flex-row sm:items-center dark:bg-amber/10"
+      <div
+        class="wcp-lift hub-note group relative isolate overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 dark:bg-amber/10"
         style="--note-accent: var(--color-amber)"
       >
         <HubWatermark icon="star" colorStyle="color: var(--color-amber)" />
-        <span
-          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
-          aria-hidden="true"
-        >
-          <Icon name="star" class="wcp-pop h-7 w-7" />
-        </span>
-        <div class="min-w-0 flex-1">
-          <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
-            Become a Super Helper
-          </h2>
-          <p class="mt-1 text-ink">
-            Get certified to be counted in the classroom and help lead the day. Here is every step,
-            start to finish.
-          </p>
-        </div>
-        <span
-          class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white"
-        >
-          See the steps
-          <Icon
-            name="arrow-right"
-            class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <span
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
             aria-hidden="true"
-          />
-        </span>
-      </a>
+          >
+            <Icon name="star" class="wcp-pop h-7 w-7" />
+          </span>
+          <div class="min-w-0 flex-1">
+            <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
+              Become a Super Helper
+            </h2>
+            <p class="mt-1 text-ink">
+              Certified parents can be counted in the classroom and help lead the day. It is a
+              one-time certification, and it takes three things.
+            </p>
+          </div>
+          <a
+            href="/family-hub/super-helper"
+            class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white no-underline after:absolute after:inset-0 after:content-['']"
+          >
+            See every step
+            <Icon
+              name="arrow-right"
+              class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
+        <ol class="mt-5 grid gap-3 sm:grid-cols-3">
+          <li
+            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
+          >
+            <span
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/25 text-sky-ink"
+              aria-hidden="true"
+            >
+              <Icon name="monitor" class="h-5 w-5" />
+            </span>
+            <span class="min-w-0">
+              <span class="block font-bold text-heading">Online training</span>
+              <span class="block text-sm text-ink">About 8 hours, free, from home.</span>
+            </span>
+          </li>
+          <li
+            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
+          >
+            <span
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange/20 text-orange-ink"
+              aria-hidden="true"
+            >
+              <Icon name="heart-pulse" class="h-5 w-5" />
+            </span>
+            <span class="min-w-0">
+              <span class="block font-bold text-heading">CPR & First Aid</span>
+              <span class="block text-sm text-ink">One in-person class near you.</span>
+            </span>
+          </li>
+          <li
+            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
+          >
+            <span
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green/20 text-green-ink"
+              aria-hidden="true"
+            >
+              <Icon name="graduation-cap" class="h-5 w-5" />
+            </span>
+            <span class="min-w-0">
+              <span class="block font-bold text-heading">Proof of education</span>
+              <span class="block text-sm text-ink">Send a transcript or diploma.</span>
+            </span>
+          </li>
+        </ol>
+        <p class="mt-4 text-sm text-ink-muted">
+          Already a Super Helper? The background check renewal steps live on the same page.
+        </p>
+      </div>
     </section>
 
     {

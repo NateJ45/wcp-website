@@ -957,6 +957,15 @@ stack below `md`). The two reference blocks need their refs expanded at query ti
 body fetch must interpolate it, or the cards render nothing. All handlers live in
 `renderPostBody` (unit-tested in `src/lib/portable-text.test.ts` + `src/lib/ics.test.ts`).
 
+**The Super Helper banner previews the path** (2026-08-18): the hub home's amber banner now
+shows the three certification requirements as mini-cards (online training, CPR/First Aid,
+proof of education — mirroring the cards on `/family-hub/super-helper`), the one-time
+reassurance, and a renewal pointer. One link (the navy pill, stretched across the card via
+`after:inset-0`) keeps the accessible name short. The copy is code-owned in
+`src/pages/family-hub/index.astro` — keep it in step with the super-helper page. The same
+change added the real `monitor` icon to `lucide-icons.ts`; the super-helper "Online
+training" card had been silently rendering CardGridSection's `sparkles` fallback.
+
 **The first-visit tour** (`HubTourModal.astro` + `src/scripts/hub-tour.ts`, hub home only): an
 eight-step walkthrough that opens once per device, AFTER the President's note closes when that
 note is due (`note-modal.ts` dispatches `wcp:note-closed`; the tour waits for it), or directly
