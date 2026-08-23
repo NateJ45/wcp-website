@@ -203,7 +203,6 @@ interface SiteSettingsDoc {
   googleRating?: string;
   googleReviews?: number;
   googleUrl?: string;
-  storeUrl?: string;
   license?: string;
   licenseAuthority?: string;
 }

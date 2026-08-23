@@ -412,7 +412,7 @@ not, because they belong to code-owned utility pages, and those are Board-editab
 | Thank-you page (and its tour-request variant) | Small bits of wording → After a form is sent |
 | Page-not-found chip, heading, explanation     | Small bits of wording → Page not found       |
 | Footer sign-off ("See you at drop-off!")      | Small bits of wording → Footer               |
-| Google rating, review count, listing link     | Site Settings → Social & store               |
+| Google rating, review count, listing link     | Site Settings → Social & reviews             |
 | Class hours for Google's listing (schema.org) | Site Settings → Location                     |
 
 Every one of those falls back to the string committed in the page, so clearing a field

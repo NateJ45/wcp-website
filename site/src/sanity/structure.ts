@@ -184,6 +184,7 @@ function submissionsGroup(S: StructureBuilder, context: Parameters<StructureReso
 // up at the bottom of the Public website workspace, so nothing can vanish.
 const PLACED = new Set([
   'siteSettings',
+  'siteMicrocopy',
   'navigation',
   'closureAlert',
   'feeSchedule',
@@ -224,6 +225,7 @@ const PLACED = new Set([
   'hubHints',
   'linkHealth',
   'hubDelights',
+  'hubStore',
   'curriculumGuide',
   'supplyList',
   'presidentNote',
@@ -364,6 +366,8 @@ export const publicStructure: StructureResolver = (S, context) =>
 
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
+      // The thank-you page, "page not found", and footer sign-off wording.
+      singleton(S, 'siteMicrocopy', 'Small bits of wording', emoji('✍️')),
       S.documentTypeListItem('redirect').title('Redirects (old links)').icon(emoji('↪️')),
 
       // ── Inboxes ── what the PUBLIC site sends the board (read, don't edit).
@@ -456,6 +460,8 @@ export const hubStructure: StructureResolver = (S, context) =>
       singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
       singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
       singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
+      // The store card at the bottom of the hub home (link, headline, tiles).
+      singleton(S, 'hubStore', 'Merch store card', emoji('🛍️')),
 
       // ── Printables ── the two PDF sources: edits here regenerate the
       // branded PDFs on the next deploy (the publish webhook fires one).

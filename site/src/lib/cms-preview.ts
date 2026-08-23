@@ -105,7 +105,6 @@ interface SiteSettingsDoc {
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
-  storeUrl?: string;
   license?: string;
   licenseAuthority?: string;
 }

@@ -769,10 +769,12 @@ via `src/lib/fourthwall.ts` (cached, SWR):
 
 All three are Worker secrets (`.dev.vars` locally, `wrangler secret put` in prod — see
 `.dev.vars.example`), never committed. Everything degrades gracefully: if the Storefront API is
-unavailable the tiles fall back to the Board-curated `storeProducts[]` on Site Settings →
-Social & store (`storeHeadline` / `storeTagline` / `storeUrl` / each product `title`/`price`/
-`url`/`image`; seeded once by `node scripts/seed-store-feature.mjs`); if the Open API is
-unavailable the stat hides. The card hides entirely without a `storeUrl`.
+unavailable the tiles fall back to the Board-curated `storeProducts[]` on the **Merch store
+card** singleton (`hubStore` — Family Hub workspace → Hub pages & look; `storeHeadline` /
+`storeTagline` / `storeUrl` / each product `title`/`price`/`url`/`image`; originally seeded by
+`node scripts/seed-store-feature.mjs` into Site Settings, then moved to `hubStore` 2026-08-23
+by `node scripts/patch-hub-store.mjs`); if the Open API is unavailable the stat hides. The
+card hides entirely without a `storeUrl`.
 
 **The community wall** (`SocialWallWidget.astro`) sits directly **below the store card** and closes
 the hub home on a human note — a navy bulletin board of pinned snapshots (white polaroid frames,

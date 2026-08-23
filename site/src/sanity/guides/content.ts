@@ -84,7 +84,7 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
-          '**Public website** (where the Studio opens) — **Everyday edits**: the **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too). Then **School info** (Classes, Staff, FAQs, Testimonials, School-Year Events, Community & content), **Site setup** (Site Settings, Menus, Redirects), and the **Inboxes** the public forms fill (Form submissions, Review submissions, Newsletter subscribers).',
+          '**Public website** (where the Studio opens) — **Everyday edits**: the **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too). Then **School info** (Classes, Staff, FAQs, Testimonials, School-Year Events, Community & content), **Site setup** (Site Settings, Menus, Small bits of wording, Redirects), and the **Inboxes** the public forms fill (Form submissions, Review submissions, Newsletter subscribers).',
           '**Family Hub** — **Everyday edits**: **Updates**, **Celebrations**, the **President’s note**, **Sign-ups & RSVPs**, and **Documents & Forms**. Then **Families & co-op** (the Directory, teacher notes, co-op roles, who’s who, the hours ledger), **Hub pages & look** (the hub’s own pages, menu, first-visit tour, hints), **Printables** (the curriculum guide and supply list PDFs), and the hub **Inboxes** (sign-up responses, family photos to review).',
           '**In both** — the **Alert banner** and **Money & payments** sit at the top of both menus, so a snow day or a money change never hides in the other workspace. Welcome, this guide, and Recently deleted are in both too.',
           'And in the top bar: **Media** — every photo you have uploaded, in one searchable place.',
@@ -243,7 +243,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **store card** at the bottom of the Family Hub home is set in **Site Settings → Social & store**: a headline, a blurb, the store link, and **Featured merch** (add a few items with a name, price, product link, and image URL to show them as clickable tiles). Clear the featured items to show just the banner.',
+        text: 'The **store card** at the bottom of the Family Hub home is set in **Merch store card** (Family Hub workspace → Hub pages & look): a headline, a blurb, the store link, and **Featured merch** (add a few items with a name, price, product link, and image URL to show them as clickable tiles). Clear the featured items to show just the banner.',
       },
       {
         kind: 'p',

@@ -1,13 +1,13 @@
 // =============================================================================
 // seed-store-feature.mjs — the Family Hub store card content
 // =============================================================================
-// Sets the store card headline/blurb and a curated set of featured merch on
-// Site Settings, so the flair-forward store panel at the bottom of the hub home
-// shows real products (image, name, price) that link to the store. The Board
-// edits these in Studio -> Site Settings -> Social & store (add/remove/reorder
-// items, or clear them to show just the banner). Patches in place. Product data
-// pulled from the live Fourthwall store 2026-07-15.
-// Run: node scripts/seed-store-feature.mjs
+// HISTORICAL (ran 2026-07-15): seeded the store card headline/blurb and a
+// curated set of featured merch onto Site Settings. Those fields MOVED to the
+// `hubStore` singleton on 2026-08-23 (scripts/patch-hub-store.mjs copied the
+// values), so the Board now edits them in Studio -> Family Hub workspace ->
+// Merch store card. Do NOT re-run this script: it writes to fields the
+// schema and the hub no longer read.
+// Run (historical): node scripts/seed-store-feature.mjs
 // =============================================================================
 import { createClient } from '@sanity/client';
 import { readFileSync } from 'node:fs';

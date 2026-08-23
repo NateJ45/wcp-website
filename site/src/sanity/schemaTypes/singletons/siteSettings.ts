@@ -18,7 +18,7 @@ export const siteSettings = defineType({
     // Set-once plumbing (Google codes and feeds) lives apart from the
     // fields volunteers touch every year, so "School year" stays approachable.
     { name: 'services', title: 'Connected services' },
-    { name: 'social', title: 'Social & store' },
+    { name: 'social', title: 'Social & reviews' },
     { name: 'legal', title: 'Licensing' },
   ],
   fields: [
@@ -368,7 +368,7 @@ export const siteSettings = defineType({
       ],
     }),
 
-    // Social & store
+    // Social & reviews
     defineField({
       name: 'facebook',
       title: 'Facebook link',
@@ -408,58 +408,11 @@ export const siteSettings = defineType({
       group: 'social',
       description: 'The public Google Maps link families click to read or leave a review.',
     }),
-    defineField({
-      name: 'storeUrl',
-      title: 'Merch store link',
-      type: 'url',
-      group: 'social',
-      description: 'The online store link (opens in a new tab).',
-    }),
-    defineField({
-      name: 'storeHeadline',
-      title: 'Store card headline',
-      type: 'string',
-      group: 'social',
-      description: 'The big line on the store card at the bottom of the Family Hub home.',
-    }),
-    defineField({
-      name: 'storeTagline',
-      title: 'Store card blurb',
-      type: 'text',
-      rows: 2,
-      group: 'social',
-      description: 'The supporting sentence under the headline.',
-    }),
-    defineField({
-      name: 'storeProducts',
-      title: 'Featured merch',
-      type: 'array',
-      group: 'social',
-      description:
-        'A few items to show as clickable tiles on the Family Hub store card. Add, remove, and drag to reorder. Leave empty to show just the card.',
-      of: [
-        defineArrayMember({
-          type: 'object',
-          fields: [
-            defineField({ name: 'title', title: 'Name', type: 'string' }),
-            defineField({
-              name: 'price',
-              title: 'Price',
-              type: 'string',
-              description: 'e.g. "$24.99".',
-            }),
-            defineField({ name: 'url', title: 'Product link', type: 'url' }),
-            defineField({
-              name: 'image',
-              title: 'Image URL',
-              type: 'url',
-              description: 'A direct link to the product photo (from the store).',
-            }),
-          ],
-          preview: { select: { title: 'title', subtitle: 'price', imageUrl: 'image' } },
-        }),
-      ],
-    }),
+    // The store card fields (store link, headline, blurb, featured merch)
+    // moved to the `hubStore` singleton in the Family Hub workspace on
+    // 2026-08-23 — they only feed the hub home's store card. The old values
+    // still sit invisibly in this document; scripts/patch-hub-store.mjs
+    // copied them over.
 
     // Legal
     defineField({

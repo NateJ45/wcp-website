@@ -236,7 +236,11 @@ export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, emai
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image }, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
+
+// The Family Hub home's store card (its own singleton so it lives in the
+// Family Hub workspace; moved out of Site Settings 2026-08-23).
+export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image } }`;
 
 /**
  * The handful of strings on code-owned utility pages (thank-you, 404, the
