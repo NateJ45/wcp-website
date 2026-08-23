@@ -14,7 +14,7 @@ import {
 } from '@sanity/ui';
 
 // =============================================================================
-// CleanupTool — clear out old inbox records, safely (Everything workspace)
+// CleanupTool — clear out old inbox records, safely (Family Hub workspace)
 // =============================================================================
 // Form submissions and sign-up responses pile up year over year. Sanity's free
 // plan has no bulk delete, so clearing last season's 200 RSVPs meant deleting

@@ -79,23 +79,21 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The left menu, band by band' },
       {
         kind: 'p',
-        text: 'The left menu is grouped by how often you need things, with a small heading over each band. The full set below is what the **Everything** workspace shows; **Everyday edits** keeps just the first band plus the Family Hub and the Inboxes.',
+        text: 'The Studio is split into two **workspaces**, one per audience: **Public website** (what everyone sees) and **Family Hub** (the private, families-only area). Switch between them with the workspace name in the top-left corner. Inside each, the left menu is grouped by how often you need things, with a small heading over each band.',
       },
       {
         kind: 'bullets',
         items: [
-          '**Everyday edits** — the usual jobs. **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too).',
-          '**School info** — the school facts: **Classes** (schedule, ages, tuition per class), **Staff** (teacher names and bios), **FAQs**, **Testimonials**, **School-Year Events**, and **Community & content** (programs, board, partners, photo albums).',
-          '**Family Hub** — the private, families-only content (announcements, documents, sign-ups, the directory).',
-          '**Site setup** — set-once things: **Site Settings** (phone, email, address, school year), **Menus (header & footer)**, and **Redirects** (forward old links when you rename a page).',
-          '**Inboxes** — what the site sends YOU: **Form submissions** and **Newsletter subscribers**.',
+          '**Public website** (where the Studio opens) — **Everyday edits**: the **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too). Then **School info** (Classes, Staff, FAQs, Testimonials, School-Year Events, Community & content), **Site setup** (Site Settings, Menus, Redirects), and the **Inboxes** the public forms fill (Form submissions, Review submissions, Newsletter subscribers).',
+          '**Family Hub** — **Everyday edits**: **Updates**, **Celebrations**, the **President’s note**, **Sign-ups & RSVPs**, and **Documents & Forms**. Then **Families & co-op** (the Directory, teacher notes, co-op roles, who’s who, the hours ledger), **Hub pages & look** (the hub’s own pages, menu, first-visit tour, hints), **Printables** (the curriculum guide and supply list PDFs), and the hub **Inboxes** (sign-up responses, family photos to review).',
+          '**In both** — the **Alert banner** and **Money & payments** sit at the top of both menus, so a snow day or a money change never hides in the other workspace. Welcome, this guide, and Recently deleted are in both too.',
           'And in the top bar: **Media** — every photo you have uploaded, in one searchable place.',
         ],
       },
-      { kind: 'h', text: 'Two views of the same Studio' },
+      { kind: 'h', text: 'Two workspaces, one website' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Everyday edits** — a short menu with just the publish-something-now jobs: the alert banner, money, news, events, pages, the Family Hub, and your inboxes. Click the workspace name in the top-left corner to switch to **Everything**, which adds the occasional stuff: School info (classes, staff, FAQs, testimonials, the school-year timeline), Community & content, Site Settings, Menus, Redirects, and the Export tool. Both edit the same website; nothing is different except how much menu you see.',
+        text: 'The Studio opens in **Public website**. Click the workspace name in the top-left corner to switch to **Family Hub** (it has a little lock on its icon). Both edit the same website — the split just keeps each job’s menu short and obvious. If you cannot find something, you are probably in the other workspace; the Welcome page in each one reminds you how to switch.',
       },
       {
         kind: 'seealso',
@@ -508,11 +506,17 @@ export const guides: Guide[] = [
       },
       {
         kind: 'path',
-        items: ['switch to Everything (top-left)', 'Menus (header & footer)', 'edit', 'Publish'],
+        items: [
+          'Public website workspace',
+          'Site setup',
+          'Menus (header & footer)',
+          'edit',
+          'Publish',
+        ],
       },
       {
         kind: 'p',
-        text: 'Menus live in the **Everything** workspace (they are easy to break, so they sit out of the everyday menu). Click the workspace name in the top-left corner and pick **Everything** first.',
+        text: 'Menus live under **Site setup** in the **Public website** workspace (they are easy to break, so they sit at the bottom, out of the everyday eye-line). If you are in the Family Hub workspace, switch with the name in the top-left corner first.',
       },
       { kind: 'h', text: 'Add a link to the top menu' },
       {
@@ -715,7 +719,7 @@ export const guides: Guide[] = [
           'Give it a title and pick the **Starts** date and time. Add an **Ends** time if it has one.',
           'Turn on **All-day** for something without a set time (like a closure).',
           'For a repeating event (a weekly class, a monthly meeting), set **Does it repeat?** and, if you like, a **Repeat until** date. The page shows the upcoming dates automatically.',
-          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want. For a place you use often, pick a **Saved location** instead of retyping the address (add these under Community & content → Locations / venues in the Everything workspace).',
+          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want. For a place you use often, pick a **Saved location** instead of retyping the address (add these under Community & content → Locations / venues in the Public website workspace).',
           '**Publish**. Visitors get an "Add to calendar" button automatically.',
         ],
       },
@@ -868,11 +872,11 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'To change a class' },
       {
         kind: 'path',
-        items: ['Everything workspace', 'Classes', 'pick the class', 'edit', 'Publish'],
+        items: ['Public website workspace', 'Classes', 'pick the class', 'edit', 'Publish'],
       },
       {
         kind: 'p',
-        text: 'Classes live under **School info** in the **Everything** workspace (switch with the name in the top-left corner). Shortcut from Everyday edits: **Money & payments** → **Class tuition (open a class)** opens the very same class editor.',
+        text: 'Classes live under **School info** in the **Public website** workspace. Shortcut from either workspace: **Money & payments** → **Class tuition (open a class)** opens the very same class editor.',
       },
       {
         kind: 'steps',
@@ -1035,7 +1039,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: [
-          'Everything workspace',
+          'Public website workspace',
           'Site Settings',
           'School year',
           'Enrollment mode',
@@ -1083,12 +1087,18 @@ export const guides: Guide[] = [
       },
       {
         kind: 'path',
-        items: ['Everything workspace', 'Staff', 'pick the person (or ＋ new)', 'edit', 'Publish'],
+        items: [
+          'Public website workspace',
+          'Staff',
+          'pick the person (or ＋ new)',
+          'edit',
+          'Publish',
+        ],
       },
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner), then click **Staff**.',
+          'In the **Public website** workspace (where the Studio opens), click **Staff** under School info.',
           'Click a person to edit, or **＋** to add someone new.',
           'Fill in their name, title (Mrs.), role, and bio. Add a photo if you have one.',
           '**Publish**.',
@@ -1175,12 +1185,12 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'path',
-        items: ['Everything workspace', 'Testimonials', '＋ new', 'edit', 'Publish'],
+        items: ['Public website workspace', 'Testimonials', '＋ new', 'edit', 'Publish'],
       },
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner), click **Testimonials**, then **＋**.',
+          'In the **Public website** workspace (where the Studio opens), click **Testimonials** under School info, then **＋**.',
           'Paste the quote, and add who said it (first name and last initial is fine).',
           'Add their **connection** (for example "Twos parent") and pick a **tag** so it shows on the right pages.',
           'Skip **Family photo** for now. The field is here ready for later, but photos on quotes are still built into the site by hand, so one you add here will not show up on the website yet.',
@@ -1225,12 +1235,12 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'path',
-        items: ['Everything workspace', 'FAQs', 'pick one (or ＋ new)', 'edit', 'Publish'],
+        items: ['Public website workspace', 'FAQs', 'pick one (or ＋ new)', 'edit', 'Publish'],
       },
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner), then click **FAQs**.',
+          'In the **Public website** workspace (where the Studio opens), click **FAQs** under School info.',
           'Open one to edit, or **＋** to add a new question.',
           'Write the question and answer, and choose a **Category** so it lands in the right group.',
           'To move important ones higher, grab the handle on the left of the list and **drag** — the FAQ page groups by category, so dragging changes the order within each category.',
@@ -1256,7 +1266,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: [
-          'Everything workspace',
+          'Public website workspace',
           'Site Settings',
           'Contact / Location tab',
           'edit',
@@ -1265,7 +1275,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Site Settings lives in the **Everything** workspace — switch with the workspace name in the top-left corner.',
+        text: 'Site Settings lives under **Site setup** in the **Public website** workspace. If you are in the Family Hub workspace, switch with the name in the top-left corner.',
       },
       {
         kind: 'p',
@@ -1359,7 +1369,7 @@ export const guides: Guide[] = [
     body: [
       {
         kind: 'p',
-        text: 'Under **Community & content** you will find a few small collections. Each one powers a matching **section** you can add to any page. You keep the list up to date here, and the page updates itself, so you never type the same thing in two places. This group lives in the **Everything** workspace — click the workspace name in the top-left corner and pick **Everything** to see it.',
+        text: 'Under **Community & content** you will find a few small collections. Each one powers a matching **section** you can add to any page. You keep the list up to date here, and the page updates itself, so you never type the same thing in two places. This group lives under **School info** in the **Public website** workspace (where the Studio opens).',
       },
       {
         kind: 'bullets',
@@ -1417,13 +1427,13 @@ export const guides: Guide[] = [
       },
       {
         kind: 'path',
-        items: ['Everything workspace', 'Site setup', 'Redirects', '＋ new', 'Publish'],
+        items: ['Public website workspace', 'Site setup', 'Redirects', '＋ new', 'Publish'],
       },
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner).',
-          'Open **Redirects** under Site setup, then **＋**.',
+          'In the **Public website** workspace (where the Studio opens), scroll to **Site setup**.',
+          'Open **Redirects**, then **＋**.',
           'In **Old address**, type the path people still use, starting with a slash, e.g. "/co-op-life".',
           'In **Send them to**, type the new page path, e.g. "/community" (or a full https:// link).',
           'Leave **Permanent move?** on, then **Publish**. It works a minute or two after the site rebuilds.',
@@ -1451,13 +1461,12 @@ export const guides: Guide[] = [
       },
       {
         kind: 'path',
-        items: ['Everything workspace', 'Export (top nav)', 'pick a list', 'Download CSV'],
+        items: ['Export (top nav, either workspace)', 'pick a list', 'Download CSV'],
       },
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner).',
-          'Click **Export** in the top navigation.',
+          'Click **Export** in the top navigation. It is there in both workspaces.',
           'Choose Newsletter subscribers, Form submissions, or the Family directory.',
           'Click **Download CSV**. The file saves to your computer.',
         ],
@@ -1492,7 +1501,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: [
-          'Everything workspace',
+          'Family Hub workspace',
           'Clean up (top nav)',
           'pick what + how old',
           'Check',
@@ -1502,7 +1511,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Switch to the **Everything** workspace (the name in the top-left corner), then click **Clean up**.',
+          'Switch to the **Family Hub** workspace (the name in the top-left corner), then click **Clean up** in the top navigation.',
           'Choose what to clear (handled messages, or sign-up responses) and how old (6 months, 1 year, 2 years).',
           'Click **Check how many** to see the count.',
           'If you want a copy, open **Export** first. Then type **DELETE** and press the delete button.',
@@ -1523,7 +1532,7 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Checkup** tool looks over the site and lists anything worth a look. It never changes anything, it just points you to what to fix.',
       },
-      { kind: 'path', items: ['Everything workspace', 'Checkup (top nav)'] },
+      { kind: 'path', items: ['Checkup (top nav, either workspace)'] },
       {
         kind: 'p',
         text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
@@ -1549,7 +1558,7 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Start of year** tool is a guided checklist for rolling the site over to a new school year. It reads your current settings, marks what already looks set, and gives you a one-click jump to each thing to update. It never changes anything itself.',
       },
-      { kind: 'path', items: ['Everything workspace', 'Start of year (top nav)'] },
+      { kind: 'path', items: ['Start of year (top nav, either workspace)'] },
       {
         kind: 'p',
         text: 'Work top to bottom. Each card opens the right editor; make your change and **Publish** as usual, then come back to the list.',
@@ -1588,7 +1597,7 @@ export const guides: Guide[] = [
           '**Alt text** — a short description of a photo, for screen readers.',
           '**Singleton** — a one-of-a-kind page, like **Site Settings**. There is only ever one, on purpose.',
           '**Field** — one box you type into, like "Phone number".',
-          '**Workspace** — a view of the Studio. **Everyday edits** (where you start) shows the usual menu; **Everything** adds the rare extras. Switch with the name in the top-left corner. Both edit the same website.',
+          '**Workspace** — a view of the Studio, one per audience. **Public website** (where you start) holds everything the world sees; **Family Hub** (the icon with the little lock) holds the private, families-only content. Switch with the name in the top-left corner. Both edit the same website.',
           '**PayPal button** — the box that connects a Pay button to the school’s PayPal. Newer buttons are a full payment link (Copy link in PayPal, starts with paypal.com/ncp/payment/); older ones were a short code of letters and numbers, which still works. Never a price.',
         ],
       },

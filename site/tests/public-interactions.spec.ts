@@ -209,7 +209,16 @@ test('instagram tile opens the in-page viewer, next advances, Escape closes', as
 
   const dialog = page.locator('[data-wall-lightbox]');
   const img = dialog.locator('[data-wall-lb-img]');
+  const video = dialog.locator('[data-wall-lb-video]');
   await expect(dialog).toBeHidden();
+
+  // The viewer shows ONE medium per post: the img for photos, the inline
+  // <video> for reels (the img is hidden then). The feed order decides which
+  // one the FIRST tile is, so read whichever is visible.
+  const mediaKey = async () =>
+    (await video.isVisible())
+      ? `video:${(await video.getAttribute('src')) ?? ''}`
+      : ((await img.getAttribute('src')) ?? '');
 
   // Tiles stay REAL Instagram links for no-JS visitors.
   expect(await tiles.first().getAttribute('href')).toMatch(/^https?:\/\//);
@@ -217,19 +226,14 @@ test('instagram tile opens the in-page viewer, next advances, Escape closes', as
   // Plain click is intercepted and opens the native <dialog> viewer.
   await tiles.first().click();
   await expect(dialog).toBeVisible();
-  const firstSrc = await img.getAttribute('src');
-  expect(firstSrc, 'viewer shows the tile media').toBeTruthy();
+  const firstMedia = await mediaKey();
+  expect(firstMedia, 'viewer shows the tile media').toBeTruthy();
 
   // Next advances to a different post when the band has more than one tile
-  // (image src changes, or an inline video swaps in for a reel).
+  // (the media key changes: another image, or a different reel).
   if ((await tiles.count()) > 1) {
     await dialog.locator('[data-wall-next]').click();
-    const video = dialog.locator('[data-wall-lb-video]');
-    await expect
-      .poll(async () =>
-        (await video.isVisible()) ? 'video' : ((await img.getAttribute('src')) ?? ''),
-      )
-      .not.toBe(firstSrc);
+    await expect.poll(mediaKey).not.toBe(firstMedia);
   }
 
   // Native dialog behavior: Escape closes the viewer.

@@ -56,8 +56,8 @@ is for adding more later.
 
 ## How to add redirects
 
-**The board can do this themselves now** — no code change. In the Studio, switch to the
-**Everything** workspace → **Site setup** → **Redirects** → **＋** and fill in the old path
+**The board can do this themselves now** — no code change. In the Studio, in the
+**Public website** workspace → **Site setup** → **Redirects** → **＋** and fill in the old path
 and where it should go. On Publish, the next rebuild (which the publish itself triggers)
 turns it into a real 301 (or a 302, if the board unchecks the doc's "permanent" box). `astro.config.mjs` reads these `redirect` documents at build via
 `fetchCmsRedirects()` and folds them into the `redirects` map alongside the launch ones

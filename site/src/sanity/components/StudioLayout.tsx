@@ -54,3 +54,25 @@ export function WcpWorkspaceIcon() {
     <img src={emblemSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
   );
 }
+
+// The Family Hub workspace icon: the same emblem with a small lock badge, so
+// the workspace switcher shows which side is gated at a glance.
+export function WcpHubWorkspaceIcon() {
+  return (
+    <span style={{ position: 'relative', display: 'block', width: '100%', height: '100%' }}>
+      <img src={emblemSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <span
+        aria-hidden
+        style={{
+          position: 'absolute',
+          right: '-12%',
+          bottom: '-12%',
+          fontSize: '0.55em',
+          lineHeight: 1,
+        }}
+      >
+        🔒
+      </span>
+    </span>
+  );
+}

@@ -5,7 +5,7 @@ import { Box, Button, Card, Flex, Heading, Radio, Stack, Text } from '@sanity/ui
 // =============================================================================
 // ExportTool — download your lists as a spreadsheet (CSV), no developer needed
 // =============================================================================
-// A Studio tool (Everything workspace) that lets the board get their data OUT:
+// A Studio tool (both workspaces) that lets the board get their data OUT:
 // newsletter subscribers, form submissions, and the family directory. It runs
 // entirely in the already-signed-in Studio using the current user's session
 // (useClient) — no new endpoint, no token handling — fetches the documents,

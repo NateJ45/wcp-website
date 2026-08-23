@@ -103,7 +103,7 @@ stays the same. (Do NOT "New deployment" — that mints a new URL and needs a ne
 
 ## The newsletter (compose in the Studio, archive on the web, optional send)
 
-The board composes a **Newsletter issue** in the Studio (Everyday edits → **Newsletter
+The board composes a **Newsletter issue** in the Studio (Public website → **Newsletter
 issues**) like a News post: a title, a cover, a short summary, and a rich body.
 Publishing it gives the issue a permanent public page at `/newsletter/<slug>` and a card
 in the `/newsletter/archive` list — so every issue is readable and shareable on the web,
@@ -149,7 +149,7 @@ trigger is the whole mechanism.
 - **Newsletter list provider**: `NEWSLETTER_PROVIDER=buttondown` + `BUTTONDOWN_API_KEY`,
   or `NEWSLETTER_PROVIDER=mailchimp` + `MAILCHIMP_API_KEY` + `MAILCHIMP_LIST_ID` +
   `MAILCHIMP_SERVER_PREFIX`. Until set, signups are store-only — download them as a CSV any
-  time with the **Export** tool (Everything workspace → **Export** in the top nav), which
+  time with the **Export** tool (**Export** in the top nav, in either workspace), which
   also exports form submissions and the family directory. No developer or CLI needed.
 
 ## Spam

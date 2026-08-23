@@ -150,7 +150,7 @@ function Chip({ tint, children }: { tint: keyof typeof CHIPS; children: ReactNod
 //
 // The path variant MUST go through the Studio router, not a raw <a href>:
 // the deployed embedded Studio uses HASH routing, where the workspace
-// basePath is "/everyday" — a plain anchor to "/everyday/media" leaves the
+// basePath is e.g. "/public" — a plain anchor to "/public/media" leaves the
 // Studio and 404s on the public site (bit us live 2026-07-13). Clicks call
 // router.navigateUrl (correct in hash AND browser modes); the href is a
 // best-effort real URL so middle-click / open-in-new-tab still works.
@@ -209,7 +209,10 @@ function TaskCard(props: {
 
 export function WelcomePane() {
   const client = useClient({ apiVersion: '2025-01-01' });
-  const { basePath } = useWorkspace();
+  const { basePath, title: workspaceTitle } = useWorkspace();
+  // The safety net for a wrong-workspace landing: one line that names the
+  // OTHER workspace and where the switcher is.
+  const otherWorkspace = workspaceTitle === 'Family Hub' ? 'Public website' : 'Family Hub';
   const [recent, setRecent] = useState<RecentDoc[] | null>(null);
 
   useEffect(() => {
@@ -241,6 +244,11 @@ export function WelcomePane() {
             This is where you edit the website. Nothing goes live until you click{' '}
             <strong>Publish</strong>, so click around and explore. New here? Open{' '}
             <strong>Help &amp; Guide</strong> in the left menu for step-by-step walkthroughs.
+          </Text>
+          <Text size={1} muted style={{ lineHeight: 1.5 }}>
+            You are in the <strong>{workspaceTitle}</strong> view. Looking for the{' '}
+            <strong>{otherWorkspace}</strong>? Click the workspace name in the top-left corner to
+            switch — both edit the same website.
           </Text>
         </Stack>
 

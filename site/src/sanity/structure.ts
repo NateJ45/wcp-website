@@ -8,11 +8,21 @@ import { WelcomePane } from './components/WelcomePane';
 // =============================================================================
 // Studio structure — the left-hand navigation a volunteer sees
 // =============================================================================
-// Organized by TASK frequency, not by document type: titled bands walk from
-// "Everyday edits" (alert, money, news, events) through "School info" and the
-// Family Hub down to "Site setup" and the read-only "Inboxes". Money lives in
-// ONE place ("Money & payments": fee schedule + class tuition + campaigns).
-// Singletons (Site Settings, Tuition & Fees) open straight into their editor.
+// TWO workspaces, split by AUDIENCE (since 2026-08; before that the split was
+// by task frequency — "Everyday edits" vs "Everything"):
+//  - publicStructure — the PUBLIC website: pages, news, events, money, school
+//    info, site setup, and the inboxes the public forms fill.
+//  - hubStructure — the gated FAMILY HUB: updates, sign-ups, the directory,
+//    co-op admin, hub pages, printables, and the hub inboxes.
+// Each menu keeps frequency bands inside it: everyday jobs on top, setup at
+// the bottom. Three things appear in BOTH menus on purpose:
+//  - Alert banner — a snow day must never hide in the "other" workspace.
+//  - Money & payments — ONE money home for the Treasurer. Tuition is public;
+//    the budget and campaigns also render on hub pages. Nobody should have to
+//    learn an audience split for money.
+//  - Welcome, Help & Guide, and Trash — the shared chrome.
+// Both workspaces edit the SAME dataset — one document, two doors. The split
+// is menu-only comfort, not permission (see docs/ROLES.md).
 //
 // Icons are plain emoji (friendly, and matches the schema icons) — Astro 7's
 // bundler doesn't tree-shake the @sanity/icons barrel cleanly.
@@ -60,8 +70,21 @@ function singleton(S: StructureBuilder, schemaType: string, title: string, icon:
     .child(S.document().schemaType(schemaType).documentId(schemaType).title(title));
 }
 
-// Shared groups — used by BOTH workspaces (Everyday edits + Everything), so
-// each is built once here and never drifts between the two.
+// The Welcome landing pane — shared by both workspaces.
+function welcomeItem(S: StructureBuilder) {
+  return S.listItem()
+    .id('welcome')
+    .title('Welcome')
+    .icon(emoji('🏠'))
+    .child(
+      S.component(WelcomePane as never)
+        .id('welcome-pane')
+        .title('Welcome'),
+    );
+}
+
+// Shared groups — used by BOTH workspaces, so each is built once here and
+// never drifts between the two.
 
 // Money & payments — every dollar amount and PayPal button in one place:
 // the fee schedule, per-class tuition, and fundraising campaigns.
@@ -156,75 +179,9 @@ function submissionsGroup(S: StructureBuilder, context: Parameters<StructureReso
     });
 }
 
-// Family Hub — the gated, families-only content.
-function familyHubGroup(S: StructureBuilder, context: Parameters<StructureResolver>[1]) {
-  return S.listItem()
-    .title('Family Hub')
-    .id('family-hub')
-    .icon(emoji('🔒'))
-    .child(
-      S.list()
-        .title('Family Hub')
-        .items([
-          // "edit content OR add a page": the list is now where a board CREATES
-          // a hub page too (a doc with a slug and no hubKey, served by the
-          // gated catch-all), so the label should not imply editing only.
-          S.documentTypeListItem('hubPage')
-            .title('Hub pages (edit content, or add a page)')
-            .icon(emoji('🧱')),
-          // The rail menu, right under the pages it arranges (the public
-          // header/footer equivalent lives in Site setup as "Menus").
-          singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
-          singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
-          singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
-          // Written by the weekly link-health workflow; a report, not a form.
-          singleton(S, 'linkHealth', 'Link health (weekly check)', emoji('🩺')),
-          singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
-          // The two PDF sources: edits here regenerate the branded PDFs on the
-          // next deploy (the publish webhook fires one).
-          S.documentTypeListItem('curriculumGuide')
-            .title('Curriculum guides (PDF content)')
-            .icon(emoji('📚')),
-          singleton(S, 'supplyList', 'School supply list (PDF content)', emoji('🎒')),
-          singleton(S, 'presidentNote', "President's note", emoji('💌')),
-          S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
-          S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
-          orderableDocumentListDeskItem({
-            type: 'hubDocument',
-            S,
-            context,
-            title: 'Documents & Forms',
-            icon: emoji('📄'),
-          }),
-          S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
-          S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
-          S.documentTypeListItem('signupSheet')
-            .title('Sign-ups & RSVPs (create sheets)')
-            .icon(emoji('📝')),
-          S.documentTypeListItem('signupEntry')
-            .title('Sign-up responses (inbox)')
-            .icon(emoji('🙋')),
-          orderableDocumentListDeskItem({
-            type: 'coopRole',
-            S,
-            context,
-            title: 'Co-op Roles',
-            icon: emoji('🤝'),
-          }),
-          // Sits directly under Co-op Roles on purpose: that list is what each
-          // job IS, this one is who HOLDS it this year. The pairing is the
-          // whole mental model, and this is the list that changes every spring.
-          // The rules families live by, next to the roles they describe.
-          singleton(S, 'coopGuidance', 'How the co-op works', emoji('🧭')),
-          S.documentTypeListItem('roleHolder')
-            .title('Who’s who this year (update each fall)')
-            .icon(emoji('🪪')),
-          S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
-        ]),
-    );
-}
-
-// Everything placed explicitly below — kept out of the fallback list.
+// Everything placed explicitly across the two workspace menus — kept out of
+// the fallback list. A NEW schema type not added to either menu still shows
+// up at the bottom of the Public website workspace, so nothing can vanish.
 const PLACED = new Set([
   'siteSettings',
   'navigation',
@@ -283,24 +240,21 @@ const PLACED = new Set([
   'media.tag',
 ]);
 
-export const structure: StructureResolver = (S, context) =>
+// =============================================================================
+// The "Public website" workspace — everything the world sees. This is where
+// /studio lands. Bands run from the everyday jobs (alert, money, news, events,
+// pages) down through School info to Site setup and the public inboxes.
+// =============================================================================
+export const publicStructure: StructureResolver = (S, context) =>
   S.list()
-    .title('West Chester Preschool')
+    .title('Public website')
     .items([
-      S.listItem()
-        .id('welcome')
-        .title('Welcome')
-        .icon(emoji('🏠'))
-        .child(
-          S.component(WelcomePane as never)
-            .id('welcome-pane')
-            .title('Welcome'),
-        ),
+      welcomeItem(S),
 
       howThisWorks(S),
 
       // ── Everyday edits ── the things volunteers log in to change most:
-      // the alert banner, anything money, news, events, hub announcements.
+      // the alert banner, anything money, news, events, pages.
       S.divider().title('Everyday edits'),
 
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
@@ -349,7 +303,7 @@ export const structure: StructureResolver = (S, context) =>
       // Community & content — the future-proofing collections that feed the
       // Programs / Board / Logo strip / Jobs / Downloads / Album page-builder
       // sections. Drag to reorder the list-style ones. (Fundraising campaigns
-      // moved to Money & payments above.)
+      // live in Money & payments above.)
       S.listItem()
         .title('Community & content')
         .id('community')
@@ -405,11 +359,6 @@ export const structure: StructureResolver = (S, context) =>
             ]),
         ),
 
-      // ── Family Hub ── the gated, families-only content.
-      S.divider().title('Family Hub'),
-
-      familyHubGroup(S, context),
-
       // ── Site setup ── set-up-once surfaces, out of the everyday eye-line.
       S.divider().title('Site setup'),
 
@@ -417,68 +366,113 @@ export const structure: StructureResolver = (S, context) =>
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
       S.documentTypeListItem('redirect').title('Redirects (old links)').icon(emoji('↪️')),
 
-      // ── Inboxes ── things the site sends TO the board (read, don't edit).
+      // ── Inboxes ── what the PUBLIC site sends the board (read, don't edit).
+      // The hub-side inboxes (sign-up responses, family photos) live in the
+      // Family Hub workspace.
       S.divider().title('Inboxes'),
 
       submissionsGroup(S, context),
       S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
-      S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
       S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
 
       // ── Recently deleted ── soft-deleted content; restore or empty for good.
       S.divider().title('Trash'),
       S.documentTypeListItem('trashedItem').title('Recently deleted').icon(emoji('🗑️')),
 
-      // Fallback: any type not explicitly placed above still shows up here.
+      // Fallback: any type not explicitly placed in EITHER workspace menu
+      // still shows up here.
       ...S.documentTypeListItems().filter((item) => !PLACED.has(item.getId() as string)),
     ]);
 
 // =============================================================================
-// The "Everyday edits" workspace structure — ONLY the publish-something-now
-// tasks: the alert banner, money, news, events, pages, the Family Hub, and
-// the inboxes. Deliberately SHORT so it reads clearly differently from
-// "Everything" (which adds School info, Community & content, Site Settings,
-// and Menus). Class documents stay reachable here through Money & payments →
-// "Class tuition (open a class)" — that list opens the full class editor.
-// NOTE: this trims the MENU only — it is comfort, not security (free-plan
-// editors are Administrators either way, see docs/ROLES.md).
+// The "Family Hub" workspace — the gated, families-only content. What was one
+// flat 20-item folder is four small bands: everyday jobs, families & co-op,
+// the hub's own pages and look, and the printables. The hub inboxes and Trash
+// close the menu.
 // =============================================================================
-export const everydayStructure: StructureResolver = (S, context) =>
+export const hubStructure: StructureResolver = (S, context) =>
   S.list()
-    .title('Everyday edits')
+    .title('Family Hub')
     .items([
-      S.listItem()
-        .id('welcome')
-        .title('Welcome')
-        .icon(emoji('🏠'))
-        .child(
-          S.component(WelcomePane as never)
-            .id('welcome-pane')
-            .title('Welcome'),
-        ),
+      welcomeItem(S),
 
       howThisWorks(S),
 
+      // ── Everyday edits ── the hub jobs a volunteer does most: post an
+      // update, celebrate a family, open a sign-up, share a document.
       S.divider().title('Everyday edits'),
 
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
-      S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
-      S.documentTypeListItem('post').title('News').icon(emoji('📰')),
-      S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
-      S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
-      pagesGroup(S),
+      S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
+      S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
+      singleton(S, 'presidentNote', "President's note", emoji('💌')),
+      S.documentTypeListItem('signupSheet')
+        .title('Sign-ups & RSVPs (create sheets)')
+        .icon(emoji('📝')),
+      orderableDocumentListDeskItem({
+        type: 'hubDocument',
+        S,
+        context,
+        title: 'Documents & Forms',
+        icon: emoji('📄'),
+      }),
 
-      S.divider().title('Family Hub'),
+      // ── Families & co-op ── who the families are and how the co-op runs.
+      S.divider().title('Families & co-op'),
 
-      familyHubGroup(S, context),
+      S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
+      S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
+      orderableDocumentListDeskItem({
+        type: 'coopRole',
+        S,
+        context,
+        title: 'Co-op Roles',
+        icon: emoji('🤝'),
+      }),
+      // Sits directly under Co-op Roles on purpose: that list is what each
+      // job IS, the guidance is the rules families live by, and roleHolder is
+      // who HOLDS each job this year. The pairing is the whole mental model,
+      // and roleHolder is the list that changes every spring.
+      singleton(S, 'coopGuidance', 'How the co-op works', emoji('🧭')),
+      S.documentTypeListItem('roleHolder')
+        .title('Who’s who this year (update each fall)')
+        .icon(emoji('🪪')),
+      S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
 
+      // ── Hub pages & look ── the hub's own pages, menu, and app chrome.
+      S.divider().title('Hub pages & look'),
+
+      // "edit content OR add a page": the list is also where a board CREATES
+      // a hub page (a doc with a slug and no hubKey, served by the gated
+      // catch-all), so the label should not imply editing only.
+      S.documentTypeListItem('hubPage')
+        .title('Hub pages (edit content, or add a page)')
+        .icon(emoji('🧱')),
+      // The rail menu, right under the pages it arranges (the public
+      // header/footer equivalent lives in the Public website workspace as
+      // "Menus").
+      singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
+      singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
+      singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
+      singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
+
+      // ── Printables ── the two PDF sources: edits here regenerate the
+      // branded PDFs on the next deploy (the publish webhook fires one).
+      S.divider().title('Printables (PDFs)'),
+
+      S.documentTypeListItem('curriculumGuide')
+        .title('Curriculum guides (PDF content)')
+        .icon(emoji('📚')),
+      singleton(S, 'supplyList', 'School supply list (PDF content)', emoji('🎒')),
+
+      // ── Inboxes ── what families send the board (read, don't edit).
       S.divider().title('Inboxes'),
 
-      submissionsGroup(S, context),
-      S.documentTypeListItem('testimonialSubmission').title('Review submissions').icon(emoji('💬')),
+      S.documentTypeListItem('signupEntry').title('Sign-up responses (inbox)').icon(emoji('🙋')),
       S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
-      S.documentTypeListItem('subscriber').title('Newsletter subscribers').icon(emoji('✉️')),
+      // Written by the weekly link-health workflow; a report, not a form.
+      singleton(S, 'linkHealth', 'Link health (weekly check)', emoji('🩺')),
 
       S.divider().title('Trash'),
       S.documentTypeListItem('trashedItem').title('Recently deleted').icon(emoji('🗑️')),
