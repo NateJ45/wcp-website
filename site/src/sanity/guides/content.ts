@@ -151,7 +151,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open a page and find the **Sections** list on the left.',
-          'To add one, click **Add item** and pick a section type (for example "Cards", "FAQ", "Photo gallery", "Story timeline", "Tabs"). Fill in its boxes.',
+          'To add one, click **Add item**. The picker is grouped into five bands — Words, photos & video · Cards, facts & tables · From your lists · Money & enrolling · Banners, forms & contact — and has a search box, so type "photo" or "FAQ" to jump straight to it. Pick a section and fill in its boxes.',
           'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
           'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
           '**Publish** when you are happy.',
@@ -1193,7 +1193,7 @@ export const guides: Guide[] = [
           'In the **Public website** workspace (where the Studio opens), click **Testimonials** under School info, then **＋**.',
           'Paste the quote, and add who said it (first name and last initial is fine).',
           'Add their **connection** (for example "Twos parent") and pick a **tag** so it shows on the right pages.',
-          'Skip **Family photo** for now. The field is here ready for later, but photos on quotes are still built into the site by hand, so one you add here will not show up on the website yet.',
+          'Add a **Family photo** if you have one (and their OK): it shows as a small photo print clipped to the quote on the reviews wall. Square crops look best. Optional — quotes without one look fine.',
           'Turn on **Feature this one?** if you want it on the homepage.',
           '**Publish**.',
         ],

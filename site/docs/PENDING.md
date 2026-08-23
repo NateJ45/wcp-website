@@ -171,15 +171,13 @@ reference again.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for.
-- **Board sets the co-op hours goal** (Studio → Site Settings) — until then
-  `/family-hub/hours` shows its designed empty state.
+- **Board sets the co-op hours goal** (Studio → Family Hub workspace → Hub
+  settings, since 2026-08-23) — until then `/family-hub/hours` shows its
+  designed empty state.
 - **Update the Sanity webhook filter in the dashboard** to match the
   2026-07-17 list in [SANITY.md](SANITY.md) / `deploy.yml` (drop the dead
   `classNote`, add `hubPage`, `teacherNote`, `presidentNote`, `signupSheet`,
   `signupEntry`).
-- **Decide the Celebrations page's fate**: `/family-hub/celebrations` renders
-  fine but NOTHING links to it. Either add it to `hub-nav.ts` (Community
-  group) or retire the page.
 - **Re-paste the deployed calendar-feed script**: the checked-in
   `scripts/apps-script/calendar-feed.gs` now filters prospective-family tour
   bookings ("Tour with …" titles carry visitor and child names) out of the

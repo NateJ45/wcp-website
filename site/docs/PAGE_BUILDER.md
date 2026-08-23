@@ -35,7 +35,11 @@ page {
 **40 body section types + the hero** — the registry in
 [`src/sanity/schemaTypes/sections/index.ts`](../src/sanity/schemaTypes/sections/index.ts)
 is the source of truth for the count; each maps 1:1 to an existing presentational
-component. Some are **pull-based**:
+component. The Studio's "+ Add section" picker is **grouped and searchable**
+(`sectionInsertMenu()` in the registry): five volunteer-named bands — Words/photos/video,
+Cards/facts/tables, From-your-lists, Money & enrolling, Banners/forms/contact — instead of
+one 40-item list; the hub's page builder reuses the same bands trimmed to its smaller
+palette, and a dev-time check throws if a new section type is not assigned to a group. Some are **pull-based**:
 they hold only config (heading + band) and fetch their content from a collection
 at build time, hiding the whole band when there's nothing to show.
 

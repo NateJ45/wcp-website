@@ -1,5 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
-import { BODY_SECTION_TYPE_NAMES } from '../sections';
+import { BODY_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 
 // =============================================================================
 // Page — a builder page (hero + a stack of sections)
@@ -60,6 +60,8 @@ export const page = defineType({
       type: 'array',
       group: 'content',
       of: BODY_SECTION_TYPE_NAMES.map((name) => defineArrayMember({ type: name })),
+      // The grouped, searchable "+ Add" picker (see sections/index.ts).
+      options: sectionInsertMenu(BODY_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
     defineField({

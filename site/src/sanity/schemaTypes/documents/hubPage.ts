@@ -1,5 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
-import { HUB_SECTION_TYPE_NAMES } from '../sections';
+import { HUB_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 import { ICON_NAMES } from '../objects/_shared';
 import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 
@@ -141,6 +141,9 @@ export const hubPage = defineType({
       type: 'array',
       group: 'content',
       of: HUB_SECTION_TYPE_NAMES.map((name) => defineArrayMember({ type: name })),
+      // The same grouped "+ Add" picker as public pages, trimmed to the
+      // hub-safe palette (see sections/index.ts).
+      options: sectionInsertMenu(HUB_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
   ],

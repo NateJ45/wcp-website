@@ -212,7 +212,8 @@ export function WelcomePane() {
   const { basePath, title: workspaceTitle } = useWorkspace();
   // The safety net for a wrong-workspace landing: one line that names the
   // OTHER workspace and where the switcher is.
-  const otherWorkspace = workspaceTitle === 'Family Hub' ? 'Public website' : 'Family Hub';
+  const isHubWorkspace = workspaceTitle === 'Family Hub';
+  const otherWorkspace = isHubWorkspace ? 'Public website' : 'Family Hub';
   const [recent, setRecent] = useState<RecentDoc[] | null>(null);
 
   useEffect(() => {
@@ -261,6 +262,9 @@ export function WelcomePane() {
           >
             What do you want to do?
           </Text>
+          {/* The task cards match the workspace: public jobs in the Public
+              website view, hub jobs in the Family Hub view. Shared everywhere:
+              the alert, Media, and the guide. */}
           <div
             style={{
               display: 'grid',
@@ -269,14 +273,6 @@ export function WelcomePane() {
             }}
           >
             <TaskCard
-              icon="💳"
-              tint="green"
-              label="Change tuition or fees"
-              hint="Prices, deposits, payment info"
-              intent="edit"
-              params={{ id: 'feeSchedule', type: 'feeSchedule' }}
-            />
-            <TaskCard
               icon="🚨"
               tint="orange"
               label="Post a closure or alert"
@@ -284,43 +280,95 @@ export function WelcomePane() {
               intent="edit"
               params={{ id: 'closureAlert', type: 'closureAlert' }}
             />
+            {isHubWorkspace ? (
+              <>
+                <TaskCard
+                  icon="📣"
+                  tint="amber"
+                  label="Post a Family Hub update"
+                  hint="Announcements for families"
+                  intent="create"
+                  params={{ type: 'update' }}
+                />
+                <TaskCard
+                  icon="📝"
+                  tint="sky"
+                  label="Open a sign-up or RSVP"
+                  hint="Helper shifts, snack days, events"
+                  intent="create"
+                  params={{ type: 'signupSheet' }}
+                />
+                <TaskCard
+                  icon="🎉"
+                  tint="green"
+                  label="Post a celebration"
+                  hint="Birthdays, welcomes, thank-yous"
+                  intent="create"
+                  params={{ type: 'celebration' }}
+                />
+                <TaskCard
+                  icon="📷"
+                  tint="amber"
+                  label="Review family photos"
+                  hint="Approve what families shared"
+                  path={`${basePath}/structure/photoSubmission`}
+                />
+                <TaskCard
+                  icon="🧱"
+                  tint="green"
+                  label="Edit a hub page"
+                  hint="The section-by-section builder"
+                  path={`${basePath}/structure/hubPage`}
+                />
+              </>
+            ) : (
+              <>
+                <TaskCard
+                  icon="💳"
+                  tint="green"
+                  label="Change tuition or fees"
+                  hint="Prices, deposits, payment info"
+                  intent="edit"
+                  params={{ id: 'feeSchedule', type: 'feeSchedule' }}
+                />
+                <TaskCard
+                  icon="📰"
+                  tint="sky"
+                  label="Write a news post"
+                  hint="Shows on the homepage feed"
+                  intent="create"
+                  params={{ type: 'post' }}
+                />
+                <TaskCard
+                  icon="📅"
+                  tint="sky"
+                  label="Add an event"
+                  hint="Open house, tour, fundraiser"
+                  intent="create"
+                  params={{ type: 'event' }}
+                />
+                <TaskCard
+                  icon="📨"
+                  tint="amber"
+                  label="Read your messages"
+                  hint="Form submissions, by form"
+                  path={`${basePath}/structure/submissions`}
+                />
+                <TaskCard
+                  icon="🧱"
+                  tint="green"
+                  label="Edit a page"
+                  hint="The section-by-section builder"
+                  path={`${basePath}/structure/pages`}
+                />
+              </>
+            )}
             <TaskCard
               icon="📸"
               tint="amber"
               label="Add or manage photos"
               hint="The Media library"
               path={`${basePath}/media`}
-            />
-            <TaskCard
-              icon="📰"
-              tint="sky"
-              label="Write a news post"
-              hint="Shows on the homepage feed"
-              intent="create"
-              params={{ type: 'post' }}
-            />
-            <TaskCard
-              icon="📅"
-              tint="sky"
-              label="Add an event"
-              hint="Open house, tour, fundraiser"
-              intent="create"
-              params={{ type: 'event' }}
-            />
-            <TaskCard
-              icon="📣"
-              tint="amber"
-              label="Post a Family Hub update"
-              hint="Announcements for families"
-              intent="create"
-              params={{ type: 'update' }}
-            />
-            <TaskCard
-              icon="🧱"
-              tint="green"
-              label="Edit a page"
-              hint="The section-by-section builder"
-              path={`${basePath}/structure/pages`}
             />
             <TaskCard
               icon="❔"

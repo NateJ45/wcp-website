@@ -98,6 +98,9 @@ export const hubNav: HubGroup[] = [
     links: [
       { label: 'Directory', href: '/family-hub/directory', icon: 'contact' },
       { label: 'Co-op Jobs', href: '/family-hub/coop-jobs', icon: 'heart-handshake' },
+      // Linked 2026-08-23: the page had rendered fine with nothing pointing
+      // at it (the old PENDING "decide its fate" item).
+      { label: 'Celebrations', href: '/family-hub/celebrations', icon: 'sparkles' },
       {
         label: 'Store',
         href: 'https://store.westchesterpreschool.org/',

@@ -62,8 +62,8 @@ draws the hub's persistent chrome:
 
 - **Desktop (≥ `lg`):** a sticky left navigation **rail** (`HubRail.astro`), built from the
   single grouped nav config in `src/data/hub-nav.ts` — Home, Classes, News & Events,
-  Resources (Getting Started, Become a Super Helper), Money, Community (incl. the external
-  Store link), each group with its own accent color — the active page highlighted, a
+  Resources (Getting Started, Become a Super Helper), Money, Community (Directory, Co-op
+  Jobs, Celebrations, the external Store link), each group with its own accent color — the active page highlighted, a
   light/dark `ThemeToggle`, and Sign out. The rail collapses to an icon rail
   (`hub-rail.ts` persists the choice in localStorage; BaseLayout sets the attribute early
   so there's no flash).
