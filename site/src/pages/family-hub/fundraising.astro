@@ -66,7 +66,7 @@ const [campaignsResult, docResult, settingsResult] = await Promise.allSettled([
     budgetSheetId?: string | null;
     pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
   } | null>(
-    `*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`,
+    `*[_type == "hubSettings"][0]{ budgetSheetId, pastFundraisingTotals }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
   ),

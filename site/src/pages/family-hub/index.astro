@@ -36,13 +36,14 @@ import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import {
   HUB_PAGE_QUERY,
   SITE_SETTINGS_QUERY,
+  HUB_SETTINGS_HOME_QUERY,
   HUB_STORE_QUERY,
   DIRECTORY_FAMILY_COUNT_QUERY,
 } from '@/lib/queries';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
 
-// The handbook link follows the Studio upload (Site Settings → School year),
+// The handbook link follows the Studio upload (Hub settings → Each year),
 // so the yearly re-upload never needs a code edit. The committed URL is the
 // fallback. Cached: no PII, changes once a year.
 let familyHandbookUrl = familyHandbookFallback;
@@ -72,6 +73,8 @@ interface SettingsDoc {
   yearStart?: string;
   yearEnd?: string;
   firstDay?: string;
+}
+interface HubSettingsDoc {
   familyCount?: number;
 }
 interface HubStoreDoc {
@@ -81,26 +84,29 @@ interface HubStoreDoc {
   storeProducts?: { title?: string; price?: string; url?: string; image?: string }[];
 }
 
-// The four page-level fetches are fully independent — run them concurrently
+// The page-level fetches are fully independent — run them concurrently
 // (this is the highest-traffic gated page, so sequential round-trips
 // on top of each widget's own fetch is worth avoiding). Promise.allSettled
-// preserves each fetch's existing fallback (null / null / null / 0) even if
+// preserves each fetch's existing fallback (null / 0) even if
 // one (or more) of them fails, matching the previous try/catch behavior.
-const [docResult, settingsResult, storeResult, familyCountResult] = await Promise.allSettled([
-  sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }, { cache: BOARD_CONTENT_CACHE }),
-  sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-  sanityFetch<HubStoreDoc | null>(HUB_STORE_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-  // The count is a scalar over directory docs (no PII in the result), so it
-  // rides the same cache — a new opt-in showing a few minutes late is fine.
-  sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-]);
+const [docResult, settingsResult, hubSettingsResult, storeResult, familyCountResult] =
+  await Promise.allSettled([
+    sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }, { cache: BOARD_CONTENT_CACHE }),
+    sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+    sanityFetch<HubSettingsDoc | null>(HUB_SETTINGS_HOME_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+    sanityFetch<HubStoreDoc | null>(HUB_STORE_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+    // The count is a scalar over directory docs (no PII in the result), so it
+    // rides the same cache — a new opt-in showing a few minutes late is fine.
+    sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+  ]);
 const doc = docResult.status === 'fulfilled' ? docResult.value : null;
 const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;
+const hubSettings = hubSettingsResult.status === 'fulfilled' ? hubSettingsResult.value : null;
 const store = storeResult.status === 'fulfilled' ? storeResult.value : null;
 const liveFamilyCount = familyCountResult.status === 'fulfilled' ? familyCountResult.value : 0;
 
 const title = doc?.heading || 'Family Hub';
-const familyCount = settings?.familyCount ?? liveFamilyCount;
+const familyCount = hubSettings?.familyCount ?? liveFamilyCount;
 
 const firstDay = settings?.firstDay;
 ---

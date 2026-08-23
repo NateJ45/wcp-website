@@ -50,7 +50,7 @@ export const teacherPhoneFallback: Record<string, string> = {
   'pre-k': '503-201-4775',
 };
 
-/** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (siteSettings.budgetSheetId). */
+/** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (hubSettings.budgetSheetId). */
 export const budgetSheetIdFallback = '';
 
 /** Fundraising goal for the store (the merch line in the approved 2026-27
@@ -67,12 +67,12 @@ export const storeSalesGoalFallback = 150;
 export const googleCalendarIdFallback = 'contact@westchesterpreschool.org';
 
 /** Apps Script endpoint serving the school Google Calendar as JSON.
- *  REDACTED: set in Sanity (siteSettings.calendarFeedUrl). */
+ *  REDACTED: set in Sanity (hubSettings.calendarFeedUrl). */
 export const calendarFeedUrlFallback = '';
 
 /** Grand totals from finished school years — the old site's "What We Have
  *  Raised Together" band, now on the hub Fundraising page. Editable on
- *  Site Settings → School year (`pastFundraisingTotals`), newest first. */
+ *  Hub settings → Each year (`pastFundraisingTotals`), newest first. */
 export const pastFundraisingTotalsFallback: { yearLabel: string; amount: number }[] = [
   { yearLabel: '2025-26', amount: 4450 },
   { yearLabel: '2024-25', amount: 6653 },

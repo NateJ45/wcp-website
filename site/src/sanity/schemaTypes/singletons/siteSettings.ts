@@ -241,14 +241,12 @@ export const siteSettings = defineType({
       group: 'year',
       description: 'e.g. "WCP follows Lakota Local Schools for weather closures."',
     }),
-    defineField({
-      name: 'googleCalendarId',
-      title: 'Family Hub calendar — Google Calendar code',
-      type: 'string',
-      group: 'services',
-      description:
-        'The code that connects the school’s Google Calendar (it looks like abc123@group.calendar.google.com, from Google Calendar’s settings). Make the calendar public in Google Calendar first, then paste the code here and it appears on the Family Hub Calendar page. Leave blank to hide the calendar. Set once — check with Nathan before changing.',
-    }),
+    // The hub-only fields (family handbook, co-op hours goal, family count,
+    // past fundraising totals, budget sheet code, calendar feed, Google
+    // Calendar code, directory-map toggle) moved to the `hubSettings`
+    // singleton in the Family Hub workspace on 2026-08-23 —
+    // scripts/patch-hub-settings.mjs copied the values. The year DATES stay
+    // here: the public enrollment packet prints them too.
     defineField({
       name: 'yearStart',
       title: 'School year start date',
@@ -274,40 +272,6 @@ export const siteSettings = defineType({
         'Powers the "N days until school" countdown on the Family Hub home before the year starts. Leave blank to hide it.',
     }),
     defineField({
-      name: 'coopHoursGoal',
-      title: 'Co-op hours per family (per year)',
-      type: 'number',
-      group: 'year',
-      validation: (R) => R.min(0).error('Use 0 or more.'),
-      description:
-        'How many volunteer hours each family is asked to give this school year. Drives the progress bar on the Family Hub "My Co-op Hours" page. Leave blank or 0 to hide the hours tracker.',
-    }),
-    defineField({
-      name: 'familyHandbook',
-      title: 'Family Handbook (PDF)',
-      type: 'file',
-      group: 'year',
-      options: { accept: '.pdf' },
-      description:
-        'The current Family Handbook. Upload the new one each year and every hub link to it updates by itself (the topbar button and the hub home card).',
-    }),
-    defineField({
-      name: 'familyCount',
-      title: 'Family count (optional override)',
-      type: 'number',
-      group: 'year',
-      description:
-        'Shown on the Family Hub home. Leave blank to use a live count of opted-in Directory families instead.',
-    }),
-    defineField({
-      name: 'budgetSheetId',
-      title: 'Budget spreadsheet code (Google Sheets)',
-      type: 'string',
-      group: 'services',
-      description:
-        'The long code from the treasurer’s Budget Google Sheet link (the part between /d/ and /edit in the link). Powers the Budget Snapshot and Fundraising numbers on the Family Hub. The sheet needs "Anyone with the link can view". Set once — check with Nathan before changing.',
-    }),
-    defineField({
       name: 'availabilitySheetId',
       title: 'Class availability spreadsheet code (Google Sheets)',
       type: 'string',
@@ -315,59 +279,6 @@ export const siteSettings = defineType({
       description:
         'Powers the "Spots open / Waitlist" badges on the public class cards. Make a Sheet with a tab named "Availability", two columns: class (twos, threes, pre-k-am, pre-k-pm) and status (open, few, waitlist, full). Share it "Anyone with the link can view" and paste the long code from its link (between /d/ and /edit). Leave blank to hide the badges.',
     }),
-    defineField({
-      name: 'calendarFeedUrl',
-      title: 'Calendar feed link',
-      type: 'url',
-      group: 'services',
-      description:
-        'The special Google link that feeds the Upcoming Events list on the Family Hub. Set up once by Nathan — check with him before changing it.',
-    }),
-    defineField({
-      name: 'showDirectoryMap',
-      title: 'Show the family directory map',
-      type: 'boolean',
-      group: 'services',
-      initialValue: false,
-      description:
-        'When on, the Family Hub Directory adds a Map tab that plots each family who shared a home address (on OpenStreetMap). Off (the default) shows just the List.',
-    }),
-    defineField({
-      name: 'pastFundraisingTotals',
-      title: 'Past fundraising totals',
-      type: 'array',
-      group: 'year',
-      description:
-        'Grand totals from finished school years, newest first — shown in the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the year that just ended (the treasurer’s final number).',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'yearLabel',
-              title: 'School year',
-              type: 'string',
-              description: 'e.g. "2025-26"',
-              validation: (R) => R.required(),
-            }),
-            defineField({
-              name: 'amount',
-              title: 'Total raised ($)',
-              type: 'number',
-              validation: (R) => R.required().min(0),
-            }),
-          ],
-          preview: {
-            select: { title: 'yearLabel', amount: 'amount' },
-            prepare: ({ title, amount }) => ({
-              title: title || 'School year',
-              subtitle: typeof amount === 'number' ? `$${amount.toLocaleString('en-US')}` : '',
-            }),
-          },
-        },
-      ],
-    }),
-
     // Social & reviews
     defineField({
       name: 'facebook',

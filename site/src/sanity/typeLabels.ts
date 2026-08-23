@@ -39,6 +39,7 @@ export const TYPE_LABELS: Record<string, string> = {
   linkHealth: 'Link health',
   hubDelights: 'Little delights',
   hubStore: 'Merch store card',
+  hubSettings: 'Hub settings',
   curriculumGuide: 'Curriculum guide (PDF)',
   supplyList: 'School supply list',
   siteMicrocopy: 'Small bits of wording',

@@ -236,7 +236,7 @@ export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, emai
 
 export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, familyCount, budgetSheetId, calendarFeedUrl, facebook, instagram, googleRating, googleReviews, googleUrl, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
@@ -260,8 +260,11 @@ export const HUB_DELIGHTS_QUERY = `*[_type == "hubDelights"][0]{
   giggles[]{ setup, punchline }
 }`;
 
-/** The current Family Handbook PDF (Site Settings → School year). */
-export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "siteSettings"][0].familyHandbook.asset->url`;
+/** The current Family Handbook PDF (Hub settings → Each year). */
+export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "hubSettings"][0].familyHandbook.asset->url`;
+
+/** The hub home's numbers from Hub settings (family-count override). */
+export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount }`;
 
 export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
 
@@ -282,7 +285,7 @@ export const SITE_SETTINGS_AVAILABILITY_SHEET_QUERY = `*[_type == "siteSettings"
  *
  * It still measures the DIRECTORY, not enrollment — a family who opts out is
  * enrolled but uncounted. Anywhere that needs the true enrolled number should
- * use the `familyCount` override on siteSettings instead.
+ * use the `familyCount` override on hubSettings instead.
  */
 export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" && optedIn == true && count(children) > 0])`;
 
@@ -350,7 +353,7 @@ export const SITE_ENROLLMENT_QUERY = `*[_type == "siteSettings"][0]{ enrollmentM
 
 // Co-op hours page: the per-family annual goal + the school-wide total logged.
 export const COOP_HOURS_META_QUERY = `{
-  "goal": *[_type == "siteSettings"][0].coopHoursGoal,
+  "goal": *[_type == "hubSettings"][0].coopHoursGoal,
   "communityHours": math::sum(*[_type == "hoursLog"].hours)
 }`;
 

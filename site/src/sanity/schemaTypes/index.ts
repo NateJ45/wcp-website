@@ -34,6 +34,7 @@ import { hubHints } from './singletons/hubHints';
 import { linkHealth } from './singletons/linkHealth';
 import { hubDelights } from './singletons/hubDelights';
 import { hubStore } from './singletons/hubStore';
+import { hubSettings } from './singletons/hubSettings';
 import { curriculumGuide } from './documents/curriculumGuide';
 import { supplyList } from './singletons/supplyList';
 import { navigation } from './singletons/navigation';
@@ -109,6 +110,7 @@ export const schemaTypes = [
   linkHealth,
   hubDelights,
   hubStore,
+  hubSettings,
   curriculumGuide,
   supplyList,
   navigation,
@@ -169,6 +171,7 @@ export const SINGLETON_TYPES = new Set([
   'linkHealth',
   'hubDelights',
   'hubStore',
+  'hubSettings',
   'supplyList',
   'curriculumGuide',
   'navigation',

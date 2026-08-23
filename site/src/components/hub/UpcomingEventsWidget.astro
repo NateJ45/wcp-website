@@ -29,7 +29,7 @@ import { deEmDash } from '@/lib/portable-text';
 let feedUrl = calendarFeedUrlFallback;
 try {
   feedUrl =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].calendarFeedUrl`)) ||
+    (await sanityFetch<string | null>(`*[_type == "hubSettings"][0].calendarFeedUrl`)) ||
     calendarFeedUrlFallback;
 } catch {
   feedUrl = calendarFeedUrlFallback;

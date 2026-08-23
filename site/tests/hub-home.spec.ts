@@ -2,11 +2,20 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { settle } from './helpers';
 
+// These specs wait on 'domcontentloaded' + explicit content, NEVER on 'load':
+// the server-island placeholders are module scripts whose top-level await
+// (and, for the store card, dozens of external product images) hold the
+// window load event open — cold external origins pushed it past the 60s test
+// timeout on a page that had fully rendered (diagnosed 2026-08-23; the SSR
+// response itself answers in under 2s). The island-dependent assertions carry
+// their own 30s timeouts instead.
+const ISLAND_TIMEOUT = 30_000;
+
 test.describe('Family Hub home dashboard', () => {
   test('greeting, class row, and widgets render with no axe violations (light + dark)', async ({
     page,
   }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     // Greeting hero.
@@ -17,7 +26,8 @@ test.describe('Family Hub home dashboard', () => {
       await expect(page.locator(`a[href="${href}"]`).first()).toBeVisible();
     }
 
-    // Widget grid: six cards by their titles.
+    // Widget grid: six cards by their titles. Three are server islands that
+    // stream in after the shell, so allow them the island timeout.
     for (const title of [
       'Upcoming Events',
       'Announcements',
@@ -26,7 +36,9 @@ test.describe('Family Hub home dashboard', () => {
       'Class Photos',
       'Budget Snapshot',
     ]) {
-      await expect(page.getByRole('heading', { name: title, level: 3 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: title, level: 3 })).toBeVisible({
+        timeout: ISLAND_TIMEOUT,
+      });
     }
 
     for (const theme of ['light', 'dark'] as const) {
@@ -47,12 +59,13 @@ test.describe('Family Hub home dashboard', () => {
   // refresh, where the race flipped). Playwright's toBeVisible() treats
   // opacity:0 as visible, so this asserts the class AND the computed opacity.
   test('server-island widgets join the reveal system', async ({ page }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     for (const title of ['Upcoming Events', 'Fundraising', 'Budget Snapshot']) {
       const heading = page.getByRole('heading', { name: title, level: 3 });
-      await expect(heading).toBeVisible(); // waits for the island to stream in
+      // Waits for the island to stream in (cold external origins are slow).
+      await expect(heading).toBeVisible({ timeout: ISLAND_TIMEOUT });
       const card = page.locator('[data-reveal]', { has: heading }).last();
       // Below-fold cards reveal on scroll — exercise the observer path too.
       await card.scrollIntoViewIfNeeded();
@@ -65,7 +78,7 @@ test.describe('Family Hub home dashboard', () => {
 
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 900 });
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,

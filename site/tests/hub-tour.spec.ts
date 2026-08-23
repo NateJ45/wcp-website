@@ -18,7 +18,7 @@ const clearSeen = `
 // the President speaks first). When no note is due the tour opens by itself.
 async function openTourFresh(page: import('@playwright/test').Page) {
   await page.addInitScript(clearSeen);
-  await page.goto('/family-hub', { waitUntil: 'load' });
+  await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
   const note = page.locator('[data-note-modal]');
   const noteOpened = await note
     .waitFor({ state: 'visible', timeout: 2500 })
@@ -68,13 +68,13 @@ test.describe('First-visit tour', () => {
         /* fine */
       }
     }, stored as string);
-    await page.reload({ waitUntil: 'load' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
     await expect(page.locator('[data-tour-modal]')).toBeHidden();
   });
 
   test('the greeting chip reopens a dismissed tour', async ({ page }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     const chip = page.locator('[data-tour-open]');
@@ -167,7 +167,7 @@ test.describe('First-visit tour', () => {
   });
 
   test('Esc closes it and focus returns to the opener', async ({ page }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
     const chip = page.locator('[data-tour-open]');
     await chip.click();

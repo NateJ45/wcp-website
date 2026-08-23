@@ -75,12 +75,12 @@ try {
   entries = [];
 }
 
-// Map tab is a Board on/off switch (Site Settings → Connected services). Off by
+// Map tab is a Board on/off switch (Hub settings → Google connections). Off by
 // default: no Map tab, and the Leaflet map never loads.
 let showMap = false;
 try {
   const s = await sanityFetch<{ showDirectoryMap?: boolean } | null>(
-    `*[_type == "siteSettings"][0]{ showDirectoryMap }`,
+    `*[_type == "hubSettings"][0]{ showDirectoryMap }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
   );

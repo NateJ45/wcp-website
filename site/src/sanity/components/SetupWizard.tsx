@@ -41,6 +41,10 @@ interface SetupData {
     yearEnd?: string;
     firstDay?: string;
     enrollmentMode?: string;
+  } | null;
+  // The hub-side yearly fields moved to the `hubSettings` singleton
+  // (Family Hub workspace) on 2026-08-23.
+  hub: {
     coopHoursGoal?: number;
     pastYears?: number;
     calendarFeedUrl?: string;
@@ -54,8 +58,10 @@ interface SetupData {
 
 const SETUP_QUERY = `{
   "settings": *[_type == "siteSettings"][0]{
-    schoolYearLabel, yearStart, yearEnd, firstDay, enrollmentMode, coopHoursGoal,
-    "pastYears": count(pastFundraisingTotals), calendarFeedUrl, googleCalendarId
+    schoolYearLabel, yearStart, yearEnd, firstDay, enrollmentMode
+  },
+  "hub": *[_type == "hubSettings"][0]{
+    coopHoursGoal, "pastYears": count(pastFundraisingTotals), calendarFeedUrl, googleCalendarId
   },
   "hasFees": count(*[_type == "feeSchedule"]) > 0,
   "classesMissing": count(*[_type == "class" && !(_id in path("drafts.**")) && !defined(monthly)]),
@@ -71,9 +77,16 @@ const ENROLL_LABEL: Record<string, string> = {
 
 function buildSections(data: SetupData, basePath: string): Section[] {
   const s = data.settings ?? {};
+  const h = data.hub ?? {};
   const editSettings = {
     intent: 'edit' as const,
     params: { id: 'siteSettings', type: 'siteSettings' },
+  };
+  // The hub's own yearly fields (hours goal, past totals, Google links) live
+  // in the hubSettings singleton (Family Hub workspace).
+  const editHubSettings = {
+    intent: 'edit' as const,
+    params: { id: 'hubSettings', type: 'hubSettings' },
   };
   const datesSet = !!(s.yearStart && s.yearEnd && s.firstDay);
 
@@ -135,12 +148,12 @@ function buildSections(data: SetupData, basePath: string): Section[] {
           icon: '⏱️',
           title: 'Co-op hours goal',
           detail:
-            s.coopHoursGoal && s.coopHoursGoal > 0
-              ? `Set to ${s.coopHoursGoal} hours per family. Adjust if the ask changed.`
+            h.coopHoursGoal && h.coopHoursGoal > 0
+              ? `Set to ${h.coopHoursGoal} hours per family. Adjust if the ask changed.`
               : 'Set how many volunteer hours each family gives this year (or leave blank to hide the tracker).',
-          status: s.coopHoursGoal && s.coopHoursGoal > 0 ? 'done' : 'info',
-          ...editSettings,
-          linkText: 'Open Site Settings',
+          status: h.coopHoursGoal && h.coopHoursGoal > 0 ? 'done' : 'info',
+          ...editHubSettings,
+          linkText: 'Open Hub settings',
         },
       ],
     },
@@ -217,12 +230,12 @@ function buildSections(data: SetupData, basePath: string): Section[] {
           icon: '💰',
           title: 'Record last year’s fundraising total',
           detail:
-            (data.settings?.pastYears ?? 0) > 0
+            (h.pastYears ?? 0) > 0
               ? 'Add the final total from the year that just ended to the "What we’ve raised" history.'
               : 'Add the grand total from the year that just ended so it shows in the fundraising history.',
           status: 'info',
-          ...editSettings,
-          linkText: 'Open Site Settings',
+          ...editHubSettings,
+          linkText: 'Open Hub settings',
         },
       ],
     },
@@ -307,6 +320,7 @@ export function SetupWizard() {
     } catch {
       setData({
         settings: null,
+        hub: null,
         hasFees: false,
         classesMissing: 0,
         events: 0,

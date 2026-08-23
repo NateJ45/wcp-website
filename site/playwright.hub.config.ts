@@ -31,6 +31,13 @@ export default defineConfig({
   // contention, not a regression — the same suite passes at --workers=1.
   // If this starts failing again, check the external origins before the code.
   timeout: 60_000,
+  // Cap the workers: everything here renders through ONE local workerd
+  // isolate, and 8 workers × 2 browser projects of streaming SSR (each page
+  // fanning out to Sanity + the external origins) starved it — pages that
+  // render in ~1s idle streamed for 30s+ under the pile-up, and half the
+  // suite failed on goto timeouts with the code healthy (2026-08-23). Four
+  // keeps the wall clock close while staying under the collapse point.
+  workers: 4,
   webServer: {
     command: 'npm run build && npm run preview',
     // The login page is the one hub route reachable without a session, so it is

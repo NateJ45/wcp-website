@@ -51,7 +51,7 @@ export const GET: APIRoute = async (context) => {
   let events: { title: string; when: string; location?: string }[] = [];
   try {
     const feedUrl = await sanityFetch<string | null>(
-      `*[_type == "siteSettings"][0].calendarFeedUrl`,
+      `*[_type == "hubSettings"][0].calendarFeedUrl`,
     );
     if (feedUrl) {
       const horizon = Date.now() + 14 * 86_400_000;

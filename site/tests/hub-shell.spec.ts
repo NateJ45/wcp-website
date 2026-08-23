@@ -4,7 +4,7 @@ import { settle } from './helpers';
 
 test.describe('Family Hub shell', () => {
   test('rail renders with active Home and no axe violations (light + dark)', async ({ page }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     const nav = page.locator('nav[aria-label="Family Hub"]').first();
@@ -25,7 +25,7 @@ test.describe('Family Hub shell', () => {
 
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 720 });
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -35,7 +35,7 @@ test.describe('Family Hub shell', () => {
 
   test('drawer opens, traps focus, and Esc closes it', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 720 });
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     // TWO toggles share the drawer (top-bar menu + the tab bar's More) and
@@ -65,7 +65,7 @@ test.describe('Family Hub shell', () => {
   });
 
   test('desktop rail collapses to icons and keeps accessible names', async ({ page }) => {
-    await page.goto('/family-hub', { waitUntil: 'load' });
+    await page.goto('/family-hub', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     const aside = page.locator('.hub-rail-aside');
@@ -92,7 +92,7 @@ test.describe('Family Hub shell', () => {
   // Track A). Menus are native <details>; hub-menus.ts adds Esc/outside-close.
   test('topbar: bell opens, closes on Esc, passes axe open; search opens', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/family-hub/documents', { waitUntil: 'load' });
+    await page.goto('/family-hub/documents', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     const topbar = page.locator('[data-hub-topbar]');

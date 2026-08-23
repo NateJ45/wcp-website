@@ -64,7 +64,7 @@ let calId = googleCalendarIdFallback;
 let feedUrl = calendarFeedUrlFallback;
 try {
   const s = await sanityFetch<{ googleCalendarId?: string; calendarFeedUrl?: string } | null>(
-    `*[_type == "siteSettings"][0]{ googleCalendarId, calendarFeedUrl }`,
+    `*[_type == "hubSettings"][0]{ googleCalendarId, calendarFeedUrl }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
   );

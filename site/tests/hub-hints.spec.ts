@@ -16,7 +16,7 @@ const clearHints = `
 test.describe('Feature hints', () => {
   test('the Directory hint appears once, and Got it dismisses it for good', async ({ page }) => {
     await page.addInitScript(clearHints);
-    await page.goto('/family-hub/directory', { waitUntil: 'load' });
+    await page.goto('/family-hub/directory', { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     const bubble = page.locator('.wcp-hint-bubble');
@@ -35,14 +35,14 @@ test.describe('Feature hints', () => {
     await page.addInitScript(
       `try { localStorage.setItem('wcp-hint-calendar-filters', '1'); } catch {}`,
     );
-    await page.goto('/family-hub/calendar', { waitUntil: 'load' });
+    await page.goto('/family-hub/calendar', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2200);
     await expect(page.locator('.wcp-hint-bubble')).toHaveCount(0);
   });
 
   test('the Calendar hint passes axe while showing, light and dark', async ({ page }) => {
     await page.addInitScript(clearHints);
-    await page.goto('/family-hub/calendar', { waitUntil: 'load' });
+    await page.goto('/family-hub/calendar', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.wcp-hint-bubble')).toBeVisible({ timeout: 5000 });
 
     for (const theme of ['light', 'dark'] as const) {

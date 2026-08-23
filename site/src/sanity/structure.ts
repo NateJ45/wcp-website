@@ -226,6 +226,7 @@ const PLACED = new Set([
   'linkHealth',
   'hubDelights',
   'hubStore',
+  'hubSettings',
   'curriculumGuide',
   'supplyList',
   'presidentNote',
@@ -471,6 +472,13 @@ export const hubStructure: StructureResolver = (S, context) =>
         .title('Curriculum guides (PDF content)')
         .icon(emoji('📚')),
       singleton(S, 'supplyList', 'School supply list (PDF content)', emoji('🎒')),
+
+      // ── Hub setup ── the hub's yearly data and Google connections
+      // (handbook PDF, hours goal, family count, past totals, sheet/feed
+      // codes, directory-map toggle).
+      S.divider().title('Hub setup'),
+
+      singleton(S, 'hubSettings', 'Hub settings (yearly & links)', emoji('🛠️')),
 
       // ── Inboxes ── what families send the board (read, don't edit).
       S.divider().title('Inboxes'),

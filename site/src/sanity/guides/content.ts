@@ -247,7 +247,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **family directory map** (a Map tab that plots each family who shared a home address) is off by default. To turn it on, flip **Site Settings → Connected services → "Show the family directory map"**. With it off, the Directory shows just the List.',
+        text: 'The **family directory map** (a Map tab that plots each family who shared a home address) is off by default. To turn it on, flip **Hub settings → Google connections → "Show the family directory map"** (Family Hub workspace). With it off, the Directory shows just the List.',
       },
       {
         kind: 'p',
@@ -465,7 +465,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Open it after a Monday and read the summary. A red row names the broken link in plain English. To fix one: open that file in Google, share it again ("Anyone with the link"), copy the fresh link, and paste it where the site keeps it — the class page fields, Site Settings, or the Documents list.',
+        text: 'Open it after a Monday and read the summary. A red row names the broken link in plain English. To fix one: open that file in Google, share it again ("Anyone with the link"), copy the fresh link, and paste it where the site keeps it — the class page fields, Hub settings (the Google connections), or the Documents list.',
       },
       {
         kind: 'callout',
@@ -1289,15 +1289,15 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'primary',
         title: 'Each year, update the school-year dates',
-        text: 'On the **School year** tab, fill in the school year’s **start date**, **end date**, and **first day of school**. These power the countdown and progress bar on the Family Hub home page, so they need a fresh update every year. Leave **Family count** blank unless the Directory undercounts (for example, mid-migration) — otherwise it uses a live count of families in the Directory automatically.',
+        text: 'On the **School year** tab, fill in the school year’s **start date**, **end date**, and **first day of school**. These power the enrollment packet’s key dates and the countdown and progress bar on the Family Hub home page, so they need a fresh update every year.',
       },
       {
         kind: 'p',
-        text: 'The **School year** tab also holds the Family Hub’s live-data links: the **Budget Google Sheet ID** (the treasurer’s tracking sheet that powers the Budget Snapshot and Fundraising numbers) and the **Calendar feed link** (powers the Upcoming Events list). These rarely change — update them only when the sheet or feed is replaced.',
+        text: 'The Family Hub’s own yearly numbers and live-data links moved to **Hub settings** in the **Family Hub workspace**: the Family Handbook PDF, the co-op hours goal, the family-count override, the past fundraising totals, and the Google connections (the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**). The Google links rarely change — update them only when the sheet or feed is replaced.',
       },
       {
         kind: 'p',
-        text: 'Same tab: **Past fundraising totals** — the list behind the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the school year that just ended with the treasurer’s final grand total (newest first).',
+        text: '**Past fundraising totals** (Hub settings → Each year) is the list behind the "What we’ve raised together" band on the Family Hub Fundraising page. Each fall, add the school year that just ended with the treasurer’s final grand total (newest first).',
       },
       { kind: 'h', text: 'Live "Spots open / Waitlist" badges' },
       {
@@ -1310,7 +1310,7 @@ export const guides: Guide[] = [
           'Make a Google Sheet with a tab named **Availability**.',
           'Two columns: the class (**twos**, **threes**, **pre-k-am**, **pre-k-pm**) and its status (**open**, **few**, **waitlist**, or **full**). One row per class.',
           'Share it: **Anyone with the link can view**.',
-          'Copy the ID from the sheet link (the long code between /d/ and /edit) into **Site Settings → School year → Class availability Google Sheet ID**, then Publish.',
+          'Copy the ID from the sheet link (the long code between /d/ and /edit) into **Site Settings → Connected services → Class availability spreadsheet code**, then Publish.',
         ],
       },
       {
@@ -1737,7 +1737,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Set this year’s goal' },
       {
         kind: 'path',
-        items: ['Site Settings', 'School year', 'Co-op hours per family'],
+        items: ['Family Hub workspace', 'Hub settings', 'Co-op hours per family'],
       },
       {
         kind: 'p',

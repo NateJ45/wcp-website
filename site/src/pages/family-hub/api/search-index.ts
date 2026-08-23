@@ -178,7 +178,7 @@ export const GET: APIRoute = async () => {
       const feedUrl =
         (
           await sanityFetch<{ calendarFeedUrl?: string } | null>(
-            `*[_type == "siteSettings"][0]{ calendarFeedUrl }`,
+            `*[_type == "hubSettings"][0]{ calendarFeedUrl }`,
             {},
             { cache: BOARD_CONTENT_CACHE },
           )

@@ -5,6 +5,9 @@
 // account (source: scripts/apps-script/calendar-feed.gs) because the original
 // lived under the contact@ account he lost access to. This sets
 // siteSettings.calendarFeedUrl to the new /exec URL.
+// HISTORICAL (ran 2026-07-17): the field MOVED to hubSettings.calendarFeedUrl
+// on 2026-08-23 — do not re-run this against siteSettings; edit Hub settings
+// in the Studio (Family Hub workspace) instead.
 //
 // The URL itself deliberately lives ONLY in .dev.vars (CALENDAR_FEED_URL) —
 // same policy as every share-by-link Google URL: the repo is public and the

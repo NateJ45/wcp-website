@@ -29,7 +29,7 @@ const ROUTES = [
 for (const route of ROUTES) {
   test.describe(`Family Hub section: ${route}`, () => {
     test('renders an app header and passes axe (light + dark)', async ({ page }) => {
-      await page.goto(route, { waitUntil: 'load' });
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
       await settle(page);
 
       // App page header, not the old navy title band. (Board-added page-builder
@@ -61,7 +61,7 @@ for (const route of ROUTES) {
 
     test('no horizontal overflow at 320px', async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 900 });
-      await page.goto(route, { waitUntil: 'load' });
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
       await settle(page);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -75,7 +75,7 @@ for (const route of ROUTES) {
 // content changes. Skips cleanly if no announcements exist in the dataset.
 test.describe('Family Hub section: update detail', () => {
   test('renders an app header and passes axe (light + dark)', async ({ page }) => {
-    await page.goto('/family-hub/updates', { waitUntil: 'load' });
+    await page.goto('/family-hub/updates', { waitUntil: 'domcontentloaded' });
     const href = await page
       .locator('a[href^="/family-hub/updates/"]')
       .first()
@@ -83,7 +83,7 @@ test.describe('Family Hub section: update detail', () => {
       .catch(() => null);
     test.skip(!href, 'No update posts in the dataset to open.');
 
-    await page.goto(href!, { waitUntil: 'load' });
+    await page.goto(href!, { waitUntil: 'domcontentloaded' });
     await settle(page);
     await expect(page.locator('h1#hub-page-title')).toBeVisible();
     await expect(page.locator('section.bg-navy[aria-labelledby="hub-page-title"]')).toHaveCount(0);

@@ -17,7 +17,7 @@ const EXAMPLE = '/family-hub/example-committee';
 
 test.describe('Board-created hub page', () => {
   test('renders through the catch-all with the normal hub shell', async ({ page }) => {
-    await page.goto(EXAMPLE, { waitUntil: 'load' });
+    await page.goto(EXAMPLE, { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     // Same page header every hub page uses — a Board page is not a lesser page.
@@ -33,7 +33,7 @@ test.describe('Board-created hub page', () => {
   });
 
   test('renders its page-builder sections', async ({ page }) => {
-    await page.goto(EXAMPLE, { waitUntil: 'load' });
+    await page.goto(EXAMPLE, { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     // One heading per seeded section, proving the hub-safe palette works here.
@@ -49,7 +49,7 @@ test.describe('Board-created hub page', () => {
   });
 
   test('passes axe in light and dark', async ({ page }) => {
-    await page.goto(EXAMPLE, { waitUntil: 'load' });
+    await page.goto(EXAMPLE, { waitUntil: 'domcontentloaded' });
     await settle(page);
 
     for (const theme of ['light', 'dark'] as const) {
@@ -64,7 +64,7 @@ test.describe('Board-created hub page', () => {
 
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 900 });
-    await page.goto(EXAMPLE, { waitUntil: 'load' });
+    await page.goto(EXAMPLE, { waitUntil: 'domcontentloaded' });
     await settle(page);
     const overflows = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -74,7 +74,7 @@ test.describe('Board-created hub page', () => {
 
   test('an address with no page behind it is a 404, not an empty shell', async ({ page }) => {
     const res = await page.goto('/family-hub/definitely-not-a-real-page', {
-      waitUntil: 'load',
+      waitUntil: 'domcontentloaded',
     });
     expect(res?.status()).toBe(404);
   });
@@ -83,7 +83,7 @@ test.describe('Board-created hub page', () => {
     // Astro matches the static route first. If that ever changed, the Directory
     // — full of family PII — would be replaceable by anyone who could create a
     // hub page. Assert the real page is what answers.
-    await page.goto('/family-hub/directory', { waitUntil: 'load' });
+    await page.goto('/family-hub/directory', { waitUntil: 'domcontentloaded' });
     await settle(page);
     await expect(page.locator('h1#hub-page-title')).toHaveText(/Director/i);
   });

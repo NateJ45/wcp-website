@@ -117,7 +117,7 @@ const [settings, weather, airQuality, alert] = await Promise.all([
         budgetSheetId?: string;
         pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
       } | null>(
-        `*[_type == "siteSettings"][0]{ calendarFeedUrl, budgetSheetId, pastFundraisingTotals }`,
+        `*[_type == "hubSettings"][0]{ calendarFeedUrl, budgetSheetId, pastFundraisingTotals }`,
       );
     } catch {
       return null;

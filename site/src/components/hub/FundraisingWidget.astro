@@ -28,7 +28,7 @@ try {
   const settings = await sanityFetch<{
     budgetSheetId?: string | null;
     pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
-  } | null>(`*[_type == "siteSettings"][0]{ budgetSheetId, pastFundraisingTotals }`);
+  } | null>(`*[_type == "hubSettings"][0]{ budgetSheetId, pastFundraisingTotals }`);
   sheetId = settings?.budgetSheetId || budgetSheetIdFallback;
   const cmsLast = (settings?.pastFundraisingTotals ?? []).find((t) => typeof t.amount === 'number');
   if (cmsLast?.amount) lastYearRaised = cmsLast.amount;

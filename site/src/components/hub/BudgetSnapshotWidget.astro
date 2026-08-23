@@ -24,7 +24,7 @@ import { budgetSheetIdFallback } from '@/data/hub/live-links';
 let sheetId = budgetSheetIdFallback;
 try {
   sheetId =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].budgetSheetId`)) ||
+    (await sanityFetch<string | null>(`*[_type == "hubSettings"][0].budgetSheetId`)) ||
     budgetSheetIdFallback;
 } catch {
   sheetId = budgetSheetIdFallback;

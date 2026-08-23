@@ -33,7 +33,7 @@ import { payUrl } from '@/data/classes';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
 
-// The handbook link follows the Studio upload (Site Settings → School year),
+// The handbook link follows the Studio upload (Hub settings → Each year),
 // so the yearly re-upload never needs a code edit. The committed URL is the
 // fallback. Cached: no PII, changes once a year.
 let familyHandbookUrl = familyHandbookFallback;
@@ -134,7 +134,7 @@ try {
 let nextEvent: HubEvent | null = null;
 try {
   const feedUrl =
-    (await sanityFetch<string | null>(`*[_type == "siteSettings"][0].calendarFeedUrl`)) ||
+    (await sanityFetch<string | null>(`*[_type == "hubSettings"][0].calendarFeedUrl`)) ||
     calendarFeedUrlFallback;
   nextEvent = (await getUpcomingEvents(feedUrl))[0] ?? null;
 } catch {

@@ -113,7 +113,7 @@ working values as per-field fallbacks in `src/data/hub/live-links.ts`:
 > Since 2026-07-17 the feed also serves `end` + `description`, which light up the event
 > dialog's time ranges and details automatically.
 
-| Calendar subscribe buttons | built from `googleCalendarId` | Site Settings → **Google Calendar ID** |
+| Calendar subscribe buttons | built from `googleCalendarId` | Hub settings → **Google Calendar code** |
 | President's note (first-visit modal) | `presidentNote` singleton (live read) | Family Hub → **President's note** (bump the version stamp to re-show) |
 | "What we've raised together" band | past-year grand totals (Fundraising page navy band) | Site Settings → **Past fundraising totals** (add the just-ended year each fall) |
 
@@ -244,17 +244,17 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                                                                              |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Site Settings |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                           |
-| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                  |
-| Documents                     | `hubDocument` docs                                                                                                            |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                           |
-| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)                                                    |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                            |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                               |
-| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                    |
+| Section                       | Live data source                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Hub settings |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                          |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                 |
+| Documents                     | `hubDocument` docs                                                                                                           |
+| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                          |
+| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)                                                   |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                           |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                              |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                   |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -551,7 +551,7 @@ alphabetically by `familyName` (the surname). Every family is **fully editable i
 Family Hub → Directory**: family name, each parent (name + their own email + phone), each
 child (name + class), a family photo, the home address, the map pin, notes, and a "Show in
 directory" toggle. Adding a new family = create a `directoryEntry` and turn on "Show in
-directory". The **Map** is a Board on/off switch — **Site Settings → Connected services → "Show
+directory". The **Map** is a Board on/off switch — **Hub settings → Google connections → "Show
 the family directory map"** (`showDirectoryMap`, **off by default**). When off, the page shows
 just the List (no Map tab, and Leaflet never loads); when on, a **List / Map toggle** appears and
 the map is Leaflet + OpenStreetMap (no API key, no third-party tracker), plotting each family's
@@ -800,7 +800,7 @@ island) — the single album read rides the CDN cache, below the cost of an extr
 | Hub page                               | Fixed widget (locked)                                                                                                                                                                                                                                   | Already editable elsewhere                         |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Landing                                | Quick-link nav grids                                                                                                                                                                                                                                    | —                                                  |
-| Calendar (agenda + branded month grid) | Upcoming agenda (type-coloured) + full-year view: `HubCalendarGrid` month grid (desktop) / `HubCalendarSchedule` collapsible-month list (mobile); clicking an agenda card, grid day, or schedule row opens `HubEventDialog` (details + add-to-calendar) | `googleCalendarId` / feed in Site Settings         |
+| Calendar (agenda + branded month grid) | Upcoming agenda (type-coloured) + full-year view: `HubCalendarGrid` month grid (desktop) / `HubCalendarSchedule` collapsible-month list (mobile); clicking an agenda card, grid day, or schedule row opens `HubEventDialog` (details + add-to-calendar) | `googleCalendarId` / feed in Hub settings          |
 | Co-op Jobs                             | Role descriptions + tiered org chart                                                                                                                                                                                                                    | `coopRole` docs (holders: `org-holders.ts`)        |
 | Documents                              | Document library + required-forms callout                                                                                                                                                                                                               | `hubDocument` docs                                 |
 | Tuition                                | Pay-card + fee-card layout, payment FAQ                                                                                                                                                                                                                 | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
@@ -908,7 +908,7 @@ the change is additive.
 (Family Hub → Little delights) adds fun days and giggles on top of the committed kid-safe
 lists — a Board fun day wins over a committed one on the same date, and Board giggles join
 the deterministic daily pool. The Family Handbook button (topbar + hub home card) follows the
-PDF uploaded at Site Settings → School year → Family Handbook, with the committed URL as the
+PDF uploaded at Hub settings → Each year → Family Handbook, with the committed URL as the
 fallback, so the yearly re-upload needs no code edit.
 
 **The curriculum guides and the supply list are Board-editable** (2026-08-17): their content
