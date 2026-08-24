@@ -173,23 +173,62 @@ function BlockView({ block }: { block: GuideBlock }) {
           <RichText text={block.text} />
         </Text>
       );
+    // Steps and bullets draw their OWN markers (a numbered disc / a dot):
+    // @sanity/ui's Text carries a CSS reset that strips native ol/ul list
+    // markers, so semantic lists rendered as bare unnumbered lines (spotted by
+    // Nathan on the alert-banner guide, 2026-08-24). Explicit markers are
+    // reset-proof, and the numbered disc reads better anyway.
     case 'steps':
       return (
-        <Stack as="ol" space={3} paddingLeft={4}>
+        <Stack as="ol" space={3} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {block.items.map((item, i) => (
-            <Text as="li" key={i} size={2} style={{ lineHeight: 1.5 }}>
-              <RichText text={item} />
-            </Text>
+            <Flex as="li" key={i} gap={3} align="flex-start">
+              <span
+                aria-hidden
+                style={{
+                  background: '#e3eef7',
+                  color: '#166FA8',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              >
+                {i + 1}
+              </span>
+              <Text size={2} style={{ lineHeight: 1.6 }}>
+                <RichText text={item} />
+              </Text>
+            </Flex>
           ))}
         </Stack>
       );
     case 'bullets':
       return (
-        <Stack as="ul" space={3} paddingLeft={4}>
+        <Stack as="ul" space={3} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {block.items.map((item, i) => (
-            <Text as="li" key={i} size={2} style={{ lineHeight: 1.5 }}>
-              <RichText text={item} />
-            </Text>
+            <Flex as="li" key={i} gap={3} align="flex-start">
+              <span
+                aria-hidden
+                style={{
+                  background: '#166FA8',
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  marginTop: 8,
+                }}
+              />
+              <Text size={2} style={{ lineHeight: 1.6 }}>
+                <RichText text={item} />
+              </Text>
+            </Flex>
           ))}
         </Stack>
       );
