@@ -19,6 +19,7 @@ import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { HealthTool } from './src/sanity/components/HealthTool';
 import { SetupWizard } from './src/sanity/components/SetupWizard';
+import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
@@ -129,6 +130,12 @@ function workspace(opts: {
   structure: StructureResolver;
   /** Workspace switcher icon; defaults to the plain sun+cloud emblem. */
   icon?: ComponentType;
+  /** Where the Presentation tab opens (default: the public home preview).
+      The hub workspace points it at the hub home preview instead. */
+  previewInitial?: string;
+  /** Which page list the Presentation navigator (the Squarespace-style side
+      panel) shows: public `page` docs or hub `hubPage` docs. */
+  navigatorKind?: 'public' | 'hub';
   extraPlugins?: PluginOptions[];
   /** Extra Studio tools (navbar entries), e.g. the CSV export tool. */
   extraTools?: Tool[];
@@ -158,8 +165,17 @@ function workspace(opts: {
       presentationTool({
         resolve,
         previewUrl: {
-          initial: '/preview',
+          initial: opts.previewInitial ?? '/preview',
           previewMode: { enable: '/api/draft-mode/enable' },
+        },
+        // The Squarespace-style page list beside the preview: click a page,
+        // the preview jumps there and the edit panel follows.
+        components: {
+          unstable_navigator: {
+            component: makePreviewNavigator(opts.navigatorKind ?? 'public'),
+            minWidth: 160,
+            maxWidth: 280,
+          },
         },
       }),
       // Media library — a WordPress/Squarespace-style asset manager. Adds a
@@ -267,6 +283,8 @@ export default defineConfig([
     subtitle: 'Behind the family password',
     structure: hubStructure,
     icon: WcpHubWorkspaceIcon,
+    previewInitial: '/preview/family-hub/home',
+    navigatorKind: 'hub',
     // Clean up sits on the hub side: its biggest bulk-deletes are past RSVPs
     // and old sign-up responses (it also empties handled public messages —
     // one tool, one home).

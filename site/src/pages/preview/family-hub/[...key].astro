@@ -51,6 +51,9 @@ if (!page) {
   return new Response(`No hub page found for "${key}"`, { status: 404 });
 }
 const title = page.heading || page.title || key;
+
+// Navigation between hub pages lives in the Studio's navigator side panel
+// (src/sanity/components/PreviewNavigator.tsx), not in the page itself.
 ---
 
 <PreviewLayout
@@ -64,8 +67,9 @@ const title = page.heading || page.title || key;
     <p
       class="mb-6 rounded-[var(--radius)] border border-sky/40 bg-sky/10 px-4 py-3 text-sm text-ink"
     >
-      <strong>Family Hub page preview.</strong> This shows the parts you can edit — the heading, intro,
-      and sections. The hub's menu, top bar, and built-in widgets are not shown here (they are not editable).
+      <strong>Family Hub page preview.</strong> Pick a page in the list on the left, then click any text
+      here to edit it. This shows the parts you can edit — the heading, intro, and sections. The hub's
+      menu, top bar, and built-in widgets are not shown (they are not editable).
     </p>
     <h1 id="hub-preview-title" class="font-display text-4xl text-heading">{title}</h1>
     {page.intro && <p class="mt-3 max-w-2xl text-lg text-ink-muted">{page.intro}</p>}

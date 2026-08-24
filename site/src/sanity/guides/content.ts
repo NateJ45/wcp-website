@@ -204,7 +204,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Edit by clicking the page, like public pages.',
-        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, and the preview refreshes as you type. The preview shows the parts you can edit (heading, intro, sections); the fixed widgets and the hub menu around them are not shown, because they are not editable.',
+        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, and the preview refreshes as you type. A page list sits on the LEFT of the preview: click any page there to move to it, like flipping between pages in a site builder. The preview shows the parts you can edit (heading, intro, sections); the fixed widgets and the hub menu around them are not shown, because they are not editable.',
       },
       { kind: 'h', text: 'What you can change, and what stays put' },
       {
