@@ -24,7 +24,7 @@ const num = (v: string) => Number(String(v).replace(/[^0-9.]/g, '')) || 0;
 const bg = (section.background as 'white' | 'grey' | 'cream' | 'navy' | undefined) ?? 'navy';
 ---
 
-<Section bg={bg} seam={section.seam} label={section.ariaLabel as string}>
+<Section bg={bg} seam={section.seam} label={(section.ariaLabel as string) || 'By the numbers'}>
   {
     /* grid-cols-1 at base: wide stat values (e.g. "$67,165") have a min-content
       floor that overflows 320px in two columns. */

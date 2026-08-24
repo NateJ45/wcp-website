@@ -233,11 +233,7 @@ export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | ord
 export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
 export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;
 
-export const STAFF_QUERY = `*[_id == $id][0]{ name, honorific, role, years, email, pullQuote, bio }`;
-
-export const CLASS_FACTS_QUERY = `*[_id == $id][0]{ name, days, daysCount, time, age, classSizeCap, monthly, annual, studentFee }`;
-
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrolling, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, licenseAuthority, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, openingHours[]{ days, opens, closes } }`;
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
@@ -267,8 +263,6 @@ export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "hubSettings"][0].familyHan
 /** The hub home's numbers from Hub settings (family-count override). */
 export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount }`;
 
-export const SITE_SETTINGS_PARKING_NOTE_QUERY = `*[_type == "siteSettings"][0].parkingNote`;
-
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
 export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`;
 
@@ -296,7 +290,7 @@ export const DIRECTORY_FAMILY_COUNT_QUERY = `count(*[_type == "directoryEntry" &
  * lines, so the summary can never disagree with the table.
  */
 export const OPERATING_BUDGET_QUERY = `*[_type == "operatingBudget"][0]{
-  year, priorYear, enrollment, netNote, source,
+  year, enrollment, netNote, source,
   groups[]{ label, kind, icon, lines[]{ label, now, was, note } }
 }`;
 
@@ -403,8 +397,6 @@ export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
 // fallback keeps not-yet-ranked docs at the end of their category, tie-broken
 // by the legacy `order` number so pre-drag content keeps today's order.
 export const FAQ_ITEMS_QUERY = `*[_type == "faqItem"] | order(category asc, coalesce(orderRank, "~") asc, order asc){ question, answer, category, order }`;
-
-export const LEGAL_PAGE_LAST_UPDATED_QUERY = `*[_type == "legalPage" && slug == $slug][0].lastUpdated`;
 
 /** Testimonials query is shaped by which optional filters are in play. */
 export function testimonialsQuery(

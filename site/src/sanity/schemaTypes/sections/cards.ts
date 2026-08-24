@@ -86,11 +86,12 @@ export const statBandSection = defineType({
       name: 'ariaLabel',
       title: 'Section label (for screen readers)',
       type: 'string',
+      // Optional since 2026-08-23 (field audit): a required screen-reader
+      // string is not parent work; the renderer falls back to "By the
+      // numbers".
       description:
-        'A short name a screen reader announces for this band. Visitors don’t see it, e.g. "West Chester Preschool by the numbers".',
+        'A short name a screen reader announces for this band. Visitors don’t see it. Blank uses "By the numbers".',
       initialValue: 'By the numbers',
-      validation: (R) =>
-        R.required().error('Add a short label so screen readers can announce this band.'),
     }),
     defineField({
       name: 'stats',

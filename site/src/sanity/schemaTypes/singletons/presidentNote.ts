@@ -28,11 +28,11 @@ export const presidentNote = defineType({
     }),
     defineField({
       name: 'version',
-      title: 'Version stamp',
+      title: 'Show the letter again to everyone',
       type: 'string',
       group: 'showing',
       description:
-        'Change this (e.g. "2027-28-welcome") whenever the letter is rewritten, so families who dismissed the old one see the new one.',
+        'Families see the letter once, then it stays closed. When you rewrite it for a new year, type anything new here (e.g. "2027-28-welcome") and everyone sees the new letter once.',
       validation: (R) =>
         R.required().error('Give the letter a version stamp, e.g. "2026-27-welcome".'),
     }),

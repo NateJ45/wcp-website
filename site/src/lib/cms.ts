@@ -1,8 +1,6 @@
 import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 import {
-  STAFF_QUERY,
-  CLASS_FACTS_QUERY,
   SITE_SETTINGS_QUERY,
   SITE_SETTINGS_SEASON_QUERY,
   SCHOOL_YEAR_EVENTS_QUERY,
@@ -102,37 +100,8 @@ export function toParagraphs(blocks?: PortableBlock[]): string[] {
     .filter(Boolean);
 }
 
-export interface StaffDoc {
-  name: string;
-  honorific?: string;
-  role?: string;
-  years?: string;
-  email?: string;
-  pullQuote?: string;
-  bio?: PortableBlock[];
-}
-
-/** Fetch one staff member by document id (e.g. "staff-erin"), for a teacher card. */
-export async function getStaff(id: string): Promise<StaffDoc | null> {
-  return cmsFetch<StaffDoc | null>(STAFF_QUERY, { id }, null);
-}
-
-export interface ClassFactsDoc {
-  name: string;
-  days?: string;
-  daysCount?: string;
-  time?: string;
-  age?: string;
-  classSizeCap?: number;
-  monthly?: string;
-  annual?: string;
-  studentFee?: string;
-}
-
-/** Fetch one class's schedule/tuition facts by document id (e.g. "class-twos"). */
-export async function getClassFacts(id: string): Promise<ClassFactsDoc | null> {
-  return cmsFetch<ClassFactsDoc | null>(CLASS_FACTS_QUERY, { id }, null);
-}
+// (getStaff / getClassFacts and their queries were dead code — zero callers —
+// removed 2026-08-23 with the field audit; see docs/FIELD_AUDIT.md.)
 
 export interface ClassCardItem {
   name: string;
@@ -181,7 +150,6 @@ export async function getTestimonials(
 
 interface SiteSettingsDoc {
   name?: string;
-  shortName?: string;
   founded?: number;
   tagline?: string;
   url?: string;
@@ -195,7 +163,6 @@ interface SiteSettingsDoc {
   zip?: string;
   parkingNote?: string;
   schoolYearLabel?: string;
-  enrolling?: boolean;
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
@@ -204,7 +171,6 @@ interface SiteSettingsDoc {
   googleReviews?: number;
   googleUrl?: string;
   license?: string;
-  licenseAuthority?: string;
 }
 
 /**
@@ -239,7 +205,6 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
   return {
     ...f,
     name: doc.name ?? f.name,
-    shortName: doc.shortName ?? f.shortName,
     founded: doc.founded ?? f.founded,
     tagline: doc.tagline ?? f.tagline,
     url: doc.url ?? f.url,
@@ -251,6 +216,11 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       zip: doc.zip ?? f.address.zip,
     },
     phone: doc.phone ?? f.phone,
+    // The parking blurb on the contact block. The component keeps its own
+    // committed default, so this is only set when the Board wrote one.
+    // (Was queried but never mapped — the field silently did nothing until
+    // 2026-08-23, see docs/FIELD_AUDIT.md.)
+    parkingNote: doc.parkingNote,
     email: {
       ...f.email,
       general: doc.emailGeneral ?? f.email.general,
@@ -258,7 +228,6 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       treasurer: doc.emailTreasurer ?? f.email.treasurer,
     },
     license: doc.license ?? f.license,
-    licenseAuthority: doc.licenseAuthority ?? f.licenseAuthority,
     calendar: doc.closureStatement ?? f.calendar,
     social: {
       ...f.social,

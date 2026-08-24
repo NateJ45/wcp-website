@@ -42,6 +42,9 @@ export const venue = defineType({
       name: 'isPrimary',
       title: 'This is the main school building',
       type: 'boolean',
+      // Future-use flag nothing reads yet; hidden until a second campus
+      // exists (field audit 2026-08-23).
+      hidden: true,
       initialValue: false,
       description: 'Turn on for the school’s own campus. (For future use as the school grows.)',
     }),

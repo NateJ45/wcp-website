@@ -142,7 +142,10 @@ export const heroObject = defineType({
       type: 'file',
       options: { accept: 'video/webm' },
       group: 'media',
-      hidden: ({ parent }) => parent?.mediaType !== 'video',
+      // Hidden 2026-08-23 (field audit): asking a volunteer for a second
+      // video ENCODING is developer work; the home hero's existing WebM
+      // keeps rendering. A developer can re-show this when needed.
+      hidden: true,
     }),
   ],
   preview: {

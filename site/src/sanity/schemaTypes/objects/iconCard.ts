@@ -16,6 +16,9 @@ export const iconCard = defineType({
       name: 'chip',
       title: 'Icon colour',
       type: 'string',
+      // Hidden 2026-08-23 (field audit): icon-tint decoration; the Act II
+      // grammar re-expresses card grids anyway. Existing values render.
+      hidden: true,
       options: {
         list: [
           { title: 'Sky', value: 'sky' },

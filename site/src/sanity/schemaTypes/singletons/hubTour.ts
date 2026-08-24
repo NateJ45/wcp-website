@@ -38,7 +38,7 @@ export const hubTour = defineType({
   icon: () => '🎈',
   groups: [
     { name: 'settings', title: 'On/off & version', default: true },
-    { name: 'steps', title: 'Step wording' },
+    { name: 'steps', title: 'Step wording (optional — blank uses the built-in words)' },
   ],
   fields: [
     defineField({
@@ -51,11 +51,11 @@ export const hubTour = defineType({
     }),
     defineField({
       name: 'version',
-      title: 'Version stamp',
+      title: 'Show the tour again to everyone',
       type: 'string',
       group: 'settings',
       description:
-        'The tour opens once per version, per device. Change this text (e.g. "2027-28") and every family sees the tour one more time. Do this when the hub changes a lot.',
+        'Families see the tour once, then it stays closed. To show it one more time to everyone (after the hub changes a lot), type anything new here — the new school year, e.g. "2027-28", works well.',
       initialValue: '2026-27-v1',
       validation: (R) => R.required().error('The tour needs a version stamp.'),
     }),

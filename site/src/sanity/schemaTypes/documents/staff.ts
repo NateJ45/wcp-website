@@ -38,7 +38,9 @@ export const staff = defineType({
       group: 'identity',
       description: 'e.g. "Threes & Twos Teacher" or "Administrator".',
     }),
+    // DEAD (field audit 2026-08-23): its only query lost all callers. Hidden.
     defineField({
+      hidden: true,
       name: 'years',
       title: 'Years at WCP',
       type: 'string',
@@ -59,7 +61,9 @@ export const staff = defineType({
       options: { hotspot: true },
       group: 'identity',
     }),
+    // DEAD (field audit 2026-08-23): its only query lost all callers. Hidden.
     defineField({
+      hidden: true,
       name: 'pullQuote',
       title: 'Short quote',
       type: 'text',

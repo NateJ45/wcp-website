@@ -28,10 +28,15 @@ export const sectionHeader = defineType({
       rows: 2,
       description: 'A sentence under the heading.',
     }),
+    // Hidden 2026-08-23 (field audit): only 14 of 40 section bridges ever
+    // honoured it, so the radio silently did nothing on most sections —
+    // worse than no control. Centered is the page rhythm; the 3 live
+    // left-aligned headers keep rendering where they already worked.
     defineField({
       name: 'align',
       title: 'Alignment',
       type: 'string',
+      hidden: true,
       options: {
         list: [
           { title: 'Centered', value: 'center' },

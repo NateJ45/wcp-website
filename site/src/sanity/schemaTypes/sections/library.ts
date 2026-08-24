@@ -307,11 +307,14 @@ export const tuitionTableSection = defineType({
       type: 'sectionHeader',
       group: 'content',
     }),
+    // Hidden 2026-08-23 (field audit): an invisible screen-reader duplicate
+    // of the visible heading; the renderer already has a sensible default.
     defineField({
       name: 'caption',
       title: 'Table caption (for screen readers)',
       type: 'string',
       group: 'content',
+      hidden: true,
     }),
     defineField({
       name: 'callout',

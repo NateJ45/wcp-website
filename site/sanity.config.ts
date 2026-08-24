@@ -93,7 +93,7 @@ const USED_ON_TYPES = [
 ];
 
 const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => {
-  if (['page', 'post', 'legalPage', 'newsletterIssue'].includes(schemaType)) {
+  if (['page', 'post', 'newsletterIssue'].includes(schemaType)) {
     return S.document().views([
       S.view.form(),
       S.view
@@ -193,12 +193,14 @@ function workspace(opts: {
         return prev;
       },
       // Keep singletons AND trashedItem out of the global "create new" menu
-      // (you never hand-author a trash receipt).
+      // (you never hand-author a trash receipt, and legalPage is retired —
+      // see docs/FIELD_AUDIT.md).
       newDocumentOptions: (prev, { creationContext }) =>
         creationContext.type === 'global'
           ? prev.filter(
               (option) =>
-                !SINGLETON_TYPES.has(option.templateId) && option.templateId !== 'trashedItem',
+                !SINGLETON_TYPES.has(option.templateId) &&
+                !['trashedItem', 'legalPage', 'venue'].includes(option.templateId),
             )
           : prev,
     },

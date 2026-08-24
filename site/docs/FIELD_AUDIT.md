@@ -18,42 +18,42 @@ When everything in a section is done, collapse the section to a one-line
 - [x] Hero internal-page buttons resolved to "/" — the hero projection never
       dereferenced `actions[].page` (sections had it). Live on /safety.
       FIXED `ffd04d9`.
-- [ ] `videoSection.thumbnail` never renders: `VideoSection.astro:65` tests
+- [x] (FIXED 2026-08-23) `videoSection.thumbnail` never renders: `VideoSection.astro:65` tests
       `cover?.asset` but the figureImage's asset lives at `cover.image.asset`
       (compare AlbumSection.astro:31-37). An upload field that silently does
       nothing.
-- [ ] `siteSettings.parkingNote` edits do nothing: queried and typed, but
+- [x] (FIXED 2026-08-23 — wired into both mappers) `siteSettings.parkingNote` edits do nothing: queried and typed, but
       `getSiteSettings()` (cms.ts) never copies it into the returned object,
       so `ContactDetailsSection.astro:69` always sees undefined. Either wire
       it or delete the field.
-- [ ] `sectionHeader.align` works on only 14 of 40 section bridges — the other
+- [x] (RESOLVED 2026-08-23 — control hidden; existing values render) `sectionHeader.align` works on only 14 of 40 section bridges — the other
       20 destructure `{eyebrow,title,lead}` and drop it. Add the prop to the
       20 bridges (makes the existing control honest), or remove the field.
-- [ ] `scripts/generate-curriculum.mjs:582` projects `standardsNote` from
+- [x] (FIXED 2026-08-23 — projection removed) `scripts/generate-curriculum.mjs:582` projects `standardsNote` from
       curriculumGuide — no such schema field exists; always null. Delete the
       projection or add the field.
 
 ## DEAD — no consumer anywhere (29 fields). Hide or delete.
 
-- [ ] **`legalPage` — the entire type (6 fields).** Policy pages are
+- [x] (DONE 2026-08-23 — deprecated, out of nav + create menu; the 3 orphan docs remain, findable via search, for Nathan to empty) **`legalPage` — the entire type (6 fields).** Policy pages are
       page-builder `page` docs now; nothing renders legalPage, but it still
       sits in the Pages folder and 3 orphan docs exist in the dataset. Retire:
       drop from structure + Pages folder, archive the 3 docs, mark the schema
       deprecated (keep registered so the orphans stay openable until emptied).
-- [ ] `class`: `icon`, `tagline`, `daysCount`, `classSizeCap`,
+- [x] (DONE 2026-08-23 — all 7 hidden; getClassFacts deleted) `class`: `icon`, `tagline`, `daysCount`, `classSizeCap`,
       `dailySchedule`, `heroImage`, `whatTheyLearn` (7 of 23 fields).
       `daysCount`/`classSizeCap` die via the caller-less `getClassFacts()`
       (cms.ts:133) — delete that function too.
-- [ ] `staff.years`, `staff.pullQuote` — die via caller-less `getStaff()`
+- [x] (DONE 2026-08-23 — hidden; getStaff deleted) `staff.years`, `staff.pullQuote` — die via caller-less `getStaff()`
       (cms.ts:116); delete the function too.
-- [ ] `siteSettings.shortName`, `siteSettings.enrolling` (superseded by
+- [x] (DONE 2026-08-23 — all 3 hidden + out of the query) `siteSettings.shortName`, `siteSettings.enrolling` (superseded by
       `enrollmentMode`), `siteSettings.licenseAuthority`.
-- [ ] `post.featured` (nothing reads it; 0 docs set it),
+- [x] (DONE 2026-08-23 — featured/priorYear/ctaSection.seam removed, isPrimary hidden; KEPT: newsletterIssue.emailedAt as workflow metadata, redirect.note + roleHolder.note as deliberate note-to-self memo fields) `post.featured` (nothing reads it; 0 docs set it),
       `newsletterIssue.emailedAt` (Studio preview only — could stay as
       metadata if wanted), `venue.isPrimary`, `redirect.note`,
       `roleHolder.note`, `operatingBudget.priorYear`, `ctaSection.seam`
       (SectionRenderer overwrites it unconditionally).
-- [ ] Dead query exports riding along: `LEGAL_PAGE_LAST_UPDATED_QUERY`,
+- [x] (DONE 2026-08-23) Dead query exports riding along: `LEGAL_PAGE_LAST_UPDATED_QUERY`,
       `SITE_SETTINGS_PARKING_NOTE_QUERY` (no importers).
 
 ## QUESTIONABLE from pass 1 (~50 fields, five themes)
@@ -119,34 +119,34 @@ is wrong; keep).
 
 ### The agreed slimming plan (awaiting go-ahead)
 
-- [ ] **`bandFields.compact` → hidden.** One edit in objects/_shared.ts hides
+- [x] (DONE 2026-08-23) **`bandFields.compact` → hidden.** One edit in objects/_shared.ts hides
       it on ~37 section forms (the single biggest win: most "Appearance" tabs
       drop to one background radio). Keep rendering it — 1 live use survives.
-- [ ] **hubTour's 16 wording overrides → one collapsed "Advanced wording"
+- [x] (DONE 2026-08-23 — the 16 were already behind a Step-wording tab; tab retitled optional, version reworded) **hubTour's 16 wording overrides → one collapsed "Advanced wording"
       fieldset** (keep switch + version at top level).
-- [ ] **`sectionHeader.align` → hidden** (works on only 14/40 bridges anyway;
+- [x] (DONE 2026-08-23) **`sectionHeader.align` → hidden** (works on only 14/40 bridges anyway;
       3 live non-center uses keep rendering).
-- [ ] **announcement `placement` + `pages` → collapsed "Advanced" fieldset**
+- [x] (DONE 2026-08-23 — already isolated in their "Where it shows" tab; no further change needed) **announcement `placement` + `pages` → collapsed "Advanced" fieldset**
       (0 uses; the capability was a design ask, keep it reachable).
-- [ ] **Hide the four decorative pickers:** schoolYearEvent.accent,
+- [x] (DONE 2026-08-23) **Hide the four decorative pickers:** schoolYearEvent.accent,
       operatingBudget.groups[].icon, iconCard.chip, heroObject.videoWebm
       (expert encoding; the one live use keeps rendering).
-- [ ] **Make readOnly:** directoryEntry.location (script-derived geopoint),
+- [x] (PARTIAL 2026-08-23 — the three version fields reworded to plain language; directoryEntry.location KEPT editable: PENDING.md documents the hand-nudge workflow for imprecise OSM pins) **Make readOnly:** directoryEntry.location (script-derived geopoint),
       teacherNote.version → keep but reword title/description to plain
       language ("Letter version — change it when you rewrite the letter so
       families see it again"), same rewording for presidentNote.version,
       hubTour.version, announcement.version.
-- [ ] **statBandSection.ariaLabel → optional with renderer fallback** to the
+- [x] (DONE 2026-08-23 — optional + renderer fallback) **statBandSection.ariaLabel → optional with renderer fallback** to the
       first stat label (required screen-reader string is not parent work).
-- [ ] **tuitionTableSection.caption → hidden** (sr-only duplicate of heading).
-- [ ] KEEP despite flags (data or judgment): closureAlert.linkLabel/linkUrl
+- [x] (DONE 2026-08-23) **tuitionTableSection.caption → hidden** (sr-only duplicate of heading).
+- [x] (RECORDED 2026-08-23) KEEP despite flags (data or judgment): closureAlert.linkLabel/linkUrl
       (live value), event.recurrence (built July 2026 for board meetings; 0
       current but cheap + seasonal), post/newsletter SEO trios (0 uses but
       already tucked in the SEO tab — no crowding), siteMicrocopy + hubHints
       overrides (the whole point of those singletons; small forms),
       cardGridSection.columns/layout, testimonialSection.layout + confetti
       (live uses), directoryEntry.notes (judgment: keep, PII-reviewed field).
-- [ ] **event.venue**: 0 uses and duplicates the plain location field —
+- [x] (DONE 2026-08-23 — hidden; venue left the Community menu + create menu, type registered) **event.venue**: 0 uses and duplicates the plain location field —
       collapse into an "Advanced" fieldset or hide until a real second-campus
       need exists (the venue type stays).
 

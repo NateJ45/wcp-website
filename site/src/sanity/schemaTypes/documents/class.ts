@@ -1,6 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
-import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Class / Program
@@ -19,7 +18,6 @@ export const classType = defineType({
     { name: 'basics', title: 'Basics' },
     { name: 'schedule', title: 'Schedule & ages' },
     { name: 'tuition', title: 'Tuition & payment' },
-    { name: 'details', title: 'Page details' },
   ],
   fields: [
     // Basics
@@ -40,10 +38,10 @@ export const classType = defineType({
       description: 'The web address piece, e.g. "twos". Click Generate.',
       validation: (R) => R.required().error('Click Generate to give this class a web address.'),
     }),
-    iconField('icon', {
-      group: 'basics',
-      description: 'The little picture shown next to this class (optional).',
-    }),
+    // DEAD (field audit 2026-08-23): nothing renders a class icon — the hub
+    // deliberately reads its icons from src/data/classes.ts. Hidden, not
+    // removed, so old documents keep validating. See docs/FIELD_AUDIT.md.
+    defineField({ name: 'icon', title: 'Icon', type: 'string', hidden: true }),
     defineField({
       name: 'color',
       title: 'Class color',
@@ -61,13 +59,10 @@ export const classType = defineType({
       },
       initialValue: 'sky',
     }),
-    defineField({
-      name: 'tagline',
-      title: 'Tagline',
-      type: 'string',
-      group: 'basics',
-      description: 'A short positioning line, e.g. "A gentle first taste of school".',
-    }),
+    // DEAD (field audit 2026-08-23): the hub class page reads its tagline
+    // from src/data/classes.ts, and no query projects this. Hidden so old
+    // documents keep validating. See docs/FIELD_AUDIT.md.
+    defineField({ name: 'tagline', title: 'Tagline', type: 'string', hidden: true }),
     defineField({
       name: 'teacher',
       title: 'Teacher',
@@ -101,12 +96,12 @@ export const classType = defineType({
       group: 'schedule',
       description: 'e.g. "Thursdays" or "Mon, Tue, Wed".',
     }),
+    // DEAD (field audit 2026-08-23): its only query lost all callers. Hidden.
     defineField({
       name: 'daysCount',
       title: 'Days per week (label)',
       type: 'string',
-      group: 'schedule',
-      description: 'e.g. "1 day per week".',
+      hidden: true,
     }),
     defineField({
       name: 'time',
@@ -122,19 +117,15 @@ export const classType = defineType({
       group: 'schedule',
       description: 'e.g. "Age 2 by Sept 30".',
     }),
-    defineField({
-      name: 'classSizeCap',
-      title: 'Max class size',
-      type: 'number',
-      group: 'schedule',
-      description: 'The largest number of children in this class.',
-    }),
+    // DEAD (field audit 2026-08-23): its only query lost all callers. Hidden.
+    defineField({ name: 'classSizeCap', title: 'Max class size', type: 'number', hidden: true }),
+    // DEAD (field audit 2026-08-23): class-page day flow renders through the
+    // scheduleSection on the page itself, never from this field. Hidden.
     defineField({
       name: 'dailySchedule',
       title: 'A day in this class',
       type: 'array',
-      group: 'schedule',
-      description: 'The daily flow shown on the class page (optional).',
+      hidden: true,
       of: [
         defineArrayMember({
           type: 'object',
@@ -188,21 +179,22 @@ export const classType = defineType({
         'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). This is the ONLY place it is set — the Tuition page’s student-fee button reads it from here. Classes sharing an amount AND this link are shown as one button. Changing this changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
 
-    // Page details
+    // DEAD (field audit 2026-08-23): the class page's hero and learning cards
+    // come from its page-builder doc, not these fields. Hidden (heroImage
+    // still feeds the Studio list thumbnail via preview.media).
     defineField({
       name: 'heroImage',
       title: 'Hero photo',
       type: 'image',
       options: { hotspot: true },
-      group: 'details',
+      hidden: true,
     }),
     defineField({
       name: 'whatTheyLearn',
       title: 'What they learn',
       type: 'array',
       of: [defineArrayMember({ type: 'iconCard' })],
-      group: 'details',
-      description: 'The learning-focus cards shown on the class page.',
+      hidden: true,
     }),
     // Legacy manual sort — superseded by drag-to-reorder (orderRank), hidden.
     defineField({

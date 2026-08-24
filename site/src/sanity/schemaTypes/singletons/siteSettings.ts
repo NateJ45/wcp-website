@@ -31,8 +31,10 @@ export const siteSettings = defineType({
       validation: (R) =>
         R.required().error('The school name appears everywhere — it can’t be blank.'),
     }),
+    // DEAD (field audit 2026-08-23): no renderer reads it. Hidden.
     defineField({
       name: 'shortName',
+      hidden: true,
       title: 'Short name',
       description: 'The abbreviation, e.g. "WCP".',
       type: 'string',
@@ -133,8 +135,10 @@ export const siteSettings = defineType({
       group: 'year',
       description: 'e.g. "2026-27". Appears in eyebrows and headings site-wide.',
     }),
+    // DEAD (field audit 2026-08-23): no renderer reads it. Hidden.
     defineField({
       name: 'enrolling',
+      hidden: true,
       title: 'Currently enrolling?',
       type: 'boolean',
       group: 'year',
@@ -333,8 +337,10 @@ export const siteSettings = defineType({
       group: 'legal',
       description: 'e.g. "Licensed under Ohio Day Care Licensing Code 5101:2-12".',
     }),
+    // DEAD (field audit 2026-08-23): no renderer reads it. Hidden.
     defineField({
       name: 'licenseAuthority',
+      hidden: true,
       title: 'Licensing authority',
       type: 'string',
       group: 'legal',

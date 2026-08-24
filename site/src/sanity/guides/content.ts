@@ -719,7 +719,7 @@ export const guides: Guide[] = [
           'Give it a title and pick the **Starts** date and time. Add an **Ends** time if it has one.',
           'Turn on **All-day** for something without a set time (like a closure).',
           'For a repeating event (a weekly class, a monthly meeting), set **Does it repeat?** and, if you like, a **Repeat until** date. The page shows the upcoming dates automatically.',
-          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want. For a place you use often, pick a **Saved location** instead of retyping the address (add these under Community & content → Locations / venues in the Public website workspace).',
+          'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want.',
           '**Publish**. Visitors get an "Add to calendar" button automatically.',
         ],
       },

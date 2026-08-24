@@ -84,14 +84,10 @@ export const ctaSection = defineType({
       },
       initialValue: 'navy',
     }),
-    defineField({
-      name: 'seam',
-      title: 'Cloud seam at top',
-      type: 'boolean',
-      description:
-        'Adds the soft cloud divider at the top of this band. Use where the color changes from the section above.',
-      initialValue: true,
-    }),
+    // (`seam` removed 2026-08-23 — SectionRenderer computes the seam from
+    // the neighbouring band colours and overwrote this toggle on every
+    // render; docs/FIELD_AUDIT.md. Same reasoning as bandFields, which shed
+    // its seam toggle earlier.)
     defineField({
       name: 'actions',
       title: 'Buttons',

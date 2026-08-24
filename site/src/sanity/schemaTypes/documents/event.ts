@@ -74,6 +74,9 @@ export const event = defineType({
       title: 'Saved location (optional)',
       type: 'reference',
       to: [{ type: 'venue' }],
+      // Hidden 2026-08-23 (field audit): zero uses, and the plain location
+      // field below covers it. Re-show when a real second campus exists.
+      hidden: true,
       description:
         'Pick a saved place (a second campus, a field-trip spot). Leave blank to type an address below or use the school.',
     }),

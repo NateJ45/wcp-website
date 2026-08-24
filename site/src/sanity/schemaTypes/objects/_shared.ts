@@ -210,11 +210,14 @@ export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy
     // is now placed automatically by the site (SectionRenderer computes it from
     // the colours of adjacent bands), so it always lands in the right spot and
     // is never a knob a board member has to reason about. Nothing to do here.
+    // Hidden 2026-08-23 (field audit): 1 of 173 live sections had ever set
+    // it, and an invisible padding tweak doubled the appearance form on ~37
+    // section types. Still rendered, so that one use is unchanged.
     defineField({
       name: 'compact',
       title: 'Tighter spacing',
       type: 'boolean',
-      description: 'Reduces the vertical padding of this band.',
+      hidden: true,
       initialValue: false,
     }),
   ];

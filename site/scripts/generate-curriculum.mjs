@@ -579,7 +579,9 @@ async function fetchStudioCurricula() {
     })();
   if (!token) return null;
   const query = encodeURIComponent(
-    '*[_type == "curriculumGuide"]{ "slug": class, kicker, title, intro, standardsNote, sections, conceptual }',
+    // (standardsNote was projected here for a schema field that never
+    // existed — removed 2026-08-23, see docs/FIELD_AUDIT.md.)
+    '*[_type == "curriculumGuide"]{ "slug": class, kicker, title, intro, sections, conceptual }',
   );
   const res = await fetch(
     `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,

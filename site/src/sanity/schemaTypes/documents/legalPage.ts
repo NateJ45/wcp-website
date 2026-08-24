@@ -1,11 +1,16 @@
 import { defineType, defineField } from 'sanity';
 
-// Accessibility / Privacy / Terms — long-form policy pages.
+// RETIRED (2026-08-23, field audit): the policy pages (Accessibility /
+// Privacy / Terms) are page-builder `page` docs now, and nothing renders this
+// type. It stays registered ONLY so the three orphan documents in the dataset
+// remain openable (Studio search) until someone empties them; it is out of
+// the left-nav, the create menu, and every query. See docs/FIELD_AUDIT.md.
 export const legalPage = defineType({
   name: 'legalPage',
-  title: 'Legal Page',
+  title: 'Legal Page (old, unused)',
   type: 'document',
   icon: () => '📜',
+  deprecated: { reason: 'Policy pages moved into the page builder; this type renders nowhere.' },
   fields: [
     defineField({
       name: 'title',

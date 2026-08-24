@@ -31,7 +31,7 @@ import { env } from 'cloudflare:workers';
 import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 
-const LISTEN_QUERY = '*[_id in [$pageId, $draftId] || !(_type in ["page", "legalPage"])]';
+const LISTEN_QUERY = '*[_id in [$pageId, $draftId] || !(_type in ["page"])]';
 
 export const GET: APIRoute = async ({ cookies, url }) => {
   // Same draft-mode gate as the preview pages themselves: only a browser that

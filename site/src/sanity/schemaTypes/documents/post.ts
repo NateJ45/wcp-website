@@ -95,13 +95,8 @@ export const post = defineType({
       type: 'postBody',
       group: 'content',
     }),
-    defineField({
-      name: 'featured',
-      title: 'Feature on the homepage?',
-      type: 'boolean',
-      group: 'content',
-      initialValue: false,
-    }),
+    // (`featured` removed 2026-08-23 — the toggle promised a homepage
+    // feature that never existed and nothing read it; docs/FIELD_AUDIT.md.)
     defineField({
       name: 'seoTitle',
       title: 'Browser tab / search title (optional)',

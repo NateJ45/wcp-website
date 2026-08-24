@@ -23,8 +23,11 @@ const titleId = titleIdFor(section);
 const hasHeader = Boolean(header?.title);
 
 const video = parseVideo(section.videoUrl as string | undefined);
-const cover = section.thumbnail as SanityImageValue | undefined;
-const coverAlt = (cover?.alt as string) ?? '';
+// thumbnail is a figureImage: { image, alt, caption } — the asset lives at
+// .image.asset, not at the top level (same unwrap as AlbumSection).
+const coverFigure = section.thumbnail as { image?: SanityImageValue; alt?: string } | undefined;
+const cover = coverFigure?.image;
+const coverAlt = coverFigure?.alt ?? '';
 const ytThumb = video.thumbnailUrl;
 const label = `Play video${header?.title ? `: ${header.title}` : ''}`;
 ---

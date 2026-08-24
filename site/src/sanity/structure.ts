@@ -111,21 +111,15 @@ function moneyGroup(S: StructureBuilder) {
     );
 }
 
-// Pages — the page builder (every public page as a stack of sections), plus
-// the simple long-form legal pages.
+// Pages — the page builder (every public page as a stack of sections). The
+// policy pages are ordinary builder pages too, so this is one flat list.
+// (`legalPage` was retired 2026-08-23 — see docs/FIELD_AUDIT.md; the id
+// 'pages' is load-bearing: the Welcome pane deep-links to it.)
 function pagesGroup(S: StructureBuilder) {
-  return S.listItem()
-    .title('Pages')
+  return S.documentTypeListItem('page')
     .id('pages')
-    .icon(emoji('📄'))
-    .child(
-      S.list()
-        .title('Pages')
-        .items([
-          S.documentTypeListItem('page').title('Pages (section builder)').icon(emoji('🧱')),
-          S.documentTypeListItem('legalPage').title('Legal pages').icon(emoji('📜')),
-        ]),
-    );
+    .title('Pages (section builder)')
+    .icon(emoji('🧱'));
 }
 
 // Form submissions — an inbox grouped BY FORM, not one flat pile. The folders
@@ -358,7 +352,8 @@ export const publicStructure: StructureResolver = (S, context) =>
                 icon: emoji('📁'),
               }),
               S.documentTypeListItem('photoAlbum').title('Photo albums').icon(emoji('📸')),
-              S.documentTypeListItem('venue').title('Locations / venues').icon(emoji('📍')),
+              // ('venue' left the menu 2026-08-23 with event.venue hidden —
+              // zero uses; the type stays registered. docs/FIELD_AUDIT.md.)
             ]),
         ),
 

@@ -29,6 +29,9 @@ export const schoolYearEvent = defineType({
       name: 'accent',
       title: 'Accent color',
       type: 'string',
+      // Hidden 2026-08-23 (field audit): a decorative palette pick with no
+      // editorial meaning in a brand-locked system. Existing values render.
+      hidden: true,
       options: {
         list: [
           { title: 'Amber', value: 'amber' },

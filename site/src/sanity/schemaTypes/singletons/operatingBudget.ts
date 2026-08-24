@@ -77,13 +77,7 @@ export const operatingBudget = defineType({
       description: 'e.g. "2026-27". Shown in the heading.',
       validation: (R) => R.required(),
     }),
-    defineField({
-      name: 'priorYear',
-      title: 'Comparison year',
-      type: 'string',
-      group: 'year',
-      description: 'e.g. "2025-26" — the year the "Last year" column refers to.',
-    }),
+    // (`priorYear` removed 2026-08-23 — never rendered; docs/FIELD_AUDIT.md.)
     defineField({
       name: 'enrollment',
       title: 'Enrolment assumption',
@@ -146,6 +140,9 @@ export const operatingBudget = defineType({
               name: 'icon',
               title: 'Icon',
               type: 'string',
+              // Hidden 2026-08-23 (field audit): decoration on a financial
+              // table; the income/cost kind already carries the meaning.
+              hidden: true,
               description: 'Small icon on the section header.',
               options: {
                 list: [

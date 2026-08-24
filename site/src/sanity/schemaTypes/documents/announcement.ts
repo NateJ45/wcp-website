@@ -222,11 +222,11 @@ export const announcement = defineType({
     }),
     defineField({
       name: 'version',
-      title: 'Version stamp',
+      title: 'Show the popup again to everyone',
       type: 'string',
       group: 'popup',
       description:
-        'Change this (e.g. "v2") after editing to show the popup again to people who already dismissed it.',
+        'People who closed the popup never see it again. After a big edit, type anything new here (e.g. "v2") and everyone sees it one more time.',
       hidden: ({ parent }) => parent?.format !== 'popup',
     }),
     defineField({

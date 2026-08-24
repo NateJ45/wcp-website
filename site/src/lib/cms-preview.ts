@@ -87,7 +87,6 @@ export async function previewFetch<T>(
 
 interface SiteSettingsDoc {
   name?: string;
-  shortName?: string;
   founded?: number;
   tagline?: string;
   url?: string;
@@ -101,12 +100,10 @@ interface SiteSettingsDoc {
   zip?: string;
   parkingNote?: string;
   schoolYearLabel?: string;
-  enrolling?: boolean;
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
   license?: string;
-  licenseAuthority?: string;
 }
 
 /**
@@ -143,7 +140,6 @@ export async function getPreviewSiteSettings<T extends Record<string, unknown>>(
   return {
     ...f,
     name: doc.name ?? f.name,
-    shortName: doc.shortName ?? f.shortName,
     founded: doc.founded ?? f.founded,
     tagline: doc.tagline ?? f.tagline,
     url: doc.url ?? f.url,
@@ -155,6 +151,9 @@ export async function getPreviewSiteSettings<T extends Record<string, unknown>>(
       zip: doc.zip ?? f.address.zip,
     },
     phone: doc.phone ?? f.phone,
+    // Mirrors cms.ts: only set when the Board wrote one (component default
+    // otherwise).
+    parkingNote: doc.parkingNote,
     email: {
       ...f.email,
       general: doc.emailGeneral ?? f.email.general,
@@ -162,7 +161,6 @@ export async function getPreviewSiteSettings<T extends Record<string, unknown>>(
       treasurer: doc.emailTreasurer ?? f.email.treasurer,
     },
     license: doc.license ?? f.license,
-    licenseAuthority: doc.licenseAuthority ?? f.licenseAuthority,
     calendar: doc.closureStatement ?? f.calendar,
     social: {
       ...f.social,
