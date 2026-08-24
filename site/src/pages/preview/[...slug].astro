@@ -42,5 +42,16 @@ if (!page) {
 
 <PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode} pageId={pageId}>
   {page.hero && <PageHero hero={page.hero} linkBase="/preview" pageSlug={slug} />}
-  <SectionRenderer sections={page.sections} linkBase="/preview" site={site} />
+  {
+    /* editDoc puts a `data-sanity` target on every section wrapper, so the
+      overlay shows section-level controls (move / duplicate / delete /
+      insert), not just text click-to-edit. Draft mode only — outside it the
+      overlay is not rendered and the attribute would be dead weight. */
+  }
+  <SectionRenderer
+    sections={page.sections}
+    linkBase="/preview"
+    site={site}
+    editDoc={draftMode ? { id: pageId, type: 'page' } : undefined}
+  />
 </PreviewLayout>

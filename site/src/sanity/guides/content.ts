@@ -146,6 +146,12 @@ export const guides: Guide[] = [
         title: 'This is the "click anything to edit" view.',
         text: 'The preview on the right is the real page. Clicking straight on the thing you want to change is usually faster than hunting through the boxes on the left.',
       },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'The page list beside the preview does more than list pages.',
+        text: 'It is split into **In the menu** and **Not in the menu** — if a page you made is in the second group, nobody can find it yet, so add it to the menu (see "Edit the menus"). An **amber dot** next to a page means it has edits you have not published yet; a **hollow dot** means the page has never been published at all. The little **↗** opens the real live page in a new tab, so you can check what families actually see. **＋ New page** at the bottom starts a fresh page right here, and the **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
+      },
       { kind: 'h', text: 'Add, remove, or reorder sections' },
       {
         kind: 'steps',
@@ -156,6 +162,12 @@ export const guides: Guide[] = [
           'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
           '**Publish** when you are happy.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'You can also rearrange sections right on the preview.',
+        text: 'Click a section in the preview (the page itself, not the boxes) and a small toolbar appears on its outline: move it up or down, duplicate it, remove it, or insert a new one next to it — the same controls as the Sections list, without leaving the page.',
       },
       { kind: 'h', text: 'Make a brand-new page' },
       {
@@ -204,7 +216,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Edit by clicking the page, like public pages.',
-        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, and the preview refreshes as you type. A page list sits on the LEFT of the preview: click any page there to move to it, like flipping between pages in a site builder. The preview shows the parts you can edit (heading, intro, sections); the fixed widgets and the hub menu around them are not shown, because they are not editable.',
+        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, click a whole section to get its move/duplicate/remove toolbar, and the preview refreshes as you type. A page list sits on the LEFT of the preview: click any page there to move to it, like flipping between pages in a site builder. An amber dot means unpublished edits; a hollow dot means never published. The preview shows the parts you can edit (heading, intro, sections); where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
       },
       { kind: 'h', text: 'What you can change, and what stays put' },
       {

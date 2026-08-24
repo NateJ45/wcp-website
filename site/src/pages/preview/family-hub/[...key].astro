@@ -54,6 +54,27 @@ if (!page) {
 const title = page.heading || page.title || key;
 const pageId = page._id;
 
+// The code-owned part of each built-in page, in one sentence — shown as a
+// LOCKED placeholder so an editor knows why that content is not here and why
+// clicking it in the real hub would not edit anything. Squarespace marks its
+// locked areas the same way. Board-created pages (a slug, no hubKey) have no
+// built-in part, so no placeholder.
+const BUILTIN_WIDGETS: Record<string, string> = {
+  home: 'The dashboard around this content (the greeting, weather, school-year progress, and the live widgets) is built into the site.',
+  calendar:
+    'The live event list, the month grid, and the subscribe buttons come from the school Google Calendar.',
+  'coop-jobs': 'The live job assignments and the family hours lookup come from the helper sheet.',
+  documents: 'The document library itself is edited under Documents & forms, not on this page.',
+  tuition: 'The class cards, fee amounts, and PayPal buttons come from Classes and Tuition & Fees.',
+  fundraising:
+    'The campaign progress bars and the year-at-a-glance table come from Campaigns and the treasurer sheet.',
+  health: 'The per-child health details are private family data and only show on the real page.',
+  directory: 'The family map and list are private family data and only show on the real page.',
+  'twos-threes': 'The class facts card (teacher, times, links) comes from the Classes entries.',
+  'pre-k': 'The class facts card (teacher, times, links) comes from the Classes entries.',
+};
+const builtinNote = BUILTIN_WIDGETS[key];
+
 // Navigation between hub pages lives in the Studio's navigator side panel
 // (src/sanity/components/PreviewNavigator.tsx), not in the page itself.
 ---
@@ -71,8 +92,26 @@ const pageId = page._id;
     <h1 id="hub-preview-title" class="font-display text-4xl text-heading">{title}</h1>
     {page.intro && <p class="mt-3 max-w-2xl text-lg text-ink-muted">{page.intro}</p>}
     {
+      builtinNote && (
+        /* The locked-area marker: where the built-in widget sits on the real
+           page. Deliberately dashed + muted so it reads as a placeholder, not
+           content — and it says WHERE the real thing is edited (if anywhere). */
+        <p class="mt-8 flex items-start gap-2 rounded-[var(--radius)] border border-dashed border-border bg-white/60 px-4 py-3 text-sm text-ink-muted">
+          <span aria-hidden="true">🔒</span>
+          <span>
+            <strong class="text-ink">Built into the site:</strong> {builtinNote}
+          </span>
+        </p>
+      )
+    }
+    {
       page.sections?.length ? (
-        <HubSectionedBody sections={page.sections} label="Page sections" class="mt-8" />
+        <HubSectionedBody
+          sections={page.sections}
+          label="Page sections"
+          class="mt-8"
+          editDoc={{ id: pageId, type: 'hubPage' }}
+        />
       ) : (
         <p class="mt-8 rounded-[var(--radius)] border border-dashed border-border bg-white px-6 py-8 text-center text-ink-muted">
           This page has no sections yet. Use <strong>＋ Add item</strong> under{' '}

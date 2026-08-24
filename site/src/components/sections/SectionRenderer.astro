@@ -9,6 +9,7 @@
    ============================================================================ */
 import type { SectionData } from './section-helpers';
 import { effectiveBg, wantsSeam } from './section-helpers';
+import { sectionEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
 import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
@@ -79,6 +80,11 @@ interface Props {
       band then always carries the sweep seam (the old site's media→content
       divider, every page). Public page routes pass it; hub surfaces don't. */
   afterHero?: boolean;
+  /** Preview surfaces only: the doc these sections belong to. When set, each
+      section wrapper carries an explicit `data-sanity` attribute so the
+      Presentation overlay draws SECTION-level controls (move / duplicate /
+      delete / insert) in the preview. See src/lib/preview-edit-attr.ts. */
+  editDoc?: EditDoc;
 }
 const {
   sections: rawSections = [],
@@ -88,6 +94,7 @@ const {
   pageSlug,
   hub = false,
   afterHero = false,
+  editDoc,
 } = Astro.props;
 // House style bans em-dashes. Strip them from ALL section string content here
 // (headers, step descriptions, schedule text, prose, ...) so every section type
@@ -305,6 +312,8 @@ const MAP: Record<string, any> = {
               : undefined,
         }
       : null;
+    // Preview-only: the section-level edit target for the Presentation overlay.
+    const editAttr = editDoc && section._key ? sectionEditAttr(editDoc, section._key) : undefined;
     const rendered = Comp && (
       <Comp
         section={section}
@@ -328,14 +337,21 @@ const MAP: Record<string, any> = {
         }
       />
     );
+    // The grammar wrapper stays `display: contents` (a zero box, CSS hooks
+    // only). The edit wrapper must be a REAL block box: the overlay outlines
+    // the element's rect, and a `contents` element has no rect.
+    const grammarWrapped =
+      rendered && grammarAttrs ? (
+        <div class="contents" {...grammarAttrs}>
+          {rendered}
+        </div>
+      ) : (
+        rendered
+      );
     return (
       <>
-        {rendered && grammarAttrs && (
-          <div class="contents" {...grammarAttrs}>
-            {rendered}
-          </div>
-        )}
-        {rendered && !grammarAttrs && rendered}
+        {grammarWrapped && editAttr && <div data-sanity={editAttr}>{grammarWrapped}</div>}
+        {grammarWrapped && !editAttr && grammarWrapped}
         {strips.map((m) =>
           m.kind === 'interlude' ? (
             <Interlude slot={m.slot} caption={m.caption ?? ''} />

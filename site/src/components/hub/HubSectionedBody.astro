@@ -43,6 +43,7 @@ import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import { classColor, classStyles } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
+import { sectionEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,8 +57,13 @@ interface Props {
   signoff?: string;
   /** Extra classes on the grid root (e.g. top margin from the page). */
   class?: string;
+  /** Hub PREVIEW route only: the hubPage doc these sections belong to. Each
+      block then carries a `data-sanity` target so the Presentation overlay
+      draws section-level controls (move / duplicate / delete / insert). The
+      live hub pages never pass this. See src/lib/preview-edit-attr.ts. */
+  editDoc?: EditDoc;
 }
-const { sections, label, tint, signoff, class: className } = Astro.props;
+const { sections, label, tint, signoff, class: className, editDoc } = Astro.props;
 
 const items = sections ?? [];
 
@@ -160,7 +166,13 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
           const isSignoffCta =
             Boolean(signoff) && section?._type === 'ctaSection' && section?._key === lastCtaKey;
           return (
-            <div class="hub-doc-block" data-treatment={treatment}>
+            <div
+              class="hub-doc-block"
+              data-treatment={treatment}
+              data-sanity={
+                editDoc && section?._key ? sectionEditAttr(editDoc, section._key) : undefined
+              }
+            >
               {icon && (
                 <span class={cn('hub-doc-card-icon', iconChip)} aria-hidden="true">
                   <Icon name={icon} class="h-5 w-5" />

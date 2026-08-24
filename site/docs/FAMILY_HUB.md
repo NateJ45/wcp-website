@@ -613,13 +613,19 @@ That route gates ITSELF on the Studio-issued preview cookie (`/api/draft-mode/en
 validates Sanity's one-time secret) and answers 401 without it — it sits outside
 `/family-hub`, so the middleware does not cover it, and gated content must never render on
 an open preview route (`tests/hub-gate.spec.ts` pins the 401). The code-owned chrome and
-fixed widgets deliberately don't render in the preview. Seed a page's starting content with
-`node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
+fixed widgets deliberately don't render in the preview — since 2026-08-24 a dashed 🔒
+"Built into the site" placeholder marks each built-in page's fixed part instead
+(`BUILTIN_WIDGETS` map in the preview route), so an editor knows why that content is not
+there and where it is really managed. The preview also passes `editDoc` into
+`HubSectionedBody`, which puts a `data-sanity` target on every `.hub-doc-block` so the
+overlay shows section-level move/duplicate/delete/insert controls (see
+`src/lib/preview-edit-attr.ts`; the live hub pages never pass `editDoc`). Seed a page's
+starting content with `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
 
 **All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —
 new-family onboarding), Calendar, Co-op Jobs, Documents, Tuition, Updates, Fundraising,
-Health, Directory, and the class pages (`twos`, `threes`, and the merged `pre-k` — both
-Pre-K classes share one page, with `/family-hub/pre-k-am|pm` 301-redirecting there). Each
+Health, Directory, and the class pages (the merged `twos-threes` and `pre-k` — each class
+pair shares one page, with the per-class routes 301-redirecting there). Each
 reads its `hubPage` doc for an editable heading, intro, and a stack of hub-safe sections,
 wrapped around a **fixed widget** that stays locked in code:
 

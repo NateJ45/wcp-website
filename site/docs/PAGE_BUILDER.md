@@ -242,6 +242,15 @@ survives reorders) or a legacy index.
   [`src/lib/cms-preview.ts`](../src/lib/cms-preview.ts). **When you add a new enum field
   that a component compares or maps on, add it to that list.** Display strings stay
   encoded so click-to-edit keeps working.
+- **Section-level controls in the preview (2026-08-24):** stega only covers TEXT, so the
+  preview routes also pass `editDoc` (the doc id + type) into `SectionRenderer` /
+  `HubSectionedBody`, which wraps each section in an element carrying an explicit
+  `data-sanity` attribute (`src/lib/preview-edit-attr.ts`, built on
+  `@sanity/visual-editing/create-data-attribute`). The Presentation overlay then outlines
+  the whole section and shows the array controls — move, duplicate, delete, insert — right
+  on the page. Two rules: the wrapper must be a REAL block box (the `display: contents`
+  grammar wrapper has no rect to outline, so the edit wrapper is a separate plain div), and
+  the live public/hub routes never pass `editDoc` (no attribute ships outside `/preview`).
 
 ## Seeding & bulk edits
 

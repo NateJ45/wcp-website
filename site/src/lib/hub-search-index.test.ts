@@ -139,19 +139,17 @@ describe('hubPageRoute', () => {
   });
 
   it('honours the routes that do not match the convention', () => {
-    // Both classes share one merged page; the dashboard renders `home`.
-    expect(hubPageRoute('twos', ROUTES)).toBe('/family-hub/twos-threes');
+    // The merged class page indexes by plain convention (one doc, one page,
+    // one key since the 2026-08-24 merge); the dashboard renders `home`.
+    expect(hubPageRoute('twos-threes', ROUTES)).toBe('/family-hub/twos-threes');
     expect(hubPageRoute('home', ROUTES)).toBe('/family-hub');
   });
 
   it('NEVER indexes the denied keys, even though the nav has their routes', () => {
     // /family-hub/directory is a real nav route — the deny list is what keeps
     // family PII out, so convention must not be able to override it.
-    const withDirectory = hubRoutesFromNav([
-      { links: [{ href: '/family-hub/directory' }, { href: '/family-hub/threes' }] },
-    ]);
+    const withDirectory = hubRoutesFromNav([{ links: [{ href: '/family-hub/directory' }] }]);
     expect(hubPageRoute('directory', withDirectory)).toBeNull();
-    expect(hubPageRoute('threes', withDirectory)).toBeNull();
     expect(HUB_PAGE_DENY.has('directory')).toBe(true);
   });
 
