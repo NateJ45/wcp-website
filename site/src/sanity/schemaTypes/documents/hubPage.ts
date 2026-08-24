@@ -50,10 +50,10 @@ export const hubPage = defineType({
           { title: 'Fundraising', value: 'fundraising' },
           { title: 'Health', value: 'health' },
           { title: 'Directory', value: 'directory' },
-          { title: 'Twos classroom', value: 'twos' },
-          { title: 'Threes classroom', value: 'threes' },
-          { title: 'Pre-K AM classroom', value: 'pre-k-am' },
-          { title: 'Pre-K PM classroom', value: 'pre-k-pm' },
+          // One entry per PAGE (both class pairs share one page each; the
+          // per-class keys were merged away 2026-08-24).
+          { title: 'Twos & Threes classroom', value: 'twos-threes' },
+          { title: 'Pre-K classroom', value: 'pre-k' },
         ],
       },
     }),
@@ -169,10 +169,8 @@ export const hubPage = defineType({
         fundraising: 'Fundraising',
         health: 'Health',
         directory: 'Directory',
-        twos: 'Twos classroom',
-        threes: 'Threes classroom',
-        'pre-k-am': 'Pre-K AM classroom',
-        'pre-k-pm': 'Pre-K PM classroom',
+        'twos-threes': 'Twos & Threes classroom',
+        'pre-k': 'Pre-K classroom',
       };
       return {
         title: title || '(untitled hub page)',

@@ -153,7 +153,6 @@ describe('hubPageRoute', () => {
     expect(hubPageRoute('directory', withDirectory)).toBeNull();
     expect(hubPageRoute('threes', withDirectory)).toBeNull();
     expect(HUB_PAGE_DENY.has('directory')).toBe(true);
-    expect(HUB_PAGE_DENY.has('threes')).toBe(true);
   });
 
   it('returns null when the doc has no page to land on', () => {

@@ -43,6 +43,7 @@ interface HubPageDoc {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
 // draftMode is always true past the gate above, so the fetch is draft-aware
 // with stega on (click-to-edit).
 const page = await previewFetch<HubPageDoc | null>(true, HUB_PAGE_PREVIEW_QUERY, { key });
@@ -51,17 +52,13 @@ if (!page) {
   return new Response(`No hub page found for "${key}"`, { status: 404 });
 }
 const title = page.heading || page.title || key;
+const pageId = page._id;
 
 // Navigation between hub pages lives in the Studio's navigator side panel
 // (src/sanity/components/PreviewNavigator.tsx), not in the page itself.
 ---
 
-<PreviewLayout
-  title={`${title} — Hub preview`}
-  draftMode={draftMode}
-  pageId={page._id}
-  chrome="bare"
->
+<PreviewLayout title={`${title} — Hub preview`} draftMode={draftMode} pageId={pageId} chrome="bare">
   <Section bg="grey" labelledby="hub-preview-title">
     {/* Set expectations: this is the editable surface, not the full hub UI. */}
     <p

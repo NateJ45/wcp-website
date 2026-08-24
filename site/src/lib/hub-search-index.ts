@@ -40,17 +40,12 @@ export interface SearchEntry {
 
 /** Never indexed, whatever the nav says. */
 export const HUB_PAGE_DENY = new Set([
-  // Rendered by NO page: twos-threes.astro reads the `twos` doc for both
-  // classes, so every deep link into `threes` would land on an absent anchor.
-  'threes',
   // Family names, emails, phones. This response is cached; PII is not.
   'directory',
 ]);
 
 /** The routes that don't match `/family-hub/<hubKey>`. */
 export const HUB_PAGE_OVERRIDES: Record<string, string> = {
-  // Both classes share Erin's handbook on one merged page.
-  twos: '/family-hub/twos-threes',
   // The dashboard renders the `home` doc's sections through SectionRenderer.
   home: '/family-hub',
 };

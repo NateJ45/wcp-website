@@ -6,10 +6,12 @@
    rhythm, so they share one hub page (mirroring the merged Pre-K page). FIXED
    widgets: Erin's teacher card + a fact card per class (Twos and Threes side by
    side in their own class colors, each with its pay button, helper-schedule
-   sheet, and photo album). The handbook below lives in the `hubPage-twos` doc
-   as page-builder sections. Erin's welcome letter is the first-visit
-   TeacherNoteModal (`teacherNote`, class "twos"). /family-hub/twos and /threes
-   redirect here.
+   sheet, and photo album). The handbook below lives in the
+   `hubPage-twos-threes` doc as page-builder sections (ONE doc for the one
+   page — the old per-class twos/threes docs were merged 2026-08-24, see
+   scripts/patch-merge-twos-threes.mjs). Erin's welcome letter is the
+   first-visit TeacherNoteModal (`teacherNote`, class "twos"). /family-hub/twos
+   and /threes redirect here.
    ============================================================================ */
 export const prerender = false;
 
@@ -45,10 +47,9 @@ interface HubPageDoc {
 }
 let doc: HubPageDoc | null = null;
 try {
-  // Both classes carry the identical handbook; read the Twos doc as the source.
   doc = await sanityFetch<HubPageDoc | null>(
     HUB_PAGE_QUERY,
-    { key: 'twos' },
+    { key: 'twos-threes' },
     { cache: BOARD_CONTENT_CACHE },
   );
 } catch {

@@ -2,6 +2,10 @@
 // seed-twos-threes-page.mjs — Ms. Erin's 2026-27 Twos & Threes handbook
 // =============================================================================
 // Loads Ms. Erin's parent handbook onto BOTH class hub pages (`hubPage-twos`
+// HISTORICAL (do NOT re-run): the per-class doc pair this seeds was merged
+// into the single `hubPage-twos-threes` doc on 2026-08-24
+// (patch-merge-twos-threes.mjs). Re-running would resurrect the old docs,
+// which nothing renders any more.
 // and `hubPage-threes`) as page-builder sections, matching the Pre-K page's
 // look (see seed-pre-k-page.mjs). The Twos and Threes share one teacher, one
 // handbook, and one 9:30-12:00 rhythm (Twos meet Thursdays, Threes Mon-Wed), so

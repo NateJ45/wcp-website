@@ -171,28 +171,19 @@ const HUB_PAGES = {
 
   // Class pages: facts + pay button + class notes stay fixed (class notes are
   // their own editable docs). Each carries the editable heading/intro.
-  twos: {
-    title: 'Twos classroom',
-    heading: 'Twos Classroom',
-    intro: 'A gentle first taste of school, in a small group.',
+  // ONE doc per PAGE: the merged class pages each read one doc (the old
+  // per-class twos/threes docs were consolidated 2026-08-24 by
+  // patch-merge-twos-threes.mjs — never reseed them).
+  'twos-threes': {
+    title: 'Twos & Threes classroom',
+    heading: 'Twos & Threes Classroom',
+    intro: 'Ms. Erin’s Twos and Threes, everything about the year in one place.',
     sections: [],
   },
-  threes: {
-    title: 'Threes classroom',
-    heading: 'Threes Classroom',
-    intro: 'A joyful first real school experience.',
-    sections: [],
-  },
-  'pre-k-am': {
-    title: 'Pre-K AM classroom',
-    heading: 'Pre-K AM Classroom',
-    intro: 'Kindergarten readiness, four mornings a week.',
-    sections: [],
-  },
-  'pre-k-pm': {
-    title: 'Pre-K PM classroom',
-    heading: 'Pre-K PM Classroom',
-    intro: 'Kindergarten readiness on an afternoon schedule.',
+  'pre-k': {
+    title: 'Pre-K classroom',
+    heading: 'Pre-K Classroom',
+    intro: 'Kindergarten readiness, mornings or afternoons.',
     sections: [],
   },
 

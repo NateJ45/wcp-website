@@ -638,8 +638,10 @@ by `node scripts/seed-pre-k-page.mjs`; its fixed widget is the pair of AM/PM fac
 pay button, helper sheet, photo album per class). **Twos + Threes** likewise share ONE page,
 `/family-hub/twos-threes` (same teacher Ms. Erin, same 9:30-noon rhythm, same handbook): the
 combined page shows Erin's teacher card + a Twos and a Threes fact card side by side, and reads
-the handbook from `hubPage-twos` (seeded by `node scripts/seed-twos-threes-page.mjs`, which
-writes the identical sections to both `hubPage-twos` and `hubPage-threes`). `/family-hub/twos`
+the handbook from the single `hubPage-twos-threes` doc (ONE doc for the one page since
+2026-08-24 — `patch-merge-twos-threes.mjs` consolidated the old per-class twos/threes docs,
+which had drifted while only the twos one rendered; the historical
+`seed-twos-threes-page.mjs` seeded the old pair and must not be re-run as-is). `/family-hub/twos`
 and `/family-hub/threes` 301-redirect to the combined page; the nav + home class cards point
 there. Re-running a seed RESETS that page to its baseline; day-to-day edits happen in the Studio.
 

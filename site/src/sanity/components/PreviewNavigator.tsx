@@ -57,6 +57,7 @@ async function fetchRows(
       type: 'hubPage',
       label: d.title || d.heading || d.hubKey || d.slug || '',
       href: `/preview/family-hub/${d.hubKey || d.slug}`,
+      key: d.hubKey || d.slug || '',
     }))
     .filter((r) => r.label);
   rows.sort((a, b) => (a.href.endsWith('/home') ? -1 : b.href.endsWith('/home') ? 1 : 0));
