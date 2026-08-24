@@ -24,8 +24,12 @@ interface Props {
   draftMode: boolean;
   /** Doc id this preview renders (e.g. "page-classes-twos"), for auto-refresh. */
   pageId: string;
+  /** 'bare' skips the public Header/Footer — the hub preview uses it, since
+      wrapping gated hub content in the marketing chrome reads as the wrong
+      site (and the transparent header expects a hero underneath it). */
+  chrome?: 'public' | 'bare';
 }
-const { title, draftMode, pageId } = Astro.props;
+const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
 ---
 
 <!doctype html>
@@ -37,9 +41,9 @@ const { title, draftMode, pageId } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="relative">
-    <Header linkBase="/preview" />
+    {chrome === 'public' && <Header linkBase="/preview" />}
     <main id="main"><slot /></main>
-    <Footer linkBase="/preview" />
+    {chrome === 'public' && <Footer linkBase="/preview" />}
 
     {
       draftMode && (

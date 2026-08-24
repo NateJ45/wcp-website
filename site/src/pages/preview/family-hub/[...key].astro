@@ -53,7 +53,12 @@ if (!page) {
 const title = page.heading || page.title || key;
 ---
 
-<PreviewLayout title={`${title} — Hub preview`} draftMode={draftMode} pageId={page._id}>
+<PreviewLayout
+  title={`${title} — Hub preview`}
+  draftMode={draftMode}
+  pageId={page._id}
+  chrome="bare"
+>
   <Section bg="grey" labelledby="hub-preview-title">
     {/* Set expectations: this is the editable surface, not the full hub UI. */}
     <p
@@ -64,6 +69,16 @@ const title = page.heading || page.title || key;
     </p>
     <h1 id="hub-preview-title" class="font-display text-4xl text-heading">{title}</h1>
     {page.intro && <p class="mt-3 max-w-2xl text-lg text-ink-muted">{page.intro}</p>}
-    <HubSectionedBody sections={page.sections} label="Page sections" class="mt-8" />
+    {
+      page.sections?.length ? (
+        <HubSectionedBody sections={page.sections} label="Page sections" class="mt-8" />
+      ) : (
+        <p class="mt-8 rounded-[var(--radius)] border border-dashed border-border bg-white px-6 py-8 text-center text-ink-muted">
+          This page has no sections yet. Use <strong>＋ Add item</strong> under{' '}
+          <strong>Sections</strong> in the editor to add content below the page's built-in part
+          (which shows on the real hub page, not here).
+        </p>
+      )
+    }
   </Section>
 </PreviewLayout>
