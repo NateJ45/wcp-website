@@ -332,7 +332,12 @@ its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSetti
   singleton, the default **＋ Create** gives volunteers new-page creation.
 - **In-Studio help:** [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts)
   holds plain-language walkthroughs ("Build or edit a page", "Edit the menus", etc.)
-  rendered in a read-only Help & Guide pane. The ~40 guides are grouped under titled
+  rendered in a read-only Help & Guide pane. "Where in the Studio" breadcrumb cards are
+  clickable (2026-08-24): a `path` block's optional `link` (`PathLink`: a doc intent, a
+  structure pane id, or a tool name, with an optional workspace swap) renders a
+  "Take me there" card in `GuideView.tsx` — navigation goes through
+  `router.navigateUrl`, never a raw href (hash routing; same rule as WelcomePane's
+  TaskCard). The ~40 guides are grouped under titled
   dividers by `guide.category` (the union type makes a missing/typo'd category a compile
   error) — added 2026-08-24 because one flat list was overwhelming to scan. Both
   workspaces get EVERY guide, but the group order is per-workspace

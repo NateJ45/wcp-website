@@ -1,6 +1,8 @@
 import { Badge, Box, Card, Flex, Heading, Stack, Text } from '@sanity/ui';
 import type { ComponentType } from 'react';
-import { guides, SITE, type DiyLevel, type GuideBlock } from '../guides/content';
+import { useWorkspace } from 'sanity';
+import { useRouter } from 'sanity/router';
+import { guides, SITE, type DiyLevel, type GuideBlock, type PathLink } from '../guides/content';
 
 // =============================================================================
 // GuideView — read-only Help pane rendered inside the Studio structure
@@ -48,6 +50,89 @@ function DiyBadge({ level }: { level?: DiyLevel }) {
   return null;
 }
 
+// The "Where in the Studio" breadcrumb card. With a `link` it is a real door:
+// the whole card navigates to the target pane/document/tool. Same router rule
+// as WelcomePane's TaskCard: the deployed embedded Studio is HASH-routed, so
+// clicks must go through router.navigateUrl (a raw <a href="/public/..">
+// leaves the Studio and 404s); the href is a best-effort real URL so
+// middle-click / open-in-new-tab still works.
+function PathCard({ items, link }: { items: string[]; link?: PathLink }) {
+  const router = useRouter();
+  const { basePath, name: wsName } = useWorkspace();
+  const inner = (
+    <Flex align="flex-start" gap={3}>
+      <span
+        aria-hidden
+        style={{
+          background: '#e3eef7',
+          color: '#166FA8',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 30,
+          height: 30,
+          borderRadius: 9,
+          fontSize: 15,
+          flexShrink: 0,
+        }}
+      >
+        🧭
+      </span>
+      <Stack space={2} style={{ paddingTop: 4, flex: 1 }}>
+        <Flex align="center" gap={2}>
+          <Text size={1} weight="semibold" style={{ flex: 1 }}>
+            Where in the Studio
+          </Text>
+          {link && (
+            <Text size={1} weight="semibold" style={{ color: '#166FA8' }}>
+              Take me there →
+            </Text>
+          )}
+        </Flex>
+        <Text size={2}>{items.join('   →   ')}</Text>
+      </Stack>
+    </Flex>
+  );
+  if (!link) {
+    return (
+      <Card tone="primary" padding={4} radius={3} border>
+        {inner}
+      </Card>
+    );
+  }
+  // Swap the workspace segment of the basePath when the target lives in the
+  // OTHER workspace (basePath always ends in the workspace name).
+  const base = link.ws && link.ws !== wsName ? basePath.replace(/[^/]+$/, link.ws) : basePath;
+  const path =
+    'doc' in link
+      ? `${base}/intent/edit/id=${link.doc};type=${link.type ?? link.doc}`
+      : 'pane' in link
+        ? `${base}/structure/${link.pane}`
+        : `${base}/${link.tool}`;
+  const isHashRouted = typeof window !== 'undefined' && window.location.hash.startsWith('#/');
+  const href = isHashRouted ? `${window.location.pathname}#${path}` : path;
+  return (
+    <Card
+      as="a"
+      className="wcp-task-card"
+      tone="primary"
+      padding={4}
+      radius={3}
+      border
+      href={href}
+      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+      onClick={(event: React.MouseEvent) => {
+        // Let modified clicks (new tab etc.) fall through to the href.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        event.preventDefault();
+        router.navigateUrl({ path });
+      }}
+    >
+      {inner}
+    </Card>
+  );
+}
+
 function BlockView({ block }: { block: GuideBlock }) {
   switch (block.kind) {
     case 'h':
@@ -83,35 +168,7 @@ function BlockView({ block }: { block: GuideBlock }) {
         </Stack>
       );
     case 'path':
-      return (
-        <Card tone="primary" padding={4} radius={3} border>
-          <Flex align="flex-start" gap={3}>
-            <span
-              aria-hidden
-              style={{
-                background: '#e3eef7',
-                color: '#166FA8',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 30,
-                height: 30,
-                borderRadius: 9,
-                fontSize: 15,
-                flexShrink: 0,
-              }}
-            >
-              🧭
-            </span>
-            <Stack space={2} style={{ paddingTop: 4 }}>
-              <Text size={1} weight="semibold">
-                Where in the Studio
-              </Text>
-              <Text size={2}>{block.items.join('   →   ')}</Text>
-            </Stack>
-          </Flex>
-        </Card>
-      );
+      return <PathCard items={block.items} link={block.link} />;
     case 'callout':
       return (
         <Card tone={block.tone ?? 'default'} padding={4} radius={3} border>

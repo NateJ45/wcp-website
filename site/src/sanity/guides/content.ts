@@ -12,12 +12,28 @@
 
 export type DiyLevel = 'self' | 'ask' | 'mixed';
 
+// Where a "Where in the Studio" breadcrumb can LINK to, so the card is a door,
+// not just directions (GuideView renders it clickable). Three target kinds:
+//  - doc:  open one document's editor via a Studio intent URL. Works from
+//          EITHER workspace (intents don't need the doc in the left menu), so
+//          singletons need no `ws`. `type` defaults to `doc` (the singleton
+//          convention: document id = schema type).
+//  - pane: open a structure pane by its id path (';'-separated for nesting,
+//          e.g. 'money;class-tuition'). Panes only exist in the workspace
+//          whose structure defines them — set `ws` unless both have it.
+//  - tool: open a top-bar tool by name (e.g. 'export', 'checkup').
+// `ws` swaps the link into the named workspace; omitted = the reader's own.
+export type PathLink =
+  | { doc: string; type?: string; ws?: 'public' | 'family-hub' }
+  | { pane: string; ws?: 'public' | 'family-hub' }
+  | { tool: string; ws?: 'public' | 'family-hub' };
+
 export type GuideBlock =
   | { kind: 'h'; text: string }
   | { kind: 'p'; text: string }
   | { kind: 'steps'; items: string[] }
   | { kind: 'bullets'; items: string[] }
-  | { kind: 'path'; items: string[] }
+  | { kind: 'path'; items: string[]; link?: PathLink }
   | {
       kind: 'callout';
       tone?: 'primary' | 'positive' | 'caution' | 'critical' | 'default';
@@ -282,7 +298,11 @@ export const guides: Guide[] = [
     diy: 'self',
     body: [
       { kind: 'h', text: 'Where they live' },
-      { kind: 'path', items: ['Family Hub', 'Hub pages (edit content)'] },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Hub pages (edit content)'],
+        link: { pane: 'hubPage', ws: 'family-hub' },
+      },
       {
         kind: 'p',
         text: 'Each Family Hub page has its own entry here. Open one and you can change its **heading**, its **intro** line, and add a stack of **sections** below, exactly like a public page. Only signed-in families ever see these pages.',
@@ -391,6 +411,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub', 'Hub pages', '＋ new', 'fill it in', 'Publish'],
+        link: { pane: 'hubPage', ws: 'family-hub' },
       },
       {
         kind: 'steps',
@@ -457,6 +478,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub', 'First-visit tour', 'edit', 'Publish'],
+        link: { doc: 'hubTour' },
       },
       {
         kind: 'p',
@@ -491,6 +513,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub', 'Little delights', 'add a row', 'Publish'],
+        link: { doc: 'hubDelights' },
       },
       {
         kind: 'p',
@@ -528,6 +551,7 @@ export const guides: Guide[] = [
           'edit',
           'Publish',
         ],
+        link: { pane: 'curriculumGuide', ws: 'family-hub' },
       },
       {
         kind: 'steps',
@@ -560,6 +584,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub', 'Link health (weekly check)'],
+        link: { doc: 'linkHealth' },
       },
       {
         kind: 'p',
@@ -612,6 +637,7 @@ export const guides: Guide[] = [
           'edit',
           'Publish',
         ],
+        link: { doc: 'navigation' },
       },
       {
         kind: 'p',
@@ -718,6 +744,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Recently deleted', 'pick an item', '⋯', 'Restore (or Delete forever)'],
+        link: { pane: 'trashedItem' },
       },
       {
         kind: 'steps',
@@ -743,7 +770,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **News** page is your blog. Posts show newest first, and the three most recent also appear on the homepage. Writing one is like writing a document.',
       },
-      { kind: 'path', items: ['News', '＋ new', 'write', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['News', '＋ new', 'write', 'Publish'],
+        link: { pane: 'post', ws: 'public' },
+      },
       {
         kind: 'steps',
         items: [
@@ -783,7 +814,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'A **Newsletter issue** is written just like a News post, but it lives on its own newsletter pages: each published issue gets a web address at /newsletter/<its slug> and a card in the archive at /newsletter/archive. Families can read it on the web whether or not you email it.',
       },
-      { kind: 'path', items: ['Newsletter issues', '＋ new', 'write', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Newsletter issues', '＋ new', 'write', 'Publish'],
+        link: { pane: 'newsletterIssue', ws: 'public' },
+      },
       {
         kind: 'steps',
         items: [
@@ -815,7 +850,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Events** page shows what is coming up. An event drops off the page on its own once it has passed (and moves into a "Past events" list at the bottom), so the list stays current with no cleanup.',
       },
-      { kind: 'path', items: ['Events', '＋ new', 'fill in', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Events', '＋ new', 'fill in', 'Publish'],
+        link: { pane: 'event', ws: 'public' },
+      },
       {
         kind: 'steps',
         items: [
@@ -863,6 +902,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Form submissions', 'pick a folder', 'open a message', 'reply', 'mark Handled'],
+        link: { pane: 'submissions', ws: 'public' },
       },
       {
         kind: 'steps',
@@ -895,7 +935,11 @@ export const guides: Guide[] = [
     lead: 'Show a banner at the top of every page — for a snow day, an early dismissal, or any urgent notice.',
     diy: 'self',
     body: [
-      { kind: 'path', items: ['Alert banner', 'turn on + write message', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Alert banner', 'turn on + write message', 'Publish'],
+        link: { doc: 'closureAlert' },
+      },
       {
         kind: 'steps',
         items: [
@@ -934,7 +978,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'This is for planned, friendly messages on the public site. (The **Alert banner** is the separate, urgent snow-day one.) You can have several going at once, each turned on or off on its own, and set to appear and disappear on their own dates.',
       },
-      { kind: 'path', items: ['Announcements', '＋ new', 'pick a type', 'turn on', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Announcements', '＋ new', 'pick a type', 'turn on', 'Publish'],
+        link: { pane: 'announcement', ws: 'public' },
+      },
       {
         kind: 'steps',
         items: [
@@ -981,6 +1029,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Public website workspace', 'Classes', 'pick the class', 'edit', 'Publish'],
+        link: { pane: 'orderable-class', ws: 'public' },
       },
       {
         kind: 'p',
@@ -1044,13 +1093,14 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Money & payments', 'Class tuition (open a class)', 'Tuition & payment tab'],
+        link: { pane: 'money;class-tuition' },
       },
       { kind: 'h', text: 'Registration and participation fees' },
       {
         kind: 'p',
         text: 'The one-time fees and the "how payments work" answers live in **Tuition & Fees**, inside **Money & payments** — the one folder that gathers every dollar amount on the site (fees, class tuition, the yearly budget, fundraising campaigns).',
       },
-      { kind: 'path', items: ['Money & payments', 'Tuition & Fees'] },
+      { kind: 'path', items: ['Money & payments', 'Tuition & Fees'], link: { doc: 'feeSchedule' } },
       { kind: 'h', text: 'The student fee' },
       {
         kind: 'p',
@@ -1103,6 +1153,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Money & payments', 'Operating budget (yearly)', 'edit', 'Publish'],
+        link: { doc: 'operatingBudget' },
       },
       {
         kind: 'steps',
@@ -1156,6 +1207,7 @@ export const guides: Guide[] = [
           'Enrollment mode',
           'Publish',
         ],
+        link: { doc: 'siteSettings' },
       },
       {
         kind: 'steps',
@@ -1206,6 +1258,7 @@ export const guides: Guide[] = [
           'edit',
           'Publish',
         ],
+        link: { pane: 'staff', ws: 'public' },
       },
       {
         kind: 'steps',
@@ -1241,6 +1294,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub', 'Who’s who this year', 'pick the role', 'edit', 'Publish'],
+        link: { pane: 'roleHolder', ws: 'family-hub' },
       },
       {
         kind: 'steps',
@@ -1300,6 +1354,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Public website workspace', 'Testimonials', '＋ new', 'edit', 'Publish'],
+        link: { pane: 'orderable-testimonial', ws: 'public' },
       },
       {
         kind: 'steps',
@@ -1351,6 +1406,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Public website workspace', 'FAQs', 'pick one (or ＋ new)', 'edit', 'Publish'],
+        link: { pane: 'orderable-faqItem', ws: 'public' },
       },
       {
         kind: 'steps',
@@ -1388,6 +1444,7 @@ export const guides: Guide[] = [
           'edit',
           'Publish',
         ],
+        link: { doc: 'siteSettings' },
       },
       {
         kind: 'p',
@@ -1547,6 +1604,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Public website workspace', 'Site setup', 'Redirects', '＋ new', 'Publish'],
+        link: { pane: 'redirect', ws: 'public' },
       },
       {
         kind: 'steps',
@@ -1582,6 +1640,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Export (top nav, either workspace)', 'pick a list', 'Download CSV'],
+        link: { tool: 'export' },
       },
       {
         kind: 'steps',
@@ -1628,6 +1687,7 @@ export const guides: Guide[] = [
           'Check',
           'confirm',
         ],
+        link: { tool: 'cleanup', ws: 'family-hub' },
       },
       {
         kind: 'steps',
@@ -1654,7 +1714,7 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Checkup** tool looks over the site and lists anything worth a look. It never changes anything, it just points you to what to fix.',
       },
-      { kind: 'path', items: ['Checkup (top nav, either workspace)'] },
+      { kind: 'path', items: ['Checkup (top nav, either workspace)'], link: { tool: 'checkup' } },
       {
         kind: 'p',
         text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
@@ -1681,7 +1741,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Start of year** tool is a guided checklist for rolling the site over to a new school year. It reads your current settings, marks what already looks set, and gives you a one-click jump to each thing to update. It never changes anything itself.',
       },
-      { kind: 'path', items: ['Start of year (top nav, either workspace)'] },
+      {
+        kind: 'path',
+        items: ['Start of year (top nav, either workspace)'],
+        link: { tool: 'setup' },
+      },
       {
         kind: 'p',
         text: 'Work top to bottom. Each card opens the right editor; make your change and **Publish** as usual, then come back to the list.',
@@ -1748,7 +1812,11 @@ export const guides: Guide[] = [
         title: 'This is private family information.',
         text: 'The directory holds real names, photos, addresses, and phone numbers. It only ever shows to signed-in families, never on the public website, so please treat it with care.',
       },
-      { kind: 'path', items: ['Family Hub', 'Directory', 'pick a family (or ＋ new)'] },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Directory', 'pick a family (or ＋ new)'],
+        link: { pane: 'directoryEntry', ws: 'family-hub' },
+      },
       { kind: 'h', text: 'What you can fill in' },
       {
         kind: 'bullets',
@@ -1807,7 +1875,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'The **Celebrations** page in the Family Hub is a warm spot for birthdays, thank-yous to volunteers, welcomes for new families, and milestones. Anything you post shows there, newest first.',
       },
-      { kind: 'path', items: ['Family Hub', 'Celebrations', '＋ new', 'Publish'] },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Celebrations', '＋ new', 'Publish'],
+        link: { pane: 'celebration', ws: 'family-hub' },
+      },
       {
         kind: 'steps',
         items: [
@@ -1832,7 +1904,11 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Families can share photos on the **Family Photos** page in the Family Hub. Each one waits for your approval before it shows to anyone. These are pictures of children, so they only ever appear inside the gated hub, never on the public website.',
       },
-      { kind: 'path', items: ['Inboxes', 'Family photos (review)', 'pick a photo'] },
+      {
+        kind: 'path',
+        items: ['Inboxes', 'Family photos (review)', 'pick a photo'],
+        link: { pane: 'photoSubmission', ws: 'family-hub' },
+      },
       {
         kind: 'steps',
         items: [
@@ -1866,6 +1942,7 @@ export const guides: Guide[] = [
       {
         kind: 'path',
         items: ['Family Hub workspace', 'Hub settings', 'Co-op hours per family'],
+        link: { doc: 'hubSettings' },
       },
       {
         kind: 'p',
