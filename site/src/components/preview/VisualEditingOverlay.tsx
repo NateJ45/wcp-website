@@ -1,6 +1,30 @@
 import { VisualEditing } from '@sanity/visual-editing/react';
-import type { HistoryRefresh } from '@sanity/visual-editing';
+import type { HistoryAdapter, HistoryRefresh } from '@sanity/visual-editing';
 import { useCallback, useEffect, useRef } from 'react';
+
+// Studio-driven navigation (the navigator side panel, document locations, the
+// preview URL bar) reaches the iframe through this adapter. The DEFAULT is
+// SPA-style: history.pushState and assume the app re-renders — but every
+// preview page here is its own server-rendered document, so the URL changed
+// while the page never did (bit the hub navigator on day one, 2026-08-24).
+// An MPA adapter instead: any push/replace to a different URL is a REAL load.
+// Module-level so the overlay never resubscribes on re-render.
+const mpaHistory: HistoryAdapter = {
+  subscribe: (navigate) => {
+    // Report where the iframe actually is after each full document load, so
+    // Presentation's URL bar and document resolution stay in sync.
+    navigate({ type: 'replace', url: window.location.pathname + window.location.search });
+    return () => {};
+  },
+  update: (update) => {
+    const current = window.location.pathname + window.location.search;
+    if (update.type === 'push' || update.type === 'replace') {
+      if (update.url !== current) window.location.assign(update.url);
+    } else if (update.type === 'pop') {
+      window.history.back();
+    }
+  },
+};
 
 // =============================================================================
 // VisualEditingOverlay — click-to-edit overlay + refresh for the preview
@@ -143,5 +167,5 @@ export default function VisualEditingOverlay({ pageId }: Props) {
     [pageId, softRefresh],
   );
 
-  return <VisualEditing portal refresh={refresh} />;
+  return <VisualEditing portal refresh={refresh} history={mpaHistory} />;
 }

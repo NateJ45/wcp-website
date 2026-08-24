@@ -33,6 +33,16 @@ When everything in a section is done, collapse the section to a one-line
       curriculumGuide — no such schema field exists; always null. Delete the
       projection or add the field.
 
+- [x] (FIXED 2026-08-24, data-side) Post-audit follow-ups: the orphaned DATA
+      the removed/migrated fields left behind triggered "Unknown fields found"
+      warnings — `patch-unset-migrated-fields.mjs` cleaned all 25 occurrences
+      (siteSettings x7, priorYear, featured x2, ctaSection seam x20 docs)
+      after verifying the migrated values in hubStore/hubSettings. And one
+      REAL bug surfaced by the warnings: the Enroll page's "tuition page"
+      prose link had been written in the nav-link shape (linkType/pageSlug,
+      href null) by a content patch — the only such mark in the dataset; its
+      href is now /tuition and the stray keys are gone.
+
 ## DEAD — no consumer anywhere (29 fields). Hide or delete.
 
 - [x] (DONE 2026-08-23 — deprecated, out of nav + create menu; the 3 orphan docs remain, findable via search, for Nathan to empty) **`legalPage` — the entire type (6 fields).** Policy pages are
