@@ -41,6 +41,38 @@ export const GUIDE_CATEGORIES = [
 ] as const;
 export type GuideCategory = (typeof GUIDE_CATEGORIES)[number];
 
+// Every guide shows in BOTH workspaces (help must not dead-end in the wrong
+// view), but each side LEADS with its own work: the hub workspace lists the
+// Family Hub group right after "Start here", the public workspace lists the
+// website groups first. Housekeeping closes both.
+export const GUIDE_CATEGORY_ORDER: Record<'public' | 'hub', readonly GuideCategory[]> = {
+  public: [
+    'Start here',
+    'Website pages & menus',
+    'News, events & alerts',
+    'School info & money',
+    'Photos & community',
+    'Family Hub',
+    'Yearly jobs & housekeeping',
+  ],
+  hub: [
+    'Start here',
+    'Family Hub',
+    'News, events & alerts',
+    'Photos & community',
+    'School info & money',
+    'Website pages & menus',
+    'Yearly jobs & housekeeping',
+  ],
+};
+// A reordered list that silently DROPS a category would hide its guides — make
+// that a load-time error instead (same guard style as sectionInsertMenu).
+for (const order of Object.values(GUIDE_CATEGORY_ORDER)) {
+  if (order.length !== GUIDE_CATEGORIES.length || new Set(order).size !== GUIDE_CATEGORIES.length) {
+    throw new Error('GUIDE_CATEGORY_ORDER must contain every guide category exactly once.');
+  }
+}
+
 export interface Guide {
   slug: string;
   category: GuideCategory;

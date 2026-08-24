@@ -1,7 +1,7 @@
 import type { StructureResolver, StructureBuilder } from 'sanity/structure';
 import type { ComponentType } from 'react';
 import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list';
-import { guides, GUIDE_CATEGORIES } from './guides/content';
+import { guides, GUIDE_CATEGORY_ORDER } from './guides/content';
 import { makeGuideView } from './components/GuideView';
 import { WelcomePane } from './components/WelcomePane';
 
@@ -36,9 +36,10 @@ const emoji =
 // The "Help & Guide" center — a folder of read-only walkthrough panes, built
 // from the guides data. Volunteers cannot edit or delete it. Grouped under
 // titled dividers by guide.category (~40 guides in one flat run was
-// overwhelming to scan); GUIDE_CATEGORIES fixes the group order, and the
-// GuideCategory union type stops a new guide from missing its group.
-function howThisWorks(S: StructureBuilder) {
+// overwhelming to scan). Both workspaces get EVERY guide, but the group order
+// is per-workspace (GUIDE_CATEGORY_ORDER): each side leads with its own work.
+// The GuideCategory union type stops a new guide from missing its group.
+function howThisWorks(S: StructureBuilder, kind: 'public' | 'hub') {
   const guideItem = (g: (typeof guides)[number]) =>
     S.listItem()
       .id(`guide-${g.slug}`)
@@ -59,7 +60,7 @@ function howThisWorks(S: StructureBuilder) {
         .id('help-and-guide-list')
         .title('Help & Guide')
         .items(
-          GUIDE_CATEGORIES.flatMap((category) => [
+          GUIDE_CATEGORY_ORDER[kind].flatMap((category) => [
             S.divider().title(category),
             ...guides.filter((g) => g.category === category).map(guideItem),
           ]),
@@ -254,7 +255,7 @@ export const publicStructure: StructureResolver = (S, context) =>
     .items([
       welcomeItem(S),
 
-      howThisWorks(S),
+      howThisWorks(S, 'public'),
 
       // ── Everyday edits ── the things volunteers log in to change most:
       // the alert banner, anything money, news, events, pages.
@@ -402,7 +403,7 @@ export const hubStructure: StructureResolver = (S, context) =>
     .items([
       welcomeItem(S),
 
-      howThisWorks(S),
+      howThisWorks(S, 'hub'),
 
       // ── Everyday edits ── the hub jobs a volunteer does most: post an
       // update, celebrate a family, open a sign-up, share a document.
