@@ -30,6 +30,13 @@ reference again.
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `patch-home-visit-splitmedia.mjs` | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.** | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
 
+## Field audit follow-ups (2026-08-23)
+
+The field-by-field schema audit lives in [FIELD_AUDIT.md](FIELD_AUDIT.md) —
+bugs found (hero page-link FIXED; video thumbnail + parkingNote wiring +
+sectionHeader.align still open), 29 dead fields incl. the whole `legalPage`
+type, and the questionable list. Work it down there, not here.
+
 ## Remaining code-owned content decisions (not stopgaps)
 
 | Where                                                     | What                                                                                                                                       | To change                                                                                                                                     |
