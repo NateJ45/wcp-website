@@ -230,6 +230,7 @@ export const guides: Guide[] = [
           'Open **Pages**, then click the page you want. A live preview of the page opens on the right.',
           'Click any text or photo in the preview. The matching box opens on the left, ready to edit.',
           'Type your change. A moment after you pause, the preview refreshes on its own so you can see how it looks.',
+          'Want to see it as a phone or tablet? Use the little **device buttons** above the preview to switch screen sizes.',
           'When it looks right, click `Publish`.',
         ],
       },
@@ -276,6 +277,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Pages**, then click **Pages (section builder)** and the `＋` (new) button.',
+          'Pick a **starting layout**: _standard info page_, _photo story page_, or _event or program page_ — each comes pre-filled with sections and [bracketed] placeholder text to replace. (Plain **Page** starts blank.)',
           'Give it a **Title**, then a **Slug** (the last part of the web address, like "summer-camp"). Use lowercase letters and dashes, no spaces. If the address is already taken by another page or a built-in part of the site, an error will tell you, so you cannot accidentally hide a page.',
           'Fill in the hero, then add sections one at a time until the page is built.',
           'To put it in the top menu, open **Menus (header & footer)** and add a link to it (see "Edit the menus").',
@@ -459,7 +461,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Family Hub → Hub pages** and click `＋` to make a new one.',
+          'Open **Family Hub → Hub pages** and click `＋` to make a new one. Pick the _info page_ starting layout for a pre-filled beginning, or the blank one.',
           'Give it a **Page name** so you can find it in the list later.',
           'Leave **Which hub page** EMPTY. That box is only for the pages that came with the site.',
           'In **Web address**, type lowercase words joined by hyphens, e.g. `playground-committee`. Your page will live at `/family-hub/playground-committee`.',

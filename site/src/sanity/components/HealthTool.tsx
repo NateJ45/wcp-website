@@ -115,19 +115,37 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // "Waiting to publish" — the WordPress drafts-pile answer. Every BOARD
+    // document with unpublished edits, by name, oldest first. Machine/inbox
+    // types are excluded (they are never published by hand), everything else
+    // is in — the navigator's amber dots only cover pages, so this is where a
+    // forgotten half-edit on a testimonial or event finally surfaces.
     id: 'drafts',
     run: async (c) => {
-      const n = await c.fetch<number>(
-        'count(*[_id in path("drafts.**") && _type in ["page","post","event","announcement","newsletterIssue"]])',
+      const drafts = await c.fetch<{ _type: string; label?: string; _updatedAt: string }[]>(
+        `*[_id in path("drafts.**") && !(_type in [
+          "trashedItem","submission","testimonialSubmission","subscriber",
+          "signupEntry","photoSubmission","hoursLog","linkHealth"
+        ])] | order(_updatedAt asc) {
+          _type, _updatedAt,
+          "label": coalesce(title, name, heading, question, message, _type)
+        }`,
       );
-      return n > 0
-        ? {
-            severity: 'warn',
-            label: `${n} unpublished draft${n === 1 ? '' : 's'} sitting around`,
-            detail:
-              'You have edits that were never published. Open each and Publish, or discard the draft.',
-          }
-        : null;
+      if (drafts.length === 0) return null;
+      const days = Math.floor(
+        (Date.now() - new Date(drafts[0]._updatedAt).getTime()) / (1000 * 60 * 60 * 24),
+      );
+      const names = drafts
+        .map((d) => d.label || d._type)
+        .slice(0, 6)
+        .join(', ');
+      return {
+        severity: 'warn',
+        label: `${drafts.length} edit${drafts.length === 1 ? '' : 's'} waiting to publish`,
+        detail: `These have changes nobody can see yet: ${names}${drafts.length > 6 ? '…' : ''}. ${
+          days > 0 ? `The oldest has waited ${days} day${days === 1 ? '' : 's'}. ` : ''
+        }Open each one and Publish, or discard the draft.`,
+      };
     },
   },
   {

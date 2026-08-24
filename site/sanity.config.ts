@@ -24,6 +24,7 @@ import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonia
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
+import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
 import { publicStructure, hubStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
 import { wcpStudioTheme } from './src/sanity/theme';
@@ -185,7 +186,12 @@ function workspace(opts: {
       media(),
       ...(opts.extraPlugins ?? []),
     ],
-    schema: { types: schemaTypes, templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES] },
+    schema: {
+      types: schemaTypes,
+      // Pre-filled "＋ New" starting points: announcement bars/popups and the
+      // page layout templates (the blank "Page" option stays available too).
+      templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES, ...PAGE_TEMPLATES],
+    },
     document: {
       // Action wiring, in priority order:
       //  - trashedItem: only Restore + Delete forever (no publish/duplicate/native

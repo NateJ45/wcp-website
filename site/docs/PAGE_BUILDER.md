@@ -329,7 +329,13 @@ its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSetti
   editor and any text or photo is click-to-edit (stega).
 - **Structure** ([`src/sanity/structure.ts`](../src/sanity/structure.ts)) surfaces
   "Pages (section builder)" and the "Menus" singleton. Because `page` is not a
-  singleton, the default **＋ Create** gives volunteers new-page creation.
+  singleton, the default **＋ Create** gives volunteers new-page creation — and since
+  2026-08-24 the ＋ menu offers **starting layouts**
+  ([`src/sanity/pageTemplates.ts`](../src/sanity/pageTemplates.ts), initial-value
+  templates like the announcement ones): _standard info page_, _photo story page_,
+  _event or program page_, and a hub _info page_, each pre-filled with sections and
+  [bracketed] placeholder copy so nobody starts from a blank canvas. Template array
+  items carry explicit `_key`s.
 - **In-Studio help:** [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts)
   holds plain-language walkthroughs ("Build or edit a page", "Edit the menus", etc.)
   rendered in a read-only Help & Guide pane. "Where in the Studio" breadcrumb cards are
