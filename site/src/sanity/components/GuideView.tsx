@@ -12,18 +12,44 @@ import { guides, SITE, type DiyLevel, type GuideBlock, type PathLink } from '../
 // guide blocks with @sanity/ui primitives.
 // =============================================================================
 
-// Inline **bold** support (the only formatting the guides use).
+// Inline formatting for guide text. Three marks, kept deliberately small:
+//  - **bold**   — emphasis on a concept ("nothing is live until you publish").
+//  - `chip`     — a THING YOU CLICK in the Studio (a button, a menu entry, a
+//                 tab). Renders as a small button-look chip, so "click
+//                 `Publish`" visually matches the green button on screen and
+//                 the eye can skim a step for its clickable part.
+//  - _italic_   — a light aside. Underscores inside words (snake_case) are
+//                 left alone; the mark needs a space/start before the opener.
 function RichText({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|(?<![\w])_[^_]+_(?![\w]))/g);
   return (
     <>
-      {parts.map((part, i) =>
-        part.startsWith('**') && part.endsWith('**') ? (
-          <strong key={i}>{part.slice(2, -2)}</strong>
-        ) : (
-          <span key={i}>{part}</span>
-        ),
-      )}
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**'))
+          return <strong key={i}>{part.slice(2, -2)}</strong>;
+        if (part.startsWith('`') && part.endsWith('`'))
+          return (
+            <span
+              key={i}
+              style={{
+                display: 'inline-block',
+                background: 'var(--card-badge-default-bg-color, #f1f3f6)',
+                border: '1px solid var(--card-border-color, #e2e8f0)',
+                borderRadius: 6,
+                padding: '0 0.4em',
+                fontSize: '0.92em',
+                fontWeight: 600,
+                lineHeight: 1.45,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {part.slice(1, -1)}
+            </span>
+          );
+        if (part.startsWith('_') && part.endsWith('_') && part.length > 2)
+          return <em key={i}>{part.slice(1, -1)}</em>;
+        return <span key={i}>{part}</span>;
+      })}
     </>
   );
 }

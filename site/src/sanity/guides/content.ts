@@ -4,7 +4,10 @@
 // This is DATA, not code: each guide is a list of typed blocks. It lives in the
 // repo (not editable in the Studio) so it can never be accidentally deleted, and
 // so future volunteers always inherit it. Editing conventions:
-//   - Use **double asterisks** for bold. No other formatting.
+//   - Formatting (rendered by GuideView's RichText): **double asterisks** for
+//     bold emphasis on a concept; `backticks` for a THING YOU CLICK (a button,
+//     a toggle, the ＋) — renders as a small button-look chip; _underscores_
+//     for a light aside. Nothing else.
 //   - Do NOT use em-dashes. Use commas or "and".
 //   - Define any jargon in plain words.
 //   - Keep site-specific values in SITE below.
@@ -123,7 +126,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'You cannot break the live site just by editing.',
-        text: 'While you type, you are editing a private **draft**. The public website does not change until you click **Publish**. So click around, try things, and only publish when it looks right.',
+        text: 'While you type, you are editing a private **draft**. The public website does not change until you click `Publish`. So click around, try things, and only publish when it looks right.',
       },
       { kind: 'h', text: 'How a change goes live' },
       {
@@ -131,7 +134,7 @@ export const guides: Guide[] = [
         items: [
           'Open the thing you want to change from the left menu.',
           'Edit the boxes. Your work saves automatically as a draft.',
-          'When it looks right, click the green **Publish** button (bottom right).',
+          'When it looks right, click the green `Publish` button (bottom right).',
           'A few minutes later the website rebuilds itself and your change appears.',
         ],
       },
@@ -227,7 +230,7 @@ export const guides: Guide[] = [
           'Open **Pages**, then click the page you want. A live preview of the page opens on the right.',
           'Click any text or photo in the preview. The matching box opens on the left, ready to edit.',
           'Type your change. A moment after you pause, the preview refreshes on its own so you can see how it looks.',
-          'When it looks right, click **Publish**.',
+          'When it looks right, click `Publish`.',
         ],
       },
       {
@@ -240,17 +243,26 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'The page list beside the preview does more than list pages.',
-        text: 'It is split into **In the menu** and **Not in the menu** — if a page you made is in the second group, nobody can find it yet, so add it to the menu (see "Edit the menus"). An **amber dot** next to a page means it has edits you have not published yet; a **hollow dot** means the page has never been published at all. The little **↗** opens the real live page in a new tab, so you can check what families actually see. **＋ New page** at the bottom starts a fresh page right here, and the **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
+        text: 'It is split into **In the menu** and **Not in the menu**: a page in the second group is invisible to visitors until you add it to the menu (see "Edit the menus").',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          'An **amber dot** next to a page means unpublished edits; a **hollow dot** means the page has never been published at all.',
+          'The little `↗` opens the real live page in a new tab, so you can check what families actually see.',
+          '`＋ New page` at the bottom starts a fresh page right here.',
+          'The **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
+        ],
       },
       { kind: 'h', text: 'Add, remove, or reorder sections' },
       {
         kind: 'steps',
         items: [
           'Open a page and find the **Sections** list on the left.',
-          'To add one, click **Add item**. The picker is grouped into five bands — Words, photos & video · Cards, facts & tables · From your lists · Money & enrolling · Banners, forms & contact — and has a search box, so type "photo" or "FAQ" to jump straight to it. Pick a section and fill in its boxes.',
+          'To add one, click `Add item`. The picker is grouped into five bands — Words, photos & video · Cards, facts & tables · From your lists · Money & enrolling · Banners, forms & contact — and has a search box, so type "photo" or "FAQ" to jump straight to it. Pick a section and fill in its boxes.',
           'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
-          'To remove one, use its **⋮** menu and choose Remove. (Removing a section is undoable before you publish.)',
-          '**Publish** when you are happy.',
+          'To remove one, use its `⋮` menu and choose Remove. (Removing a section is undoable before you publish.)',
+          '`Publish` when you are happy.',
         ],
       },
       {
@@ -263,11 +275,11 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Pages**, then click **Pages (section builder)** and the **＋** (new) button.',
+          'Open **Pages**, then click **Pages (section builder)** and the `＋` (new) button.',
           'Give it a **Title**, then a **Slug** (the last part of the web address, like "summer-camp"). Use lowercase letters and dashes, no spaces. If the address is already taken by another page or a built-in part of the site, an error will tell you, so you cannot accidentally hide a page.',
           'Fill in the hero, then add sections one at a time until the page is built.',
           'To put it in the top menu, open **Menus (header & footer)** and add a link to it (see "Edit the menus").',
-          '**Publish**. A couple of minutes later the new page is live on the website.',
+          '`Publish`. A couple of minutes later the new page is live on the website.',
         ],
       },
       {
@@ -311,7 +323,15 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Edit by clicking the page, like public pages.',
-        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, click a whole section to get its move/duplicate/remove toolbar, and the preview refreshes as you type. A page list sits on the LEFT of the preview: click any page there to move to it, like flipping between pages in a site builder. An amber dot means unpublished edits; a hollow dot means never published. The preview shows the parts you can edit (heading, intro, sections); where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
+        text: 'Open a hub page and a live preview opens on the right. Click any text to jump to its box; click a whole section for its move/duplicate/remove toolbar; the preview refreshes as you type.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          'The **page list** on the left flips between hub pages, like a site builder. An amber dot means unpublished edits; a hollow dot means never published.',
+          'The preview shows the parts you can edit: the heading, the intro, and the sections.',
+          'Where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
+        ],
       },
       { kind: 'h', text: 'What you can change, and what stays put' },
       {
@@ -344,7 +364,19 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **Teacher welcome notes** work exactly the same way, one per class — each pops up the first time a family visits that class’s hub page. Same rules: rewrite freely, bump the version stamp for a new year, toggle it off to retire it. The note’s **photo, name, role, email, and phone** do triple duty: they fill the "Your teacher" card at the top of the class page (a **Say hi** and a **Call or text** link), and they sign off the handbook’s closing section as a little signature card — the teacher’s headshot with **Email** and **Call or text** buttons. So keep them current in one place. Each class page also opens with a photo **"How our day flows"** story — swap its starter photos for real shots of your class right on the page’s Story timeline section.',
+        text: 'The **Teacher welcome notes** work exactly the same way, one per class — each pops up the first time a family visits that class’s hub page. Same rules: rewrite freely, bump the version stamp for a new year, toggle it off to retire it.',
+      },
+      {
+        kind: 'p',
+        text: 'The note’s **photo, name, role, email, and phone** do triple duty, so keep them current in this one place:',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          'They fill the **"Your teacher" card** at the top of the class page (with a `Say hi` and a `Call or text` link).',
+          'They sign off the handbook’s closing section as a little **signature card** — headshot plus `Email` and `Call or text` buttons.',
+          'Each class page also opens with a photo **"How our day flows"** story. Swap its starter photos for real shots of your class right on the page’s Story timeline section.',
+        ],
       },
       {
         kind: 'p',
@@ -364,13 +396,13 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'When you post an **Update**, pick its **Category**: an *Announcement* shows in the hub home’s Announcements widget; *Meeting minutes* show in its Meeting Minutes widget instead. Both appear on the Updates page.',
+        text: 'When you post an **Update**, pick its **Category**: an _Announcement_ shows in the hub home’s Announcements widget; _Meeting minutes_ show in its Meeting Minutes widget instead. Both appear on the Updates page.',
       },
       {
         kind: 'callout',
         tone: 'positive',
         title: 'Updates can carry pictures, attachments, and more.',
-        text: 'In the Body, press **＋** between paragraphs to drop in a **photo** (with a caption), a **photo gallery**, a **video** (YouTube or Vimeo — it loads only when a family taps play), or an **Attachment** (a PDF, a form, a flyer). An attachment shows as a tap-to-download card with the name you give it. You can also add a **Callout box** (a tinted note for something important), a **Button** (a big tappable link), a **Sign-up sheet card** (pick a sheet — the card shows if it is open and links families to it), an **Event card** (pick an event — the card shows when and where, with add-to-calendar links), a **Table**, and **Two columns** of text.',
+        text: 'In the Body, press `＋` between paragraphs to drop in a block. The choices: a **photo** (with a caption), a **photo gallery**, a **video** (YouTube or Vimeo — it loads only when a family taps play), an **Attachment** (a PDF, a form, a flyer — shows as a tap-to-download card), a **Callout box** (a tinted note for something important), a **Button** (a big tappable link), a **Sign-up sheet card** (shows if the sheet is open and links to it), an **Event card** (when and where, with add-to-calendar links), a **Table**, and **Two columns** of text.',
       },
       {
         kind: 'p',
@@ -379,7 +411,18 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Sign-up sheets and RSVPs' },
       {
         kind: 'p',
-        text: 'The hub’s **Sign-ups** page replaces SignUpGenius. Create a sheet under **Family Hub → Sign-ups & RSVPs**: pick *Sign-up sheet* for named slots (helper shifts, snack days — give each slot a "how many needed" cap if you want one) or *Event RSVP* for a simple "we’ll be there" count. Families respond on the hub page; every response lands in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
+        text: 'The hub’s **Sign-ups** page replaces SignUpGenius. Create a sheet under **Family Hub → Sign-ups & RSVPs** and pick a kind:',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '_Sign-up sheet_ for named slots (helper shifts, snack days). Give each slot a "how many needed" cap if you want one.',
+          '_Event RSVP_ for a simple "we’ll be there" count.',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'Families respond on the hub page; every response lands in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
       },
       {
         kind: 'callout',
@@ -416,12 +459,12 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Family Hub → Hub pages** and click **＋** to make a new one.',
+          'Open **Family Hub → Hub pages** and click `＋` to make a new one.',
           'Give it a **Page name** so you can find it in the list later.',
           'Leave **Which hub page** EMPTY. That box is only for the pages that came with the site.',
           'In **Web address**, type lowercase words joined by hyphens, e.g. `playground-committee`. Your page will live at `/family-hub/playground-committee`.',
           'Add your content in **Content** — the same sections every other hub page uses.',
-          '**Publish**. Give it a minute and open the address to see it.',
+          '`Publish`. Give it a minute and open the address to see it.',
         ],
       },
       {
@@ -556,8 +599,8 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and **Publish**.',
-          'For the supply list: update the **School year**, the per-class items, or the wish list, and **Publish**.',
+          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and `Publish`.',
+          'For the supply list: update the **School year**, the per-class items, or the wish list, and `Publish`.',
           'Give the site a few minutes to rebuild, then open the PDF from the class page to check it.',
         ],
       },
@@ -648,9 +691,9 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Menus (header & footer)**.',
-          'In **Main navigation**, click **Add item**, then choose **Link**.',
+          'In **Main navigation**, click `Add item`, then choose **Link**.',
           'Type the label people will see, then pick **Link to a page** and choose the page. (For an outside website, pick **Web address** and paste the link instead.)',
-          '**Publish**.',
+          '`Publish`.',
         ],
       },
       {
@@ -686,7 +729,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open the page, class, post, or other item you want to check.',
-          'Click the **⋯** menu at the top right and choose **Review changes** (or the history/clock icon).',
+          'Click the `⋯` menu at the top right and choose **Review changes** (or the history/clock icon).',
           'Scroll the timeline on the right to see each past version and exactly what was edited.',
         ],
       },
@@ -695,8 +738,8 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'In that history view, find the version you want.',
-          'Use its menu to **Restore** it. That brings the old wording back as your current draft.',
-          'Review it, then **Publish** to make it live again.',
+          'Use its menu to `Restore` it. That brings the old wording back as your current draft.',
+          'Review it, then `Publish` to make it live again.',
         ],
       },
       {
@@ -730,7 +773,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open the item and click the **⋯** menu at the top, then **Delete (move to trash)**.',
+          'Open the item and click the `⋯` menu at the top, then **Delete (move to trash)**.',
           'It disappears from its list and from the website, and a note tells you it went to Recently deleted.',
         ],
       },
@@ -750,8 +793,8 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Recently deleted** in the left menu (near the bottom).',
-          'Click the item you want, then **Restore** to bring it back exactly as it was.',
-          'To clear space, use **Delete forever** on an item you are sure about. That one can’t be undone.',
+          'Click the item you want, then `Restore` to bring it back exactly as it was.',
+          'To clear space, use `Delete forever` on an item you are sure about. That one can’t be undone.',
         ],
       },
       { kind: 'seealso', items: ['Undo a change or see history', 'Clear out old records'] },
@@ -778,12 +821,12 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Click **News** in the left menu, then the **＋** (new) button.',
-          'Type a **Title**, then click **Generate** next to the slug to make its web address.',
+          'Click **News** in the left menu, then the `＋` (new) button.',
+          'Type a **Title**, then click `Generate` next to the slug to make its web address.',
           'Pick a **Category**, add a short **Summary** (this shows on the News list and when the post is shared), and a **Cover image** if you have one.',
-          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos or an **Attachment** (a PDF or form families download with one tap). The **＋** menu also offers a **Callout box**, a **Button**, a **Sign-up sheet card**, an **Event card**, a **Table**, and **Two columns**.',
+          'Write the **Body**. Use the toolbar for headings, bold, links, bullet lists, and to drop in photos or an **Attachment** (a PDF or form families download with one tap). The `＋` menu also offers a **Callout box**, a **Button**, a **Sign-up sheet card**, an **Event card**, a **Table**, and **Two columns**.',
           'Add **Alt text** to any photo you place in the body.',
-          '**Publish** when you are ready for it to go live (usually within a minute or two).',
+          '`Publish` when you are ready for it to go live (usually within a minute or two).',
         ],
       },
       {
@@ -822,10 +865,10 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Click **Newsletter issues** in the left menu, then **＋**.',
-          'Type a **Title** (e.g. "October Newsletter") and click **Generate** for its web address.',
+          'Click **Newsletter issues** in the left menu, then `＋`.',
+          'Type a **Title** (e.g. "October Newsletter") and click `Generate` for its web address.',
           'Add a short **Summary** (shown on the archive card and used as the email teaser), a **Cover image** if you have one, and write the **Body** with the toolbar.',
-          '**Publish**. The issue is now live at its web address and in the archive.',
+          '`Publish`. The issue is now live at its web address and in the archive.',
         ],
       },
       {
@@ -858,12 +901,12 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Click **Events** in the left menu, then **＋**.',
+          'Click **Events** in the left menu, then `＋`.',
           'Give it a title and pick the **Starts** date and time. Add an **Ends** time if it has one.',
           'Turn on **All-day** for something without a set time (like a closure).',
           'For a repeating event (a weekly class, a monthly meeting), set **Does it repeat?** and, if you like, a **Repeat until** date. The page shows the upcoming dates automatically.',
           'Choose a **Type**, and add a location, description, or a button link (like an RSVP form) if you want.',
-          '**Publish**. Visitors get an "Add to calendar" button automatically.',
+          '`Publish`. Visitors get an "Add to calendar" button automatically.',
         ],
       },
       {
@@ -944,17 +987,17 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Click **Alert banner** near the top of the left menu.',
-          'Turn on **Show this alert on the site?**',
+          'Turn on `Show this alert on the site?`',
           'Write the **Message** (for example "Closed today due to snow. Class resumes tomorrow.").',
           'Pick a **Style** — Info (blue), Warning (amber), or Urgent (red). Add a button link if useful.',
-          '**Publish**. It shows on every page a minute or two later.',
+          '`Publish`. It shows on every page a minute or two later.',
         ],
       },
       {
         kind: 'callout',
         tone: 'critical',
         title: 'Remember to turn it off',
-        text: 'When the closure is over, come back, turn **Show this alert** off, and Publish. Otherwise the banner stays up.',
+        text: 'When the closure is over, come back, turn `Show this alert` off, and Publish. Otherwise the banner stays up.',
       },
       {
         kind: 'callout',
@@ -986,11 +1029,11 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Click **Announcements** near the top of the left menu, then **＋**.',
+          'Click **Announcements** near the top of the left menu, then `＋`.',
           'Pick a ready-made type: **Open house bar**, **Enrollment / waitlist bar**, **Fundraiser bar**, **General notice**, **Welcome popup**, or **Event popup**. It fills in sensible wording and colors.',
           'Edit the message, color, and (optional) button. For a bar, it shows across the top of every page; a popup opens in the middle of the screen.',
           'Under **When it shows**, flip **Turn it on**. Optionally set **Start showing** / **Stop showing** dates so it appears and vanishes on its own.',
-          '**Publish**. To take it down, come back and turn it off (or just let its end date pass).',
+          '`Publish`. To take it down, come back and turn it off (or just let its end date pass).',
         ],
       },
       {
@@ -1041,7 +1084,7 @@ export const guides: Guide[] = [
           'Click **Classes** in the left menu.',
           'Click the class you want to change.',
           'Use the tabs at the top (Basics, Schedule & ages, Tuition & payment, Page details) to find the field.',
-          'Change the boxes, then **Publish**.',
+          'Change the boxes, then `Publish`.',
         ],
       },
       {
@@ -1058,10 +1101,10 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Click **Classes**, then the **＋** (new) button at the top of the list.',
-          'Fill in the name, then click **Generate** next to the web address (slug).',
+          'Click **Classes**, then the `＋` (new) button at the top of the list.',
+          'Fill in the name, then click `Generate` next to the web address (slug).',
           'Fill in the schedule, ages, and tuition. Pick the teacher from the Staff list.',
-          '**Publish**. The new class appears on the site automatically.',
+          '`Publish`. The new class appears on the site automatically.',
         ],
       },
       {
@@ -1115,7 +1158,11 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The PayPal "Pay" buttons' },
       {
         kind: 'p',
-        text: 'Each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button"). The registration, participation, and student-fee buttons are in **Tuition & Fees**. For a button made in PayPal’s current system, open the button in PayPal, choose **Copy link**, and paste the whole link — it starts with paypal.com/ncp/payment/. (Buttons made in PayPal’s old system used a short code of letters and numbers instead; a code that is already in a box keeps working until that button is replaced.)',
+        text: 'Where the buttons live: each class’s tuition button is on the class (**Classes**, pick the class, **Tuition & payment** tab, "PayPal button"); the registration, participation, and student-fee buttons are in **Tuition & Fees**.',
+      },
+      {
+        kind: 'p',
+        text: 'For a button made in PayPal’s current system, open the button in PayPal, choose `Copy link`, and paste the whole link. It starts with paypal.com/ncp/payment/. (Buttons made in PayPal’s old system used a short code of letters and numbers instead; a code that is already in a box keeps working until that button is replaced.)',
       },
       {
         kind: 'callout',
@@ -1162,7 +1209,7 @@ export const guides: Guide[] = [
           'Set the **Budget year** and the **Comparison year** the "last year" column refers to.',
           'Under **The budget**, each section is either money coming in or money going out. Open one and edit its lines.',
           'Each line has a name, **This year**, an optional **Last year**, and an optional note. Type plain numbers — 54810, not $54,810.',
-          '**Publish**.',
+          '`Publish`.',
         ],
       },
       {
@@ -1264,9 +1311,9 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'In the **Public website** workspace (where the Studio opens), click **Staff** under School info.',
-          'Click a person to edit, or **＋** to add someone new.',
+          'Click a person to edit, or `＋` to add someone new.',
           'Fill in their name, title (Mrs.), role, and bio. Add a photo if you have one.',
-          '**Publish**.',
+          '`Publish`.',
         ],
       },
       {
@@ -1302,7 +1349,7 @@ export const guides: Guide[] = [
           'Open **Family Hub → Who’s who this year**. There is one card per seat on the chart.',
           'Click the role that changed and type the new person’s name in **Who holds it**.',
           'Nobody has taken the job yet? Leave the name **empty**. The chart shows it as an open role, which is exactly how someone notices it needs filling.',
-          '**Publish**. Give it a minute, then reload the Family Hub to see it.',
+          '`Publish`. Give it a minute, then reload the Family Hub to see it.',
         ],
       },
       {
@@ -1359,12 +1406,12 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'In the **Public website** workspace (where the Studio opens), click **Testimonials** under School info, then **＋**.',
+          'In the **Public website** workspace (where the Studio opens), click **Testimonials** under School info, then `＋`.',
           'Paste the quote, and add who said it (first name and last initial is fine).',
           'Add their **connection** (for example "Twos parent") and pick a **tag** so it shows on the right pages.',
           'Add a **Family photo** if you have one (and their OK): it shows as a small photo print clipped to the quote on the reviews wall. Square crops look best. Optional — quotes without one look fine.',
           'Turn on **Feature this one?** if you want it on the homepage.',
-          '**Publish**.',
+          '`Publish`.',
         ],
       },
       {
@@ -1388,7 +1435,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Review submissions** in the left menu and read a new one.',
-          'If it’s a good fit, click **Approve into Testimonials** at the bottom right. It becomes a real testimonial you can then feature or reorder.',
+          'If it’s a good fit, click `Approve into Testimonials` at the bottom right. It becomes a real testimonial you can then feature or reorder.',
           'Nothing a family submits appears on the site until you approve it.',
         ],
       },
@@ -1412,10 +1459,10 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'In the **Public website** workspace (where the Studio opens), click **FAQs** under School info.',
-          'Open one to edit, or **＋** to add a new question.',
+          'Open one to edit, or `＋` to add a new question.',
           'Write the question and answer, and choose a **Category** so it lands in the right group.',
           'To move important ones higher, grab the handle on the left of the list and **drag** — the FAQ page groups by category, so dragging changes the order within each category.',
-          '**Publish**.',
+          '`Publish`.',
         ],
       },
     ],
@@ -1466,7 +1513,14 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The Family Hub’s own yearly numbers and live-data links moved to **Hub settings** in the **Family Hub workspace**: the Family Handbook PDF, the co-op hours goal, the family-count override, the past fundraising totals, and the Google connections (the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**). The Google links rarely change — update them only when the sheet or feed is replaced.',
+        text: 'The Family Hub’s own yearly numbers and live-data links moved to **Hub settings** in the **Family Hub workspace**:',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          'The Family Handbook PDF, the co-op hours goal, the family-count override, and the past fundraising totals.',
+          'The Google connections: the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**. These rarely change; update them only when the sheet or feed is replaced.',
+        ],
       },
       {
         kind: 'p',
@@ -1553,7 +1607,7 @@ export const guides: Guide[] = [
           '**Board / leadership** — your officers, separate from teaching Staff. Shows as a people grid (the *Board* section).',
           '**Partners / sponsors** and **Accreditations** — logos. Show as a tidy logo row (the *Logo strip* section).',
           '**Fundraising campaigns** — one active campaign with a goal, shown as a progress bar (the *Fundraising progress* section). These moved to **Money & payments** in the everyday menu, since they are money.',
-          '**Job postings** — open positions. Show as a list (the *Open positions* section).',
+          '**Job postings** — open positions. Show as a list (the _Open positions_ section).',
           '**Downloads & resources** — a handbook, calendar, or form, as an uploaded file or a link (the *Downloads* section).',
           '**Photo albums** — a reusable set of photos you can show on any page (the *Photo album* section).',
         ],
@@ -1561,9 +1615,9 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Add or edit items in the collection (for example **Programs**), then **Publish**.',
+          'Add or edit items in the collection (for example **Programs**), then `Publish`.',
           'Open the **page** where you want them shown.',
-          'Add the matching section (for example **Programs**) and **Publish** the page.',
+          'Add the matching section (for example **Programs**) and `Publish` the page.',
           'The section fills itself from the list, and re-orders when you drag the list.',
         ],
       },
@@ -1571,7 +1625,7 @@ export const guides: Guide[] = [
         kind: 'callout',
         tone: 'positive',
         title: 'Empty sections hide themselves.',
-        text: 'If a list has nothing in it yet, its section simply does not appear on the page, so you can add the section first and fill the list later with nothing looking broken in between. (The *Open positions* section is the one exception: it shows a friendly "nothing open right now" message.)',
+        text: 'If a list has nothing in it yet, its section simply does not appear on the page, so you can add the section first and fill the list later with nothing looking broken in between. (The _Open positions_ section is the one exception: it shows a friendly "nothing open right now" message.)',
       },
       {
         kind: 'callout',
@@ -1610,10 +1664,10 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'In the **Public website** workspace (where the Studio opens), scroll to **Site setup**.',
-          'Open **Redirects**, then **＋**.',
+          'Open **Redirects**, then `＋`.',
           'In **Old address**, type the path people still use, starting with a slash, e.g. "/co-op-life".',
           'In **Send them to**, type the new page path, e.g. "/community" (or a full https:// link).',
-          'Leave **Permanent move?** on, then **Publish**. It works a minute or two after the site rebuilds.',
+          'Leave **Permanent move?** on, then `Publish`. It works a minute or two after the site rebuilds.',
         ],
       },
       {
@@ -1647,7 +1701,7 @@ export const guides: Guide[] = [
         items: [
           'Click **Export** in the top navigation. It is there in both workspaces.',
           'Choose Newsletter subscribers, Form submissions, or the Family directory.',
-          'Click **Download CSV**. The file saves to your computer.',
+          'Click `Download CSV`. The file saves to your computer.',
         ],
       },
       {
@@ -1748,7 +1802,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Work top to bottom. Each card opens the right editor; make your change and **Publish** as usual, then come back to the list.',
+        text: 'Work top to bottom. Each card opens the right editor; make your change and `Publish` as usual, then come back to the list.',
       },
       {
         kind: 'bullets',
@@ -1776,11 +1830,11 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
-          '**Publish** — the button that makes your changes go live on the public website.',
+          '`Publish` — the button that makes your changes go live on the public website.',
           '**Draft** — your unpublished work. Only you see it until you publish.',
           '**Hero** — the big banner at the very top of a page, with the headline and main photo or video.',
           '**Section** — one band of a page, like a row of cards, a photo gallery, or a quote. Pages are built by stacking sections.',
-          '**Slug** — the last part of a web address. For the Twos class it is "twos". Click **Generate** and it fills itself in.',
+          '**Slug** — the last part of a web address. For the Twos class it is "twos". Click `Generate` and it fills itself in.',
           '**Reference** — a link from one thing to another. A class points at its teacher, so you set a fact once and reuse it.',
           '**Alt text** — a short description of a photo, for screen readers.',
           '**Singleton** — a one-of-a-kind page, like **Site Settings**. There is only ever one, on purpose.',
@@ -1833,12 +1887,12 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Directory** and click the **＋** (new) button.',
+          'Open **Directory** and click the `＋` (new) button.',
           'Type the surname in **Family name**, then add the parents, the children, and any photo or notes.',
           'If you add a **home address**, save it, then ask ' +
             SITE.contactName +
             ' to run the map step so the pin appears. Families without an address simply do not show on the map, which is fine.',
-          'Turn on **Show in directory**, then **Publish**.',
+          'Turn on **Show in directory**, then `Publish`.',
         ],
       },
       { kind: 'h', text: 'When a family leaves the school' },
@@ -1846,8 +1900,8 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open the family in **Directory**.',
-          'If they might come back, or you are not sure, just turn **Show in directory** off and **Publish**. They disappear from the list straight away and nothing is lost.',
-          'If they have left for good, delete the family instead, so their contact details do not sit in the system: open the **⋮** menu at the bottom of the family page and choose **Delete**.',
+          'If they might come back, or you are not sure, just turn **Show in directory** off and `Publish`. They disappear from the list straight away and nothing is lost.',
+          'If they have left for good, delete the family instead, so their contact details do not sit in the system: open the `⋮` menu at the bottom of the family page and choose **Delete**.',
         ],
       },
       {
@@ -1883,9 +1937,9 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Celebrations** in the left menu, then **＋**.',
+          'Open **Celebrations** in the left menu, then `＋`.',
           'Pick a **type** (Birthday, Shout-out, Welcome, Milestone), write a short happy **headline**, and add a line of detail if you like.',
-          '**Publish**. It appears on the hub Celebrations page for families.',
+          '`Publish`. It appears on the hub Celebrations page for families.',
           'Tidy up old ones now and then by deleting them.',
         ],
       },
@@ -1914,7 +1968,7 @@ export const guides: Guide[] = [
         items: [
           'Open **Family photos (review)** — new ones show an hourglass (⏳).',
           'Click a photo to see it full size.',
-          'If it’s good to share, turn on **Approved** and **Publish**. It then appears in the hub gallery for families.',
+          'If it’s good to share, turn on **Approved** and `Publish`. It then appears in the hub gallery for families.',
           'If you don’t want it, just **delete** it.',
         ],
       },
@@ -1957,8 +2011,8 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Co-op hours (ledger)** and click a ⏳ entry.',
-          'Check it looks right, then turn on **Verified** and **Publish**. It shows a ✅ from then on.',
-          'To credit hours yourself (for a family that did not log their own), click **＋**, fill in the family name, hours, and date, turn on **Verified**, and **Publish**.',
+          'Check it looks right, then turn on **Verified** and `Publish`. It shows a ✅ from then on.',
+          'To credit hours yourself (for a family that did not log their own), click `＋`, fill in the family name, hours, and date, turn on **Verified**, and `Publish`.',
         ],
       },
       {
