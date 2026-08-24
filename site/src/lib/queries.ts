@@ -117,6 +117,27 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
 }`;
 
 /**
+ * A hub page for the Studio's Presentation preview — matched by built-in key
+ * OR board-created slug, one query for both kinds. Draft-aware via the
+ * preview client; the /preview/family-hub route requires the Studio's
+ * preview cookie before running it (gated content must never leak through
+ * the preview side door).
+ */
+export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key)][0]{
+  _id, title, heading, intro,
+  sections[]{
+    ...,
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url },
+    _type == "faqSection" => {
+      "items": select(
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
+        source == "inline" => inlineItems[]{ question, answer }
+      )
+    }
+  }
+}`;
+
+/**
  * The first-visit tour (Studio → Family Hub → First-visit tour): the on/off
  * switch, the version stamp, and the step wording overrides. Structure and
  * fallback wording live in HubTourModal.astro.

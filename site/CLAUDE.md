@@ -52,7 +52,7 @@ Everything here makes sense once you hold these two paths apart:
 | Updates when   | The site **rebuilds** (webhook on publish, ~1-2 min) | ~1 min (authenticated Sanity CDN)                |
 | Docs           | [docs/PAGE_BUILDER.md](docs/PAGE_BUILDER.md)         | [docs/FAMILY_HUB.md](docs/FAMILY_HUB.md)         |
 
-A third piece, the **Presentation preview** (`/preview/**`), is SSR + draft-aware (stega click-to-edit) and used only inside the Studio. It is `noindex` and never part of the static output.
+A third piece, the **Presentation preview** (`/preview/**`), is SSR + draft-aware (stega click-to-edit) and used only inside the Studio. It is `noindex` and never part of the static output. `/preview/family-hub/*` previews hubPage docs and is HARD-GATED on the Studio-issued preview cookie (401 without it) — hub content must never render on an ungated preview route; `tests/hub-gate.spec.ts` pins this.
 
 ## Commands
 

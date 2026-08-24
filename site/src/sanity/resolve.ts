@@ -31,6 +31,12 @@ const previewHref = (slug?: string) => (slug === 'home' ? '/preview' : `/preview
 export const resolve: PresentationPluginOptions['resolve'] = {
   mainDocuments: defineDocuments([
     { route: '/preview', filter: '_type == "page" && slug.current == "home"' },
+    // Hub pages (built-in by hubKey, board-created by slug) — before the
+    // generic :slug route so "family-hub" never matches as a page slug.
+    {
+      route: '/preview/family-hub/:key',
+      filter: '_type == "hubPage" && (hubKey == $key || slug == $key)',
+    },
     { route: '/preview/news/:slug', filter: '_type == "post" && slug.current == $slug' },
     {
       route: '/preview/classes/:slug',
@@ -45,6 +51,22 @@ export const resolve: PresentationPluginOptions['resolve'] = {
         const slug = doc?.slug;
         if (!slug) return { locations: [], message: 'Give this page a slug to preview it.' };
         return { locations: [{ title: doc?.title ?? slug, href: previewHref(slug) }] };
+      },
+    }),
+    // Hub pages preview their EDITABLE surface (heading/intro/sections) on
+    // the gated /preview/family-hub route — the hub chrome and widgets are
+    // code-owned and don't render there.
+    hubPage: defineLocations({
+      select: { title: 'title', heading: 'heading', hubKey: 'hubKey', slug: 'slug' },
+      resolve: (doc) => {
+        const key = doc?.hubKey || doc?.slug;
+        if (!key)
+          return { locations: [], message: 'Give this hub page a key or slug to preview it.' };
+        return {
+          locations: [
+            { title: doc?.heading || doc?.title || key, href: `/preview/family-hub/${key}` },
+          ],
+        };
       },
     }),
     post: defineLocations({

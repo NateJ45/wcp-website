@@ -200,6 +200,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Each Family Hub page has its own entry here. Open one and you can change its **heading**, its **intro** line, and add a stack of **sections** below, exactly like a public page. Only signed-in families ever see these pages.',
       },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Edit by clicking the page, like public pages.',
+        text: 'Open a hub page and a live preview opens on the right — click any text in it to jump to its box, and the preview refreshes as you type. The preview shows the parts you can edit (heading, intro, sections); the fixed widgets and the hub menu around them are not shown, because they are not editable.',
+      },
       { kind: 'h', text: 'What you can change, and what stays put' },
       {
         kind: 'p',

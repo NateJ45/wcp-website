@@ -606,7 +606,14 @@ the build-time "pull" sections can't run behind the gate). The page's **fixed wi
 class facts) stays locked in code and the editable sections wrap around it. If no `hubPage`
 doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
 
-Edit them in **Studio → Family Hub → Hub pages**. Seed a page's starting content with
+Edit them in **Studio → Family Hub → Hub pages**. Since 2026-08-24 hub pages also get the
+**Presentation click-to-edit preview**: opening a hubPage doc shows its editable surface
+(heading/intro/sections through `HubSectionedBody`) at `/preview/family-hub/<hubKey-or-slug>`.
+That route gates ITSELF on the Studio-issued preview cookie (`/api/draft-mode/enable`
+validates Sanity's one-time secret) and answers 401 without it — it sits outside
+`/family-hub`, so the middleware does not cover it, and gated content must never render on
+an open preview route (`tests/hub-gate.spec.ts` pins the 401). The code-owned chrome and
+fixed widgets deliberately don't render in the preview. Seed a page's starting content with
 `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
 
 **All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —

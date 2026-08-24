@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
 
 // =============================================================================
 // The gate itself. Runs with NO stored session (see the `gate` project in
@@ -105,6 +106,31 @@ test.describe('anonymous visitors are locked out', () => {
       form: {},
     });
     expect(res.status()).toBe(403);
+  });
+
+  test('the hub Presentation preview is refused without the Studio cookie', async ({ request }) => {
+    // /preview/family-hub/* renders draft hub content for the Studio's
+    // Presentation tool. It sits OUTSIDE /family-hub (so the middleware does
+    // not gate it) and gates ITSELF on the preview cookie that only
+    // /api/draft-mode/enable can set (after validating Sanity's one-time
+    // secret). A 200 here would leak gated hub content to anyone with the URL.
+    for (const path of ['/preview/family-hub/home', '/preview/family-hub/getting-started']) {
+      const res = await request.get(path, { maxRedirects: 0, failOnStatusCode: false });
+      expect(res.status()).toBe(401);
+    }
+  });
+
+  test('a FORGED preview cookie does not open the hub preview', async ({ request }) => {
+    // The package convention stores 'true' in this cookie — a value anyone can
+    // type into their cookie jar. enable.ts stores a server-side fingerprint
+    // instead and the route verifies the VALUE, so the obvious forgery must
+    // still get 401 (src/lib/preview-auth.ts).
+    const res = await request.get('/preview/family-hub/home', {
+      maxRedirects: 0,
+      failOnStatusCode: false,
+      headers: { Cookie: `${perspectiveCookieName}=true` },
+    });
+    expect(res.status()).toBe(401);
   });
 
   test('server islands are refused with 401, not a redirect', async ({ request }) => {
