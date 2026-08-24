@@ -35,7 +35,8 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
   hero{
     ...,
     videoFile{ "url": asset->url },
-    videoWebm{ "url": asset->url }
+    videoWebm{ "url": asset->url },
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url }
   },
   sections[]{
     ...,
