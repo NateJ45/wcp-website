@@ -32,10 +32,11 @@ reference again.
 
 ## Field audit follow-ups (2026-08-23)
 
-The field-by-field schema audit lives in [FIELD_AUDIT.md](FIELD_AUDIT.md) —
-bugs found (hero page-link FIXED; video thumbnail + parkingNote wiring +
-sectionHeader.align still open), 29 dead fields incl. the whole `legalPage`
-type, and the questionable list. Work it down there, not here.
+The field-by-field schema audit lives in [FIELD_AUDIT.md](FIELD_AUDIT.md).
+Its registry is 100% checked off (all bugs fixed, the 29 dead fields hidden or
+removed, `legalPage` retired — commits 87826d8 + 2b0cc54, 2026-08-23). The only
+residue: Nathan's delete-or-keep call on the 3 orphan `legalPage` docs (below),
+and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Remaining code-owned content decisions (not stopgaps)
 
