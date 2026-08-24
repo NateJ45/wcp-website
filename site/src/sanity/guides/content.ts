@@ -125,24 +125,48 @@ export const guides: Guide[] = [
         title: 'Give it a minute.',
         text: 'The website does not update the instant you publish. It rebuilds in the background, so wait a couple of minutes and then refresh the page you changed.',
       },
+      { kind: 'h', text: 'Two workspaces, one website' },
+      {
+        kind: 'p',
+        text: 'The Studio opens in **Public website** (what everyone sees). Click the workspace name in the top-left corner to switch to **Family Hub** (the private, families-only area; it has a little lock on its icon). Both edit the same website. The split just keeps each job’s menu short and obvious. If you cannot find something, you are probably in the other workspace.',
+      },
       { kind: 'h', text: 'The left menu, band by band' },
       {
         kind: 'p',
-        text: 'The Studio is split into two **workspaces**, one per audience: **Public website** (what everyone sees) and **Family Hub** (the private, families-only area). Switch between them with the workspace name in the top-left corner. Inside each, the left menu is grouped by how often you need things, with a small heading over each band.',
+        text: 'Inside each workspace, the left menu is grouped into **bands**, each with a small heading. Everyday jobs sit on top; setup lives at the bottom. One line per band:',
+      },
+      {
+        kind: 'p',
+        text: '**Public website** (where the Studio opens):',
       },
       {
         kind: 'bullets',
         items: [
-          '**Public website** (where the Studio opens) — **Everyday edits**: the **Alert banner** (an urgent snow-day banner), **Announcements** (ready-made bars and popups you turn on/off, like a waitlist or open-house notice), **Money & payments** (tuition, fees, PayPal buttons, fundraising — every dollar in one place), **News** (your blog), **Events** (open houses and tours), and **Pages** (every public page, built from stacked sections — brand-new pages start here too). Then **School info** (Classes, Staff, FAQs, Testimonials, School-Year Events, Community & content), **Site setup** (Site Settings, Menus, Small bits of wording, Redirects), and the **Inboxes** the public forms fill (Form submissions, Review submissions, Newsletter subscribers).',
-          '**Family Hub** — **Everyday edits**: **Updates**, **Celebrations**, the **President’s note**, **Sign-ups & RSVPs**, and **Documents & Forms**. Then **Families & co-op** (the Directory, teacher notes, co-op roles, who’s who, the hours ledger), **Hub pages & look** (the hub’s own pages, menu, first-visit tour, hints), **Printables** (the curriculum guide and supply list PDFs), and the hub **Inboxes** (sign-up responses, family photos to review).',
-          '**In both** — the **Alert banner** and **Money & payments** sit at the top of both menus, so a snow day or a money change never hides in the other workspace. Welcome, this guide, and Recently deleted are in both too.',
-          'And in the top bar: **Media** — every photo you have uploaded, in one searchable place.',
+          '**Everyday edits**: the **Alert banner** (snow days), **Announcements** (bars and popups you turn on and off), **Money & payments**, **News**, **Events**, and **Pages**.',
+          '**School info**: Classes, Staff, FAQs, Testimonials, School-Year Events, and Community & content.',
+          '**Site setup**: Site Settings, Menus, Small bits of wording, and Redirects.',
+          '**Inboxes**: what the public forms send in. Form submissions, review submissions, newsletter subscribers.',
         ],
       },
-      { kind: 'h', text: 'Two workspaces, one website' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Public website**. Click the workspace name in the top-left corner to switch to **Family Hub** (it has a little lock on its icon). Both edit the same website — the split just keeps each job’s menu short and obvious. If you cannot find something, you are probably in the other workspace; the Welcome page in each one reminds you how to switch.',
+        text: '**Family Hub** (the families-only side, with the lock icon):',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Everyday edits**: Updates, Celebrations, the President’s note, Sign-ups & RSVPs, and Documents & Forms.',
+          '**Families & co-op**: the Directory, teacher notes, co-op roles, who’s who, and the hours ledger.',
+          '**Hub pages & look**: the hub’s own pages, its menu, the first-visit tour, and hints.',
+          '**Printables**: the curriculum guide and supply list PDFs.',
+          '**Inboxes**: sign-up responses, and family photos waiting for review.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'A few things live in both menus on purpose.',
+        text: 'The **Alert banner** and **Money & payments** sit at the top of both, so a snow day or a money change never hides in the other workspace. **Welcome**, this guide, and **Recently deleted** are in both too. And the top bar has **Media**: every photo you have uploaded, in one searchable place.',
       },
       {
         kind: 'seealso',
