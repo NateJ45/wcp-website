@@ -1,7 +1,7 @@
 import type { StructureResolver, StructureBuilder } from 'sanity/structure';
 import type { ComponentType } from 'react';
 import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list';
-import { guides } from './guides/content';
+import { guides, GUIDE_CATEGORIES } from './guides/content';
 import { makeGuideView } from './components/GuideView';
 import { WelcomePane } from './components/WelcomePane';
 
@@ -34,8 +34,22 @@ const emoji =
     glyph;
 
 // The "Help & Guide" center — a folder of read-only walkthrough panes, built
-// from the guides data. Volunteers cannot edit or delete it.
+// from the guides data. Volunteers cannot edit or delete it. Grouped under
+// titled dividers by guide.category (~40 guides in one flat run was
+// overwhelming to scan); GUIDE_CATEGORIES fixes the group order, and the
+// GuideCategory union type stops a new guide from missing its group.
 function howThisWorks(S: StructureBuilder) {
+  const guideItem = (g: (typeof guides)[number]) =>
+    S.listItem()
+      .id(`guide-${g.slug}`)
+      .title(g.title)
+      .icon(emoji(g.icon))
+      .child(
+        // Cast: our pane ignores props, but S.component wants the pane type.
+        S.component(makeGuideView(g.slug) as never)
+          .id(`guide-view-${g.slug}`)
+          .title(g.title),
+      );
   return S.listItem()
     .id('help-and-guide')
     .title('Help & Guide')
@@ -45,18 +59,10 @@ function howThisWorks(S: StructureBuilder) {
         .id('help-and-guide-list')
         .title('Help & Guide')
         .items(
-          guides.map((g) =>
-            S.listItem()
-              .id(`guide-${g.slug}`)
-              .title(g.title)
-              .icon(emoji(g.icon))
-              .child(
-                // Cast: our pane ignores props, but S.component wants the pane type.
-                S.component(makeGuideView(g.slug) as never)
-                  .id(`guide-view-${g.slug}`)
-                  .title(g.title),
-              ),
-          ),
+          GUIDE_CATEGORIES.flatMap((category) => [
+            S.divider().title(category),
+            ...guides.filter((g) => g.category === category).map(guideItem),
+          ]),
         ),
     );
 }

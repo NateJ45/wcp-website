@@ -26,8 +26,24 @@ export type GuideBlock =
     }
   | { kind: 'seealso'; items: string[] };
 
+// The Help & Guide list groups guides under these headings (titled dividers in
+// src/sanity/structure.ts), in THIS order — one long flat list of ~40 guides
+// was overwhelming to scan (Nathan, 2026-08-24). A new guide must pick one of
+// these; the union type makes a typo or a missing category a compile error.
+export const GUIDE_CATEGORIES = [
+  'Start here',
+  'Website pages & menus',
+  'Family Hub',
+  'News, events & alerts',
+  'School info & money',
+  'Photos & community',
+  'Yearly jobs & housekeeping',
+] as const;
+export type GuideCategory = (typeof GUIDE_CATEGORIES)[number];
+
 export interface Guide {
   slug: string;
+  category: GuideCategory;
   title: string;
   icon: string; // emoji, shown in the left nav
   lead: string;
@@ -43,6 +59,7 @@ export const SITE = {
 export const guides: Guide[] = [
   {
     slug: 'start-here',
+    category: 'Start here',
     title: 'Start here: how it all works',
     icon: '👋',
     lead: 'A two minute read that makes everything else make sense.',
@@ -108,6 +125,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'build-page',
+    category: 'Website pages & menus',
     title: 'Build or edit a page',
     icon: '🧱',
     lead: 'Pages are built from stacked sections. You can edit the words, add or remove sections, reorder them, and even make brand-new pages.',
@@ -201,6 +219,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-hub-page',
+    category: 'Family Hub',
     title: 'Edit a Family Hub page',
     icon: '🔒',
     lead: 'The private, families-only pages (Calendar, Documents, Tuition, the classrooms, and the rest) are editable too, the same way public pages are.',
@@ -301,6 +320,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'new-hub-page',
+    category: 'Family Hub',
     title: 'Add a new Family Hub page',
     icon: '🆕',
     lead: 'Make a whole new page for families — a committee, a programme, anything the school grows into.',
@@ -368,6 +388,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'first-visit-tour',
+    category: 'Start here',
     title: 'The first-visit tour',
     icon: '🎈',
     lead: 'A short walkthrough that greets each family on their first sign-in to the Family Hub.',
@@ -405,6 +426,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'little-delights',
+    category: 'Family Hub',
     title: 'Fun days & the daily giggle',
     icon: '🎉',
     lead: 'The "Today is National Kazoo Day" line and the joke at the foot of the hub home.',
@@ -430,6 +452,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'pdf-content',
+    category: 'School info & money',
     title: 'Edit the curriculum guides & supply list',
     icon: '📚',
     lead: 'The branded PDFs on the class pages. Edit the words here; the files rebuild themselves.',
@@ -468,6 +491,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'link-health',
+    category: 'Website pages & menus',
     title: 'The weekly link check',
     icon: '🩺',
     lead: 'Every Monday the site tests the Google links families rely on and reports what it finds.',
@@ -497,6 +521,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-menus',
+    category: 'Website pages & menus',
     title: 'Edit the menus',
     icon: '🔗',
     lead: 'The links along the top of the site and down in the footer live in one place.',
@@ -562,6 +587,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'history',
+    category: 'Yearly jobs & housekeeping',
     title: 'Undo a change or see history',
     icon: '⏪',
     lead: 'Every change is remembered, so you can look back and roll one back.',
@@ -606,6 +632,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'trash',
+    category: 'Yearly jobs & housekeeping',
     title: 'Delete something (and get it back)',
     icon: '🗑️',
     lead: 'Deleting is safe — it goes to Recently deleted, so you can undo it.',
@@ -650,6 +677,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'write-post',
+    category: 'News, events & alerts',
     title: 'Write a news post',
     icon: '📰',
     lead: 'Share an announcement, update, or story on the News page.',
@@ -689,6 +717,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'newsletter',
+    category: 'News, events & alerts',
     title: 'Put out a newsletter',
     icon: '🗞️',
     lead: 'Compose an issue, give it a web page, and (optionally) email it to families.',
@@ -720,6 +749,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'add-event',
+    category: 'News, events & alerts',
     title: 'Add an event',
     icon: '📅',
     lead: 'Put an open house, tour day, or community event on the public Events page.',
@@ -764,6 +794,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'form-messages',
+    category: 'Yearly jobs & housekeeping',
     title: 'Read messages from your forms',
     icon: '📨',
     lead: 'When someone fills out a contact or tour form, the message lands here.',
@@ -802,6 +833,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'alert-banner',
+    category: 'News, events & alerts',
     title: 'Post a closure or alert',
     icon: '🚨',
     lead: 'Show a banner at the top of every page — for a snow day, an early dismissal, or any urgent notice.',
@@ -836,6 +868,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'announcements',
+    category: 'News, events & alerts',
     title: 'Post an announcement bar or popup',
     icon: '📢',
     lead: 'Ready-made bars and popups you turn on and off — waitlist status, open house, fundraiser, and more.',
@@ -876,6 +909,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-class',
+    category: 'School info & money',
     title: 'Add or change a class',
     icon: '🎒',
     lead: 'Classes are the heart of the site. Editing one here updates it everywhere it appears.',
@@ -940,6 +974,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-tuition',
+    category: 'School info & money',
     title: 'Change tuition or fees',
     icon: '💳',
     lead: 'Where the prices live, and the one thing to double-check before you publish.',
@@ -997,6 +1032,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-budget',
+    category: 'School info & money',
     title: 'Update the yearly budget',
     icon: '📊',
     lead: 'The member-approved operating budget families see on the Budget & Fundraising page.',
@@ -1044,6 +1080,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'enrollment-status',
+    category: 'School info & money',
     title: 'Enrollment status & cost calculator',
     icon: '📝',
     lead: 'One switch changes your enrollment message everywhere, plus a "what will it cost?" tool for families.',
@@ -1092,6 +1129,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-staff',
+    category: 'School info & money',
     title: 'Add or edit a teacher',
     icon: '👩‍🏫',
     lead: 'Write a teacher’s name and bio once. It shows up correctly on every page.',
@@ -1132,6 +1170,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'whos-who',
+    category: 'School info & money',
     title: 'Update who holds each co-op job',
     icon: '🪪',
     lead: 'The org chart on the Co-op Jobs page, and the class rep on each class page. This is the once-a-year job after elections.',
@@ -1196,6 +1235,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-testimonial',
+    category: 'Photos & community',
     title: 'Add a parent quote',
     icon: '💬',
     lead: 'Collect a nice thing a family said and show it on the site.',
@@ -1246,6 +1286,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-faq',
+    category: 'Photos & community',
     title: 'Add or edit an FAQ',
     icon: '❓',
     lead: 'Answer a common question once and it appears on the FAQ page.',
@@ -1270,6 +1311,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-contact',
+    category: 'Website pages & menus',
     title: 'Change the phone, email, or address',
     icon: '⚙️',
     lead: 'The school’s basic facts live in one place and appear all over the site.',
@@ -1342,6 +1384,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'photos',
+    category: 'Photos & community',
     title: 'Photos and images',
     icon: '📷',
     lead: 'How to add or swap a picture, and the one field not to skip.',
@@ -1380,6 +1423,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'community-content',
+    category: 'Photos & community',
     title: 'Programs, board, downloads & more',
     icon: '🌟',
     lead: 'A few simple lists — programs, board, partners, downloads, jobs, photo albums — that appear on your pages as ready-made sections.',
@@ -1428,6 +1472,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'redirects',
+    category: 'Website pages & menus',
     title: 'Fix a broken old link',
     icon: '↪️',
     lead: 'Renamed or removed a page? Send its old link to the new place so nobody hits a dead end.',
@@ -1468,6 +1513,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'export-list',
+    category: 'Yearly jobs & housekeeping',
     title: 'Download a list (subscribers, messages, directory)',
     icon: '📤',
     lead: 'Get your newsletter list, form messages, or the family directory out as a spreadsheet, any time.',
@@ -1501,6 +1547,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'cleanup',
+    category: 'Yearly jobs & housekeeping',
     title: 'Clear out old records',
     icon: '🧹',
     lead: 'Old form messages and sign-up responses build up over the years. Clear the old ones in one go.',
@@ -1541,6 +1588,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'checkup',
+    category: 'Yearly jobs & housekeeping',
     title: 'Run a site checkup',
     icon: '🩺',
     lead: 'A one-click "what needs attention?" report — a banner left on, old messages, stale pages, gaps in your classes.',
@@ -1567,6 +1615,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'start-of-year',
+    category: 'Yearly jobs & housekeeping',
     title: 'Start a new school year',
     icon: '🍂',
     lead: 'The once-a-year rollover checklist, in order, with a jump to each thing to change.',
@@ -1598,6 +1647,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'glossary',
+    category: 'Start here',
     title: 'Words you might not know',
     icon: '📖',
     lead: 'Plain definitions for the few technical words you will run into.',
@@ -1630,6 +1680,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'edit-directory',
+    category: 'Family Hub',
     title: 'Add or edit a family in the directory',
     icon: '👪',
     lead: 'The family directory is private to signed-in families. Add a new family, or update anyone’s details, in a few clicks.',
@@ -1690,6 +1741,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'celebrations',
+    category: 'Family Hub',
     title: 'Post a celebration',
     icon: '🎉',
     lead: 'Birthdays, shout-outs, welcomes — little happy notes on the Family Hub.',
@@ -1714,6 +1766,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'family-photos',
+    category: 'Family Hub',
     title: 'Review family photos',
     icon: '📷',
     lead: 'Families upload photos on the hub; you approve the ones that appear.',
@@ -1743,6 +1796,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'coop-hours',
+    category: 'Family Hub',
     title: 'Co-op hours tracking',
     icon: '⏱️',
     lead: 'Set the yearly hours goal and confirm the hours families log.',
@@ -1784,6 +1838,7 @@ export const guides: Guide[] = [
 
   {
     slug: 'diy-vs-ask',
+    category: 'Start here',
     title: 'Do it yourself vs. ask for help',
     icon: '🧭',
     lead: 'The quick "am I allowed to touch this" cheat sheet.',

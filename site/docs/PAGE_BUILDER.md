@@ -325,7 +325,10 @@ its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSetti
   singleton, the default **＋ Create** gives volunteers new-page creation.
 - **In-Studio help:** [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts)
   holds plain-language walkthroughs ("Build or edit a page", "Edit the menus", etc.)
-  rendered in a read-only Help & Guide pane.
+  rendered in a read-only Help & Guide pane. The ~40 guides are grouped under titled
+  dividers by `guide.category` (order fixed by `GUIDE_CATEGORIES`; the union type makes
+  a missing/typo'd category a compile error) — added 2026-08-24 because one flat list
+  was overwhelming to scan.
 
 ## News / blog
 
