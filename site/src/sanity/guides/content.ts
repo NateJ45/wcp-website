@@ -224,7 +224,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open **Pages**, then click **Pages (section builder)** and the **＋** (new) button.',
-          'Give it a **Title**, then a **Slug** (the last part of the web address, like "summer-camp"). Use lowercase letters and dashes, no spaces.',
+          'Give it a **Title**, then a **Slug** (the last part of the web address, like "summer-camp"). Use lowercase letters and dashes, no spaces. If the address is already taken by another page or a built-in part of the site, an error will tell you, so you cannot accidentally hide a page.',
           'Fill in the hero, then add sections one at a time until the page is built.',
           'To put it in the top menu, open **Menus (header & footer)** and add a link to it (see "Edit the menus").',
           '**Publish**. A couple of minutes later the new page is live on the website.',

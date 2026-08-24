@@ -277,7 +277,14 @@ suites cover them.
   round-trip — see [`src/lib/queries.ts`](../src/lib/queries.ts)).
 - **`src/pages/preview/[...slug].astro`** (SSR, `prerender = false`, `noindex`): the
   same query through the draft-aware, stega-enabled `cms-preview.ts` client. One file
-  serves every page's preview.
+  serves every page's preview. The live-refresh doc id comes from the query's `_id`,
+  never derived as `page-<slug>` — that convention only holds for script-seeded pages,
+  and Studio-created pages (random ids) got no auto-refresh (Babies test, 2026-08-24).
+- **Slug guards (2026-08-24, same test):** `page.slug` validation now rejects a first
+  segment that collides with a code-owned route or build-output folder
+  (`RESERVED_PAGE_SLUGS` in `documents/page.ts` — update it when adding a top-level
+  route or `public/` folder), and a slug already used by another page (async
+  uniqueness check, same pattern as `hubPage`).
 
 **Refresh in the preview.** The section content is server-rendered Astro, so it can't
 re-render on the client the way a React app would. Instead

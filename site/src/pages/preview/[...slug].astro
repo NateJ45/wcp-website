@@ -19,12 +19,9 @@ import { site as siteFallback } from '@/data/site';
 
 const draftMode = Astro.cookies.has(perspectiveCookieName);
 const slug = (Astro.params.slug as string | undefined) || 'home';
-// Page doc ids are `page-<slug>` with slashes turned to dashes (see the
-// migration + PAGE builder). The overlay uses this to know when an edit
-// applies to the page currently on screen.
-const pageId = `page-${slug.replace(/\//g, '-')}`;
 
 interface PageDoc {
+  _id: string;
   title?: string;
   seoTitle?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +35,13 @@ const site = await getPreviewSiteSettings(draftMode, siteFallback);
 if (!page) {
   return new Response(`No page found for "${slug}"`, { status: 404 });
 }
+
+// The doc id the overlay + /preview/live listen on, read from the QUERY — a
+// derived `page-<slug>` id only holds for script-seeded pages, and a Studio-
+// created page (random id) got no live refresh at all (found by the Babies
+// test page, 2026-08-24). Draft perspective can return the drafts. twin's id;
+// strip it so the listen filter matches both twins.
+const pageId = page._id.replace(/^drafts\./, '');
 ---
 
 <PreviewLayout title={`${page.title ?? slug} — Preview`} draftMode={draftMode} pageId={pageId}>

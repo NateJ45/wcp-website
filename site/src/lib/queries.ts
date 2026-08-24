@@ -31,7 +31,7 @@ export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
 // video file assets are dereferenced to their CDN url. `^` inside a subquery
 // refers up to the section being projected.
 export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
-  title, slug, seoTitle, seoDescription, ogImage,
+  _id, title, slug, seoTitle, seoDescription, ogImage,
   hero{
     ...,
     videoFile{ "url": asset->url },
