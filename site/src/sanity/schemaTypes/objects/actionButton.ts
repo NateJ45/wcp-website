@@ -24,6 +24,8 @@ export const actionButton = defineType({
       name: 'style',
       title: 'Style',
       type: 'string',
+      description:
+        'Applies in banner sections. In page heroes the site sets button styles automatically (tour-first).',
       options: {
         list: [
           { title: 'Solid orange (primary action)', value: 'accent' },

@@ -243,7 +243,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'The **store card** at the bottom of the Family Hub home is set in **Merch store card** (Family Hub workspace → Hub pages & look): a headline, a blurb, the store link, and **Featured merch** (add a few items with a name, price, product link, and image URL to show them as clickable tiles). Clear the featured items to show just the banner.',
+        text: 'The **store card** at the bottom of the Family Hub home is set in **Merch store card** (Family Hub workspace → Hub pages & look): a headline, a blurb, the store link, and **Featured merch** (add a few items with a name, price, product link, and an uploaded product photo to show them as clickable tiles — save the picture from the store page first). Clear the featured items to show just the banner.',
       },
       {
         kind: 'p',

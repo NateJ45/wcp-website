@@ -237,7 +237,9 @@ export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
-export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, image } }`;
+// Each product's picture prefers the uploaded photo; the legacy hotlinked
+// URL is the fallback for anything unconverted (field audit 2026-08-23).
+export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, "image": coalesce(photo.asset->url, image) } }`;
 
 /**
  * The handful of strings on code-owned utility pages (thank-you, 404, the

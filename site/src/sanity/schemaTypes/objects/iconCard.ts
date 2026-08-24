@@ -37,7 +37,7 @@ export const iconCard = defineType({
       title: 'Big number/label (optional)',
       type: 'string',
       description:
-        'Shows a large number above the text, e.g. "2" on a "Dedicated classrooms" card.',
+        'Shows a large number above the text, e.g. "2" on a "Dedicated classrooms" card. Cards layout only — the compact icon list shows just icon, title, and text.',
     }),
     defineField({ name: 'body', title: 'Text', type: 'text', rows: 3 }),
     defineField({
@@ -45,14 +45,15 @@ export const iconCard = defineType({
       title: 'Link (optional)',
       type: 'url',
       description:
-        'Make the card link out, e.g. a Google Photos album or a ClassDojo invite. A small "→" link shows under the text.',
+        'Make the card link out, e.g. a Google Photos album or a ClassDojo invite. A small "→" link shows under the text. Cards layout only.',
       validation: (R) => R.uri({ scheme: ['http', 'https', 'mailto', 'tel'] }),
     }),
     defineField({
       name: 'linkLabel',
       title: 'Link text (optional)',
       type: 'string',
-      description: 'The words on the link, e.g. "Open the album". Defaults to "Open".',
+      description:
+        'The words on the link, e.g. "Open the album". Defaults to "Open". Cards layout only.',
     }),
   ],
   preview: {

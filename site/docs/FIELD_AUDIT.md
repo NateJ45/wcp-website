@@ -58,30 +58,30 @@ When everything in a section is done, collapse the section to a one-line
 
 ## QUESTIONABLE from pass 1 (~50 fields, five themes)
 
-- [ ] **hubTour's 16 wording-override boxes** — each overrides committed copy
+- [x] (superseded — see the pass-2 plan below; tab retitled, version reworded 2026-08-23) **hubTour's 16 wording-override boxes** — each overrides committed copy
       via `t(key, fallback)`; the enable switch carries the value. Collapse
       the form to switch + version (or a collapsed "Advanced wording" group).
-- [ ] **SEO/OG override trios** on `post` + `newsletterIssue` duplicate
+- [x] (DONE 2026-08-23 — 'usually leave blank' labels added; already tabbed) **SEO/OG override trios** on `post` + `newsletterIssue` duplicate
       title/excerpt/coverImage. Keep, but collapse into the SEO group with
       "usually leave blank" labels. Same for `page.ogImage` (the generated OG
       card is usually better).
-- [ ] **Three "version stamp" fields** (hubTour.version, presidentNote.version,
+- [x] (DONE 2026-08-23 — all three reworded to "Show ... again to everyone" plain language) **Three "version stamp" fields** (hubTour.version, presidentNote.version,
       announcement.version) make volunteers type a cache-buster. Consider one
       "Show again to everyone" affordance; at minimum, keep the guide steps
       explicit.
-- [ ] **Design knobs past the brand-lock:** `class.color` (can disagree with
+- [x] (RESOLVED 2026-08-23 — schoolYearEvent.accent + operatingBudget icons + iconCard.chip hidden; KEPT: class.color (Nathan's standing call — removing it makes the palette permanently code-owned) and hubNavMenu accent/icon pickers (constrained, AA-checked, genuinely used by the menu editor)) **Design knobs past the brand-lock:** `class.color` (can disagree with
       the hardcoded palette in class-colors.ts — the code is the declared
       source of truth), `schoolYearEvent.accent`, `hubNavMenu.groups[].accent`,
       `hubNavMenu` externalLink icon dropdown (raw slugs),
       `operatingBudget.groups[].icon`.
-- [ ] **Silently-ignored-in-context:** `iconCard.statValue/href/linkLabel`
+- [x] (DONE 2026-08-23 — iconCard fields labeled Cards-layout-only, hero.height hidden on video heroes, hero buttons + button style carry tour-first descriptions, wish-list heading/note merge without items, contact block passes the seam) **Silently-ignored-in-context:** `iconCard.statValue/href/linkLabel`
       (dropped in the compactIcon layout — add `hidden` on layout),
       `heroObject.height` (inert for video heroes),
       `heroObject.actions` second button + `actionButton.style` (tour-first
       doctrine overrides them on all but 3 pages — a `description` warning
       would set expectations), `supplyList.wishList.heading/note` (ignored
       when the item list is empty), `contactDetailsSection` seam.
-- [ ] Smaller: `teacherNote.version` + `directoryEntry.location` (machine-
+- [x] (RESOLVED 2026-08-23 — hubStore product photos converted to real uploaded assets by patch-hub-store-photos.mjs (all 8; legacy URL kept hidden as fallback); the rest recorded as keep-with-reason: version fields reworded, inbox fields already readOnly, openingHours/redirect.permanent/notFoundChip/hints/priority stay tucked in tabs) Smaller: `teacherNote.version` + `directoryEntry.location` (machine-
       derived geopoint — consider readOnly), `hoursLog.source` (always
       'self'), `testimonialSubmission.permission` (always true),
       `trashedItem.originalId` (write-only), `siteSettings.openingHours`

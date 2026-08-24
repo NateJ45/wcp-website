@@ -94,10 +94,13 @@ const salesLine =
 // ~400px webp, ~17KB. The tile keeps the ORIGINAL as data-img-full so
 // hub-store.ts can fall back to it if the proxy ever fails.
 const SIZED = 400;
-const sized = (u?: string): string | undefined =>
-  u && /^https?:\/\//.test(u)
-    ? `https://wsrv.nl/?url=${encodeURIComponent(u)}&w=${SIZED}&h=${SIZED}&fit=cover&output=webp&q=80`
-    : u;
+const sized = (u?: string): string | undefined => {
+  if (!u || !/^https?:\/\//.test(u)) return u;
+  // Sanity-hosted product photos size natively on the Sanity CDN — no
+  // third-party resizer needed (field audit 2026-08-23).
+  if (u.includes('cdn.sanity.io')) return `${u}?w=${SIZED}&h=${SIZED}&fit=crop&auto=format&q=80`;
+  return `https://wsrv.nl/?url=${encodeURIComponent(u)}&w=${SIZED}&h=${SIZED}&fit=cover&output=webp&q=80`;
+};
 ---
 
 {

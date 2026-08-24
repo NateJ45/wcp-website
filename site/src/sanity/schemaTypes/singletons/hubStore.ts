@@ -53,10 +53,21 @@ export const hubStore = defineType({
             }),
             defineField({ name: 'url', title: 'Product link', type: 'url' }),
             defineField({
+              name: 'photo',
+              title: 'Product photo',
+              type: 'image',
+              options: { hotspot: true },
+              description: 'Upload the product photo (save it from the store page first).',
+            }),
+            // Legacy hotlinked photo URL — those store links expire, which is
+            // why this became a real upload (field audit 2026-08-23;
+            // patch-hub-store-photos.mjs converted the existing eight).
+            // Kept hidden as the render fallback for anything unconverted.
+            defineField({
               name: 'image',
-              title: 'Image URL',
+              title: 'Image URL (old)',
               type: 'url',
-              description: 'A direct link to the product photo (from the store).',
+              hidden: true,
             }),
           ],
           preview: { select: { title: 'title', subtitle: 'price', imageUrl: 'image' } },

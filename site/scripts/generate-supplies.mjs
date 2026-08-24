@@ -434,7 +434,16 @@ function mergedContent(doc) {
     dueNote: doc?.dueNote ?? DUE_NOTE,
     waterNote: doc?.waterNote ?? WATER_NOTE,
     lists,
-    wishList: doc?.wishList?.items?.length ? { ...WISH_LIST, ...doc.wishList } : WISH_LIST,
+    // Merge each part on its own: a Studio heading or note applies even
+    // when the item list is left to the committed default (field audit
+    // 2026-08-23 — the old items-only gate silently ignored both).
+    wishList: doc?.wishList
+      ? {
+          heading: doc.wishList.heading || WISH_LIST.heading,
+          note: doc.wishList.note || WISH_LIST.note,
+          items: doc.wishList.items?.length ? doc.wishList.items : WISH_LIST.items,
+        }
+      : WISH_LIST,
   };
 }
 

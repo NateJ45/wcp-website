@@ -73,6 +73,8 @@ export const heroObject = defineType({
       type: 'array',
       of: [defineArrayMember({ type: 'actionButton' })],
       group: 'text',
+      description:
+        'Heads up: on almost every page the site places "Schedule a Tour" as the main hero button automatically. Your first button here shows as the quieter second button; extra buttons and the style choice are ignored in heroes.',
       validation: (R) => R.max(2).warning('Two buttons is the clean maximum.'),
     }),
     defineField({
@@ -80,6 +82,9 @@ export const heroObject = defineType({
       title: 'Height',
       type: 'string',
       group: 'text',
+      // Video heroes take the framed layout, which sizes itself — the radio
+      // is inert there (field audit 2026-08-23).
+      hidden: ({ parent }) => parent?.mediaType === 'video',
       options: {
         list: [
           { title: 'Tall (home / landing)', value: 'tall' },

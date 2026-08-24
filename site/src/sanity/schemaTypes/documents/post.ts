@@ -102,7 +102,8 @@ export const post = defineType({
       title: 'Browser tab / search title (optional)',
       type: 'string',
       group: 'seo',
-      description: 'Overrides the browser-tab / search title. Defaults to the post title.',
+      description:
+        'Overrides the browser-tab / search title. Defaults to the post title. Usually leave blank — the automatic one is right.',
       validation: (R) => R.max(65).warning('Titles over ~65 characters get cut off in Google.'),
     }),
     defineField({
@@ -111,7 +112,8 @@ export const post = defineType({
       type: 'text',
       rows: 2,
       group: 'seo',
-      description: 'Overrides the search / share description. Defaults to the summary.',
+      description:
+        'Overrides the search / share description. Defaults to the summary. Usually leave blank — the automatic one is right.',
       validation: (R) =>
         R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
     }),
@@ -120,7 +122,8 @@ export const post = defineType({
       title: 'Social share image (optional)',
       type: 'figureImage',
       group: 'seo',
-      description: 'Overrides the cover image when the post is shared on social media.',
+      description:
+        'Overrides the cover image when the post is shared on social media. Usually leave blank — the automatic one is right.',
     }),
   ],
   orderings: [

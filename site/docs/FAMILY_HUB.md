@@ -771,7 +771,9 @@ All three are Worker secrets (`.dev.vars` locally, `wrangler secret put` in prod
 `.dev.vars.example`), never committed. Everything degrades gracefully: if the Storefront API is
 unavailable the tiles fall back to the Board-curated `storeProducts[]` on the **Merch store
 card** singleton (`hubStore` — Family Hub workspace → Hub pages & look; `storeHeadline` /
-`storeTagline` / `storeUrl` / each product `title`/`price`/`url`/`image`; originally seeded by
+`storeTagline` / `storeUrl` / each product `title`/`price`/`url`/uploaded `photo` (the legacy
+hotlinked `image` URL stays as a hidden fallback; all 8 were converted to real assets
+2026-08-24 by `patch-hub-store-photos.mjs`); originally seeded by
 `node scripts/seed-store-feature.mjs` into Site Settings, then moved to `hubStore` 2026-08-23
 by `node scripts/patch-hub-store.mjs`); if the Open API is unavailable the stat hides. The
 card hides entirely without a `storeUrl`.
