@@ -121,10 +121,13 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
           if (!(anchor instanceof HTMLAnchorElement)) return;
           if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
 
+          const embedded = document.documentElement.classList.contains('in-studio-frame');
           const url = new URL(anchor.href, window.location.href);
           if (url.origin !== window.location.origin) {
             event.preventDefault();
-            window.open(url.href, '_blank', 'noopener');
+            // Embedded in the Studio, a click is an EDIT gesture (2026-08-28,
+            // editor feedback on presacademy): suppress, never pop a tab.
+            if (!embedded) window.open(url.href, '_blank', 'noopener');
             return;
           }
           const path = url.pathname.replace(/\/+$/, '') || '/';
@@ -132,10 +135,11 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
           // Already in preview, an API/Studio path, or a same-page hash: default.
           if (path.startsWith('/preview') || first === 'api' || first === 'studio') return;
           if (path === window.location.pathname && url.hash) return;
-          // A real file (pdf, image, ics...) has no preview: new tab.
+          // A real file (pdf, image, ics...) has no preview: new tab when
+          // standalone, suppressed when embedded (edit gesture).
           if (/\.[a-z0-9]+$/i.test(path.split('/').pop() ?? '')) {
             event.preventDefault();
-            window.open(url.href, '_blank', 'noopener');
+            if (!embedded) window.open(url.href, '_blank', 'noopener');
             return;
           }
 
