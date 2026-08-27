@@ -69,7 +69,7 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
     {chrome === 'public' && <Header linkBase="/preview" />}
     <p
       data-reconnect-hint
-      class="bg-cream text-ink border-b border-black/10 px-4 py-2 text-center text-sm font-semibold"
+      class="border-b border-black/10 bg-cream px-4 py-2 text-center text-sm font-semibold text-ink"
     >
       Draft session ended — reload the Studio browser tab to reconnect the preview.
     </p>
