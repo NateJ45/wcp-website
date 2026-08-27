@@ -58,5 +58,63 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
         </>
       )
     }
+
+    <script>
+      // =======================================================================
+      // Keep clicks INSIDE the preview surface (2026-08-26)
+      // =======================================================================
+      // linkBase covers the Header/Footer, but SECTION BODIES are full of real
+      // links (action buttons, CTA bands, card links). Left alone, clicking one
+      // navigates the Presentation iframe to the LIVE page, which has no Studio
+      // connection: the URL bar, the page navigator, and the edit panel all
+      // silently freeze on the previous page while the iframe shows production.
+      // (Found on the presacademy site by an editor; the same hole existed
+      // here.)
+      //
+      // Same-origin links with a preview equivalent are remapped into
+      // /preview/* (the visual-editing history adapter then reports the new
+      // location, so the navigator and the edit panel follow the click). Links
+      // with no preview route (files, /api, /studio, external origins) open in
+      // a NEW TAB so the preview surface is never hijacked. Route map:
+      //   /               -> /preview
+      //   /news/<slug>    -> /preview/news/<slug>       (post preview route)
+      //   /family-hub/... -> /preview/family-hub/...    (hub preview route)
+      //   /<page slug>    -> /preview/<page slug>       (multi-segment slugs ok)
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (event.defaultPrevented || event.button !== 0) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          const anchor = (event.target as Element | null)?.closest?.('a[href]');
+          if (!(anchor instanceof HTMLAnchorElement)) return;
+          if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+
+          const url = new URL(anchor.href, window.location.href);
+          if (url.origin !== window.location.origin) {
+            event.preventDefault();
+            window.open(url.href, '_blank', 'noopener');
+            return;
+          }
+          const path = url.pathname.replace(/\/+$/, '') || '/';
+          const first = path === '/' ? '' : path.split('/')[1];
+          // Already in preview, an API/Studio path, or a same-page hash: default.
+          if (path.startsWith('/preview') || first === 'api' || first === 'studio') return;
+          if (path === window.location.pathname && url.hash) return;
+          // A real file (pdf, image, ics...) has no preview: new tab.
+          if (/\.[a-z0-9]+$/i.test(path.split('/').pop() ?? '')) {
+            event.preventDefault();
+            window.open(url.href, '_blank', 'noopener');
+            return;
+          }
+
+          // Everything else on this site is a previewable document: the page
+          // builder's catch-all covers page slugs (slashes preserved), and
+          // news/family-hub have dedicated preview routes at the same subpath.
+          event.preventDefault();
+          window.location.assign(path === '/' ? '/preview' : `/preview${path}`);
+        },
+        true,
+      );
+    </script>
   </body>
 </html>

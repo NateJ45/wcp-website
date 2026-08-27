@@ -83,6 +83,7 @@ src/
     preview/[...slug].astro  # SSR draft preview for the Studio (prerender=false, noindex)
     preview/news/[slug].astro # SSR draft preview for a News post
     preview/live.ts          # SSE proxy: Sanity listen events → preview auto-refresh (token stays server-side)
+    # PreviewLayout intercepts in-preview link clicks (2026-08-26): same-origin links remap into /preview/* so the Presentation navigator + edit panel follow the click; files/api/external open in a new tab. Without it the iframe silently escapes to the LIVE page and the Studio freezes on the old document (found on presacademy).
     thank-you.astro          # contact-form landing (no-JS submit target)
     enrollment-packet.astro  # print-ready enrollment packet (CMS-assembled; Save as PDF via print CSS)
     search.astro             # site search (Pagefind UI over the build-time index)
