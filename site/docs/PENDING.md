@@ -48,6 +48,16 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Waiting on a human
 
+- **DECISION: adopt a staging branch (2026-08-28).** This is the one repo in
+  the site family that commits straight to `main`, and `main` auto-deploys.
+  The presacademy flow (`staging` first, fast-forward `main` to release) adds
+  a review beat with no other cost. Not worth disrupting work in flight for.
+  The switch is one session: create `staging` from `main`, retarget the local
+  habit and the docs (CLAUDE.md Deploy & CI, this file), and decide whether
+  `deploy.yml` keeps firing on `main` only (it should). Adopt at the start of
+  the next planned multi-commit change.
+
+
 - **Set the `SITE_URL` repo variable so the uptime check can run** (added
   2026-08-27). `.github/workflows/uptime.yml` curls four live pages every hour
   and tells you through GitHub when one stops answering 200. It skips with a
