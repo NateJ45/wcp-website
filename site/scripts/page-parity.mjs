@@ -2,6 +2,12 @@
 // PORTED from the ncs-astro-sanity-starter parity harness (a PATTERN, not an
 // identical-canonical file: every site accrues its own normalizer rules, so
 // this copy is deliberately NOT sync-check marked. WCP-local rules: 5-7.)
+//
+// WCP GOTCHA (2026-08-27): compare ONLY against a plain `npm run build` dist.
+// `npm test` rebuilds dist through Playwright's webServer, which injects fake
+// tracker ids (PUBLIC_GA_ID etc.) so the consent card renders; that build adds
+// the footer "Cookie choices" button and DIFFs every page. Not nondeterminism,
+// an env divergence. Rebuild plain before comparing.
 /**
  * page-parity.mjs - rendered-HTML parity harness. Back-ported from the
  * presacademy repo 2026-08-27 and adapted to this build.

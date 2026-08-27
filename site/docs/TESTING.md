@@ -186,3 +186,8 @@ Diagnosing, in order:
 -match 'playwright|wrangler|astro' }` then `taskkill /F /T /PID <id>`.
 - WebKit-only failures that land on the login page are a different, documented trap: a dist
   built without `WCP_INSECURE_COOKIES=1` sets a Secure cookie WebKit will not send over http.
+
+Parity gotcha: compare only against a plain `npm run build`. The Playwright
+webServer rebuilds dist with fake tracker ids (consent card env), which adds
+the footer cookie button and DIFFs every page against the plain-build
+baselines.
