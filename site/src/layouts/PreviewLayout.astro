@@ -33,15 +33,46 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-draft={draftMode ? '1' : '0'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title}</title>
+    <script is:inline>
+      // Before paint: mark whether this preview page is EMBEDDED in the Studio's
+      // Presentation iframe (2026-08-27, same fix as presacademy). The "Exit
+      // preview" button hides when embedded: inside Presentation it clears the
+      // draft cookie and strands the iframe on the live site with no Studio
+      // connection. The way out of Presentation is Presentation's own chrome.
+      // A page rendering embedded WITHOUT draft mode shows a reconnect hint.
+      if (window.self !== window.top) {
+        document.documentElement.classList.add('in-studio-frame');
+        if (document.documentElement.dataset.draft !== '1') {
+          document.documentElement.classList.add('preview-disconnected');
+        }
+      }
+    </script>
+    <style>
+      .in-studio-frame [data-exit-preview] {
+        display: none;
+      }
+      [data-reconnect-hint] {
+        display: none;
+      }
+      .in-studio-frame.preview-disconnected [data-reconnect-hint] {
+        display: block;
+      }
+    </style>
   </head>
   <body class="relative">
     {chrome === 'public' && <Header linkBase="/preview" />}
+    <p
+      data-reconnect-hint
+      class="bg-cream text-ink border-b border-black/10 px-4 py-2 text-center text-sm font-semibold"
+    >
+      Draft session ended — reload the Studio browser tab to reconnect the preview.
+    </p>
     <main id="main"><slot /></main>
     {chrome === 'public' && <Footer linkBase="/preview" />}
 
@@ -51,6 +82,7 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
           <VisualEditingOverlay client:only="react" pageId={pageId} />
           <a
             href="/api/draft-mode/disable"
+            data-exit-preview
             class="fixed right-4 bottom-4 z-50 rounded-full bg-navy px-4 py-2 text-sm font-bold text-white shadow-lg hover:bg-heading"
           >
             Exit preview
