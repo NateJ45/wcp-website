@@ -57,7 +57,6 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
   `deploy.yml` keeps firing on `main` only (it should). Adopt at the start of
   the next planned multi-commit change.
 
-
 - **Set the `SITE_URL` repo variable so the uptime check can run** (added
   2026-08-27). `.github/workflows/uptime.yml` curls four live pages every hour
   and tells you through GitHub when one stops answering 200. It skips with a
