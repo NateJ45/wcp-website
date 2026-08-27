@@ -1,0 +1,48 @@
+name: Uptime check
+
+# A lightweight safety net, added 2026-08-27 (back-ported from the presacademy
+# repo): every hour, confirm the live site's key pages return HTTP 200. A failed
+# run notifies you through GitHub.
+#
+# The schedule is ENABLED. This repo is PUBLIC, so Actions minutes are free.
+#
+# Set the SITE_URL repo variable to the live origin
+# (https://wcp-website.nathanjnixon86.workers.dev today; change it at the domain
+# cutover, see site/docs/LAUNCH_CHECKLIST.md). Without the variable the job
+# gives a WARNING and exits 0, so it never false-alarms.
+#
+# WARNING: keep the TRAILING SLASH on each path. This is a static build with
+# directory-format output, so /tuition answers 307 and only /tuition/ answers
+# 200 (site/CLAUDE.md -> Gotchas -> "Trailing slash").
+#
+# Note: GitHub's scheduler is best-effort and can be delayed under load. For
+# real monitoring, also point a dedicated service (UptimeRobot's free tier is
+# enough) at the homepage.
+on:
+  schedule:
+    - cron: '17 * * * *' # hourly, offset off the top of the hour
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check key pages return 200
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -z "$SITE_URL" ]; then
+            echo "::warning::SITE_URL variable not set; skipping uptime check."
+            exit 0
+          fi
+          base="${SITE_URL%/}"
+          fail=0
+          for path in "/" "/tuition/" "/enroll/" "/faq/"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 "${base}${path}")
+            echo "${code}  ${base}${path}"
+            if [ "$code" != "200" ]; then fail=1; fi
+          done
+          if [ "$fail" = "1" ]; then
+            echo "::error::One or more key pages did not return HTTP 200."
+            exit 1
+          fi

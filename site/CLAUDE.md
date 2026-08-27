@@ -66,7 +66,12 @@ npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/dat
 npm run test:hub     # Playwright: SSR Family Hub — shell + Home + every reskinned section (rail, drawer, 320px, axe light+dark) — separate config, see gotcha
                      # Which suite covers what + the testing gotchas: docs/TESTING.md
 npm run check:links  # linkinator over dist/client
+npm run typegen      # Sanity schema → src/lib/sanity.types.ts (committed; CI fails on a stale diff)
 npm run deploy       # build + wrangler deploy -c dist/server/wrangler.json  (see gotcha)
+
+# Rendered-HTML parity, for a refactor that must not change output (docs/TESTING.md):
+node scripts/page-parity.mjs capture   # after npm run build
+node scripts/page-parity.mjs compare   # after the refactor + another npm run build
 ```
 
 **Before committing, the full local gate is:** `npx astro check` · `npm run lint` · `npm run format:check` · `npm run build` · `npm run check:links` · `npm test` · `npm run test:unit`. CI runs the same, plus a Lighthouse accessibility gate (must hold 100).
@@ -110,6 +115,9 @@ scripts/
   generate-og.mjs            # postbuild: renders /og/*.jpg share cards
   generate-curriculum.mjs    # renders the branded class Curriculum Guide PDFs. CONTENT is Board-editable (Studio → curriculumGuide docs; committed data = fallback + seed source). Runs in postbuild with --dist (regenerates on every deploy; skips gracefully without a browser) or by hand → public/curriculum/
   generate-supplies.mjs      # renders the School Supply List (print PDF + social carousel). CONTENT is Board-editable (Studio → supplyList singleton). Same postbuild --dist behavior → public/supplies/
+  page-parity.mjs            # rendered-HTML parity harness: capture dist/client, refactor, compare (docs/TESTING.md). Baselines in scripts/.parity/ are COMMITTED
+  free-dist.mjs              # prebuild hook: kills a stale local dev server still holding dist/ (Windows only, narrowly matched)
+  with-workerd.mjs           # PRESENT BUT UNWIRED on purpose — arms if a future adapter upgrade brings back the Windows workerd crash (header explains how)
   apps-script/               # committed source for the deployed Google Apps Scripts (see docs/GOOGLE.md)
 docs/                        # the deeper docs (see the list at the bottom of this file)
 ```
@@ -203,7 +211,9 @@ docs/                        # the deeper docs (see the list at the bottom of th
 ## Deploy & CI
 
 - **Repo:** `NateJ45/wcp-website` (**PUBLIC** — which is why the share-link and secrets rules above are absolute). **Live:** `wcp-website.nathanjnixon86.workers.dev`.
-- **Workflows** (`.github/workflows/`): `ci.yml` (types, lint, format, build, links, Playwright), `lighthouse.yml` (a11y gate 100), `deploy.yml`, plus `refresh-instagram-token.yml` (50-day token refresher; pushes to both the Actions secret and the Worker secret). The three build workflows pass `secrets.SANITY_TOKEN`.
+- **Workflows** (`.github/workflows/`): `ci.yml` (Sanity typegen guard, types, lint, format, unit tests, build, links, Playwright), `lighthouse.yml` (a11y gate 100), `deploy.yml`, `link-health.yml`, plus `refresh-instagram-token.yml` (50-day token refresher; pushes to both the Actions secret and the Worker secret). The three build workflows pass `secrets.SANITY_TOKEN`.
+- **Two operational workflows added 2026-08-27** (back-ported from the presacademy repo; both schedules are ENABLED because this repo is public and Actions minutes are free): `sanity-backup.yml` exports the production dataset nightly and keeps it 90 days (restore steps in [docs/SANITY.md](docs/SANITY.md)), and `uptime.yml` curls four live pages hourly (arm it by setting the `SITE_URL` repo variable; see [docs/TESTING.md](docs/TESTING.md)). Each gates on its secret/variable and WARNS rather than fails when it is missing.
+- **`src/lib/sanity.types.ts` is generated and committed.** Change a schema type, run `npm run typegen` in `site/`, and commit the result in the same commit. CI regenerates and fails on any diff, so stale types cannot ship. The queries do not consume these types yet; the guard's value is catching schema drift. Extract needs `--workspace public` (two workspaces, one shared schema), and the config lives in `sanity-typegen.json` — Sanity 6.4's CLI config has no typegen block. `schema.json` is a gitignored intermediate.
 - **Deploy triggers:** push to `main`, a Sanity `repository_dispatch` webhook fired on publish (so CMS edits go live without a code push), **or** a weekly cron (Mondays 08:00 UTC) that caps how stale baked third-party data (the re-hosted Instagram tiles, weather, gviz numbers) can get at 7 days even when nothing publishes. Setup in [docs/SANITY.md](docs/SANITY.md).
 
 ## Deeper docs

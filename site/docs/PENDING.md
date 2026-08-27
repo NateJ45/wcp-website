@@ -48,6 +48,14 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Waiting on a human
 
+- **Set the `SITE_URL` repo variable so the uptime check can run** (added
+  2026-08-27). `.github/workflows/uptime.yml` curls four live pages every hour
+  and tells you through GitHub when one stops answering 200. It skips with a
+  warning until the variable exists. Set it in GitHub -> Settings -> Secrets and
+  variables -> Actions -> Variables -> New repository variable, named
+  `SITE_URL`, valued `https://wcp-website.nathanjnixon86.workers.dev` (change it
+  at the domain cutover). See [TESTING.md](TESTING.md).
+
 - **Re-share the Orientation Slide Deck.** The first link-health run (2026-08-17) found the
   Documents page's "Orientation Slide Deck" link answering HTTP 403 — families who tap it get
   Google's access-denied page. Open the file in Google, set sharing back to "Anyone with the

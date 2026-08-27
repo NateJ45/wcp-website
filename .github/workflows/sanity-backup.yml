@@ -1,0 +1,82 @@
+name: Sanity dataset backup
+
+# Nightly export of the production Sanity dataset (documents + assets), added
+# 2026-08-27 (back-ported from the presacademy repo). The whole site lives in
+# Sanity: a bad mutation, a mis-run patch script, or an accidental "Remove
+# field" in the Studio can destroy content that no code change can restore.
+# This job makes every night recoverable.
+#
+# The schedule is ENABLED. This repo is PUBLIC, so Actions minutes are free.
+#
+# The gate job below checks that the SANITY_TOKEN secret exists. A missing
+# secret gives a WARNING and skips the export; it never fails the run. That
+# keeps a red X off the Actions tab if the secret is ever rotated out.
+#
+# Restore: download the artifact, then from site/ run
+#   npx sanity dataset import sanity-backup-<date>.tar.gz production --replace
+# See site/docs/SANITY.md -> "Nightly dataset backup".
+on:
+  schedule:
+    - cron: '0 7 * * *' # daily 07:00 UTC (03:00 Eastern)
+  workflow_dispatch:
+
+jobs:
+  # WARNING: do NOT hoist `defaults.run.working-directory: site` to the workflow
+  # level. This job never checks out the repo, so site/ would not exist and
+  # every step would fail before it could warn. The export job sets it itself.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          TOKEN: ${{ secrets.SANITY_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::SANITY_TOKEN not set; skipping backup. See site/docs/SANITY.md."
+          fi
+
+  export:
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    # The deployable app (and sanity.cli.ts, which carries the project id) lives
+    # in site/ ; run every step there.
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The Sanity CLI reads its credentials from SANITY_AUTH_TOKEN. The repo
+      # secret is named SANITY_TOKEN (the name the build workflows already
+      # use), so map it here. projectId and dataset come from sanity.cli.ts,
+      # which is why this step must run in site/.
+      - name: Export production dataset
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_TOKEN }}
+        run: |
+          STAMP=$(date -u +%Y-%m-%d)
+          npx sanity dataset export production "sanity-backup-$STAMP.tar.gz"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanity-backup
+          path: site/sanity-backup-*.tar.gz
+          # GitHub keeps artifacts 90 days. For longer or off-site retention,
+          # push the tarball to R2 here instead.
+          retention-days: 90

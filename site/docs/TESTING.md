@@ -12,6 +12,7 @@ so they get different Playwright configs.
 | `npm run check:links` | linkinator   | existing `dist/client`             | Every internal link + asset in the built static site. Needs a real `npm run build` first (postbuild generates the OG images it checks).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Lighthouse (CI only)  | lhci         | built site                         | Accessibility score MUST be 100, per route, both public and hub. The real gate is Linux CI — see gotchas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `npm run check`       | astro/oxlint | —                                  | Types + lint. Fast; run before anything else.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `npm run typegen`     | Sanity CLI   | —                                  | Regenerates `src/lib/sanity.types.ts` from the Studio schema. CI runs it and fails on a diff — see "Stale Sanity types" below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 Both Playwright configs run TWO projects: `chromium` (Desktop Chrome) and
 `webkit-iphone` (real WebKit engine, iPhone viewport) — so every UI test
@@ -51,6 +52,85 @@ has been closed` under full-suite load. Re-run the single test in isolation
   gate.
 - **`settle()` in `tests/helpers.ts`** is the shared wait-for-quiet helper —
   use it instead of hand-rolled timeouts when a page streams islands.
+
+## Uptime check (production, added 2026-08-27)
+
+`.github/workflows/uptime.yml` curls four key pages on the live site every
+hour and fails the run if any answers something other than 200. A failed run
+notifies you through GitHub. It is the only check that watches PRODUCTION;
+every suite above tests a local build.
+
+To arm it, set the `SITE_URL` repo variable to the live origin
+(`https://wcp-website.nathanjnixon86.workers.dev` today). Without the variable
+the job warns and exits 0, so it never false-alarms.
+
+WARNING: keep the trailing slash on each path in that workflow. This is a
+static build with directory-format output, so `/tuition` answers 307 and only
+`/tuition/` answers 200.
+
+GitHub's scheduler is best-effort and can run late. For real monitoring, also
+point a dedicated service (UptimeRobot's free tier is enough) at the homepage.
+
+## Stale Sanity types (CI guard, added 2026-08-27)
+
+`npm run typegen` does two steps. It extracts the Studio schema to
+`schema.json`, then generates TypeScript types into
+`src/lib/sanity.types.ts`. The types are COMMITTED; `schema.json` is
+gitignored (a large machine artifact nobody reads).
+
+The CI `build` job runs typegen and then fails if the committed types moved.
+A red step there means one thing: someone changed a schema type and did not
+regenerate. Fix it in two steps.
+
+1. Run `npm run typegen` in `site/`.
+2. Commit `src/lib/sanity.types.ts` with the schema change.
+
+Notes:
+
+- The queries in `src/lib/queries.ts` do NOT use these types today. The guard
+  still has value: it proves the committed types describe the real schema, so
+  the types are safe to adopt later.
+- The extract step needs `--workspace public`. This Studio has TWO workspaces
+  (`public`, `family-hub`) over one dataset, and the CLI refuses to guess.
+  Both workspaces register the SAME `schemaTypes` array, so one extract covers
+  every type.
+- `sanity typegen generate` reads `sanity-typegen.json`, not `sanity.cli.ts`.
+  Sanity 6.4 has no `typegen` block in the CLI config.
+- Typegen prints "Encountered errors in N files" for files it cannot parse for
+  GROQ. That is a warning, it exits 0, and it does not affect the schema types.
+
+## Parity verification (`scripts/page-parity.mjs`, added 2026-08-27)
+
+A rendered-HTML parity harness, back-ported from the presacademy repo. Use it
+when a refactor must not change the output: capture the built HTML of every
+prerendered public route, refactor, rebuild, compare. Any diff is either real
+drift or a value that genuinely varies between builds.
+
+    npm run build
+    node scripts/page-parity.mjs capture     # 27 snapshots -> scripts/.parity/
+    ...refactor...
+    npm run build
+    node scripts/page-parity.mjs compare     # PASS/DIFF per page, exit 1 on any diff
+    node scripts/page-parity.mjs compare tuition   # one page
+
+Facts to know:
+
+- The script NEVER builds. You build. Use `npm run build`, never bare
+  `astro build`: the postbuild hook (Pagefind, OG cards, Instagram re-host)
+  rewrites `dist/client` HTML, so a bare-build baseline diffs against every
+  real build.
+- The route list comes from `tests/routes.ts`, the same source the Playwright
+  sweeps use. Add a route there and the harness picks it up.
+- Snapshots in `scripts/.parity/*.html` ARE COMMITTED. They are the baseline.
+  Re-capture only when you intend to move it, and say so in the commit message.
+- The normalizer strips build-varying values only: `/_astro/` content hashes,
+  Astro scoped-style hashes, island hydration prefixes, between-tag whitespace,
+  and the Instagram tile grid. Every rule and its reason is in the file header.
+- The Instagram grid (`wcp-ig-grid`, home page only) is EXCLUDED because it is
+  live third-party data read at build time. The exclusion is narrow: the
+  section wrapper, heading, CTA and lightbox all still compare byte-for-byte.
+- Proof it works: build, capture, rebuild, compare gave **27/27 PASS**
+  (2026-08-27).
 
 ## What to run when
 

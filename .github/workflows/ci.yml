@@ -31,6 +31,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Sanity typegen guard (added 2026-08-27). `src/lib/sanity.types.ts` is
+      # generated from the Studio schema and committed by hand. Regenerate it
+      # here: any diff means someone changed a schema type and did not re-run
+      # typegen, so the committed types no longer describe the real content.
+      - name: Generate Sanity types
+        run: npm run typegen
+
+      - name: Fail if committed Sanity types are stale
+        run: |
+          if ! git diff --quiet -- src/lib/sanity.types.ts; then
+            echo "::error::src/lib/sanity.types.ts is out of date. Run 'npm run typegen' in site/ and commit the result."
+            git --no-pager diff -- src/lib/sanity.types.ts
+            exit 1
+          fi
+
       - name: Type check (astro check)
         run: npx astro check
 

@@ -8,10 +8,12 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/free-dist.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist/client && node scripts/generate-og.mjs && node scripts/rehost-instagram.mjs && node scripts/generate-curriculum.mjs --dist && node scripts/generate-supplies.mjs --dist",
     "preview": "astro preview",
     "studio:dev": "sanity dev --port 3333",
+    "typegen": "sanity schema extract --workspace public --path ./schema.json && sanity typegen generate",
     "deploy": "npm run build && wrangler deploy -c dist/server/wrangler.json",
     "check": "astro check && oxlint src",
     "lint": "oxlint src",

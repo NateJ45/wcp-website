@@ -169,15 +169,46 @@ autoUpdates }` block in [sanity.cli.ts](../sanity.cli.ts), but auto-updates only
 **`SANITY_TOKEN`** (Editor token) is a **server-only secret**, never committed. It is read
 in two different contexts, so it lives in a few places:
 
-| Where                         | Why                                                                                                  |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `.env` (gitignored)           | Local **build** — `cms.ts` reads public page content via `import.meta.env` at build time             |
-| `.dev.vars` (gitignored)      | Local **Worker runtime** — the gated hub reads via `cloudflare:workers` env under `wrangler`/preview |
-| GitHub `secrets.SANITY_TOKEN` | CI, Lighthouse, and Deploy builds (all three pass it — a tokenless build emits an empty site)        |
-| Cloudflare secret             | The deployed Worker's runtime (gated hub) — set with `npx wrangler secret put SANITY_TOKEN`          |
+| Where                         | Why                                                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `.env` (gitignored)           | Local **build** — `cms.ts` reads public page content via `import.meta.env` at build time                                      |
+| `.dev.vars` (gitignored)      | Local **Worker runtime** — the gated hub reads via `cloudflare:workers` env under `wrangler`/preview                          |
+| GitHub `secrets.SANITY_TOKEN` | CI, Lighthouse, and Deploy builds (all three pass it — a tokenless build emits an empty site), and the nightly dataset backup |
+| Cloudflare secret             | The deployed Worker's runtime (gated hub) — set with `npx wrangler secret put SANITY_TOKEN`                                   |
 
 `projectId` / `dataset` are **not** secret (the Studio bundles them) — they're in
 `astro.config.mjs`, `sanity.config.ts`, and `src/sanity/env.ts`.
+
+## Nightly dataset backup (added 2026-08-27)
+
+All site content lives in Sanity. A bad mutation, a mis-run patch script, or an
+accidental "Remove field" in the Studio can destroy content that no code change
+can restore. `.github/workflows/sanity-backup.yml` exports the whole production
+dataset (documents + assets) every night at 07:00 UTC and keeps each tarball for
+90 days as a GitHub Actions artifact.
+
+Facts:
+
+- The schedule is ENABLED. This repo is PUBLIC, so Actions minutes are free.
+- The job runs from `site/`, because `sanity.cli.ts` (which carries the project
+  id) lives there.
+- It reuses the existing `secrets.SANITY_TOKEN`, mapped to the `SANITY_AUTH_TOKEN`
+  environment variable the Sanity CLI reads. A gate job checks the secret first:
+  a missing secret gives a WARNING and skips, it never fails the run.
+
+To restore a backup:
+
+1. Open the workflow run in the Actions tab and download the `sanity-backup`
+   artifact.
+2. Unzip it to get `sanity-backup-<date>.tar.gz`.
+3. From `site/`, run
+   `npx sanity dataset import sanity-backup-<date>.tar.gz production --replace`.
+
+WARNING: `--replace` overwrites documents that have the same id. Restore into a
+scratch dataset first if you only need one document back.
+
+For longer or off-site retention, push the tarball to R2 in the workflow instead
+of (or as well as) uploading the artifact.
 
 ## Auto-deploy on publish (Sanity → GitHub Actions → Cloudflare)
 

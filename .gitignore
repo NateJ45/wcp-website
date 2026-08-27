@@ -22,6 +22,12 @@ dist/
 # No leading slash -> matches this basename at any depth (i.e. under site/).
 .asset-map.json
 
+# Sanity typegen intermediate (2026-08-27). `npm run typegen` extracts the
+# Studio schema to site/schema.json, then generates the COMMITTED types at
+# site/src/lib/sanity.types.ts. Only the types are tracked: schema.json is a
+# large machine artifact that adds nothing a reviewer can read.
+schema.json
+
 # Directory migration (scripts/migrate-directory.mjs): photo-URL -> Sanity asset
 # id cache, and the temp ES module it writes while parsing the family code block
 # (which holds real PII). Local-only, never commit.
