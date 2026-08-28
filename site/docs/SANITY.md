@@ -168,6 +168,32 @@ parent) a link that shows a page's **draft**, with no Sanity login:
   it. The reasoning (and the warning against "fixing" it) lives in
   [`src/sanity/urls.ts`](../src/sanity/urls.ts).
 
+## Undo a change (added 2026-08-28)
+
+Ported from the starter (PORTS.md card 27). Squarespace's Ctrl+Z, for everything a board
+member does to a page, not only typing:
+
+- **Where:** the `Undo last change` and `Redo` actions in the publish menu of a **Page**
+  and a **Family Hub page**, in BOTH workspaces. With a page open, `Ctrl+Z` /
+  `Ctrl+Shift+Z` / `Ctrl+Y` (`Cmd` on a Mac) do the same.
+- **How it works:** every mutation Sanity accepts lands in a transaction log, and each
+  entry carries a mendoza patch in both directions. Undo reads the last few transactions
+  for the DRAFT, applies the newest one's `revert`, and keeps the forward patch so Redo can
+  replay it. It goes through the editor's own Studio session, so it needs no extra token.
+  See [`src/sanity/undoRedo.ts`](../src/sanity/undoRedo.ts) for the mechanism and the
+  safety rules, and [`src/sanity/components/UndoRedo.tsx`](../src/sanity/components/UndoRedo.tsx)
+  for the actions and the keyboard layer.
+- **Drafts only, which makes it publish-safe.** A publish is a mutation on the PUBLISHED
+  twin, so it is not in this log and cannot be stepped over. Undo also refuses rather than
+  writing over a change it cannot see ("Someone else edited since"), and it will not delete
+  a draft that has no published copy behind it ("This would remove the only copy").
+- **Text boxes keep their own undo.** With focus in an input, a textarea or a rich-text
+  editor, the shortcut does nothing at all, so the browser's per-field undo runs.
+- **In memory, gone on reload.** Undo is for the last few minutes. **Version history** is
+  still the deep restore, and the volunteer guide says so.
+- Tests: [`src/lib/undoRedo.test.ts`](../src/lib/undoRedo.test.ts) (this repo's Vitest copy
+  of the canonical 27 cases; the shared module itself is byte-identical to the starter's).
+
 ## The Studio
 
 There is **one** Studio, and it's embedded at **`/studio`** on the live site

@@ -27,6 +27,7 @@ import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slug
 import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
 import { SaveSectionPresetAction } from './src/sanity/actions/saveSectionPreset';
 import { CheckPageAction } from './src/sanity/actions/checkPage';
+import { UndoAction, RedoAction, undoRedoShortcuts } from './src/sanity/components/UndoRedo';
 import { PAGE_BUILDER_TYPES } from './src/sanity/pageBuilderConfig';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
@@ -99,6 +100,14 @@ const USED_ON_TYPES = [
   'testimonial',
   'faqItem',
 ];
+
+// The types that get "Undo last change" and "Redo" (PORTS.md card 27). Both
+// page types, on BOTH workspaces: a public `page` and a Family Hub `hubPage`
+// are the two documents a volunteer builds by dragging sections around, so they
+// are where a mis-drag costs the most. This is deliberately NOT
+// PAGE_BUILDER_TYPES, which lists only the hosts of the public `sections`
+// array; hubPage carries its own builder array.
+const UNDO_REDO_TYPES = new Set<string>(['page', 'hubPage']);
 
 const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => {
   if (['page', 'post', 'newsletterIssue'].includes(schemaType)) {
@@ -192,6 +201,16 @@ function workspace(opts: {
       // title, see where each image is used) and a browse option in every image
       // picker. Self-contained; no external provisioning.
       media(),
+      // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y (Cmd on a Mac) for everything that is
+      // not typing: sections added, dragged or removed, photos cleared,
+      // backgrounds changed (PORTS.md card 27). The buttons are the two
+      // document actions in the resolver below; this plugin adds only the
+      // keyboard layer, and it stays out of text boxes so their own undo keeps
+      // working. It contributes a SECOND studio.components.layout. Sanity
+      // composes layout components middleware-style, so it wraps around
+      // StudioLayout above rather than replacing it - both call renderDefault.
+      // See src/sanity/components/UndoRedo.tsx.
+      undoRedoShortcuts(),
       ...(opts.extraPlugins ?? []),
     ],
     schema: {
@@ -238,6 +257,14 @@ function workspace(opts: {
           ? [SaveSectionPresetAction, CheckPageAction]
           : [];
 
+        // Undo / Redo (PORTS.md card 27), on the two draft-editable page types.
+        // A page is where a mis-drag or a wrong background actually costs
+        // something, and where "which change do you mean?" has an obvious
+        // answer. They come FIRST among the added actions, so the step back
+        // sits at the top of the menu where an editor looks for it. The
+        // keyboard shortcut is registered separately, by the plugin above.
+        const undoRedo = UNDO_REDO_TYPES.has(schemaType) ? [UndoAction, RedoAction] : [];
+
         if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
         if (schemaType === 'testimonialSubmission')
           return [ApproveTestimonialAction, ...base, shareDraftLinkAction];
@@ -252,12 +279,13 @@ function workspace(opts: {
         if (ARCHIVABLE_TYPES.has(schemaType)) {
           return [
             ...base.filter(({ action }) => action !== 'delete'),
+            ...undoRedo,
             ...pageHelpers,
             ArchiveAction,
             shareDraftLinkAction,
           ];
         }
-        return [...base, ...pageHelpers, shareDraftLinkAction];
+        return [...base, ...undoRedo, ...pageHelpers, shareDraftLinkAction];
       },
       // Keep singletons AND trashedItem out of the global "create new" menu
       // (you never hand-author a trash receipt, and legalPage is retired —
