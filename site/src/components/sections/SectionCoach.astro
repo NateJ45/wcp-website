@@ -1,0 +1,33 @@
+---
+/* ============================================================================
+   SectionCoach — the "here is what goes here" placeholder (PREVIEW ONLY)
+   ============================================================================
+   Stands in for a page-builder section that has no content yet. A volunteer who
+   adds a section from the picker used to land back on a band of empty padding;
+   now they land on a dashed note that names the section and says what to type.
+
+   Deliberately reads as scaffolding and not as content: dashed border, muted
+   tones, no brand color, no photo. Nobody should mistake it for the real band.
+   Rendered ONLY by SectionRenderer, and only when `editDoc` is set (draft-mode
+   preview), so it can never reach the live site.
+   ============================================================================ */
+interface Props {
+  /** The section's plain-language name (the Studio picker's words). */
+  name: string;
+  /** One sentence: what to add. */
+  hint: string;
+}
+const { name, hint } = Astro.props;
+---
+
+<div class="bg-white dark:bg-surface" data-section-coach>
+  <div class="wcp-container py-[var(--wcp-space-xl)]">
+    <div
+      class="mx-auto flex max-w-2xl flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-border bg-grey px-6 py-10 text-center"
+    >
+      <p class="text-xs font-bold tracking-widest text-ink-muted uppercase">Nothing here yet</p>
+      <p class="font-display text-xl text-heading">{name}</p>
+      <p class="max-w-md text-sm leading-relaxed text-ink-muted">{hint}</p>
+    </div>
+  </div>
+</div>

@@ -10,6 +10,8 @@
 import type { SectionData } from './section-helpers';
 import { effectiveBg, wantsSeam } from './section-helpers';
 import { sectionEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
+import { sectionCoach } from '@/lib/section-coach';
+import SectionCoach from './SectionCoach.astro';
 import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
 import Interlude from '@/components/Interlude.astro';
@@ -314,28 +316,39 @@ const MAP: Record<string, any> = {
       : null;
     // Preview-only: the section-level edit target for the Presentation overlay.
     const editAttr = editDoc && section._key ? sectionEditAttr(editDoc, section._key) : undefined;
-    const rendered = Comp && (
-      <Comp
-        section={section}
-        linkBase={linkBase}
-        site={site}
-        cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
-        pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
-        showFees={
-          // Public pages only (they pass pageSlug). The fee lines need a Sanity
-          // read for the fee schedule, and the hub renders this same section
-          // SSR — a per-request external fetch there breaks the hub speed
-          // contract (it timed out /family-hub outright, 2026-07-19). Enrolled
-          // families don't need the marketing fee breakdown anyway.
-          section._type === 'classCardsSection' ? Boolean(pageSlug) : undefined
-        }
-        hideRating={section._type === 'ctaSection' ? hub : undefined}
-        isClosing={
-          // Public pages only (they pass pageSlug): the hub keeps its navy
-          // closers; the amber drench is public-marketing doctrine.
-          section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
-        }
-      />
+    // Preview-only empty-state coaching. A section that holds none of its own
+    // content renders as a dashed "here is what goes here" note instead of the
+    // band of empty padding a volunteer used to get right after inserting it.
+    // Gated on editDoc, which ONLY the draft-mode preview routes pass, so the
+    // live site and the Family Hub take the identical path they always did.
+    // See src/lib/section-coach.ts for the per-type emptiness tests.
+    const coach = editDoc ? sectionCoach(section) : null;
+    const rendered = coach ? (
+      <SectionCoach name={coach.name} hint={coach.hint} />
+    ) : (
+      Comp && (
+        <Comp
+          section={section}
+          linkBase={linkBase}
+          site={site}
+          cardWatermark={section._type === 'cardGridSection' ? cardWatermark : undefined}
+          pageSlug={section._type === 'testimonialSection' ? pageSlug : undefined}
+          showFees={
+            // Public pages only (they pass pageSlug). The fee lines need a Sanity
+            // read for the fee schedule, and the hub renders this same section
+            // SSR — a per-request external fetch there breaks the hub speed
+            // contract (it timed out /family-hub outright, 2026-07-19). Enrolled
+            // families don't need the marketing fee breakdown anyway.
+            section._type === 'classCardsSection' ? Boolean(pageSlug) : undefined
+          }
+          hideRating={section._type === 'ctaSection' ? hub : undefined}
+          isClosing={
+            // Public pages only (they pass pageSlug): the hub keeps its navy
+            // closers; the amber drench is public-marketing doctrine.
+            section._type === 'ctaSection' ? Boolean(pageSlug) && i === lastBandIndex : undefined
+          }
+        />
+      )
     );
     // The grammar wrapper stays `display: contents` (a zero box, CSS hooks
     // only). The edit wrapper must be a REAL block box: the overlay outlines

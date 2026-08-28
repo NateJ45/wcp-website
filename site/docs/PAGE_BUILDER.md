@@ -240,6 +240,26 @@ public-only — gated on the `pageSlug` prop the hub never passes):
   untouched; cream closers and mid-page navy CTAs are unaffected. `titleId`
   derives from the section `_key` and feeds both `Section labelledby` and
   `SectionHeader` so the `aria-labelledby` + heading-order accessibility gate holds.
+- **Empty-state coaching (preview only, added 2026-08-28)**: a section that
+  holds none of its own content renders in the PREVIEW as a muted dashed note
+  that names the section and says what to add ("Add one card for each point.
+  Give each card a title and a short line of text."). Before this, a volunteer
+  who inserted a section from the visual picker landed back on a band of empty
+  padding, which reads as a broken site rather than as a turn to type. The
+  per-type emptiness tests and the sentences live in one registry,
+  [`src/lib/section-coach.ts`](../src/lib/section-coach.ts); the band itself is
+  [`SectionCoach.astro`](../src/components/sections/SectionCoach.astro). It is
+  **preview-only, and provably so**: `SectionRenderer` is the only caller and it
+  calls the registry only when `editDoc` is set, which only the draft-mode
+  preview routes pass. The live site and the Family Hub keep byte-identical
+  markup, so an empty section behaves on the live site exactly as it always did
+  (usually nothing at all). Do not move this into a section component. The
+  registry covers only the types whose emptiness shows in the section's own
+  data; the "pull" sections that fetch a collection inside their component
+  (Latest news, Upcoming events, Programs, Board, Logo strip, Fundraising,
+  Downloads, Tuition calculator, Instagram) hide themselves when the collection
+  is empty and are left alone. Add a new section type to the registry when you
+  add it to the palette. `src/lib/section-coach.test.ts` pins the rule.
 
 ### The Act II section grammar (redesign 2026-07-18, public only)
 
