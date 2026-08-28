@@ -21,6 +21,16 @@ forms field-for-field (see the VARIANTS map in
 | `teach`    | /work-with-us | Experience, age groups, ECE certification, about-you                    |
 | `waitlist` | waitlist CTAs | Child name + birthdate, hoped-for class, preferred start                |
 
+**Or write your own questions.** The same section has a **Your own questions** list. Add
+a row and those questions replace the variant list; leave it empty and nothing changes.
+Each question has the text, an answer type (short text, email, phone, long text, choose
+one from a list, or a yes/no tick box), and a must-be-answered switch. A form asks at
+most 12 questions. The standard first name, last name, email, and phone boxes always
+come first, so every message still has a reply address. The answers arrive as
+`Question: answer` lines inside the message — the submissions inbox, the notification
+email, and the Google Sheet all read them with **no Apps Script change**. Details and
+the caps: [PAGE_BUILDER.md → Forms](PAGE_BUILDER.md#forms).
+
 The **Newsletter sign-up** section (first name, last name, email) posts to
 [`/api/subscribe`](../src/pages/api/subscribe.ts); everything else posts to
 [`/api/contact`](../src/pages/api/contact.ts). With JavaScript the form submits in the

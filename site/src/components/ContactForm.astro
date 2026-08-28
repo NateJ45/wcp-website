@@ -26,8 +26,11 @@ interface Props {
   buttonLabel?: string;
   successMessage?: string;
   formId: string;
+  /** Board-written questions. One or more of these REPLACE the variant list. */
+  customFields?: CustomFormField[];
 }
 import { FIELD_CLASS } from '@/lib/field-classes';
+import type { CustomFormField } from '@/lib/custom-form-fields';
 
 const {
   topic,
@@ -36,6 +39,7 @@ const {
   buttonLabel = 'Send message',
   successMessage = 'Thank you! We have your message and will be in touch soon.',
   formId,
+  customFields,
 } = Astro.props;
 
 // One flat field list per variant, rendered generically below. `name`s are
@@ -132,7 +136,13 @@ const VARIANTS: Record<string, Field[]> = {
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
   ],
 };
-const extraFields = VARIANTS[variant] ?? VARIANTS.general;
+// Board-written questions (the "Your own questions" list on the section) take
+// over from the variant list. Empty list → the form is exactly what it was.
+// Each answer posts as `custom_<n>`; hidden inputs carry the question text and
+// the must-answer marker, which /api/contact folds into the message. The
+// shaping and the caps live in src/lib/custom-form-fields.ts.
+const custom = customFields ?? [];
+const extraFields = custom.length > 0 ? [] : (VARIANTS[variant] ?? VARIANTS.general);
 
 const field = FIELD_CLASS;
 const label = 'block text-sm font-semibold text-heading';
@@ -264,6 +274,118 @@ const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
               )}
             </label>
             <input class={field} id={id} name={f.name} type={f.kind} required={f.required} />
+          </div>
+        );
+      })
+    }
+
+    {
+      /* Board-written questions: the question text and the must-answer marker
+        travel as hidden inputs, so the server can label each answer. */
+    }
+    {
+      custom.map((f, i) => (
+        <>
+          <input type="hidden" name={`custom_${i}_label`} value={f.label} />
+          {f.required && <input type="hidden" name={`custom_${i}_req`} value="1" />}
+        </>
+      ))
+    }
+
+    {
+      custom.map((f, i) => {
+        const id = `${formId}-custom-${i}`;
+        const name = `custom_${i}`;
+        const mark = f.required ? (
+          <span class="text-destructive" aria-hidden="true">
+            {' *'}
+          </span>
+        ) : (
+          <span class="font-normal text-ink-muted"> (optional)</span>
+        );
+
+        if (f.kind === 'checkbox')
+          return (
+            <div>
+              <label class="inline-flex min-h-11 items-center gap-2 py-1 pr-1 text-ink" for={id}>
+                <input
+                  type="checkbox"
+                  id={id}
+                  name={name}
+                  value="Yes"
+                  required={f.required}
+                  aria-required={f.required ? 'true' : undefined}
+                  class="h-5 w-5 rounded border-border text-navy"
+                />
+                <span>
+                  {f.label}
+                  {f.required && (
+                    <span class="text-destructive" aria-hidden="true">
+                      {' *'}
+                    </span>
+                  )}
+                </span>
+              </label>
+            </div>
+          );
+
+        if (f.kind === 'select')
+          return (
+            <div>
+              <label class={label} for={id}>
+                {f.label}
+                {mark}
+              </label>
+              <select
+                class={field}
+                id={id}
+                name={name}
+                required={f.required}
+                aria-required={f.required ? 'true' : undefined}
+              >
+                <option value="">Select an option…</option>
+                {f.options.map((opt) => (
+                  <option value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          );
+
+        if (f.kind === 'textarea')
+          return (
+            <div>
+              <label class={label} for={id}>
+                {f.label}
+                {mark}
+              </label>
+              <textarea
+                class={field}
+                id={id}
+                name={name}
+                rows="5"
+                maxlength="2000"
+                required={f.required}
+                aria-required={f.required ? 'true' : undefined}
+              />
+            </div>
+          );
+
+        return (
+          <div>
+            <label class={label} for={id}>
+              {f.label}
+              {mark}
+            </label>
+            <input
+              class={field}
+              id={id}
+              name={name}
+              type={f.kind === 'email' ? 'email' : f.kind === 'phone' ? 'tel' : 'text'}
+              maxlength="2000"
+              autocomplete={f.kind === 'email' ? 'email' : f.kind === 'phone' ? 'tel' : undefined}
+              required={f.required}
+              aria-required={f.required ? 'true' : undefined}
+            />
           </div>
         );
       })

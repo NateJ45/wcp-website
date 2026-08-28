@@ -55,6 +55,10 @@ const NON_STEGA_FIELDS = new Set([
   'format',
   'template',
   'placement',
+  // Contact form: `variant` picks the question set, `kind` picks the input a
+  // board-written question draws. An encoded value misses every branch.
+  'variant',
+  'kind',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {

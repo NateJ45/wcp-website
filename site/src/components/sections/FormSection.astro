@@ -5,6 +5,7 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ContactForm from '@/components/ContactForm.astro';
+import { normalizeCustomFields } from '@/lib/custom-form-fields';
 import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
 
 interface Props {
@@ -15,6 +16,9 @@ const { section } = Astro.props;
 const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
 const titleId = titleIdFor(section);
 const formId = `form-${section._key}`;
+// Board-written questions. Empty (the normal case) → the form keeps asking the
+// questions of its variant, byte for byte as before.
+const customFields = normalizeCustomFields(section.fields);
 ---
 
 <Section
@@ -40,6 +44,7 @@ const formId = `form-${section._key}`;
       buttonLabel={(section.buttonLabel as string) ?? 'Send message'}
       successMessage={(section.successMessage as string) ?? undefined}
       formId={formId}
+      customFields={customFields}
     />
   </div>
 </Section>

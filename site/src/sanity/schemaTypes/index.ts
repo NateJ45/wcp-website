@@ -14,6 +14,7 @@ import { richProse } from './objects/richProse';
 import { postBody } from './objects/postBody';
 import { iconCard } from './objects/iconCard';
 import { sectionHeader } from './objects/sectionHeader';
+import { formField } from './objects/formField';
 import { actionButton } from './objects/actionButton';
 import { callout } from './objects/callout';
 import { figureImage } from './objects/figureImage';
@@ -91,6 +92,7 @@ export const schemaTypes = [
   postBody,
   iconCard,
   sectionHeader,
+  formField,
   actionButton,
   callout,
   figureImage,

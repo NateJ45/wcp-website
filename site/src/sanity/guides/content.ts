@@ -1058,6 +1058,79 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'To put a form on a page, edit the page and add a **Contact form** section (see "Build or edit a page").',
       },
+      { kind: 'seealso', items: ['Build your own form'] },
+    ],
+  },
+
+  {
+    slug: 'build-your-own-form',
+    category: 'Website pages & menus',
+    title: 'Build your own form',
+    icon: '📝',
+    lead: 'Ask the questions you want. No developer needed.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'A **Contact form** section comes with a set of ready-made questions (a tour request, an enrollment question, and so on). If none of them fit, write your own questions instead.',
+      },
+      {
+        kind: 'path',
+        items: ['Pages', 'pick a page', 'Add item', 'Contact form', 'Your own questions'],
+        link: { pane: 'pages', ws: 'public' },
+      },
+      { kind: 'h', text: 'Add your questions' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page and add a **Contact form** section (or open the one already there).',
+          'Fill in the **Topic**. It names the folder your messages land in, for example "Field trip helpers".',
+          'Scroll to **Your own questions** and click `Add item`.',
+          'Type the **Question**, for example "Which day works best?".',
+          'Pick the **Answer type**: Short text, Email address, Phone number, Long text, Choose one from a list, or a Yes / no tick box.',
+          'For **Choose one from a list**, add each choice under **Choices**.',
+          'Turn on **Must be answered?** if the visitor cannot send the form without it.',
+          'Add more questions the same way. `Publish`.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Name, email, and phone are always asked.',
+        text: 'The form asks for a first name, last name, email, and phone before your questions, so you can always write back. Do not add those again.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'One form asks up to 12 questions.',
+        text: 'A short form gets more answers. If you need more than 12 questions, ask the important ones here and send a longer form in your reply.',
+      },
+      { kind: 'h', text: 'What the visitor sees' },
+      {
+        kind: 'bullets',
+        items: [
+          'Your questions show in the order you put them in. Drag a row to move it.',
+          'A must-be-answered question shows a red star. The visitor cannot send the form until it is answered.',
+          'Every other question shows "(optional)".',
+          '**Button label** and **Thank-you message** work the same as always. Set them if "Send message" is not the right words.',
+        ],
+      },
+      { kind: 'h', text: 'Where the answers go' },
+      {
+        kind: 'p',
+        text: 'Nothing changes for you: the message lands in **Form submissions** under your Topic, and in the email and the Google Sheet if those are set up. Each answer shows as a line, for example "Which day works best?: Tuesday".',
+      },
+      {
+        kind: 'p',
+        text: 'The **Note for the board** box is for you, not the visitor. Use it to remind the next person what this form is for, or who should read the messages. It never shows on the website.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Empty list, old form.',
+        text: 'Leave **Your own questions** empty and the form keeps its ready-made questions. Your live forms are not affected.',
+      },
+      { kind: 'seealso', items: ['Read messages from your forms', 'Build or edit a page'] },
     ],
   },
 

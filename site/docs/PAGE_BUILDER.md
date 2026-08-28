@@ -82,7 +82,7 @@ at build time, hiding the whole band when there's nothing to show.
 | `contactDetailsSection`    | contact block                     | contact page (reads Site Settings)                                                                                            |
 | `latestPostsSection`       | `PostCard.astro` grid             | **pull** — newest News posts                                                                                                  |
 | `upcomingEventsSection`    | `EventCard.astro` grid            | **pull** — upcoming Events (hides when none)                                                                                  |
-| `formSection`              | `ContactForm.astro`               | tour / contact / inquiry forms                                                                                                |
+| `formSection`              | `ContactForm.astro`               | tour / contact / inquiry forms (fixed variants, or editor-written questions — see [Forms](#forms))                            |
 | `newsletterSignupSection`  | `NewsletterSignup.astro`          | email signup                                                                                                                  |
 | `tuitionCalculatorSection` | `TuitionCalculatorSection.astro`  | interactive monthly-cost estimator                                                                                            |
 | `enrollmentCtaSection`     | `EnrollmentCtaSection.astro`      | enrollment steps + CTA band                                                                                                   |
@@ -116,6 +116,52 @@ tel: link` rows instead of a wrapping paragraph. Parser + rules live in
   the display face is caps-only, a whole paragraph typed there becomes an
   all-caps shout, so a footnote over ~70 chars drops the flourish and renders as
   a left-aligned body-font note with an info icon (see `StepList.astro`).
+
+### Forms
+
+A **Contact form** section (`formSection` → `FormSection.astro` → `ContactForm.astro`)
+always opens with the same standard boxes — first name, last name, email, and an
+optional phone — so every message carries a reply address. What comes AFTER those boxes
+has two modes:
+
+1. **Variant (the default).** The section's _Form fields_ radio picks one of five fixed
+   question sets (`general` / `enroll` / `waitlist` / `tour` / `teach`), listed in
+   [FORMS.md](FORMS.md). This is what every live form uses today.
+2. **Editor-written questions.** Fill the section's **Your own questions** array
+   (`fields`, of type `formField`) and those questions replace the variant list. The
+   _Form fields_ radio hides itself once the array holds a row, so the two modes can
+   never look like they are both in play.
+
+The mode is chosen by data, not by a flag: `fields` empty → mode 1, byte for byte the
+markup the site has always emitted (`scripts/page-parity.mjs` pins this — the dataset
+carries a live form section).
+
+**A question (`formField`)** has a `label` (the question text, required, ≤120 chars), a
+`kind` radio — `text` · `email` · `phone` · `textarea` · `select` · `checkbox` — an
+`options` list of strings (visible and required only for `select`), and a `required`
+boolean. **A form asks at most 12 questions**; the Studio validates it and
+`normalizeCustomFields()` re-applies the cap at render time. Two form-level fields sit
+beside the array: the existing **Button label** and **Thank-you message** serve the
+editor-written form too (there is deliberately no second copy of them), and
+**recipientNote** is an internal reminder for the board that is never rendered.
+
+**Brand-lock still holds.** A question controls the words and the answer type, never the
+design — no width, color, or layout field. Required questions get the native `required`
+attribute plus `aria-required` and a visible `*`; optional ones are marked "(optional)",
+matching the variant forms.
+
+**Where an answer goes.** Each answer posts as `custom_<n>`, next to a hidden
+`custom_<n>_label` (the question text) and, when required, `custom_<n>_req="1"`.
+[`/api/contact`](../src/pages/api/contact.ts) folds every answered question into the
+stored message as a `Question: answer` line, exactly like the variant extras — so the
+submission doc, the notification email, and the Google Sheet row all need **no schema
+change and no Apps Script change** for a new form. The shaping, the caps (2,000
+characters per answer, 12,000 across all answers, 200 per label), and the
+required-answer check are pure functions in
+[`src/lib/custom-form-fields.ts`](../src/lib/custom-form-fields.ts), unit-tested in
+`custom-form-fields.test.ts`. Answers are never logged. The same honeypot
+(`company`) and the dormant Turnstile check apply, and the browser blocks a missing
+required answer first through native HTML validation.
 
 **Instagram "Life inside WCP".** `instagramSection` shows the school's Instagram as a
 pinned-photo bulletin board. It pulls the **live feed at build time** via

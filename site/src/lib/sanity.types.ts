@@ -2166,6 +2166,12 @@ export type FormSection = {
   header?: SectionHeader;
   topic?: string;
   variant?: 'general' | 'enroll' | 'waitlist' | 'tour' | 'teach';
+  fields?: Array<
+    {
+      _key: string;
+    } & FormField
+  >;
+  recipientNote?: string;
   showPhone?: boolean;
   buttonLabel?: string;
   successMessage?: string;
@@ -2828,6 +2834,14 @@ export type InlineText = Array<{
   _key: string;
 }>;
 
+export type FormField = {
+  _type: 'formField';
+  label?: string;
+  kind?: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'checkbox';
+  options?: Array<string>;
+  required?: boolean;
+};
+
 export type IconCard = {
   _type: 'iconCard';
   icon?:
@@ -3187,6 +3201,7 @@ export type AllSanitySchemaTypes =
   | Page
   | SectionHeader
   | InlineText
+  | FormField
   | IconCard
   | VenueReference
   | Event

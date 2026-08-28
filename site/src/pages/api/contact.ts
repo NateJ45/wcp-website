@@ -15,6 +15,7 @@ import { env } from 'cloudflare:workers';
 import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 import { site } from '@/data/site';
+import { parseCustomFieldEntries } from '@/lib/custom-form-fields';
 
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const clip = (s: string, max: number) => s.slice(0, max);
@@ -72,6 +73,15 @@ export const POST: APIRoute = async (context) => {
       .filter(Boolean);
     if (values.length) detailLines.push(`${label}: ${values.join(', ')}`);
   }
+  // Board-written questions (the section's "Your own questions" list). Each
+  // answer arrives as `custom_<n>` beside a hidden label, so a new form needs no
+  // code change and no schema change: the answers become more detail lines. The
+  // helper applies the per-answer and total length caps. Never log the answers.
+  const custom = parseCustomFieldEntries(
+    [...form.entries()].map(([key, value]) => [key, String(value)] as [string, string]),
+  );
+  detailLines.push(...custom.lines);
+
   if (detailLines.length) message = `${detailLines.join('\n')}${message ? `\n\n${message}` : ''}`;
 
   const ok = () =>
@@ -91,6 +101,10 @@ export const POST: APIRoute = async (context) => {
 
   // Honeypot filled → a bot. Pretend success and drop it.
   if (honeypot) return ok();
+
+  // A required board-written question with no answer, or answers over the total
+  // cap. The browser blocks both first; this is the server-side gate.
+  if (custom.error) return bad(custom.error);
 
   // Turnstile (dormant until TURNSTILE_SECRET_KEY is set — see docs/FORMS.md):
   // verify the widget token server-side; a missing/failed token is a bot.
