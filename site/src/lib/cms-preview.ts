@@ -104,6 +104,10 @@ interface SiteSettingsDoc {
   facebook?: string;
   instagram?: string;
   license?: string;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  showSocials?: boolean;
+  logoOverride?: { alt?: string } | null;
 }
 
 /**
@@ -135,6 +139,8 @@ export async function getPreviewSiteSettings<T extends Record<string, unknown>>(
     licenseAuthority: string;
     calendar: string;
     social: { facebook: string; instagram: string };
+    show: { phone: boolean; email: boolean; socials: boolean };
+    logoOverride: { alt?: string } | null;
   };
 
   return {
@@ -167,5 +173,13 @@ export async function getPreviewSiteSettings<T extends Record<string, unknown>>(
       facebook: doc.facebook ?? f.social.facebook,
       instagram: doc.instagram ?? f.social.instagram,
     },
+    // Mirrors cms.ts: only an explicit false hides a chrome detail, and the
+    // logo picture is only set when the Board uploaded one.
+    show: {
+      phone: doc.showPhone ?? f.show.phone,
+      email: doc.showEmail ?? f.show.email,
+      socials: doc.showSocials ?? f.show.socials,
+    },
+    logoOverride: doc.logoOverride ?? f.logoOverride,
   } as unknown as T;
 }

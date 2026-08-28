@@ -29,22 +29,22 @@ Content that stays on Google (Calendar, Fundraising) is **not** in Sanity.
 
 **Public site (built into static pages):**
 
-| Type                  | What it feeds                                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Page**              | Every public page, as a hero + a stack of sections (the page builder)                                                                |
-| **News post**         | The News/blog feed (/news) — title, cover, summary, rich body, category                                                              |
-| **Newsletter issue**  | The public newsletter web archive (/newsletter) — composed in Studio, emailed via Apps Script                                        |
-| **Event**             | The public Events page (/events) — dated open houses, tours, closures                                                                |
-| **Alert banner**      | Site-wide banner for snow days / urgent notices (singleton; toggle + message)                                                        |
-| **Announcement**      | Board-managed bars + popups (waitlist/open-house/fundraiser/etc.), on/off, scheduled, stacked; separate from the urgent Alert banner |
-| **Menus**             | The header and footer navigation (singleton)                                                                                         |
-| **Class**             | Each class's schedule, ages, tuition — used on its page, the tuition table, hub                                                      |
-| **Staff**             | Teacher names and bios (one source, shown everywhere they appear)                                                                    |
-| **Tuition & Fees**    | Registration / participation fees and payment info (singleton)                                                                       |
-| **FAQ**               | The FAQ page, grouped by category                                                                                                    |
-| **Testimonial**       | Parent quotes (feature one for the homepage wall)                                                                                    |
-| **School-Year Event** | The school-year timeline                                                                                                             |
-| **Site Settings**     | Phone, email, address, social, current school year (singleton, used everywhere)                                                      |
+| Type                  | What it feeds                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Page**              | Every public page, as a hero + a stack of sections (the page builder)                                                                 |
+| **News post**         | The News/blog feed (/news) — title, cover, summary, rich body, category                                                               |
+| **Newsletter issue**  | The public newsletter web archive (/newsletter) — composed in Studio, emailed via Apps Script                                         |
+| **Event**             | The public Events page (/events) — dated open houses, tours, closures                                                                 |
+| **Alert banner**      | Site-wide banner for snow days / urgent notices (singleton; toggle + message)                                                         |
+| **Announcement**      | Board-managed bars + popups (waitlist/open-house/fundraiser/etc.), on/off, scheduled, stacked; separate from the urgent Alert banner  |
+| **Menus**             | The header and footer navigation, plus the header button (singleton)                                                                  |
+| **Class**             | Each class's schedule, ages, tuition — used on its page, the tuition table, hub                                                       |
+| **Staff**             | Teacher names and bios (one source, shown everywhere they appear)                                                                     |
+| **Tuition & Fees**    | Registration / participation fees and payment info (singleton)                                                                        |
+| **FAQ**               | The FAQ page, grouped by category                                                                                                     |
+| **Testimonial**       | Parent quotes (feature one for the homepage wall)                                                                                     |
+| **School-Year Event** | The school-year timeline                                                                                                              |
+| **Site Settings**     | Phone, email, address, social, current school year, the optional logo and the header/footer show-toggles (singleton, used everywhere) |
 
 **Community & content** (each surfaces through a matching page-builder section; empty ones simply don't render):
 

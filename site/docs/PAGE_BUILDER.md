@@ -322,6 +322,36 @@ The header/footer menus are a Sanity `navigation` singleton (the "Menus" doc:
 falling back to that static file if the Studio has no menus, so the site never loses
 its nav. `Header`/`Footer` call `getNavigation()` (same pattern as `getSiteSettings`).
 
+### Chrome options (added 2026-08-27)
+
+Four additive fields let the Board adjust the header/footer chrome. **Every one of
+them is an override with a code fallback, so an untouched dataset renders the
+markup it always did** — `node scripts/page-parity.mjs compare` is the proof and
+must stay at 27/27.
+
+- **`navigation.headerCta`** (`{ show, label, linkType, page, url }`, Header menu
+  group) — the one header button. `resolveHeaderCta()` in
+  [`src/lib/nav.ts`](../src/lib/nav.ts) returns `{ show: raw.show !== false }` plus a
+  `label`/`href` only when the Board typed one; `Header.astro` keeps
+  `/virtual-tour#sec-pp-tour-form`, "Schedule a Tour" (big overlay + mobile panel) and
+  "Book a Tour" (compact bar) as its defaults. The mobile bar's one-word "Tour" is
+  code-owned whatever the label says: it is a 320px fit, not a wording choice.
+- **`siteSettings.showPhone` / `showEmail` / `showSocials`** — hide those details in
+  the header AND footer only. They resolve through `getSiteSettings()` into
+  `site.show.{phone,email,socials}` (fallbacks in
+  [`src/data/site.ts`](../src/data/site.ts), all `true`). Unset means shown, so
+  neither field carries an `initialValue` and only an explicit `false` hides anything.
+  The Visit Us page, the contact form and the structured data are untouched.
+- **`siteSettings.logoOverride`** (image + `alt`, Identity group) — replaces the
+  committed `wcp-logo-navy/white.png` pair in all three header renderings, at the same
+  width/height/classes. One uploaded picture serves both themes (a Sanity image has no
+  light/dark variant), so it drops the `dark:hidden`/`dark:block` pair and renders one
+  plain `<img>` off the Sanity CDN. The footer logo is deliberately NOT overridden: it
+  sits on navy and only ever wants the white lockup.
+
+The Studio guide entries are "Change the phone, email, or address" and "Edit the
+menus" in [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts).
+
 ## Editing in the Studio
 
 - **Presentation Tool** ([`src/sanity/resolve.ts`](../src/sanity/resolve.ts)) maps

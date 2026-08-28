@@ -21,6 +21,7 @@ export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
     _type == "navLink" => { linkType, "pageSlug": page->slug, url },
     _type == "navGroup" => { children[]{ label, linkType, "pageSlug": page->slug, url } }
   },
+  headerCta{ show, label, linkType, "pageSlug": page->slug, url },
   footerColumns[]{ label, links[]{ label, linkType, "pageSlug": page->slug, url } },
   legalNav[]{ label, linkType, "pageSlug": page->slug, url }
 }`;
@@ -254,7 +255,7 @@ export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | ord
 export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
 export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, showPhone, showEmail, showSocials, logoOverride, openingHours[]{ days, opens, closes } }`;
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).

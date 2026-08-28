@@ -702,6 +702,23 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'A **dropdown** (a menu item with links tucked under it) is the "Group" option instead of "Link". Give the group a label, then add the links inside it.',
       },
+      { kind: 'h', text: 'Change the button at the top right' },
+      {
+        kind: 'p',
+        text: 'The **Header button** panel (same tab as the header menu) controls the one button in the top bar. It ships as "Schedule a Tour", pointing at the tour form. Open the panel only if you want something different:',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Show the button** off takes the button out of the header. Think twice: it is the main way a new family asks to visit.',
+          '**Button wording** replaces the words. Leave it blank to keep them. Keep any new wording short, because the button sits in a tight row.',
+          '**Button goes to** points it at a different page or web address. Leave it blank to keep the tour form.',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'Every part of the panel is optional. An empty panel means the button stays exactly as it is now. To see your change, open a page in **Presentation** and look at the top bar.',
+      },
       {
         kind: 'callout',
         tone: 'primary',
@@ -1506,6 +1523,30 @@ export const guides: Guide[] = [
       {
         kind: 'p',
         text: 'The **Seasonal touches** option (Identity tab) adds small hand-drawn decorations to the public site footer — leaves in fall, snowflakes in winter, flowers in spring, sunshine in summer. "Automatic" follows the calendar on its own; pick a season to hold it, or Off to hide them.',
+      },
+      { kind: 'h', text: 'Hide a detail in the header or footer' },
+      {
+        kind: 'p',
+        text: 'Three switches let you take a detail out of the bar at the top of the page and the footer, without deleting it. Leave them alone and everything shows, which is how the site has always looked.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Show the phone number in the header and footer** (Contact tab). Off hides the call links in the chrome. The number still shows on the Visit Us page.',
+          '**Show the email link in the header and footer** (Contact tab). Off hides the email icon at the top and the email line in the footer.',
+          '**Show the social icons in the header and footer** (Social & reviews tab). Off hides the Facebook and Instagram buttons. The links stay saved, so you can bring them back at any time.',
+        ],
+      },
+      { kind: 'h', text: 'Use a different logo' },
+      {
+        kind: 'p',
+        text: 'On the **Identity** tab there is an optional **Logo** picture. Upload one and it takes the place of the built-in WCP logo in the header, at the same size. Leave it empty to keep the built-in one. The same picture is used on the white bar and over the photo at the top of the page, so pick one that reads on both. A wide picture with a see-through background works best.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Check your work in Presentation.',
+        text: 'Open any page in **Presentation** and the header and footer sit right there beside the fields. Publish, then look at the top and the bottom of the preview page to see the change.',
       },
       {
         kind: 'callout',

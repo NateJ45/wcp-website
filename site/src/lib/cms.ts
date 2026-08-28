@@ -171,6 +171,10 @@ interface SiteSettingsDoc {
   googleReviews?: number;
   googleUrl?: string;
   license?: string;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  showSocials?: boolean;
+  logoOverride?: { alt?: string } | null;
 }
 
 /**
@@ -200,6 +204,8 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     social: { facebook: string; instagram: string };
     google: { rating: string; reviews: number; url: string };
     hours: { days: string[]; opens: string; closes: string }[];
+    show: { phone: boolean; email: boolean; socials: boolean };
+    logoOverride: { alt?: string } | null;
   };
 
   return {
@@ -247,6 +253,16 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       reviews: doc.googleReviews ?? f.google.reviews,
       url: doc.googleUrl ?? f.google.url,
     },
+    // Header/footer chrome toggles. An unset boolean must mean "show it", so
+    // only an explicit false hides the detail.
+    show: {
+      phone: doc.showPhone ?? f.show.phone,
+      email: doc.showEmail ?? f.show.email,
+      socials: doc.showSocials ?? f.show.socials,
+    },
+    // Only set when the Board uploaded a logo; the header keeps the committed
+    // brand files otherwise.
+    logoOverride: doc.logoOverride ?? f.logoOverride,
   } as unknown as T;
 }
 

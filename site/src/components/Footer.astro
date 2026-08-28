@@ -124,10 +124,21 @@ const consentEnabled =
       <Image src={wcpLogoWhite} alt={site.name} width={220} height={147} class="h-24 w-auto" />
       <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/80">{site.tagline}</p>
       <address class="mt-4 space-y-2 text-sm text-white/90 not-italic">
-        <a href={`tel:${phoneDigits}`} class="inline-flex items-center gap-2 hover:underline">
-          <Icon name="phone" class="h-4 w-4 text-amber" />{site.phone}
-        </a>
-        <br />
+        {
+          /* Site Settings can hide the call link (and its line break) across the
+            chrome — see the showPhone toggle. The address below always stays. */
+        }
+        {
+          site.show.phone && (
+            <Fragment>
+              <a href={`tel:${phoneDigits}`} class="inline-flex items-center gap-2 hover:underline">
+                <Icon name="phone" class="h-4 w-4 text-amber" />
+                {site.phone}
+              </a>
+              <br />
+            </Fragment>
+          )
+        }
         {
           /* The global `a[href^='mailto:'] { overflow-wrap: anywhere }` safety net
             (globals.css) split the address mid-word ("...preschool.o / rg") in the
@@ -140,12 +151,17 @@ const consentEnabled =
             this footer is `overflow-hidden`, so an address too long for a
             viewport-capped column would be silently CLIPPED rather than wrapped. */
         }
-        <a
-          href={`mailto:${site.email.general}`}
-          class="inline-flex items-center gap-2 hover:underline lg:[overflow-wrap:break-word]"
-        >
-          <Icon name="mail" class="h-4 w-4 shrink-0 text-amber" />{site.email.general}
-        </a>
+        {
+          site.show.email && (
+            <a
+              href={`mailto:${site.email.general}`}
+              class="inline-flex items-center gap-2 hover:underline lg:[overflow-wrap:break-word]"
+            >
+              <Icon name="mail" class="h-4 w-4 shrink-0 text-amber" />
+              {site.email.general}
+            </a>
+          )
+        }
         <div class="flex items-start gap-2 pt-1 text-white/80">
           <Icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-amber" />
           <span>
@@ -156,7 +172,8 @@ const consentEnabled =
         </div>
       </address>
       {
-        (site.social.facebook || site.social.instagram) && (
+        /* Site Settings can switch the pair off — see the showSocials toggle. */
+        site.show.socials && (site.social.facebook || site.social.instagram) && (
           <div class="mt-4 flex items-center gap-2">
             {site.social.facebook && (
               <a

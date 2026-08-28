@@ -1259,6 +1259,13 @@ export type Navigation = {
         _key: string;
       } & NavGroup)
   >;
+  headerCta?: {
+    show?: boolean;
+    label?: string;
+    linkType?: 'page' | 'url';
+    page?: PageReference;
+    url?: string;
+  };
   footerColumns?: Array<{
     label?: string;
     links?: Array<
@@ -1989,11 +1996,21 @@ export type SiteSettings = {
   founded?: number;
   tagline?: string;
   url?: string;
+  logoOverride?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: 'image';
+  };
   season?: 'auto' | 'fall' | 'winter' | 'spring' | 'summer' | 'off';
   phone?: string;
   emailGeneral?: string;
   emailAdmin?: string;
   emailTreasurer?: string;
+  showPhone?: boolean;
+  showEmail?: boolean;
   street?: string;
   city?: string;
   state?: string;
@@ -2016,6 +2033,7 @@ export type SiteSettings = {
   availabilitySheetId?: string;
   facebook?: string;
   instagram?: string;
+  showSocials?: boolean;
   googleRating?: string;
   googleReviews?: number;
   googleUrl?: string;

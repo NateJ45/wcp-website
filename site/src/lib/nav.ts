@@ -15,10 +15,24 @@ import {
   type NavGroup,
 } from '@/data/nav';
 
+/**
+ * The header's one button (the tour ask), as the Menus doc can adjust it.
+ * Every field is an OVERRIDE: `show` is true unless the Board turned it off,
+ * and `label`/`href` are undefined unless the Board typed one. Header.astro
+ * keeps the committed wording and link as its own defaults, so an untouched
+ * Menus doc renders the same header as before this field existed.
+ */
+export interface HeaderCta {
+  show: boolean;
+  label?: string;
+  href?: string;
+}
+
 export interface SiteNavigation {
   mainNav: NavItem[];
   footerNav: NavGroup[];
   legalNav: NavLink[];
+  headerCta: HeaderCta;
 }
 
 interface RawLink {
@@ -31,10 +45,14 @@ interface RawItem extends RawLink {
   _type?: string;
   children?: RawLink[];
 }
+interface RawHeaderCta extends RawLink {
+  show?: boolean;
+}
 interface RawNavDoc {
   mainNav?: RawItem[];
   footerColumns?: { label?: string; links?: RawLink[] }[];
   legalNav?: RawLink[];
+  headerCta?: RawHeaderCta;
 }
 
 function hrefOf(link: RawLink): string {
@@ -59,20 +77,42 @@ function toLink(link: RawLink): NavLink {
   return { label: link.label ?? '', href, ...(external ? { external: true } : {}) };
 }
 
+/**
+ * Read the header-button overrides off the Menus doc.
+ *
+ * The button is SHOWN unless `show` is exactly false: an untouched document
+ * has no value here, and an absent value must never hide the site's one CTA.
+ * A link is only reported when the Board actually picked one, so a half-filled
+ * object (a linkType radio touched, nothing chosen) keeps the committed tour
+ * link instead of pointing the button at "/".
+ */
+function resolveHeaderCta(raw: RawHeaderCta | undefined): HeaderCta {
+  const label = raw?.label?.trim();
+  const hasLink = raw?.linkType === 'url' ? Boolean(raw.url) : Boolean(raw?.pageSlug);
+  return {
+    show: raw?.show !== false,
+    ...(label ? { label } : {}),
+    ...(hasLink ? { href: hrefOf(raw!) } : {}),
+  };
+}
+
 /** Resolve the Sanity Menus doc into the header/footer nav structures. The
  *  2026-07-17 code-doctrine bypass is gone: patch-menus-doctrine.mjs wrote the
  *  five-item funnel INTO the Menus doc (2026-08-04), so the Studio is the
  *  source of truth again and src/data/nav.ts is only the empty-doc fallback. */
 export function resolveNavigation(doc: unknown): SiteNavigation {
   const nav = doc as RawNavDoc | null;
+  const headerCta = resolveHeaderCta(nav?.headerCta);
   if (!nav || !Array.isArray(nav.mainNav) || nav.mainNav.length === 0) {
     return {
       mainNav: mainNavFallback,
       footerNav: footerNavFallback,
       legalNav: legalNavFallback,
+      headerCta,
     };
   }
   return {
+    headerCta,
     mainNav: nav.mainNav.map((item) =>
       item._type === 'navGroup'
         ? ({ label: item.label ?? '', children: (item.children ?? []).map(toLink) } as NavGroup)

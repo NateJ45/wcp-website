@@ -61,6 +61,34 @@ describe('resolveNavigation', () => {
     expect(warn.mock.calls[0].join(' ')).toContain('Tuition');
   });
 
+  // The header button overrides. Rule: an untouched Menus doc must render the
+  // header the code already renders, so every absent value means "no change".
+  it('shows the header button and overrides nothing by default', () => {
+    for (const doc of [null, { mainNav: [] }, { mainNav: [pageLink('Tuition', 'tuition')] }]) {
+      expect(resolveNavigation(doc).headerCta).toEqual({ show: true });
+    }
+  });
+
+  it('reads the header button overrides the Board set', () => {
+    const { headerCta } = resolveNavigation({
+      mainNav: [pageLink('Tuition', 'tuition')],
+      headerCta: { show: false, label: 'Come and see us', linkType: 'page', pageSlug: 'enroll' },
+    });
+    expect(headerCta).toEqual({ show: false, label: 'Come and see us', href: '/enroll' });
+  });
+
+  it('keeps the code link when the header button names no destination', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { headerCta } = resolveNavigation({
+      mainNav: [pageLink('Tuition', 'tuition')],
+      headerCta: { show: true, label: '  ', linkType: 'page' },
+    });
+    // No href and no label, so Header.astro keeps both of its own values —
+    // and a half-filled object never warns about a dangling reference.
+    expect(headerCta).toEqual({ show: true });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it('warns for broken links inside groups and footer columns too', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     resolveNavigation({

@@ -62,6 +62,27 @@ export const siteSettings = defineType({
       group: 'identity',
       description: 'The public site URL, e.g. https://www.westchesterpreschool.org',
     }),
+    // An optional replacement for the built-in logo. The code keeps the
+    // committed WCP logo files; this field only takes over when it is set, and
+    // the header draws it at the same size, so nothing else moves.
+    defineField({
+      name: 'logoOverride',
+      title: 'Logo (optional)',
+      type: 'image',
+      group: 'identity',
+      options: { hotspot: true },
+      description:
+        'Replaces the WCP logo in the header. Leave it empty to keep the built-in logo. One picture is used on the light bar and on the photo at the top of the page, so pick one that reads on both. A wide picture with a see-through background works best.',
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt text',
+          type: 'string',
+          description:
+            'What the logo says, for a screen reader. Leave blank to use the school name.',
+        }),
+      ],
+    }),
     defineField({
       name: 'season',
       title: 'Seasonal touches',
@@ -111,6 +132,26 @@ export const siteSettings = defineType({
       type: 'string',
       group: 'contact',
       description: 'Shown on tuition and payment pages for money questions.',
+    }),
+
+    // Chrome toggles. They hide the phone and email links in the header and
+    // footer only. The pages that print the address or the contact form keep
+    // it. Blank means "show it", so an untouched document does not change.
+    defineField({
+      name: 'showPhone',
+      title: 'Show the phone number in the header and footer',
+      type: 'boolean',
+      group: 'contact',
+      description:
+        'Turn this off to remove the call links from the top bar and the footer. The number still shows on the Visit Us page. It is on by default.',
+    }),
+    defineField({
+      name: 'showEmail',
+      title: 'Show the email link in the header and footer',
+      type: 'boolean',
+      group: 'contact',
+      description:
+        'Turn this off to remove the email icon at the top of the page and the email link in the footer. It is on by default.',
     }),
 
     // Location
@@ -297,6 +338,15 @@ export const siteSettings = defineType({
       type: 'url',
       group: 'social',
       description: 'The full link to the school’s Instagram profile.',
+    }),
+    // Same rule as the phone and email toggles above: blank means "show them".
+    defineField({
+      name: 'showSocials',
+      title: 'Show the social icons in the header and footer',
+      type: 'boolean',
+      group: 'social',
+      description:
+        'Turn this off to remove the Facebook and Instagram buttons from the top of the page and the footer. The links stay saved above. It is on by default.',
     }),
     // The star line under every hero's Schedule a Tour button. It goes stale on
     // its own as families leave reviews, so it cannot be code-owned.

@@ -25,6 +25,60 @@ export const navigation = defineType({
       group: 'header',
       of: [defineArrayMember({ type: 'navLink' }), defineArrayMember({ type: 'navGroup' })],
     }),
+    // The one button in the header (the tour ask). The code owns the default
+    // wording and the tour-form link. These fields only OVERRIDE it, so an
+    // empty object renders exactly what the site rendered before.
+    defineField({
+      name: 'headerCta',
+      title: 'Header button',
+      type: 'object',
+      group: 'header',
+      description:
+        'The button at the top right of every page. Leave it alone to keep the "Schedule a Tour" button as it is.',
+      options: { collapsible: true, collapsed: true },
+      fields: [
+        defineField({
+          name: 'show',
+          title: 'Show the button',
+          type: 'boolean',
+          description: 'Turn this off to remove the button from the header. It is on by default.',
+        }),
+        defineField({
+          name: 'label',
+          title: 'Button wording',
+          type: 'string',
+          description: 'Leave blank to keep the wording the site ships with. Keep it short.',
+        }),
+        defineField({
+          name: 'linkType',
+          title: 'Button goes to',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'A page on this site', value: 'page' },
+              { title: 'A web address', value: 'url' },
+            ],
+            layout: 'radio',
+          },
+        }),
+        defineField({
+          name: 'page',
+          title: 'Page',
+          type: 'reference',
+          to: [{ type: 'page' }],
+          hidden: ({ parent }) => parent?.linkType === 'url',
+        }),
+        defineField({
+          name: 'url',
+          title: 'Web address',
+          type: 'url',
+          description:
+            'A full https:// address, or a path on this site like /enroll. Leave blank to keep the tour form link.',
+          validation: (R) => R.uri({ scheme: ['http', 'https'], allowRelative: true }),
+          hidden: ({ parent }) => parent?.linkType !== 'url',
+        }),
+      ],
+    }),
     defineField({
       name: 'footerColumns',
       title: 'Footer columns',

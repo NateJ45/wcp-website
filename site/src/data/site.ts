@@ -105,6 +105,22 @@ export const site = {
     facebook: 'https://www.facebook.com/westchesterpreschool',
     instagram: 'https://www.instagram.com/westchesterpreschool',
   },
+
+  // Header/footer chrome toggles. Sanity Site Settings can turn each detail
+  // off (showPhone / showEmail / showSocials); an unset value means "show it",
+  // so these fallbacks are all on. Only the header and footer read them — the
+  // Visit Us page and the contact form keep their details either way.
+  // `as boolean` keeps the type wide: `as const` would freeze each one to the
+  // literal `true` and make every check read as a constant.
+  show: {
+    phone: true as boolean,
+    email: true as boolean,
+    socials: true as boolean,
+  },
+
+  // An optional logo picture from Sanity Site Settings (Identity → Logo).
+  // Null here means "use the committed brand PNGs in src/assets/brand".
+  logoOverride: null as { alt?: string } | null,
 } as const;
 
 // The Family Handbook PDF (2026/2027), uploaded to Sanity's asset CDN. This is
