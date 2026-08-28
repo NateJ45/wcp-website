@@ -24,6 +24,8 @@ import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonia
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slugRedirect';
 import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
+import { SaveSectionPresetAction } from './src/sanity/actions/saveSectionPreset';
+import { CheckPageAction } from './src/sanity/actions/checkPage';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
@@ -225,6 +227,11 @@ function workspace(opts: {
           ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
           : prev;
 
+        // Page-only helpers: keep one of this page's sections for reuse, and
+        // the gentle pre-publish read-through. Both open a dialog and neither
+        // blocks anything (src/sanity/actions/saveSectionPreset.tsx, checkPage.tsx).
+        const pageHelpers = schemaType === 'page' ? [SaveSectionPresetAction, CheckPageAction] : [];
+
         if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
         if (schemaType === 'testimonialSubmission')
           return [ApproveTestimonialAction, ...base, shareDraftLinkAction];
@@ -239,11 +246,12 @@ function workspace(opts: {
         if (ARCHIVABLE_TYPES.has(schemaType)) {
           return [
             ...base.filter(({ action }) => action !== 'delete'),
+            ...pageHelpers,
             ArchiveAction,
             shareDraftLinkAction,
           ];
         }
-        return [...base, shareDraftLinkAction];
+        return [...base, ...pageHelpers, shareDraftLinkAction];
       },
       // Keep singletons AND trashedItem out of the global "create new" menu
       // (you never hand-author a trash receipt, and legalPage is retired —

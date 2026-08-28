@@ -479,6 +479,74 @@ editor would write, and the reason the "In the menu" group reads the draft first
 no draft, the drag therefore edits the live menu, which goes out on the next rebuild.
 The list redraws optimistically and the `client.listen` refetch settles it.
 
+## Saved sections (added 2026-08-28)
+
+A `sectionPreset` document is one filled-in section, kept so it can be dropped onto
+another page. Schema:
+[`schemaTypes/documents/sectionPreset.ts`](../src/sanity/schemaTypes/documents/sectionPreset.ts).
+
+**The storage shape is an ARRAY of every body section type, capped at one**
+(`validation: R.max(1)`), not a single object field. Sanity has no union-object field, and
+forty per-type fields is not a form. The array buys three things for free: the same
+grouped `sectionInsertMenu` picker the page builder uses, the ordinary section FORM (so a
+saved section is editable in place, not a frozen blob), and the type's own preview.
+`sectionType` is a read-only string copied out of that array on capture, so a list can
+label a preset without opening it.
+
+**Capture: "Save a section as preset…"**
+([`actions/saveSectionPreset.tsx`](../src/sanity/actions/saveSectionPreset.tsx)), a
+document action on `page` only. The ⋮ menu on a section item would be the natural home,
+but neither the array-input item menu nor the visual-editing overlay toolbar is open to a
+plugin — a document action is the surface we own. The action returns a
+`DocumentActionDescription.dialog` of `type: 'dialog'` listing the DRAFT's sections by
+number, kind, and first words, plus a name box. Picking one creates a PUBLISHED
+`sectionPreset` (a preset is a tool, not content; nothing about it reaches the website, so
+a publish step would be ceremony). Every nested `_key` is regenerated on the way in.
+
+**Insertion: the "Saved sections" group** at the bottom of the PUBLIC
+[`PreviewNavigator`](../src/sanity/components/PreviewNavigator.tsx), collapsed by default.
+The page form's own "+ Add section" picker can only offer schema TYPES, so a document has
+no way in there; the navigator is the one surface that knows which page the preview is on.
+**The current page is resolved from the navigator's own rows**: `pending?.href ?? current`
+(the sticky-navigation intent, else `usePresentationParams().preview`), matched against
+`row.href` exactly, then by `endsWith` — the same rule the row highlight uses. With no
+match the Add buttons are disabled and the panel says "Open a page first". Adding
+`setIfMissing({sections: []})` + `append`s the section to the page's DRAFT, creating that
+draft from the published document first when there is none (`_rev`/`_createdAt`/
+`_updatedAt` stripped). Keys are regenerated again, so the same preset can be added twice.
+A preset is a COPY: editing it never touches pages that already have it. The list
+live-refreshes through the existing `client.listen` (which now also watches
+`sectionPreset`), and warns past 30 presets rather than blocking.
+
+Structure: **Saved sections** sits under Pages in `publicStructure`
+(`savedSectionsGroup`, pane id `section-presets`), ordered by title.
+
+## Check this page (added 2026-08-28)
+
+A second `page`-only document action,
+[`actions/checkPage.tsx`](../src/sanity/actions/checkPage.tsx), running a courtesy
+read-through of the DRAFT in a dialog. **It never blocks publish** and it is not
+validation; Sanity's own required-field rules already do that job. All the logic is pure
+and unit-tested in [`src/lib/page-checks.ts`](../src/lib/page-checks.ts)
+(`checkPage(doc, knownSlugs)` → three `CheckGroup`s); the action only fetches the page
+slugs and renders the answer. The three heuristics:
+
+1. **Photos with no description.** Walks for any object carrying `asset._ref`, then looks
+   for a non-empty `alt`/`altText` on the image itself, on its parent, or at the parent's
+   `<key>Alt`/`<key>AltText`. That covers all three ways this repo models alt text
+   (`figureImage`'s sibling `alt`, the hero's `imageAlt`, an inline `alt`).
+2. **Sections with nothing typed in them.** A section with no non-empty string anywhere,
+   ignoring Sanity's `_`-keys and a list of setting-ish keys (`variant`, `tone`, `layout`,
+   …) whose enum initial values would otherwise silence the check forever. Sections that
+   fill themselves from a list (Teachers, FAQs, News, Tuition, …) are exempt.
+3. **Links worth a look.** Every same-site path written anywhere in the hero or sections,
+   compared by FIRST SEGMENT against the `page` slugs plus the code-owned routes
+   (`CODE_OWNED_PATHS`, mirroring `RESERVED_PAGE_SLUGS` in `page.ts`). First-segment
+   matching is deliberate: `/events/fall-fair` and `/curriculum/twos.pdf` are real
+   addresses no `page` document owns. It under-reports on purpose.
+
+If the slug fetch fails the link group is dropped and the other two still run.
+
 ## Editing in the Studio
 
 - **Presentation Tool** ([`src/sanity/resolve.ts`](../src/sanity/resolve.ts)) maps

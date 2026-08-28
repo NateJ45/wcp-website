@@ -50,6 +50,7 @@ import { faqItem } from './documents/faqItem';
 import { schoolYearEvent } from './documents/schoolYearEvent';
 import { legalPage } from './documents/legalPage';
 import { page } from './documents/page';
+import { sectionPreset } from './documents/sectionPreset';
 import { post } from './documents/post';
 import { newsletterIssue } from './documents/newsletterIssue';
 import { event } from './documents/event';
@@ -126,6 +127,7 @@ export const schemaTypes = [
   schoolYearEvent,
   legalPage,
   page,
+  sectionPreset,
   post,
   newsletterIssue,
   event,

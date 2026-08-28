@@ -360,10 +360,124 @@ export const guides: Guide[] = [
         items: [
           'Edit the menus',
           'Photos and images',
+          'Save a section and use it again',
+          'Check a page before you publish',
           'Publish later',
           'Show someone a draft',
           'Do it yourself vs. ask for help',
         ],
+      },
+    ],
+  },
+
+  {
+    slug: 'saved-sections',
+    category: 'Website pages & menus',
+    title: 'Save a section and use it again',
+    icon: '🧩',
+    lead: 'Built a band you like? Keep it, and drop the same one onto any other page.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'What a saved section is' },
+      {
+        kind: 'p',
+        text: 'A **saved section** is one finished section, kept on a shelf. A "Book a tour" banner, a row of cards you got just right, a photo strip. You save it once and add it to as many pages as you like, instead of building it again each time.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'It is a copy, not a link.',
+        text: 'Adding a saved section drops a copy onto the page. Changing that page later does not change the saved one, and changing the saved one does not change pages that already have it.',
+      },
+      { kind: 'h', text: 'Save a section' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page that has the section you want to keep.',
+          'Click the small arrow beside the `Publish` button, then `Save a section as preset…`.',
+          'Pick the section from the list. Each one shows its number, what kind it is, and its first few words.',
+          'Give it a name you will recognise later, like "Tour banner", then click `Save section`.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'default',
+        title: 'It saves what you can see.',
+        text: 'The section is saved exactly as it stands in the boxes right now, including changes you have not published yet.',
+      },
+      { kind: 'h', text: 'Add a saved section to a page' },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Preview** and click the page you want it on, so the preview is showing that page.',
+          'At the bottom of the page list, click `Saved sections` to open the list.',
+          'Find the one you want and click its `+` button. It is added to the bottom of the page.',
+          'Drag it up to where you want it, change any words you like, then `Publish`.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'The + button is greyed out?',
+        text: 'It needs to know which page to add to. Click a page in the list first, then try again.',
+      },
+      {
+        kind: 'path',
+        items: ['Public website', 'Saved sections'],
+        link: { pane: 'section-presets', ws: 'public' },
+      },
+      {
+        kind: 'p',
+        text: 'That is also where you rename one, change what is inside it, or delete the ones nobody uses. A tidy list is a findable list.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Check a page before you publish'],
+      },
+    ],
+  },
+
+  {
+    slug: 'check-a-page',
+    category: 'Website pages & menus',
+    title: 'Check a page before you publish',
+    icon: '🔍',
+    lead: 'A quick second pair of eyes: missing photo descriptions, empty sections, and links that may go nowhere.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'How to run it' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page.',
+          'Click the small arrow beside the `Publish` button, then `Check this page…`.',
+          'Read what it found, close it, and fix anything you agree with.',
+        ],
+      },
+      { kind: 'h', text: 'What it looks for' },
+      {
+        kind: 'bullets',
+        items: [
+          '**Photos with no description.** The sentence a screen reader says out loud, and the words shown if a photo fails to load.',
+          '**Sections with nothing in them.** A section you added and did not fill in, which would show up blank on the website.',
+          '**Links worth a look.** A link to a part of our own site where no page seems to live.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'It never stops you publishing.',
+        text: 'This is a courtesy check, not a rule. Everything it says is a suggestion, and you can publish with the list still showing things.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'It can be wrong.',
+        text: 'A photo that is pure decoration needs no description. A section that fills itself from a list, like Teachers or FAQs, is skipped because its words live elsewhere. Use your judgement.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Photos and images', 'Save a section and use it again'],
       },
     ],
   },

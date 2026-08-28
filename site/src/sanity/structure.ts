@@ -129,6 +129,24 @@ function pagesGroup(S: StructureBuilder) {
     .icon(emoji('🧱'));
 }
 
+// Saved sections — reusable single sections captured off a page ("Save a
+// section as preset…" in a page's publish menu). They are a TOOL, not content:
+// nothing here renders on the website until someone adds one to a page from the
+// "Saved sections" group beside the live preview. Ordered by name, because the
+// name is the only way you find one again.
+function savedSectionsGroup(S: StructureBuilder) {
+  return S.listItem()
+    .id('section-presets')
+    .title('Saved sections')
+    .icon(emoji('🧩'))
+    .child(
+      S.documentTypeList('sectionPreset')
+        .id('section-presets-list')
+        .title('Saved sections')
+        .defaultOrdering([{ field: 'title', direction: 'asc' }]),
+    );
+}
+
 // Form submissions — an inbox grouped BY FORM, not one flat pile. The folders
 // are built live from the `topic` values that actually exist in the data (the
 // board names topics freely on each form section), so a brand-new form shows
@@ -197,6 +215,7 @@ const PLACED = new Set([
   'schoolYearEvent',
   'legalPage',
   'page',
+  'sectionPreset',
   'post',
   'newsletterIssue',
   'event',
@@ -268,6 +287,7 @@ export const publicStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
       S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
       pagesGroup(S),
+      savedSectionsGroup(S),
 
       // ── School info ── the school facts that change a few times a year.
       S.divider().title('School info'),

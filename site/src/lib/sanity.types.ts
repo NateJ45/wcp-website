@@ -1004,6 +1004,139 @@ export type Post = {
   ogImage?: FigureImage;
 };
 
+export type SectionPreset = {
+  _id: string;
+  _type: 'sectionPreset';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  sectionType?: string;
+  section?: Array<
+    | ({
+        _key: string;
+      } & ProseSection)
+    | ({
+        _key: string;
+      } & CardGridSection)
+    | ({
+        _key: string;
+      } & StatBandSection)
+    | ({
+        _key: string;
+      } & CtaSection)
+    | ({
+        _key: string;
+      } & TestimonialSection)
+    | ({
+        _key: string;
+      } & TeacherSection)
+    | ({
+        _key: string;
+      } & ClassCardsSection)
+    | ({
+        _key: string;
+      } & FaqSection)
+    | ({
+        _key: string;
+      } & SchoolYearSection)
+    | ({
+        _key: string;
+      } & TuitionTableSection)
+    | ({
+        _key: string;
+      } & TuitionCalculatorSection)
+    | ({
+        _key: string;
+      } & EnrollmentCtaSection)
+    | ({
+        _key: string;
+      } & ScheduleSection)
+    | ({
+        _key: string;
+      } & StepListSection)
+    | ({
+        _key: string;
+      } & CompareSection)
+    | ({
+        _key: string;
+      } & TabsSection)
+    | ({
+        _key: string;
+      } & AccordionSection)
+    | ({
+        _key: string;
+      } & QuickFactsSection)
+    | ({
+        _key: string;
+      } & PullQuoteSection)
+    | ({
+        _key: string;
+      } & VideoSection)
+    | ({
+        _key: string;
+      } & MapSection)
+    | ({
+        _key: string;
+      } & CountdownSection)
+    | ({
+        _key: string;
+      } & GallerySection)
+    | ({
+        _key: string;
+      } & StoryTimelineSection)
+    | ({
+        _key: string;
+      } & SplitMediaSection)
+    | ({
+        _key: string;
+      } & LatestPostsSection)
+    | ({
+        _key: string;
+      } & UpcomingEventsSection)
+    | ({
+        _key: string;
+      } & FormSection)
+    | ({
+        _key: string;
+      } & NewsletterSignupSection)
+    | ({
+        _key: string;
+      } & ReviewFormSection)
+    | ({
+        _key: string;
+      } & NoticeBarSection)
+    | ({
+        _key: string;
+      } & ContactDetailsSection)
+    | ({
+        _key: string;
+      } & ProgramCardsSection)
+    | ({
+        _key: string;
+      } & BoardMembersSection)
+    | ({
+        _key: string;
+      } & LogoStripSection)
+    | ({
+        _key: string;
+      } & CampaignSection)
+    | ({
+        _key: string;
+      } & JobsSection)
+    | ({
+        _key: string;
+      } & DownloadsSection)
+    | ({
+        _key: string;
+      } & AlbumSection)
+    | ({
+        _key: string;
+      } & InstagramSection)
+  >;
+  note?: string;
+};
+
 export type LegalPage = {
   _id: string;
   _type: 'legalPage';
@@ -3126,6 +3259,7 @@ export type AllSanitySchemaTypes =
   | NewsletterIssue
   | StaffReference
   | Post
+  | SectionPreset
   | LegalPage
   | SchoolYearEvent
   | FaqItem
