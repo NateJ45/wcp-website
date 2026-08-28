@@ -32,6 +32,31 @@ interface Props {
 }
 const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
 
+// ---------------------------------------------------------------------------
+// THE SOFT-REFRESH RENDER IS A CHEAPER RENDER (2026-08-28)
+// ---------------------------------------------------------------------------
+// The overlay's reconcile refetch sends `x-preview-soft-refresh: 1` and then
+// consumes exactly one thing from the response: `#main`
+// (src/components/preview/VisualEditingOverlay.tsx). Everything this shell
+// draws AROUND <main> is parsed and thrown away.
+//
+// Header and Footer are the expensive part. Each one reads Sanity at request
+// time on this SSR route — Header takes site settings and the menus, Footer
+// takes site settings, the menus, the sign-off microcopy and a photo — and a
+// burst of edits runs this route repeatedly.
+//
+// So on a soft refresh the chrome is not rendered. This is safe in the narrow,
+// checkable sense that matters: Header and Footer are SIBLINGS of <main> in the
+// body below, they render nothing into it, and the slot content comes from the
+// route, not from them. The `#main` HTML is therefore byte-for-byte what a full
+// render produces — which is the only thing the reconcile can see.
+//
+// The response is still a valid page, just a chrome-less one. Nobody looks at
+// it: this header is only ever sent by the refetch in the overlay, never by a
+// navigation. Preview-only either way — the static build never reaches here.
+const softRefresh = Astro.request.headers.get('x-preview-soft-refresh') === '1';
+const showChrome = chrome === 'public' && !softRefresh;
+
 // The WordPress-template-part gesture (2026-08-28): the chrome is an editable
 // surface. In Edit mode the overlay outlines header and footer; a click opens
 // the owning document in the edit panel — header → the Menus doc at mainNav,
@@ -75,7 +100,7 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
   </head>
   <body class="relative">
     {
-      chrome === 'public' && (
+      showChrome && (
         <div data-sanity={headerAttr}>
           <Header linkBase="/preview" />
         </div>
@@ -89,7 +114,7 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
     </p>
     <main id="main"><slot /></main>
     {
-      chrome === 'public' && (
+      showChrome && (
         <div data-sanity={footerAttr}>
           <Footer linkBase="/preview" />
         </div>

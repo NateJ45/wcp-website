@@ -18,6 +18,14 @@ import { PAGE_BY_SLUG_QUERY } from '@/lib/queries';
 import { site as siteFallback } from '@/data/site';
 
 const draftMode = Astro.cookies.has(perspectiveCookieName);
+
+// Never let a browser cache a preview page (2026-08-28). These SSR responses
+// carried NO Cache-Control, so browsers applied heuristic caching — and the
+// Presentation iframe kept serving the PREVIOUS deploy's page (stale island
+// hashes, invisible new editor features) until the cache aged out. Draft
+// content is per-cookie anyway; caching it was never right.
+Astro.response.headers.set('Cache-Control', 'no-store');
+
 const slug = (Astro.params.slug as string | undefined) || 'home';
 
 interface PageDoc {

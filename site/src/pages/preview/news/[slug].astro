@@ -15,6 +15,12 @@ import { previewFetch } from '@/lib/cms-preview';
 import { POST_BY_SLUG_QUERY } from '@/lib/queries';
 
 const draftMode = Astro.cookies.has(perspectiveCookieName);
+
+// Never let a browser cache a preview page (2026-08-28) — the same rule as the
+// page-builder preview route. Without it browsers apply heuristic caching and
+// the Presentation iframe keeps serving the PREVIOUS deploy's HTML.
+Astro.response.headers.set('Cache-Control', 'no-store');
+
 const slug = Astro.params.slug as string;
 const post = await previewFetch<PostDoc | null>(draftMode, POST_BY_SLUG_QUERY, { slug });
 

@@ -666,6 +666,74 @@ If the slug fetch fails the link group is dropped and the other two still run.
   (`GUIDE_CATEGORY_ORDER`): each side leads with its own work, and a load-time guard
   throws if a reorder ever drops a category.
 
+## The preview refresh loop (added 2026-08-28)
+
+The preview shows server-rendered Astro, so nothing can re-render it on the client
+the way a React app would. Instead there are **two paths**, and they answer two
+different questions.
+
+**The COMPLETE path — refetch and morph.**
+[`preview/live.ts`](../src/pages/preview/live.ts) holds ONE long-lived connection to
+Sanity's listen API server-side (the token never reaches the browser) and forwards a
+tiny `change` signal over SSE. `VisualEditingOverlay` answers it by refetching this
+preview URL and reconciling the fresh `#main` into the live one.
+
+- It is **event-driven on purpose**. Never put an interval poll back — the 1.5s poll
+  this replaced burned thousands of uncached Sanity requests per editing session.
+- Its `visibility: 'query'` is **load-bearing**. An earlier signal would refetch data
+  the query index has not caught up with, and the stale HTML would undo the fast path
+  below.
+- The refetch sends `x-preview-soft-refresh: 1`. `PreviewLayout` reads that header and
+  skips the Header and Footer, which are the expensive part of this route (several
+  Sanity reads each) and are siblings of `<main>`, so `#main` is byte-for-byte what a
+  full render produces.
+- Every preview route sets `Cache-Control: no-store`. Without it browsers applied
+  heuristic caching and the Presentation iframe kept serving the previous deploy.
+
+**The FAST path — instant text.** The refetch is correct, not quick. `useInstantText`
+([`components/preview/overlay/`](../src/components/preview/overlay/)) swaps changed
+plain strings into the page the moment an edit reaches the frame, and keeps each text
+node's stega payload so click-to-edit never degrades. It has **two feeds**:
+
+1. the optimistic actor, whose feed is a listen (so it waits for the autosave to
+   commit), and
+2. the Studio's own local edit state, which
+   [`LiveDraftBridge.tsx`](../src/sanity/components/LiveDraftBridge.tsx) reads with
+   `useEditState(id, type, 'default')` and posts into the same-origin preview iframe
+   as the editor types. **Not `'low'`**: measured live, `'low'` let the store coalesce
+   isolated keystrokes into the autosave commit (413ms, then 1429ms). The bridge's own
+   60ms trailing throttle is what keeps `'default'` cheap.
+
+The bridge is mounted by the navigator, which is the one place in Presentation that
+already knows which page the preview is showing. Both flavors mount it —
+`documentType` is `page` on the public list and `hubPage` on the Family Hub list.
+
+**The rules that keep it honest** all live in pure, tested libraries under `src/lib/`,
+and each file's header carries the failure it answers and the numbers behind it:
+
+| File                    | What it decides                                                                                                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `preview-refresh.ts`    | Single flight, stale-response discard, and a 1200ms floor between render STARTS. Six overlapping renders is how the editor got `Error 1102`.                                                   |
+| `preview-morph.ts`      | Update `#main` in place instead of `replaceWith`, which re-decoded every image and blocked the main thread for about a second — twice per keystroke. Also the "unchanged (skipped)" fast path. |
+| `preview-stega.ts`      | Reads the invisible payload every preview string carries, so a field is matched to its text node by identity, never by searching the page for the old words.                                   |
+| `preview-text-diff.ts`  | Which PLAIN strings changed. Portable text and the rich twins are skipped whole.                                                                                                               |
+| `preview-text-nodes.ts` | Writes only into a node whose visible characters are EXACTLY the old value, and re-attaches the stega it split off.                                                                            |
+| `preview-live-draft.ts` | The Studio↔island contract. Distrusts every inbound message, and holds the actor back for 2s after a local snapshot so a stale one cannot type the page backwards.                             |
+| `preview-navigation.ts` | The bounce-aware page-switch retry, which is why clicking a page in the navigator no longer takes two clicks.                                                                                  |
+
+**Instant text is also a change event for the scheduler.** A render that started before
+the words the editor just typed is discarded on arrival instead of morphed in. Without
+that, staleness moved only at Sanity's transaction visibility (about a second behind
+the keystroke) and a mid-burst render wrote the server's half-typed sentence over the
+finished one — the "half my text disappears, then comes back" report. The extra events
+cost discards, not renders.
+
+**To measure any of this,** set `localStorage.previewTiming = '1'` in the preview frame.
+Every path then logs one line: `instant-text` names which feed made the swap (`local`
+or `actor`), and `soft-refresh` says what happened to the page (`unchanged (skipped)`,
+`main morphed`, `main replaced (morph bailed)`, or `discarded (stale)`). See
+[`overlay/timing.ts`](../src/components/preview/overlay/timing.ts).
+
 ## News / blog
 
 Separate from the page builder but built on the same pieces. A `post` document

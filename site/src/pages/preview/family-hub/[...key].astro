@@ -33,6 +33,12 @@ if (!draftMode) {
   return new Response('Hub previews are only available inside the Studio.', { status: 401 });
 }
 
+// Never let a browser cache a preview page (2026-08-28) — the same rule as the
+// public preview routes, and it matters twice here: this response carries
+// family-only content, and a cached copy would outlive the cookie that gates
+// it. The header goes AFTER the gate, so a 401 is never given one.
+Astro.response.headers.set('Cache-Control', 'no-store');
+
 const key = (Astro.params.key as string | undefined) || 'home';
 
 interface HubPageDoc {
@@ -52,7 +58,11 @@ if (!page) {
   return new Response(`No hub page found for "${key}"`, { status: 404 });
 }
 const title = page.heading || page.title || key;
-const pageId = page._id;
+// The doc id the overlay, the instant-text path and /preview/live all key on.
+// The draft perspective returns the `drafts.` twin's id, so strip the prefix:
+// the listen filter must match BOTH twins, and the stega payload in the page
+// names the published id. Same treatment as the public preview route.
+const pageId = page._id.replace(/^drafts\./, '');
 
 // The code-owned part of each built-in page, in one sentence — shown as a
 // LOCKED placeholder so an editor knows why that content is not here and why

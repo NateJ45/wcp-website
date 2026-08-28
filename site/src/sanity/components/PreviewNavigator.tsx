@@ -23,8 +23,10 @@ import { RestoreIcon } from '@sanity/icons/Restore';
 import { DragHandleIcon } from '@sanity/icons/DragHandle';
 import { ShareIcon } from '@sanity/icons/Share';
 import { useShareDraftLink, SHARE_LINK_TTL_PHRASE } from './shareDraftLink';
+import { LiveDraftBridge } from './LiveDraftBridge';
 import { newKey, regenerateKeys } from '../../lib/sanity-keys';
 import { sectionLabel } from '../../lib/page-checks';
+import { startNav, stepNav, type PendingNav } from '../../lib/preview-navigation';
 
 // =============================================================================
 // PreviewNavigator — the Squarespace-style page list beside the live preview
@@ -418,40 +420,48 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     // strings never break the highlight.
     const current = (params.preview ?? '').split('?')[0];
 
-    // STICKY navigation (2026-08-28, editor feedback on presacademy): every
-    // preview page change is a full document load, and Presentation can only
-    // hand the iframe its next URL once the NEW page's visual-editing script
-    // has reconnected. A click that lands inside that window (an editor
-    // moving quickly through the page list) is silently dropped. So a click
-    // records its intent and an effect re-issues navigate() every 750ms until
-    // params.preview reports the requested path (or ~6s pass). When the first
-    // navigate lands immediately, `current` matches at once and no retry ever
-    // fires. `pending` also drives the row highlight, so the list responds to
-    // the click instantly instead of after the page load.
-    const [pending, setPending] = useState<{ href: string; type: string; id: string } | null>(null);
+    // BOUNCE-AWARE navigation (2026-08-28, ported from presacademy). Clicking a
+    // page took TWO clicks every time: the panel changed, the iframe did not,
+    // the panel bounced back to the old page, and the second click worked. The
+    // sticky retry this replaces could not help — it re-issued navigate() with
+    // the SAME href, which leaves params.preview where it already was, so the
+    // host effect that posts to the iframe never re-ran. The whole rule set,
+    // and the host sources it was read out of, live in
+    // ../../lib/preview-navigation.ts; this is only the timer and the navigate
+    // call.
+    //
+    // `pending` also drives the row highlight, and because it now survives the
+    // bounce the list stays put instead of flickering back and forth.
+    const [pending, setPending] = useState<PendingNav | null>(null);
     const go = useCallback(
       (href: string, type: string, id: string) => {
-        setPending({ href, type, id });
+        setPending(startNav(href, type, id, current, Date.now()));
         navigate(href, { type, id });
       },
-      [navigate],
+      [navigate, current],
     );
     useEffect(() => {
-      if (!pending) return;
-      if (current === pending.href) {
-        setPending(null);
-        return;
-      }
-      let tries = 0;
-      const timer = setInterval(() => {
-        tries += 1;
-        if (tries > 8) {
-          clearInterval(timer);
+      if (!pending) return undefined;
+      const step = () => {
+        const next = stepNav(pending, current, Date.now());
+        if (next.action === 'settle') {
           setPending(null);
           return;
         }
-        navigate(pending.href, { type: pending.type, id: pending.id });
-      }, 750);
+        if (next.action === 'retry' && next.pending) {
+          setPending(next.pending);
+          navigate(next.pending.href, { type: next.pending.type, id: next.pending.id });
+          return;
+        }
+        // Identity is the signal: stepNav hands back the same object when
+        // nothing moved, which is what keeps this effect from re-running itself
+        // forever.
+        if (next.pending !== pending) setPending(next.pending);
+      };
+      step();
+      // The window has to close on its own: params.preview can sit still for the
+      // whole of it, and a stale `pending` would pin the row highlight.
+      const timer = setInterval(step, 400);
       return () => clearInterval(timer);
     }, [pending, current, navigate]);
 
@@ -758,6 +768,21 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
 
     return (
       <Flex direction="column" style={{ height: '100%' }}>
+        {/* KEYSTROKE-INSTANT PREVIEW (2026-08-28). Renders nothing. It lives
+            here because this panel is the one place inside Presentation that
+            already knows WHICH page the preview is showing, and it is always
+            mounted alongside the preview iframe it posts into. Both flavors of
+            the navigator mount it: `currentRow.type` is `page` on the public
+            list and `hubPage` on the Family Hub list. See ./LiveDraftBridge.tsx
+            for what it sends and src/lib/preview-live-draft.ts for the
+            contract. */}
+        {currentRow && (
+          <LiveDraftBridge
+            key={currentRow.id}
+            documentId={currentRow.id}
+            documentType={currentRow.type}
+          />
+        )}
         <Box flex={1} padding={3} style={{ overflowY: 'auto' }}>
           <Stack space={4}>
             {grouped === null ? (
