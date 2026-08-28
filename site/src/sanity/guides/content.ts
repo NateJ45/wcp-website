@@ -357,7 +357,125 @@ export const guides: Guide[] = [
       },
       {
         kind: 'seealso',
-        items: ['Edit the menus', 'Photos and images', 'Do it yourself vs. ask for help'],
+        items: [
+          'Edit the menus',
+          'Photos and images',
+          'Publish later',
+          'Show someone a draft',
+          'Do it yourself vs. ask for help',
+        ],
+      },
+    ],
+  },
+
+  {
+    slug: 'publish-later',
+    category: 'Website pages & menus',
+    title: 'Publish later',
+    icon: '⏰',
+    lead: 'Write a page now, and let it go live on a day and time you pick. You do not have to be at a computer when it happens.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'What this is for' },
+      {
+        kind: 'p',
+        text: 'Say enrollment opens on March 1 and you have the page written in February. You do not have to remember to click `Publish` that morning. Set the date and time, leave the page as a draft, and the website publishes it for you.',
+      },
+      { kind: 'h', text: 'How to do it' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page and finish your edits.',
+          'Click the `Publishing` tab at the top of the page (beside Content, Hero, and Settings).',
+          'Set **Publish automatically at** to the day and time you want.',
+          'Do NOT click `Publish`. Just leave the page. Your work is saved as a draft, which is exactly what this needs.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Leave it as a draft, or nothing happens.',
+        text: 'This only works on a page that is waiting as a draft. If you click `Publish` yourself, the page is live right away and the date is ignored.',
+      },
+      { kind: 'h', text: 'When it actually goes live' },
+      {
+        kind: 'p',
+        text: 'The website checks every half hour, so the page appears **within about half an hour** of the time you picked, not on the exact minute. Pick a time a little before you need it. The time you set is your own local time.',
+      },
+      { kind: 'h', text: 'Changing your mind' },
+      {
+        kind: 'bullets',
+        items: [
+          'To cancel, clear the **Publish automatically at** box before the time arrives. Nothing else happens.',
+          'To move it, set a new date and time in the same box.',
+          'To publish it now instead, just click `Publish` as usual.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'It works on Family Hub pages too.',
+        text: 'Hub pages have the same `Publishing` tab. A hub page appears the moment it publishes, with no waiting for the website to rebuild.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Show someone a draft', 'Post a closure or alert'],
+      },
+    ],
+  },
+
+  {
+    slug: 'share-a-draft',
+    category: 'Website pages & menus',
+    title: 'Show someone a draft',
+    icon: '🔗',
+    lead: 'Send a link that lets someone read your unpublished page, without giving them a Studio login.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'What this is for' },
+      {
+        kind: 'p',
+        text: 'You have rewritten a page and want the Board chair to read it before it goes live. Instead of publishing and hoping, or setting them up with an account, you can send them a link that shows your draft.',
+      },
+      { kind: 'h', text: 'How to do it' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the page you are working on.',
+          'Click the small arrow beside the green `Publish` button, then `Copy share link`. (In the page list beside the preview, the `⋯` button on a row has it too.)',
+          'The link is now on your clipboard. Paste it into an email or a text message.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'The link works for about an hour, then it stops.',
+        text: 'That hour is set by Sanity and cannot be made longer. It is not a problem: if the link has expired, copy a new one, which takes one click. Send the link when the person is ready to look.',
+      },
+      { kind: 'h', text: 'What the other person sees' },
+      {
+        kind: 'bullets',
+        items: [
+          'Your **current draft**, including edits you have not published.',
+          'A normal looking page. They cannot edit anything, and they need no login.',
+          'Nothing else. The link opens one page, not the Studio.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'critical',
+        title: 'Family Hub pages have no share link, on purpose.',
+        text: 'Anyone holding the link can open the page, and the hub holds the family directory, health notes, and photos of the children. There is no safe way to send that to one person only, so the hub pages simply do not offer it. Send a screenshot of the part you want a second opinion on instead.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Treat it like a private link.',
+        text: 'Anyone you forward it to can read the draft during that hour. Send it to the person who needs it, not to a group.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Publish later', 'Undo a change or see history'],
       },
     ],
   },

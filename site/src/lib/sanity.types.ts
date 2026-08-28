@@ -1753,6 +1753,7 @@ export type HubPage = {
         _key: string;
       } & FormSection)
   >;
+  publishAt?: string;
 };
 
 export type SiteMicrocopy = {
@@ -2805,6 +2806,7 @@ export type Page = {
     _type: 'image';
   };
   hideFromSearch?: boolean;
+  publishAt?: string;
 };
 
 export type SectionHeader = {

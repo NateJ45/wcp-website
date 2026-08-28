@@ -48,6 +48,27 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Waiting on a human
 
+- **Verify "Publish later" and "Copy share link" in the DEPLOYED Studio (added
+  2026-08-27).** Both shipped this session (ported from the starter; see
+  docs/SANITY.md). Every local gate passes (types, lint, format, 381 unit tests,
+  build, 27/27 parity, and a real dry run of `scripts/publish-due.mjs` against
+  the production dataset, which found nothing due). Neither can be exercised
+  locally: the Studio is blank under `npm run dev` (spaces-in-path gotcha), and
+  a share link needs HTTPS because the preview cookie is `secure`. After the
+  next deploy, do two round trips:
+  1. **Publish later.** Open a low-stakes page, `Publishing` tab, set **Publish
+     automatically at** a few minutes ahead, and leave it as a DRAFT. Within
+     about half an hour it should publish itself, the field should be empty on
+     the published page, and a Deploy run should follow. If nothing happens,
+     open the **Publish scheduled drafts** workflow in the Actions tab: the gate
+     job warns out loud when `SANITY_TOKEN` is missing, and a manual run
+     (`Run workflow`) reproduces it on demand.
+  2. **Copy share link.** On the same page use `Copy share link` (publish menu,
+     or the `⋯` menu in the page list), then open the link in a private window
+     with no Sanity login. It must show the DRAFT. Note that it stops working
+     after about an hour, by design. Family Hub pages deliberately have no share
+     link — see `src/sanity/urls.ts` before "fixing" that.
+
 - **Verify the safe-rename redirect in the DEPLOYED Studio (added 2026-08-27).**
   Renaming a published page now files its own redirect at publish time
   (`src/sanity/actions/slugRedirect.tsx`, wired in `sanity.config.ts`). Every

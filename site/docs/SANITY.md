@@ -88,18 +88,85 @@ The project runs on Sanity's **free** plan. Most of what we use is free, but a f
 "Squarespace/WordPress-parity" features are **Growth-only** ($15/editor seat/mo) and are
 either not enabled or won't function until an upgrade:
 
-| Feature                                                                                                                    | Free?         | Notes                                                                                                                                                                          |
-| -------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Page builder, News, Events, Media library, forms, newsletter, SEO preview, "Used on", Welcome dashboard, redirects, search | ✅ Free       | Everything the board uses day to day                                                                                                                                           |
-| **Editor role** (edit without member/billing access)                                                                       | ❌ Growth     | Free has only **Administrator** + **Viewer** — see [ROLES.md](ROLES.md)                                                                                                        |
-| **Scheduled publishing**                                                                                                   | ❌ Growth     | Config flag is **off** on purpose (`scheduledDrafts.enabled: false`) so the board never relies on a Schedule button that would vanish after the trial; publishing is immediate |
-| **Comments & Tasks** (collaboration)                                                                                       | ❌ Growth     | Not enabled                                                                                                                                                                    |
-| **AI Assist** (in-field AI, auto alt-text)                                                                                 | ❌ Growth     | Not installed                                                                                                                                                                  |
-| **Custom per-field roles**                                                                                                 | ❌ Enterprise | e.g. "edit News but not tuition"                                                                                                                                               |
+| Feature                                                                                                                    | Free?         | Notes                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page builder, News, Events, Media library, forms, newsletter, SEO preview, "Used on", Welcome dashboard, redirects, search | ✅ Free       | Everything the board uses day to day                                                                                                                                                           |
+| **Editor role** (edit without member/billing access)                                                                       | ❌ Growth     | Free has only **Administrator** + **Viewer** — see [ROLES.md](ROLES.md)                                                                                                                        |
+| **Scheduled publishing**                                                                                                   | ❌ Growth     | Sanity's own is **off** on purpose (`scheduledDrafts.enabled: false`). A free replacement ships instead — see [Scheduled publishing, the free version](#scheduled-publishing-the-free-version) |
+| **Comments & Tasks** (collaboration)                                                                                       | ❌ Growth     | Not enabled                                                                                                                                                                                    |
+| **AI Assist** (in-field AI, auto alt-text)                                                                                 | ❌ Growth     | Not installed                                                                                                                                                                                  |
+| **Custom per-field roles**                                                                                                 | ❌ Enterprise | e.g. "edit News but not tuition"                                                                                                                                                               |
 
 To upgrade: manage.sanity.io → project → **Plan**. Then AI Assist and Comments/Tasks can be
 wired up, and the Editor role starts working. (Scheduled publishing would also unlock, but we
 keep it off — see the note above.)
+
+## Scheduled publishing, the free version (added 2026-08-27)
+
+Ported from `ncs-astro-sanity-starter` (Cards 19 + 20). Two small parts replace the
+Growth-plan feature, and they cost nothing:
+
+1. **The field.** `page` and `hubPage` carry **"Publish automatically at"** in a
+   **Publishing** tab. A board member picks a date and time, **leaves the page as a
+   draft**, and walks away. Times are the editor's own local time (Sanity's date input
+   stores UTC), so nobody has to think about timezones. Clearing the field before the
+   time arrives cancels it. Field + group live in
+   [`src/sanity/schemaTypes/_publishAt.ts`](../src/sanity/schemaTypes/_publishAt.ts) and
+   must be added as a **pair** (`PUBLISH_AT_GROUP` into `groups`, `publishAtField()`
+   into `fields`) — a field naming a group its type never declared is a hard Studio
+   crash, not a warning.
+2. **The job.** [`.github/workflows/publish-due.yml`](../../.github/workflows/publish-due.yml)
+   runs [`scripts/publish-due.mjs`](../scripts/publish-due.mjs) every half hour. It
+   finds every draft whose `publishAt` has passed and publishes it.
+
+Facts worth knowing:
+
+- **The promise is "within the half hour", not "at 9:00 exactly"**, and the field
+  description in the Studio says so. GitHub's cron is best-effort too.
+- **The script is dependency-free on purpose** (global `fetch` against Sanity's HTTP
+  API), so the workflow is checkout + node with no `npm ci` — 48 runs a day would
+  otherwise burn real Actions time. Do not add an install step, and do not give the
+  script an import from `node_modules`.
+- **Publishing strips `publishAt` in the same mutation**, so a published page can never
+  carry a stale schedule and be picked up again on the next run. Each document is one
+  atomic mutate (create the published doc + delete the draft together).
+- **Dry run by default.** `node scripts/publish-due.mjs` prints the queue and writes
+  nothing; `--apply` publishes. The workflow passes `--apply`.
+- **A scheduled publish deploys itself.** The script writes to the dataset, and the
+  deploy webhook below watches the dataset, so a scheduled `page` triggers the same
+  rebuild a hand-published one does. A `hubPage` is filtered out of that webhook on
+  purpose and needs no rebuild (the hub is server rendered and reads Sanity live).
+- **Adding the pair to another document type is the whole installation.** The script's
+  query is schema-agnostic: any draft with a `publishAt`. It is deliberately NOT on the
+  singletons (Site Settings and friends are never "published later").
+- **Running it by hand** needs `SANITY_AUTH_TOKEN` (a write token) and
+  `SANITY_PROJECT_ID=niemhgev` in the environment or in `site/.env`. This repo's own
+  secret is named `SANITY_TOKEN`, so the workflow maps it — the same mapping the backup
+  workflow does for the Sanity CLI.
+
+## Show someone a draft: share links (added 2026-08-27)
+
+Also ported from the starter. A board member can hand a reviewer (a chair, a teacher, a
+parent) a link that shows a page's **draft**, with no Sanity login:
+
+- **Where:** the `Copy share link` action in a page's publish menu, and the `⋯` menu on
+  each row of the page list beside the preview.
+- **How it works:** the Studio mints the same one-time preview secret the Presentation
+  tool uses, wrapped in an `/api/draft-mode/enable` URL. The endpoint validates the
+  secret against the dataset and only then sets the preview cookie. An invalid or
+  expired secret gets a bare 401.
+- **The link works for about an hour**, and that cannot be extended — the TTL is hard
+  coded inside `@sanity/preview-url-secret`. The Studio copy says so out loud rather than
+  letting a reviewer discover it as a 401 the next morning. Minting a fresh link is one
+  click.
+- **Deployed origin only.** The cookie is `secure` + `sameSite: none`, so a browser will
+  not store it over plain `http://localhost:4321`. Test share links on the live site.
+- **Family Hub pages get NO share link, on purpose.** The link carries the Studio preview
+  cookie, and that cookie is the _entire_ gate on `/preview/family-hub/*` — the family
+  password guards `/family-hub`, not the preview route. A hub share link would therefore
+  show the directory, health details and the children's photo wall to whoever received
+  it. The reasoning (and the warning against "fixing" it) lives in
+  [`src/sanity/urls.ts`](../src/sanity/urls.ts).
 
 ## The Studio
 

@@ -21,6 +21,8 @@ import { CopyIcon } from '@sanity/icons/Copy';
 import { ArchiveIcon } from '@sanity/icons/Archive';
 import { RestoreIcon } from '@sanity/icons/Restore';
 import { DragHandleIcon } from '@sanity/icons/DragHandle';
+import { ShareIcon } from '@sanity/icons/Share';
+import { useShareDraftLink, SHARE_LINK_TTL_PHRASE } from './shareDraftLink';
 
 // =============================================================================
 // PreviewNavigator — the Squarespace-style page list beside the live preview
@@ -45,6 +47,9 @@ import { DragHandleIcon } from '@sanity/icons/DragHandle';
 //
 // Pages as first-class objects (2026-08-27) — three more things a row can do:
 //  - Duplicate: copies the page into a NEW draft, "… copy" / "…-copy".
+//  - Copy share link (public list only): a one-hour link that shows the DRAFT
+//    to a reviewer with no Sanity login. Hub rows do not get it — the reason is
+//    in src/sanity/urls.ts.
 //  - Archive / Restore: sets `archived` on the document. Every live-site query
 //    skips an archived page, but nothing is deleted, so Restore is complete.
 //    Archived rows collect in a group at the bottom of both lists.
@@ -333,6 +338,12 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     const navigate = usePresentationNavigate();
     const params = usePresentationParams();
     const toast = useToast();
+    // "Copy share link" — mint a one-hour link that shows this page's DRAFT to
+    // someone with no Sanity login (see shareDraftLink.tsx). PUBLIC LIST ONLY:
+    // the link carries the Studio preview cookie, and that cookie is the whole
+    // gate on the hub preview route, so a hub link would show family-only
+    // content to whoever holds it. See src/sanity/urls.ts.
+    const { share, sharing } = useShareDraftLink();
     const [data, setData] = useState<Data | null>(null);
     const [creating, setCreating] = useState(false);
     const [busyId, setBusyId] = useState<string | null>(null);
@@ -779,6 +790,15 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
                                   text="Duplicate"
                                   onClick={() => void duplicatePage(r)}
                                 />
+                                {kind === 'public' && (
+                                  <MenuItem
+                                    icon={ShareIcon}
+                                    text={sharing ? 'Making link…' : 'Copy share link'}
+                                    disabled={sharing}
+                                    title={`Copy a link that shows this page's draft to someone without a Sanity login. ${SHARE_LINK_TTL_PHRASE}`}
+                                    onClick={() => void share(r.href, r.label)}
+                                  />
+                                )}
                                 {r.archived ? (
                                   <MenuItem
                                     icon={RestoreIcon}

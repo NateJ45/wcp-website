@@ -23,6 +23,7 @@ import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slugRedirect';
+import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
@@ -154,10 +155,12 @@ function workspace(opts: {
     dataset,
     theme: wcpStudioTheme,
     releases: { enabled: false },
-    // Scheduled publishing is a paid (Growth) feature. We keep it OFF so the
-    // board never builds a habit around a "Schedule" button that would vanish
-    // when the trial ends — publishing is immediate, and a future post can just
-    // be published on the day. (Was briefly enabled during the trial.)
+    // Sanity's own scheduled publishing is a paid (Growth) feature. We keep it
+    // OFF so the board never builds a habit around a "Schedule" button that
+    // would vanish when the trial ends. (Was briefly enabled during the trial.)
+    // The free replacement is the "Publish automatically at" field on pages and
+    // hub pages, published by a half-hourly GitHub Action — see
+    // src/sanity/schemaTypes/_publishAt.ts and scripts/publish-due.mjs.
     scheduledDrafts: { enabled: false },
     studio: { components: { layout: StudioLayout } },
     // Append any extra tools (e.g. CSV export) after the built-in ones.
@@ -208,22 +211,39 @@ function workspace(opts: {
       // old address automatically — see src/sanity/actions/slugRedirect.tsx.
       // The wrapper is memoized per wrapped component, so this stays a stable
       // component identity across renders.
+      //
+      // "Copy share link" is appended LAST, to every type except the trash
+      // receipt. The action renders itself away for any document with no public
+      // page of its own (src/sanity/urls.ts decides), so appending it broadly
+      // costs nothing and keeps the wiring one line. Family Hub pages are one
+      // of the types that get nothing: a share link carries the Studio preview
+      // cookie, which is all the gated hub preview asks for, so a hub link
+      // would hand family content to whoever holds it. The reasoning lives in
+      // src/sanity/urls.ts — read it before adding hubPage there.
       actions: (prev, { schemaType }) => {
         const base = SLUG_REDIRECT_TYPES.has(schemaType)
           ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
           : prev;
 
         if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
-        if (schemaType === 'testimonialSubmission') return [ApproveTestimonialAction, ...base];
+        if (schemaType === 'testimonialSubmission')
+          return [ApproveTestimonialAction, ...base, shareDraftLinkAction];
         if (SINGLETON_TYPES.has(schemaType)) {
-          return base.filter(
-            ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
-          );
+          return [
+            ...base.filter(
+              ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
+            ),
+            shareDraftLinkAction,
+          ];
         }
         if (ARCHIVABLE_TYPES.has(schemaType)) {
-          return [...base.filter(({ action }) => action !== 'delete'), ArchiveAction];
+          return [
+            ...base.filter(({ action }) => action !== 'delete'),
+            ArchiveAction,
+            shareDraftLinkAction,
+          ];
         }
-        return base;
+        return [...base, shareDraftLinkAction];
       },
       // Keep singletons AND trashedItem out of the global "create new" menu
       // (you never hand-author a trash receipt, and legalPage is retired —

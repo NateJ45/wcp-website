@@ -1,6 +1,7 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { BODY_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 import { seoFields } from '../objects/seoFields';
+import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
 
 // Web addresses a page can never use: the FIRST slug segment must not collide
 // with a code-owned route or a build-output folder. A colliding page would
@@ -53,6 +54,9 @@ export const page = defineType({
     { name: 'hero', title: 'Hero (top banner)' },
     { name: 'seo', title: 'Search & sharing' },
     { name: 'settings', title: 'Settings' },
+    // "Publish automatically at" — the free-tier scheduled publish. The group
+    // and the field are one unit; see ../_publishAt.ts.
+    PUBLISH_AT_GROUP,
   ],
   fields: [
     defineField({
@@ -164,6 +168,10 @@ export const page = defineType({
         }),
       },
     }),
+
+    // Keep the page a DRAFT and it publishes itself at this time (within the
+    // half hour). scripts/publish-due.mjs does the work; see ../_publishAt.ts.
+    publishAtField(),
   ],
   preview: {
     select: { title: 'title', slug: 'slug', media: 'hero.image', archived: 'archived' },

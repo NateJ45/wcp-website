@@ -2,6 +2,7 @@ import { defineType, defineField, defineArrayMember } from 'sanity';
 import { HUB_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 import { ICON_NAMES } from '../objects/_shared';
 import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
+import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
 
 // =============================================================================
 // hubPage — a Family Hub page, built from sections (GATED, editable)
@@ -22,6 +23,9 @@ export const hubPage = defineType({
   groups: [
     { name: 'content', title: 'Content', default: true },
     { name: 'settings', title: 'Settings' },
+    // "Publish automatically at" — the free-tier scheduled publish. The group
+    // and the field are one unit; see ../_publishAt.ts.
+    PUBLISH_AT_GROUP,
   ],
   fields: [
     defineField({
@@ -161,6 +165,12 @@ export const hubPage = defineType({
       options: sectionInsertMenu(HUB_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
+
+    // Keep the page a DRAFT and it publishes itself at this time (within the
+    // half hour). scripts/publish-due.mjs does the work; see ../_publishAt.ts.
+    // A hub page is read live at request time, so it is on the hub the moment
+    // the script publishes it — no rebuild.
+    publishAtField(),
   ],
   // A hubPage is EITHER a built-in page (hubKey) or a new one (slug). With
   // neither it is an orphan: nothing routes to it and it renders nowhere, which
