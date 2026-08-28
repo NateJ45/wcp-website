@@ -35,7 +35,15 @@ jobs:
       # generated from the Studio schema and committed by hand. Regenerate it
       # here: any diff means someone changed a schema type and did not re-run
       # typegen, so the committed types no longer describe the real content.
+      # NODE_OPTIONS raises the heap for this step only. `sanity schema extract`
+      # bundles the whole Studio config and its import graph, and on 2026-08-28
+      # it began aborting with a core dump on the runner (exit 134) while the
+      # same command succeeded locally - the classic signature of a Linux CI box
+      # with less memory than the dev machine. The preview layer that landed
+      # that day added to the config's graph and pushed it over.
       - name: Generate Sanity types
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run typegen
 
       - name: Fail if committed Sanity types are stale
