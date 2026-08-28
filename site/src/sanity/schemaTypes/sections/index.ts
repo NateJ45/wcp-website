@@ -184,12 +184,24 @@ const INSERT_MENU_GROUPS: { name: string; title: string; of: string[] }[] = [
  * Grouped "+ Add" menu options for a sections array. Pass the type names the
  * array accepts; groups trim to them, so the hub's smaller palette keeps the
  * same bands with the unavailable types gone.
+ *
+ * The menu opens on the GRID view: each section shows a picture of itself, so a
+ * volunteer picks by look and not by name. The list view stays available from
+ * the menu's own view switcher. The pictures are real screenshots of the built
+ * site in `public/studio-thumbs/`, made by `npm run studio-thumbs` — the Studio
+ * is served from the site's own origin, so `/studio-thumbs/...` resolves.
+ * Regenerate them after you add a section type (a missing file shows the
+ * Studio's own fallback tile, so a stale folder degrades quietly).
  */
 export function sectionInsertMenu(available: string[]) {
   const allowed = new Set(available);
   return {
     insertMenu: {
       filter: true,
+      views: [
+        { name: 'grid' as const, previewImageUrl: (name: string) => `/studio-thumbs/${name}.jpg` },
+        { name: 'list' as const },
+      ],
       groups: INSERT_MENU_GROUPS.map((g) => ({
         ...g,
         of: g.of.filter((n) => allowed.has(n)),

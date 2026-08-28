@@ -28,7 +28,8 @@
     "check:links": "linkinator ./dist/client --recurse --skip \"^(?!http://localhost)\" --skip \"wcp-hero[.](mp4|webm)\" --skip \"/family-hub\"",
     "encode:hero": "node scripts/encode-hero.mjs",
     "gen:curriculum": "node scripts/generate-curriculum.mjs",
-    "gen:supplies": "node scripts/generate-supplies.mjs"
+    "gen:supplies": "node scripts/generate-supplies.mjs",
+    "studio-thumbs": "node scripts/studio-thumbs.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.2",

@@ -319,7 +319,7 @@ export const guides: Guide[] = [
         kind: 'steps',
         items: [
           'Open a page and find the **Sections** list on the left.',
-          'To add one, click `Add item`. The picker is grouped into five bands — Words, photos & video · Cards, facts & tables · From your lists · Money & enrolling · Banners, forms & contact — and has a search box, so type "photo" or "FAQ" to jump straight to it. Pick a section and fill in its boxes.',
+          'To add one, click `Add item`. The picker is grouped into five bands — Words, photos & video · Cards, facts & tables · From your lists · Money & enrolling · Banners, forms & contact — and has a search box, so type "photo" or "FAQ" to jump straight to it. Each section shows a small picture of what it looks like on the site, so you can pick by look. Pick a section and fill in its boxes.',
           'To move a section, drag it by the handle to a new spot in the list. Top of the list is top of the page.',
           'To remove one, use its `⋮` menu and choose Remove. (Removing a section is undoable before you publish.)',
           '`Publish` when you are happy.',

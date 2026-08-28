@@ -41,7 +41,14 @@ component. The Studio's "+ Add section" picker is **grouped and searchable**
 (`sectionInsertMenu()` in the registry): five volunteer-named bands — Words/photos/video,
 Cards/facts/tables, From-your-lists, Money & enrolling, Banners/forms/contact — instead of
 one 40-item list; the hub's page builder reuses the same bands trimmed to its smaller
-palette, and a dev-time check throws if a new section type is not assigned to a group. Some are **pull-based**:
+palette, and a dev-time check throws if a new section type is not assigned to a group. The picker
+opens on a **grid of thumbnails** (list view still available from its view switcher): every section
+type shows a picture of itself at `/studio-thumbs/<sectionType>.jpg`. Regenerate those pictures with
+**`npm run build && npm run studio-thumbs`** after you add a section type or change the site design
+— `scripts/studio-thumbs.mjs` finds each type's `data-stype` wrapper in the built pages, screenshots
+that band with Playwright, and writes a 600px JPEG per type (a type with no live instance gets a
+plain brand placeholder, so the grid never breaks). A missing file falls back to the Studio's own
+tile, so a stale folder degrades quietly. Some are **pull-based**:
 they hold only config (heading + band) and fetch their content from a collection
 at build time, hiding the whole band when there's nothing to show.
 
