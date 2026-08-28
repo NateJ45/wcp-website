@@ -251,8 +251,67 @@ export const guides: Guide[] = [
         items: [
           'An **amber dot** next to a page means unpublished edits; a **hollow dot** means the page has never been published at all.',
           'The little `↗` opens the real live page in a new tab, so you can check what families actually see.',
+          'The `⋯` button on a page gives you **Duplicate** and **Archive** (see below).',
+          'The `⋮⋮` grip lets you drag a page into the menu, out of it, or up and down inside it (see below).',
           '`＋ New page` at the bottom starts a fresh page right here.',
           'The **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
+        ],
+      },
+      { kind: 'h', text: 'Copy a page' },
+      {
+        kind: 'p',
+        text: 'To start a new page from one that already exists, click the `⋯` next to it in the page list and choose **Duplicate**. You get a full copy called "…​ copy", at a new web address ending in "-copy", opened and ready to edit.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'The copy is a draft.',
+        text: 'Nobody can see it until you publish it. Change the name, the web address, and the words first, then `Publish`.',
+      },
+      { kind: 'h', text: 'Take a page off the site, and put it back' },
+      {
+        kind: 'steps',
+        items: [
+          'In the page list, click the `⋯` next to the page and choose **Archive**.',
+          'The page moves to an **Archived** group at the bottom of the list, and it comes off the website and out of the menus.',
+          '`Publish` the page so the change reaches the website.',
+          'Changed your mind? Click the `⋯` on the archived page, choose **Restore**, and publish again. Everything comes back exactly as it was.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Archive is for "not right now". Recently deleted is for "gone".',
+        text: 'Archiving keeps every word and picture, so it is the safe choice for a page you may want again, like a summer camp page in winter. To remove a page for good, open it and use `Delete (move to trash)`, which you can still undo from **Recently deleted**.',
+      },
+      { kind: 'h', text: 'Put a page in the menu by dragging' },
+      {
+        kind: 'steps',
+        items: [
+          'In the page list, find the page in **Not in the menu**.',
+          'Point at the `⋮⋮` grip on the left of its name, hold the mouse button down, and drag it into the **In the menu** group.',
+          'Drop it where you want it to sit. The order in the list is the order in the top menu.',
+          'To take a page out of the menu, drag it back down to **Not in the menu**. The page stays on the website; only the menu link goes.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Some pages have no grip.',
+        text: 'The home page is always in the menu, so it cannot be dragged. A page that sits inside a dropdown is arranged in **Menus (header & footer)** instead, where you can also rename links and build dropdowns.',
+      },
+      { kind: 'h', text: 'How the page looks in Google' },
+      {
+        kind: 'p',
+        text: 'Open a page and click the **Search & sharing** tab at the top of the boxes. The panel shows a picture of the Google result and of the card people see when they share the link, and it updates as you type.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Browser tab / search title**: leave it blank to use the page name. Keep it under about 65 letters or Google cuts it off.',
+          '**Search description**: the sentence under the link in Google. About 160 letters.',
+          '**Social share image**: the picture for texts and Facebook. Leave it blank for the card the site makes on its own.',
+          '**Keep this page out of Google**: ask search engines to skip this page. The page stays on the website, so anyone with the address can still open it.',
         ],
       },
       { kind: 'h', text: 'Add, remove, or reorder sections' },
@@ -331,6 +390,7 @@ export const guides: Guide[] = [
         kind: 'bullets',
         items: [
           'The **page list** on the left flips between hub pages, like a site builder. An amber dot means unpublished edits; a hollow dot means never published.',
+          'The `⋯` on a page gives you **Duplicate** (a full copy, as a draft) and **Archive** (takes the page off the hub and keeps it in an **Archived** group at the bottom, ready to **Restore**). Archiving a page that came with the site puts back the wording the site ships with.',
           'The preview shows the parts you can edit: the heading, the intro, and the sections.',
           'Where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
         ],
@@ -702,6 +762,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'A **dropdown** (a menu item with links tucked under it) is the "Group" option instead of "Link". Give the group a label, then add the links inside it.',
       },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'There is a quicker way for a plain page link.',
+        text: 'In **Pages**, the list beside the live preview has a `⋮⋮` grip on each page. Drag a page into **In the menu** to add it, drag it out to remove it, and drag it up or down to change the order. Come back here for renaming a link, for dropdowns, and for the footer.',
+      },
       { kind: 'h', text: 'Change the button at the top right' },
       {
         kind: 'p',
@@ -801,6 +867,12 @@ export const guides: Guide[] = [
         tone: 'caution',
         title: '"Still in use"?',
         text: 'If other pages link to the thing you are deleting, it won’t let you (that would leave broken links). Open it, check the **Used on** tab to see what points to it, remove those links, then delete.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'For a page, try Archive first.',
+        text: 'In the page list beside the live preview, the `⋯` on a page offers **Archive**: the page comes off the website but stays in the Studio, in an **Archived** group, ready to **Restore**. It works even when other pages still link to it, so it is the easy way to put a page away for a season. See "Build or edit a page".',
       },
       { kind: 'h', text: 'Get it back, or clear it for good' },
       {

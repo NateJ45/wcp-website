@@ -61,6 +61,13 @@ interface Props {
    */
   noindex?: boolean;
   /**
+   * Add `nofollow` to that robots tag. Set with `noindex` for a page the Board
+   * turned off in "Search & sharing" (page.hideFromSearch): keep it out of
+   * Google, and do not pass ranking on through its links. Alone it does
+   * nothing.
+   */
+  nofollow?: boolean;
+  /**
    * RSS autodiscovery link for feed-bearing pages (the News index pages point
    * readers at /news/rss.xml). A PROP instead of a named head slot on purpose:
    * a <slot> inside <head> breaks the Astro prettier plugin's parse of the
@@ -78,6 +85,7 @@ const {
   chrome = 'site',
   hubTitle = 'Family Hub',
   noindex = false,
+  nofollow = false,
   rssFeed,
 } = Astro.props;
 
@@ -124,7 +132,7 @@ const currentPath = Astro.url.pathname;
     <title>{title}</title>
     <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {noindex && <meta name="robots" content={nofollow ? 'noindex, nofollow' : 'noindex'} />}
     {
       rssFeed && (
         <link

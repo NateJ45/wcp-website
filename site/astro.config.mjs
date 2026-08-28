@@ -45,6 +45,39 @@ async function fetchCmsRedirects() {
 }
 const cmsRedirects = await fetchCmsRedirects();
 
+// -----------------------------------------------------------------------------
+// Pages the Board keeps out of search (read from Sanity at build time)
+// -----------------------------------------------------------------------------
+// "Keep this page out of Google" (page.hideFromSearch) has to do two things: put
+// a robots tag on the page (src/pages/[...slug].astro does that) and drop the
+// page from the sitemap, which is built here. Archived pages are listed too, as
+// a belt-and-braces measure — they are never built, so no URL of theirs can
+// reach the sitemap anyway. FULLY fail-safe, like the redirect read above: any
+// error leaves the sitemap exactly as it was.
+async function fetchHiddenPagePaths() {
+  const env = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
+  const token = process.env.SANITY_TOKEN || env.SANITY_TOKEN;
+  if (!token) return new Set();
+  try {
+    const query =
+      '*[_type == "page" && defined(slug) && (hideFromSearch == true || archived == true)].slug';
+    const url = `https://niemhgev.apicdn.sanity.io/v2025-01-01/data/query/production?query=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return new Set();
+    const { result } = await res.json();
+    /** @type {Set<string>} */
+    const paths = new Set();
+    for (const slug of result || []) {
+      if (typeof slug !== 'string' || !slug) continue;
+      paths.add(slug === 'home' ? '/' : `/${slug}`);
+    }
+    return paths;
+  } catch {
+    return new Set();
+  }
+}
+const hiddenPagePaths = await fetchHiddenPagePaths();
+
 // =============================================================================
 // Astro config — West Chester Preschool
 // =============================================================================
@@ -199,6 +232,8 @@ export default defineConfig({
         const path = new URL(page).pathname.replace(/\/+$/, '') || '/';
         if (path === '/family-hub' || path.startsWith('/family-hub/')) return false;
         if (path === '/studio' || path.startsWith('/studio/')) return false;
+        // Pages the Board marked "keep out of Google" (see above).
+        if (hiddenPagePaths.has(path)) return false;
         return !['/search', '/thank-you', '/404'].includes(path);
       },
       // Every deploy is a full rebuild (content publishes trigger one via the

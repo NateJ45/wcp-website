@@ -1686,6 +1686,7 @@ export type HubPage = {
     | 'trees'
     | 'trending-down'
     | 'users';
+  archived?: boolean;
   heading?: string;
   intro?: string;
   handbookFile?: {
@@ -2786,6 +2787,8 @@ export type Page = {
         _key: string;
       } & InstagramSection)
   >;
+  archived?: boolean;
+  seoPreview?: string;
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: {
@@ -2795,6 +2798,7 @@ export type Page = {
     crop?: SanityImageCrop;
     _type: 'image';
   };
+  hideFromSearch?: boolean;
 };
 
 export type SectionHeader = {

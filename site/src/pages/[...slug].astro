@@ -34,6 +34,8 @@ interface PageDoc {
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: SanityImageValue | null;
+  /** "Keep this page out of Google" in the Studio's Search & sharing group. */
+  hideFromSearch?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hero?: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +49,9 @@ const title =
   page?.seoTitle ?? (page?.title ? `${page.title} — ${siteFallback.name}` : siteFallback.name);
 // Page's own share image when set; otherwise the branded card generated for
 // this page at build time (see /og/[...slug].png.ts).
+// hideFromSearch: the Board can keep one page out of Google (a page that is
+// only for people who have the link). It adds the robots tag below, and
+// astro.config.mjs keeps the same page out of the sitemap.
 const ogImage = page?.ogImage?.asset
   ? imageUrl(page.ogImage as SanityImageSource, 1200)
   : `/og/${slug}.jpg`;
@@ -114,6 +119,8 @@ const heroSections = heroNotice
   description={page?.seoDescription}
   ogImage={ogImage}
   footerSeam={footerSeam}
+  noindex={page?.hideFromSearch === true}
+  nofollow={page?.hideFromSearch === true}
 >
   {
     /* HERO_OVERRIDES: the code-owned page doctrine (src/lib/page-doctrine.ts)

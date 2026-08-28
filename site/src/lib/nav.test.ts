@@ -89,6 +89,41 @@ describe('resolveNavigation', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
+  // Archiving a page takes it off the site. A menu item still pointing at it
+  // would send visitors to a page that was never built.
+  it('drops menu links to archived pages, and keeps every other link', () => {
+    const archived = { ...pageLink('Old Camp', 'old-camp'), pageArchived: true };
+    const { mainNav, footerNav, legalNav } = resolveNavigation({
+      mainNav: [
+        pageLink('Tuition', 'tuition'),
+        archived,
+        { _type: 'navGroup', label: 'Classes', children: [pageLink('Twos', 'twos'), archived] },
+        { _type: 'navGroup', label: 'Gone', children: [archived] },
+      ],
+      footerColumns: [{ label: 'About', links: [pageLink('FAQ', 'faq'), archived] }],
+      legalNav: [pageLink('Privacy', 'privacy'), archived],
+    });
+    expect(mainNav).toEqual([
+      { label: 'Tuition', href: '/tuition' },
+      { label: 'Classes', children: [{ label: 'Twos', href: '/twos' }] },
+    ]);
+    expect(footerNav).toEqual([{ label: 'About', children: [{ label: 'FAQ', href: '/faq' }] }]);
+    expect(legalNav).toEqual([{ label: 'Privacy', href: '/privacy' }]);
+  });
+
+  it('keeps links to pages made before the archive field existed', () => {
+    const { mainNav } = resolveNavigation({ mainNav: [pageLink('Tuition', 'tuition')] });
+    expect(mainNav).toEqual([{ label: 'Tuition', href: '/tuition' }]);
+  });
+
+  it('drops the header button link when its page is archived', () => {
+    const { headerCta } = resolveNavigation({
+      mainNav: [pageLink('Tuition', 'tuition')],
+      headerCta: { show: true, linkType: 'page', pageSlug: 'old-camp', pageArchived: true },
+    });
+    expect(headerCta).toEqual({ show: true });
+  });
+
   it('warns for broken links inside groups and footer columns too', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     resolveNavigation({

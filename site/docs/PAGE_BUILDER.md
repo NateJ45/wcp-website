@@ -18,7 +18,9 @@ page {
   title, slug,                 // slug is a STRING + regex, not Sanity's slug type
   hero,                        // a dedicated heroObject FIELD (not a section) — always exactly one, at top
   sections[],                  // the editable body: an ordered array of section objects
-  seoTitle, seoDescription, ogImage
+  archived,                    // soft delete: off the site, kept in the Studio (see "Archive & restore")
+  seoPreview,                  // value-less; its custom input draws the search + share previews
+  seoTitle, seoDescription, ogImage, hideFromSearch   // group "Search & sharing"
 }
 ```
 
@@ -351,6 +353,73 @@ must stay at 27/27.
 
 The Studio guide entries are "Change the phone, email, or address" and "Edit the
 menus" in [`src/sanity/guides/content.ts`](../src/sanity/guides/content.ts).
+
+## Pages as first-class objects (added 2026-08-27)
+
+The Presentation tool's page list
+([`src/sanity/components/PreviewNavigator.tsx`](../src/sanity/components/PreviewNavigator.tsx),
+one factory with a `public` and a `hub` flavor) is where a page is managed, not just
+opened. Four capabilities, all additive — an untouched dataset renders the same HTML,
+and `node scripts/page-parity.mjs compare` must stay at 27/27.
+
+**1. Duplicate** (row `⋯` menu, both flavors). Reads the page's DRAFT twin when there
+is one (the newest words), regenerates every nested `_key` (two array members with one
+key is a Studio-level error), strips `_id`/`_rev`/`_createdAt`/`_updatedAt`, titles the
+copy "… copy", and takes the first free `<slug>-copy`, `<slug>-copy-2`, … A hub copy
+also drops `hubKey`: two documents claiming one built-in hub page would make the page
+a coin toss. The copy is created as `drafts.<uuid>` and opened in the edit panel.
+
+**2. Archive & restore** — a real trash, and NOT the same thing as "Recently deleted".
+
+- `archived` (boolean) on `page` and `hubPage`. No `initialValue`, so existing
+  documents have no value at all.
+- Every live-site query tests `archived != true`, never `== false`: a page made before
+  the field stays visible. The filters live in
+  [`src/lib/queries.ts`](../src/lib/queries.ts) (`ALL_PAGE_SLUGS_QUERY`, which is
+  `getStaticPaths`, plus `HUB_PAGE_QUERY` and `HUB_PAGE_BY_SLUG_QUERY`) and in the hub
+  search index (`family-hub/api/search-index.ts`). `PAGE_BY_SLUG_QUERY` deliberately
+  does NOT filter: the route list already leaves an archived page unbuilt, and the
+  Studio preview must still render it so an editor can look before restoring.
+- Menus: a page link carries `"pageArchived": page->archived`, and
+  [`nav.ts`](../src/lib/nav.ts) `resolveNavigation()` drops those links (and a dropdown
+  left with nothing in it). It cannot be filtered in GROQ — a dropped link would look
+  exactly like a dangling reference, which the resolver turns into a warning and a link
+  to the home page.
+- The row action PATCHES both twins (`archived: true`, or `unset` to restore). It never
+  deletes: a delete is refused while anything references the page, and it loses the
+  words. **"Recently deleted"** (`trashedItem` + `src/sanity/actions/archive.tsx`) is
+  still the way to remove a page for good.
+- Archived rows collect in an "Archived" group at the bottom of both lists.
+
+**3. The "Search & sharing" panel.** One shared helper,
+[`schemaTypes/objects/seoFields.ts`](../src/sanity/schemaTypes/objects/seoFields.ts),
+builds the whole group in one order. It REUSES fields a type already has rather than
+renaming them (a rename moves the data and loses it): `page.seoTitle` → title,
+`page.seoDescription` → description, `page.ogImage` → image, and only
+`hideFromSearch` is new. `hubPage` gets no such group — hub pages sit behind the family
+password, so SEO fields there would be dead controls. At the top of the group,
+[`SeoSnippetInput.tsx`](../src/sanity/components/SeoSnippetInput.tsx) draws a live
+Google result and share card from the document's own values. It is an INPUT, so
+`useFormValue` is allowed; a standalone document VIEW (`SeoPreviewPane`) may not call
+it (see the gotcha in CLAUDE.md). `hideFromSearch` adds
+`<meta name="robots" content="noindex, nofollow">` in `[...slug].astro`
+(BaseLayout's `noindex` + `nofollow` props) and drops the page from the sitemap: the
+`sitemap()` filter in `astro.config.mjs` reads the hidden slugs from Sanity at build
+time, fail-safe like the CMS redirect read beside it.
+
+**4. Menu membership and order by drag** (public flavor only; the hub menu is a
+different document and is left alone). Each eligible row has a `⋮⋮` grip — a separate
+element from the row button, so a drag can never be read as a click. Dragging inside
+"In the menu" reorders the header menu; dragging between the two groups adds or removes
+the page. Native HTML5 drag events, no new dependency. Rules: only TOP-LEVEL membership
+moves, an item with children keeps its children, removing a top-level item takes its
+children out with it, and adding appends a new `navLink` referencing the page at the
+drop position. Home is pinned and has no grip; a page that is in the menu only inside a
+dropdown has no grip either. **The write goes to the DRAFT Menus document when one
+exists, and to the published one when it does not** — the same document the Menus
+editor would write, and the reason the "In the menu" group reads the draft first. With
+no draft, the drag therefore edits the live menu, which goes out on the next rebuild.
+The list redraws optimistically and the `client.listen` refetch settles it.
 
 ## Editing in the Studio
 

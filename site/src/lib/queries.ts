@@ -11,19 +11,29 @@
 // Page builder
 // -----------------------------------------------------------------------------
 
-/** Every page's slug — drives getStaticPaths for the dynamic route. */
-export const ALL_PAGE_SLUGS_QUERY = `*[_type == "page" && defined(slug)].slug`;
+// ARCHIVED pages are skipped everywhere the live site lists pages. The test is
+// `archived != true`, never `archived == false`: a page made before the field
+// existed has no value at all, and must stay visible. Archiving is a soft
+// delete — the document keeps every word, and Restore puts the page back.
 
+/** Every page's slug — drives getStaticPaths for the dynamic route. */
+export const ALL_PAGE_SLUGS_QUERY = `*[_type == "page" && defined(slug) && archived != true].slug`;
+
+// `pageArchived` rides along on every link that points at a page. resolveNavigation
+// (src/lib/nav.ts) drops those links, so archiving a page also takes it out of
+// the menus. It cannot be filtered in GROQ: a dropped link would look exactly
+// like a link whose page reference is missing, which the resolver turns into a
+// warning and a link to the home page.
 /** Every navigable page (excludes drafts implicitly via perspective). */
 export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
   mainNav[]{
     _type, label,
-    _type == "navLink" => { linkType, "pageSlug": page->slug, url },
-    _type == "navGroup" => { children[]{ label, linkType, "pageSlug": page->slug, url } }
+    _type == "navLink" => { linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
+    _type == "navGroup" => { children[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } }
   },
-  headerCta{ show, label, linkType, "pageSlug": page->slug, url },
-  footerColumns[]{ label, links[]{ label, linkType, "pageSlug": page->slug, url } },
-  legalNav[]{ label, linkType, "pageSlug": page->slug, url }
+  headerCta{ show, label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
+  footerColumns[]{ label, links[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } },
+  legalNav[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url }
 }`;
 
 // One round-trip fetches a page, its hero, and every section with references
@@ -31,8 +41,11 @@ export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
 // inline. Image fields stay as raw objects so urlForImage() can build URLs;
 // video file assets are dereferenced to their CDN url. `^` inside a subquery
 // refers up to the section being projected.
+// No `archived` test here on purpose: the route list above already leaves an
+// archived page unbuilt, and the Studio preview must still render one so an
+// editor can look at it before restoring it.
 export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
-  _id, title, slug, seoTitle, seoDescription, ogImage,
+  _id, title, slug, seoTitle, seoDescription, ogImage, hideFromSearch,
   hero{
     ...,
     videoFile{ "url": asset->url },
@@ -80,7 +93,9 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 // One hubPage per hub, fetched by hubKey behind the gate. Only the hub-safe
 // (content) sections are offered, so the projection just needs actions + the
 // faqSection dereference — no build-time "pull" sections here.
-export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
+// An archived hub page drops out: a built-in page falls back to the content it
+// ships with, so the hub can never go blank.
+export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archived != true][0]{
   heading, intro, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   sections[]{
@@ -103,7 +118,7 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key][0]{
  * serving it here would render the content WITHOUT those widgets and quietly
  * shadow the real page. Only genuinely free-standing pages match.
  */
-export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && !defined(hubKey)][0]{
+export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && !defined(hubKey) && archived != true][0]{
   title, heading, intro, navIcon, _updatedAt,
   sections[]{
     ...,

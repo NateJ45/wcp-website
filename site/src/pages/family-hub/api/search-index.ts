@@ -65,7 +65,9 @@ export const GET: APIRoute = async () => {
       // indexes itself instead of waiting for someone to remember a registry.
       // hubPageRoute() below still has the final say on where each one links.
       sanityFetch<HubPageRow[]>(
-        `*[_type == "hubPage" && !(hubKey in $denied)]{ hubKey, slug, title, heading, sections }`,
+        // `archived != true`: an archived page is off the hub, so it must not
+        // come back through search. Pages made before the field stay indexed.
+        `*[_type == "hubPage" && !(hubKey in $denied) && archived != true]{ hubKey, slug, title, heading, sections }`,
         { denied: [...HUB_PAGE_DENY] },
         { cache: BOARD_CONTENT_CACHE },
       ),

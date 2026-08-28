@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { BODY_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
+import { seoFields } from '../objects/seoFields';
 
 // Web addresses a page can never use: the FIRST slug segment must not collide
 // with a code-owned route or a build-output folder. A colliding page would
@@ -113,38 +114,66 @@ export const page = defineType({
       options: sectionInsertMenu(BODY_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
     }),
+    // "Archived" is a real trash, not a delete: the document stays exactly as it
+    // is, and every live-site query skips it (`archived != true`, so a page that
+    // never had the field stays visible). Nothing references-blocks it, and
+    // Restore brings the page back unchanged. The separate "Recently deleted"
+    // (trashedItem) is still the way to REMOVE a page for good.
     defineField({
-      name: 'seoTitle',
-      title: 'Browser tab / search title',
-      type: 'string',
-      group: 'seo',
-      description: 'What Google and the browser tab show. Leave blank to use the page name.',
-      validation: (R) => R.max(65).warning('Titles over ~65 characters get cut off in Google.'),
-    }),
-    defineField({
-      name: 'seoDescription',
-      title: 'Search description',
-      type: 'text',
-      rows: 2,
-      group: 'seo',
-      description: 'The sentence shown under this page in Google results.',
-      validation: (R) =>
-        R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
-    }),
-    defineField({
-      name: 'ogImage',
-      title: 'Social share image (optional)',
-      type: 'image',
-      options: { hotspot: true },
-      group: 'seo',
+      name: 'archived',
+      title: 'Archived',
+      type: 'boolean',
+      group: 'settings',
+      hidden: false,
       description:
-        'The picture shown when this page is shared (texts, Facebook). Leave blank for the automatic card.',
+        'Archived pages are removed from the site but kept here so they can be restored.',
+    }),
+
+    // The whole "Search & sharing" group, in one order, from the shared helper.
+    // The three fields this page already had are passed back in by REFERENCE so
+    // their names and wording never change (see objects/seoFields.ts).
+    ...seoFields({
+      group: 'seo',
+      reuse: {
+        title: defineField({
+          name: 'seoTitle',
+          title: 'Browser tab / search title',
+          type: 'string',
+          group: 'seo',
+          description: 'What Google and the browser tab show. Leave blank to use the page name.',
+          validation: (R) => R.max(65).warning('Titles over ~65 characters get cut off in Google.'),
+        }),
+        description: defineField({
+          name: 'seoDescription',
+          title: 'Search description',
+          type: 'text',
+          rows: 2,
+          group: 'seo',
+          description: 'The sentence shown under this page in Google results.',
+          validation: (R) =>
+            R.max(160).warning('Descriptions over ~160 characters get cut off in search results.'),
+        }),
+        image: defineField({
+          name: 'ogImage',
+          title: 'Social share image (optional)',
+          type: 'image',
+          options: { hotspot: true },
+          group: 'seo',
+          description:
+            'The picture shown when this page is shared (texts, Facebook). Leave blank for the automatic card.',
+        }),
+      },
     }),
   ],
   preview: {
-    select: { title: 'title', slug: 'slug', media: 'hero.image' },
-    prepare({ title, slug, media }) {
-      return { title: title || '(untitled page)', subtitle: slug ? `/${slug}` : undefined, media };
+    select: { title: 'title', slug: 'slug', media: 'hero.image', archived: 'archived' },
+    prepare({ title, slug, media, archived }) {
+      const where = slug ? `/${slug}` : undefined;
+      return {
+        title: title || '(untitled page)',
+        subtitle: archived ? `Archived · ${where ?? 'no address'}` : where,
+        media,
+      };
     },
   },
 });

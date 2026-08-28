@@ -1,9 +1,26 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useClient } from 'sanity';
 import { usePresentationNavigate, usePresentationParams } from 'sanity/presentation';
-import { Box, Button, Card, Flex, Spinner, Stack, Text } from '@sanity/ui';
+import {
+  Box,
+  Button,
+  Card,
+  Flex,
+  Menu,
+  MenuButton,
+  MenuItem,
+  Spinner,
+  Stack,
+  Text,
+  useToast,
+} from '@sanity/ui';
 import { AddIcon } from '@sanity/icons/Add';
 import { LaunchIcon } from '@sanity/icons/Launch';
+import { EllipsisVerticalIcon } from '@sanity/icons/EllipsisVertical';
+import { CopyIcon } from '@sanity/icons/Copy';
+import { ArchiveIcon } from '@sanity/icons/Archive';
+import { RestoreIcon } from '@sanity/icons/Restore';
+import { DragHandleIcon } from '@sanity/icons/DragHandle';
 
 // =============================================================================
 // PreviewNavigator — the Squarespace-style page list beside the live preview
@@ -25,10 +42,22 @@ import { LaunchIcon } from '@sanity/icons/Launch';
 //    to the Structure tool.
 //  - Site-wide shortcuts (menus / settings / alert) at the bottom, so the
 //    whole editing session can live inside Presentation.
+//
+// Pages as first-class objects (2026-08-27) — three more things a row can do:
+//  - Duplicate: copies the page into a NEW draft, "… copy" / "…-copy".
+//  - Archive / Restore: sets `archived` on the document. Every live-site query
+//    skips an archived page, but nothing is deleted, so Restore is complete.
+//    Archived rows collect in a group at the bottom of both lists.
+//  - Drag (public list only): the grip on a row moves it inside "In the menu"
+//    to reorder the header menu, or between the two groups to add it to the
+//    menu or take it out. Each drag patches the `navigation` document's
+//    mainNav. The grip is a SEPARATE element from the row button, so a drag
+//    can never be read as a click.
 // The lists LIVE-refresh through client.listen, so a rename, a new page, or a
 // publish shows up without reopening the tool.
 // =============================================================================
 
+/** One page document, both twins collapsed into a single row. */
 interface NavRow {
   /** Published (un-prefixed) doc id. */
   id: string;
@@ -40,18 +69,55 @@ interface NavRow {
   hasDraft: boolean;
   hasPublished: boolean;
   group: string;
+  archived: boolean;
+  /** PUBLIC: the mainNav item `_key`, when the page is a top-level menu item. */
+  navKey?: string;
+  /** PUBLIC: position among the top-level mainNav items. */
+  navIndex?: number;
+  /** PUBLIC: the page is in the menu only INSIDE a dropdown, so not draggable. */
+  navChild?: boolean;
 }
 
-interface FetchResult {
-  /** Group titles in display order. */
-  groups: string[];
-  rows: NavRow[];
+/** A raw page/hubPage document, as the list query returns it. */
+interface DocRow {
+  _id: string;
+  title?: string;
+  slug?: string;
+  heading?: string;
+  hubKey?: string;
+  archived?: boolean;
+}
+
+/** One raw member of the Menus document's mainNav array. */
+interface NavItemRaw {
+  _key?: string;
+  _type?: string;
+  label?: string;
+  page?: { _type?: string; _ref?: string };
+  children?: { page?: { _ref?: string } }[];
+  [key: string]: unknown;
+}
+
+/** The Menus document the drag writes to, and its current mainNav. */
+interface NavState {
+  id: string;
+  items: NavItemRaw[];
+}
+
+interface Data {
+  docs: DocRow[];
+  /** PUBLIC only. null when no Menus document exists yet. */
+  nav: NavState | null;
 }
 
 const APIV = '2025-01-01';
+const ARCHIVED_GROUP = 'Archived';
 
 // "home" lives at the preview root; everything else under its slug.
 const pageHref = (slug: string) => (slug === 'home' ? '/preview' : `/preview/${slug}`);
+
+/** A short random key, in the shape Sanity uses for array members. */
+const newKey = () => crypto.randomUUID().replace(/-/g, '').slice(0, 12);
 
 // Collapse draft + published twins of one document into a single row's status.
 function collapse<T extends { _id: string }>(
@@ -75,32 +141,75 @@ function collapse<T extends { _id: string }>(
   return byId;
 }
 
-async function fetchRows(
+/**
+ * Read the Menus document the editor is working on.
+ *
+ * The DRAFT wins when one exists: that is the menu the editor last touched, and
+ * the menu the drag must go on editing. Without a draft the published document
+ * is the only one there is.
+ */
+function pickNav(docs: { _id: string; mainNav?: NavItemRaw[] }[]): NavState | null {
+  const doc = docs.find((d) => d._id.startsWith('drafts.')) ?? docs[0];
+  return doc ? { id: doc._id, items: Array.isArray(doc.mainNav) ? doc.mainNav : [] } : null;
+}
+
+async function fetchData(
   client: ReturnType<typeof useClient>,
   kind: 'public' | 'hub',
-): Promise<FetchResult> {
+): Promise<Data> {
+  // Raw perspective on purpose: we need BOTH the draft and published twins
+  // to compute each row's status dot.
   if (kind === 'public') {
-    // Raw perspective on purpose: we need BOTH the draft and published twins
-    // to compute each row's status dot.
-    const [docs, nav] = await Promise.all([
-      client.fetch<{ _id: string; title?: string; slug?: string }[]>(
-        '*[_type == "page" && defined(slug)]{ _id, title, slug }',
-      ),
-      client.fetch<{
-        mainNav?: { pageSlug?: string; children?: { pageSlug?: string }[] }[];
-      } | null>(
-        // Prefer the draft menu when one exists — that is what the editor sees.
-        '*[_type == "navigation"] | order(_id desc) [0]{ mainNav[]{ "pageSlug": page->slug, children[]{ "pageSlug": page->slug } } }',
+    const [docs, navDocs] = await Promise.all([
+      client.fetch<DocRow[]>('*[_type == "page" && defined(slug)]{ _id, title, slug, archived }'),
+      // The RAW mainNav (page references, not resolved slugs): the drag has to
+      // write this array back, and a reference matches a row by document id.
+      client.fetch<{ _id: string; mainNav?: NavItemRaw[] }[]>(
+        '*[_type == "navigation"]{ _id, mainNav }',
       ),
     ]);
-    const inMenu = new Set<string>(['home']); // home is the site root — always "in".
-    for (const item of nav?.mainNav ?? []) {
-      if (item.pageSlug) inMenu.add(item.pageSlug);
-      for (const child of item.children ?? []) if (child.pageSlug) inMenu.add(child.pageSlug);
-    }
+    return { docs, nav: pickNav(navDocs) };
+  }
+
+  const docs = await client.fetch<DocRow[]>(
+    '*[_type == "hubPage" && (defined(hubKey) || defined(slug))]{ _id, title, heading, hubKey, slug, archived }',
+  );
+  return { docs, nav: null };
+}
+
+/** Group titles, in display order, for one flavor. */
+function groupTitles(kind: 'public' | 'hub'): string[] {
+  return kind === 'public'
+    ? ['In the menu', 'Not in the menu', ARCHIVED_GROUP]
+    : ['Hub pages', 'Board-created pages', ARCHIVED_GROUP];
+}
+
+/**
+ * Turn the fetched documents into rows.
+ *
+ * Pure, so a drag can rebuild the list from a changed mainNav array at once and
+ * the panel never waits for the round trip.
+ */
+function buildRows(kind: 'public' | 'hub', data: Data): NavRow[] {
+  if (kind === 'public') {
+    // Which page each top-level menu item points at, and where it sits.
+    const topLevel = new Map<string, { key: string; index: number }>();
+    const inGroup = new Set<string>();
+    (data.nav?.items ?? []).forEach((item, index) => {
+      const ref = item.page?._ref;
+      if (ref && item._key) topLevel.set(ref, { key: item._key, index });
+      for (const child of item.children ?? []) {
+        if (child.page?._ref) inGroup.add(child.page._ref);
+      }
+    });
+
     const rows: NavRow[] = [];
-    for (const [id, { doc, draft, published }] of collapse(docs)) {
+    for (const [id, { doc, draft, published }] of collapse(data.docs)) {
       if (!doc.slug) continue;
+      const spot = topLevel.get(id);
+      const child = !spot && inGroup.has(id);
+      // Home is the site root. It is always "in the menu", menu item or not.
+      const inMenu = Boolean(spot) || child || doc.slug === 'home';
       rows.push({
         id,
         type: 'page',
@@ -109,24 +218,25 @@ async function fetchRows(
         liveHref: published ? (doc.slug === 'home' ? '/' : `/${doc.slug}`) : undefined,
         hasDraft: draft,
         hasPublished: published,
-        group: inMenu.has(doc.slug) ? 'In the menu' : 'Not in the menu',
+        archived: doc.archived === true,
+        group: doc.archived === true ? ARCHIVED_GROUP : inMenu ? 'In the menu' : 'Not in the menu',
+        ...(spot ? { navKey: spot.key, navIndex: spot.index } : {}),
+        ...(child ? { navChild: true } : {}),
       });
     }
+    // Menu order is the point of the first group, so sort by it. Home leads,
+    // then the menu itself, then anything only in a dropdown, by name.
     rows.sort(
       (a, b) =>
         (a.href === '/preview' ? -1 : b.href === '/preview' ? 1 : 0) ||
+        (a.navIndex ?? Number.MAX_SAFE_INTEGER) - (b.navIndex ?? Number.MAX_SAFE_INTEGER) ||
         a.label.localeCompare(b.label),
     );
-    return { groups: ['In the menu', 'Not in the menu'], rows };
+    return rows;
   }
 
-  const docs = await client.fetch<
-    { _id: string; title?: string; heading?: string; hubKey?: string; slug?: string }[]
-  >(
-    '*[_type == "hubPage" && (defined(hubKey) || defined(slug))]{ _id, title, heading, hubKey, slug }',
-  );
   const rows: NavRow[] = [];
-  for (const [id, { doc, draft, published }] of collapse(docs)) {
+  for (const [id, { doc, draft, published }] of collapse(data.docs)) {
     const key = doc.hubKey || doc.slug;
     const label = doc.title || doc.heading || key || '';
     if (!key || !label) continue;
@@ -138,7 +248,9 @@ async function fetchRows(
       liveHref: published ? `/family-hub/${key === 'home' ? '' : key}` : undefined,
       hasDraft: draft,
       hasPublished: published,
-      group: doc.hubKey ? 'Hub pages' : 'Board-created pages',
+      archived: doc.archived === true,
+      group:
+        doc.archived === true ? ARCHIVED_GROUP : doc.hubKey ? 'Hub pages' : 'Board-created pages',
     });
   }
   rows.sort(
@@ -146,7 +258,38 @@ async function fetchRows(
       (a.href.endsWith('/home') ? -1 : b.href.endsWith('/home') ? 1 : 0) ||
       a.label.localeCompare(b.label),
   );
-  return { groups: ['Hub pages', 'Board-created pages'], rows };
+  return rows;
+}
+
+// ---------------------------------------------------------------------------
+// Duplicate — copy a page into a new draft
+// ---------------------------------------------------------------------------
+
+/** Give every array member in the copy a new `_key`, at every depth. */
+function regenerateKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(regenerateKeys);
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = k === '_key' ? newKey() : regenerateKeys(v);
+    }
+    return out;
+  }
+  return value;
+}
+
+/**
+ * A free web address for the copy: "about" → "about-copy", then "about-copy-2",
+ * "about-copy-3", and so on until nothing else holds it.
+ */
+function freeSlug(base: string, taken: Set<string>): string {
+  const first = `${base}-copy`;
+  if (!taken.has(first)) return first;
+  for (let n = 2; n < 200; n += 1) {
+    const next = `${first}-${n}`;
+    if (!taken.has(next)) return next;
+  }
+  return `${first}-${newKey()}`;
 }
 
 // The site-wide singletons an editor reaches for mid-session. Doc id = type
@@ -189,13 +332,15 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     const client = useClient({ apiVersion: APIV });
     const navigate = usePresentationNavigate();
     const params = usePresentationParams();
-    const [data, setData] = useState<FetchResult | null>(null);
+    const toast = useToast();
+    const [data, setData] = useState<Data | null>(null);
     const [creating, setCreating] = useState(false);
+    const [busyId, setBusyId] = useState<string | null>(null);
 
     const refetch = useCallback(() => {
-      fetchRows(client, kind)
+      fetchData(client, kind)
         .then(setData)
-        .catch(() => setData({ groups: [], rows: [] }));
+        .catch(() => setData({ docs: [], nav: null }));
     }, [client]);
 
     useEffect(() => {
@@ -279,12 +424,199 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
       }
     }, [client, navigate, current, refetch]);
 
+    // -----------------------------------------------------------------------
+    // Duplicate
+    // -----------------------------------------------------------------------
+    // The copy is a DRAFT, so it is never live by accident, and it starts from
+    // the draft twin when there is one (the newest words). Every nested `_key`
+    // is replaced: two array members with one key is a Studio-level error.
+    // A hub copy loses its `hubKey` on purpose — a second document claiming a
+    // built-in page would make which one the hub shows a coin toss.
+    const duplicatePage = useCallback(
+      async (row: NavRow) => {
+        setBusyId(row.id);
+        try {
+          const found = await client.fetch<Record<string, unknown>[]>('*[_id in $ids]', {
+            ids: [`drafts.${row.id}`, row.id],
+          });
+          const source = found.find((d) => String(d._id).startsWith('drafts.')) ?? found[0] ?? null;
+          if (!source) {
+            toast.push({ status: 'error', title: 'Could not read that page.' });
+            return;
+          }
+
+          const copy = regenerateKeys(source) as Record<string, unknown>;
+          delete copy._id;
+          delete copy._rev;
+          delete copy._createdAt;
+          delete copy._updatedAt;
+          delete copy.hubKey;
+
+          const takenSlugs = new Set(
+            await client.fetch<string[]>('*[_type == $type && defined(slug)].slug', {
+              type: row.type,
+            }),
+          );
+          const baseSlug =
+            typeof source.slug === 'string' && source.slug
+              ? source.slug
+              : typeof source.hubKey === 'string' && source.hubKey
+                ? source.hubKey
+                : 'page';
+          copy.slug = freeSlug(baseSlug, takenSlugs);
+          copy.title = `${typeof source.title === 'string' && source.title ? source.title : row.label} copy`;
+          // A copy starts out of the menu and out of the archive.
+          delete copy.archived;
+
+          const id = crypto.randomUUID();
+          await client.create({ ...copy, _id: `drafts.${id}`, _type: row.type });
+
+          const href =
+            row.type === 'page'
+              ? pageHref(String(copy.slug))
+              : `/preview/family-hub/${String(copy.slug)}`;
+          go(href, row.type, id);
+          refetch();
+          toast.push({
+            status: 'success',
+            title: `Copied “${row.label}”`,
+            description: 'The copy is a draft. Change what you need, then Publish it.',
+          });
+        } catch (err) {
+          console.error('[navigator] duplicate failed', err);
+          toast.push({ status: 'error', title: 'Could not copy that page. Please try again.' });
+        } finally {
+          setBusyId(null);
+        }
+      },
+      [client, go, refetch, toast],
+    );
+
+    // -----------------------------------------------------------------------
+    // Archive / Restore
+    // -----------------------------------------------------------------------
+    // A patch on BOTH twins, never a delete: a delete is refused while another
+    // document links to the page, and it throws the words away. The archived
+    // flag only hides the page from the site.
+    const setArchived = useCallback(
+      async (row: NavRow, archived: boolean) => {
+        setBusyId(row.id);
+        try {
+          const tx = client.transaction();
+          const apply = (id: string) =>
+            archived
+              ? tx.patch(id, (p) => p.set({ archived: true }))
+              : tx.patch(id, (p) => p.unset(['archived']));
+          if (row.hasDraft) apply(`drafts.${row.id}`);
+          if (row.hasPublished) apply(row.id);
+          await tx.commit();
+          refetch();
+          toast.push({
+            status: 'success',
+            title: archived ? `Archived “${row.label}”` : `Restored “${row.label}”`,
+            description: archived
+              ? 'It is off the site and kept here. Publish to make that live.'
+              : 'It is back on the site. Publish to make that live.',
+          });
+        } catch (err) {
+          console.error('[navigator] archive failed', err);
+          toast.push({ status: 'error', title: 'Could not do that. Please try again.' });
+        } finally {
+          setBusyId(null);
+        }
+      },
+      [client, refetch, toast],
+    );
+
+    const rows = useMemo(() => (data ? buildRows(kind, data) : null), [data]);
+
     const grouped = useMemo(() => {
-      if (!data) return null;
-      return data.groups
-        .map((g) => ({ title: g, rows: data.rows.filter((r) => r.group === g) }))
+      if (!rows) return null;
+      return groupTitles(kind)
+        .map((g) => ({ title: g, rows: rows.filter((r) => r.group === g) }))
         .filter((g) => g.rows.length > 0);
-    }, [data]);
+    }, [rows]);
+
+    // -----------------------------------------------------------------------
+    // Drag: menu membership and menu order (public list only)
+    // -----------------------------------------------------------------------
+    // Only TOP-LEVEL membership moves. A page that is in the menu inside a
+    // dropdown keeps no grip, and a dropdown keeps its own links when it moves.
+    // The write goes to the DRAFT Menus document when one exists, and to the
+    // published one when it does not (see pickNav) — the same document the
+    // Menus editor would write. Optimistic: the list redraws from the new array
+    // at once, and the listen-driven refetch settles it.
+    const [dragId, setDragId] = useState<string | null>(null);
+    const [dropOn, setDropOn] = useState<string | null>(null);
+    const canDrag = kind === 'public';
+
+    const writeMenu = useCallback(
+      async (items: NavItemRaw[]) => {
+        const nav = data?.nav;
+        if (!nav) {
+          toast.push({
+            status: 'warning',
+            title: 'No menu to change yet',
+            description: 'Open “Menus (header & footer)” once, then try again.',
+          });
+          return;
+        }
+        setData({ docs: data.docs, nav: { id: nav.id, items } }); // optimistic
+        try {
+          await client.patch(nav.id).set({ mainNav: items }).commit();
+          refetch();
+        } catch (err) {
+          console.error('[navigator] menu write failed', err);
+          toast.push({ status: 'error', title: 'Could not change the menu. Please try again.' });
+          refetch();
+        }
+      },
+      [client, data, refetch, toast],
+    );
+
+    /** Move a row into the menu, out of it, or to a new place inside it. */
+    const dropRow = useCallback(
+      (target: { group: string; beforeId?: string }) => {
+        const source = rows?.find((r) => r.id === dragId);
+        setDragId(null);
+        setDropOn(null);
+        if (!source || !data?.nav) return;
+        if (target.group === ARCHIVED_GROUP) return; // archiving is a menu action
+
+        const items = [...data.nav.items];
+        const from = items.findIndex((i) => i._key === source.navKey);
+
+        if (target.group === 'Not in the menu') {
+          if (from < 0) return; // already out of the menu
+          items.splice(from, 1);
+          void writeMenu(items);
+          return;
+        }
+
+        // Where the row lands: before the row it was dropped on, or last.
+        const beforeRow = target.beforeId ? rows?.find((r) => r.id === target.beforeId) : undefined;
+        const beforeAt = beforeRow?.navKey
+          ? items.findIndex((i) => i._key === beforeRow.navKey)
+          : items.length;
+
+        if (from >= 0) {
+          if (from === beforeAt) return;
+          const [moved] = items.splice(from, 1);
+          const to = from < beforeAt ? beforeAt - 1 : beforeAt;
+          items.splice(to, 0, moved);
+        } else {
+          items.splice(beforeAt < 0 ? items.length : beforeAt, 0, {
+            _key: newKey(),
+            _type: 'navLink',
+            label: source.label,
+            linkType: 'page',
+            page: { _type: 'reference', _ref: source.id },
+          });
+        }
+        void writeMenu(items);
+      },
+      [data, dragId, rows, writeMenu],
+    );
 
     return (
       <Flex direction="column" style={{ height: '100%' }}>
@@ -303,7 +635,20 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
               </Text>
             ) : (
               grouped.map((group) => (
-                <Stack key={group.title} space={2}>
+                <Stack
+                  key={group.title}
+                  space={2}
+                  onDragOver={
+                    canDrag && dragId && group.title !== ARCHIVED_GROUP
+                      ? (e) => e.preventDefault()
+                      : undefined
+                  }
+                  onDrop={
+                    canDrag && dragId && group.title !== ARCHIVED_GROUP
+                      ? () => dropRow({ group: group.title })
+                      : undefined
+                  }
+                >
                   <Text size={1} weight="semibold" muted style={{ textTransform: 'uppercase' }}>
                     {group.title}
                   </Text>
@@ -312,8 +657,66 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
                       const active = pending
                         ? pending.href === r.href
                         : current === r.href || current.endsWith(r.href);
+                      // A row is draggable when the menu can actually hold it:
+                      // public list, not archived, not pinned home, and not a
+                      // link that lives inside a dropdown.
+                      const draggable =
+                        canDrag &&
+                        !r.archived &&
+                        !r.navChild &&
+                        r.href !== '/preview' &&
+                        Boolean(data?.nav);
                       return (
-                        <Flex key={r.id} align="center" gap={1}>
+                        <Flex
+                          key={r.id}
+                          align="center"
+                          gap={1}
+                          style={dropOn === r.id ? { boxShadow: '0 -2px 0 0 #2276fc' } : undefined}
+                          onDragOver={
+                            canDrag && dragId && group.title !== ARCHIVED_GROUP
+                              ? (e) => {
+                                  e.preventDefault();
+                                  setDropOn(r.id);
+                                }
+                              : undefined
+                          }
+                          onDragLeave={
+                            canDrag && dragId
+                              ? () => setDropOn((v) => (v === r.id ? null : v))
+                              : undefined
+                          }
+                          onDrop={
+                            canDrag && dragId && group.title !== ARCHIVED_GROUP
+                              ? (e) => {
+                                  e.stopPropagation();
+                                  dropRow({ group: group.title, beforeId: r.id });
+                                }
+                              : undefined
+                          }
+                        >
+                          {draggable && (
+                            /* The grip is its own element so a drag never
+                               fights the row's click-to-open. */
+                            <span
+                              draggable
+                              onDragStart={() => setDragId(r.id)}
+                              onDragEnd={() => {
+                                setDragId(null);
+                                setDropOn(null);
+                              }}
+                              title="Drag to change the menu"
+                              aria-label={`Drag ${r.label} to change the menu`}
+                              style={{
+                                cursor: 'grab',
+                                display: 'flex',
+                                alignItems: 'center',
+                                color: '#9aa4b2',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <DragHandleIcon />
+                            </span>
+                          )}
                           <Card
                             as="button"
                             flex={1}
@@ -321,7 +724,12 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
                             radius={2}
                             tone={active ? 'primary' : 'default'}
                             pressed={active}
-                            style={{ cursor: 'pointer', textAlign: 'left', minWidth: 0 }}
+                            style={{
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              minWidth: 0,
+                              opacity: r.archived ? 0.6 : 1,
+                            }}
                             onClick={() => go(r.href, r.type, r.id)}
                           >
                             <Flex align="center" gap={2}>
@@ -336,7 +744,7 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
                               <StatusDot row={r} />
                             </Flex>
                           </Card>
-                          {r.liveHref && (
+                          {r.liveHref && !r.archived && (
                             /* Outside the row button — a button may not nest a
                                link. Opens the REAL page in a new tab. */
                             <Button
@@ -351,6 +759,43 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
                               aria-label={`Open the live page for ${r.label}`}
                             />
                           )}
+                          <MenuButton
+                            id={`row-menu-${r.id}`}
+                            button={
+                              <Button
+                                mode="bleed"
+                                padding={2}
+                                icon={EllipsisVerticalIcon}
+                                disabled={busyId === r.id}
+                                title={`More for ${r.label}`}
+                                aria-label={`More for ${r.label}`}
+                              />
+                            }
+                            popover={{ portal: true, placement: 'bottom-end' }}
+                            menu={
+                              <Menu>
+                                <MenuItem
+                                  icon={CopyIcon}
+                                  text="Duplicate"
+                                  onClick={() => void duplicatePage(r)}
+                                />
+                                {r.archived ? (
+                                  <MenuItem
+                                    icon={RestoreIcon}
+                                    text="Restore"
+                                    onClick={() => void setArchived(r, false)}
+                                  />
+                                ) : (
+                                  <MenuItem
+                                    icon={ArchiveIcon}
+                                    text="Archive"
+                                    tone="critical"
+                                    onClick={() => void setArchived(r, true)}
+                                  />
+                                )}
+                              </Menu>
+                            }
+                          />
                         </Flex>
                       );
                     })}

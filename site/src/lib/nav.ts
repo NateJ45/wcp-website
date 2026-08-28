@@ -39,6 +39,8 @@ interface RawLink {
   label?: string;
   linkType?: 'page' | 'url';
   pageSlug?: string;
+  /** True when the page this link points at is archived (see queries.ts). */
+  pageArchived?: boolean;
   url?: string;
 }
 interface RawItem extends RawLink {
@@ -71,6 +73,17 @@ function hrefOf(link: RawLink): string {
   }
   return !slug || slug === 'home' ? '/' : `/${slug}`;
 }
+/**
+ * Keep a menu link only while its page is on the site.
+ *
+ * Archiving a page removes the page; a menu item still pointing at it would
+ * send visitors to a page that is not built. The test is `!== true`, so a link
+ * to a page made before the archive field stays in the menu.
+ */
+function isLive(link: RawLink): boolean {
+  return link.pageArchived !== true;
+}
+
 function toLink(link: RawLink): NavLink {
   const href = hrefOf(link);
   const external = /^https?:\/\//.test(href);
@@ -88,7 +101,10 @@ function toLink(link: RawLink): NavLink {
  */
 function resolveHeaderCta(raw: RawHeaderCta | undefined): HeaderCta {
   const label = raw?.label?.trim();
-  const hasLink = raw?.linkType === 'url' ? Boolean(raw.url) : Boolean(raw?.pageSlug);
+  // An archived page is not a link any more; the button falls back to the tour
+  // form the code owns, which is the right place for it to land.
+  const hasLink =
+    raw?.linkType === 'url' ? Boolean(raw.url) : Boolean(raw?.pageSlug) && isLive(raw ?? {});
   return {
     show: raw?.show !== false,
     ...(label ? { label } : {}),
@@ -113,15 +129,22 @@ export function resolveNavigation(doc: unknown): SiteNavigation {
   }
   return {
     headerCta,
-    mainNav: nav.mainNav.map((item) =>
-      item._type === 'navGroup'
-        ? ({ label: item.label ?? '', children: (item.children ?? []).map(toLink) } as NavGroup)
-        : toLink(item),
-    ),
+    mainNav: nav.mainNav
+      .filter((item) => item._type === 'navGroup' || isLive(item))
+      .map((item) =>
+        item._type === 'navGroup'
+          ? ({
+              label: item.label ?? '',
+              children: (item.children ?? []).filter(isLive).map(toLink),
+            } as NavGroup)
+          : toLink(item),
+      )
+      // A dropdown whose every page was archived has nothing left to open.
+      .filter((item) => !('children' in item) || item.children.length > 0),
     footerNav: (nav.footerColumns ?? []).map((col) => ({
       label: col.label ?? '',
-      children: (col.links ?? []).map(toLink),
+      children: (col.links ?? []).filter(isLive).map(toLink),
     })),
-    legalNav: (nav.legalNav ?? []).map(toLink),
+    legalNav: (nav.legalNav ?? []).filter(isLive).map(toLink),
   };
 }

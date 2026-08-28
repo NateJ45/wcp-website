@@ -111,6 +111,21 @@ export const hubPage = defineType({
       initialValue: 'file-text',
     }),
 
+    // The same soft archive the public pages have. An archived hub page drops
+    // out of the hub (the built-in pages fall back to their shipped content)
+    // but keeps every word, so Restore puts it back unchanged. Hub pages get no
+    // "Search & sharing" group: they sit behind the family password, so no
+    // search engine can ever read them.
+    defineField({
+      name: 'archived',
+      title: 'Archived',
+      type: 'boolean',
+      group: 'settings',
+      hidden: false,
+      description:
+        'Archived pages are removed from the site but kept here so they can be restored.',
+    }),
+
     defineField({
       name: 'heading',
       title: 'Page heading',
@@ -157,8 +172,8 @@ export const hubPage = defineType({
       return 'Pick which hub page this is, OR give it a web address to make it a new page.';
     }),
   preview: {
-    select: { title: 'title', hubKey: 'hubKey', slug: 'slug' },
-    prepare({ title, hubKey, slug }) {
+    select: { title: 'title', hubKey: 'hubKey', slug: 'slug', archived: 'archived' },
+    prepare({ title, hubKey, slug, archived }) {
       const labels: Record<string, string> = {
         home: 'Hub home',
         calendar: 'Calendar',
@@ -172,13 +187,14 @@ export const hubPage = defineType({
         'twos-threes': 'Twos & Threes classroom',
         'pre-k': 'Pre-K classroom',
       };
+      const where = hubKey
+        ? (labels[hubKey] ?? hubKey)
+        : slug
+          ? `New page · /family-hub/${slug}`
+          : 'Not set up yet — pick a page, or give it a web address';
       return {
         title: title || '(untitled hub page)',
-        subtitle: hubKey
-          ? (labels[hubKey] ?? hubKey)
-          : slug
-            ? `New page · /family-hub/${slug}`
-            : 'Not set up yet — pick a page, or give it a web address',
+        subtitle: archived ? `Archived · ${where}` : where,
       };
     },
   },
