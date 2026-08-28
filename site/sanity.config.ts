@@ -19,6 +19,7 @@ import { ExportTool } from './src/sanity/components/ExportTool';
 import { CleanupTool } from './src/sanity/components/CleanupTool';
 import { HealthTool } from './src/sanity/components/HealthTool';
 import { SetupWizard } from './src/sanity/components/SetupWizard';
+import { StatsTool } from './src/sanity/components/StatsTool';
 import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
@@ -304,6 +305,19 @@ const setupTool: Tool = {
   component: SetupWizard,
   icon: () => '🍂',
 };
+// Site stats — the traffic panel Squarespace and Wix put in their editors, so
+// board members go looking for it here. Read-only: it calls the site's own
+// /api/stats (Cloudflare Workers analytics for this Worker) and draws 28 days
+// of daily request counts. PUBLIC workspace only — it measures the public
+// website, and the Family Hub's own traffic is not a thing anyone asks about.
+// The number is REQUESTS SERVED, not page views; see the component's header
+// before touching any label.
+const statsTool: Tool = {
+  name: 'stats',
+  title: 'Site stats',
+  component: StatsTool,
+  icon: () => '📈',
+};
 
 export default defineConfig([
   // First = where /studio lands.
@@ -320,7 +334,7 @@ export default defineConfig([
       // in public content, and the hub has its own weekly Link health report.
       linkChecker(),
     ],
-    extraTools: [exportTool, checkupTool, setupTool],
+    extraTools: [exportTool, checkupTool, setupTool, statsTool],
   }),
   workspace({
     name: 'family-hub',

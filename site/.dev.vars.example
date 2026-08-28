@@ -35,3 +35,10 @@ INSTAGRAM_TOKEN="change-me"
 # the hub told families it was "fine for outside play". Set this.
 # Deployed Worker needs it too: npx wrangler secret put AIRNOW_API_KEY
 AIRNOW_API_KEY="change-me"
+
+# Cloudflare API token for the Studio's "Site stats" tool. Account-scoped, ONE
+# permission: Account > Account Analytics > Read. Mint at
+# dash.cloudflare.com → My Profile → API Tokens → Create Token → Custom token.
+# Unset = the tool shows a plain "not set up yet" card; nothing else breaks.
+# Deployed Worker needs it too: npx wrangler secret put CF_ANALYTICS_TOKEN
+CF_ANALYTICS_TOKEN="change-me"

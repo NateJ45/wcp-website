@@ -41,6 +41,14 @@
       "id": "022e00789a4448a79c352a2bb309415b",
     },
   ],
+  // Plain (non-secret) runtime values. The account id only NAMES which
+  // Cloudflare account /api/stats asks about; it grants nothing on its own and
+  // appears in every wrangler config, so it is safe in this public repo. The
+  // token that actually reads the analytics is a Worker SECRET
+  // (CF_ANALYTICS_TOKEN, set with `npx wrangler secret put`) and is never here.
+  "vars": {
+    "CF_ACCOUNT_ID": "7e75a15ddc72aae04dca71aca5c7294b",
+  },
   "observability": {
     "enabled": true,
   },

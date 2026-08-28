@@ -2214,6 +2214,73 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'site-stats',
+    category: 'Yearly jobs & housekeeping',
+    title: 'See how many people visit',
+    icon: '📈',
+    lead: 'A simple traffic panel: the last 7 days, the last 28 days, and a bar for each day.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'The **Site stats** tool shows how busy the website has been. It is read only. Nothing you do here changes the website.',
+      },
+      {
+        kind: 'path',
+        items: ['Site stats (top nav, Public website)'],
+        // Public workspace only, so a reader in the Family Hub workspace gets
+        // switched across rather than sent to a tool that is not there.
+        link: { tool: 'stats', ws: 'public' },
+      },
+      { kind: 'h', text: 'What you see' },
+      {
+        kind: 'bullets',
+        items: [
+          '**Last 7 days** and **Last 28 days**: two big numbers.',
+          'A **bar for each day**, oldest on the left, today on the right. Hover a bar to read its number.',
+          'An **Errors** card, but only when there were errors. A few are normal.',
+        ],
+      },
+      { kind: 'h', text: 'What the number really means' },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'This is not a count of people.',
+        text: 'The number counts **requests**, not visitors. One person reading one page makes many requests: the page itself, each photo, the fonts. So the number is much larger than the number of families. Use it to compare one week with another, and do not quote it as "visitors" in a board report.',
+      },
+      {
+        kind: 'p',
+        text: 'Days are counted in UTC time, so a day here starts in the late evening our time. That is fine for comparing weeks. It is not exact enough for "how many people came this morning".',
+      },
+      { kind: 'h', text: 'If it says to open the preview first' },
+      {
+        kind: 'steps',
+        items: [
+          'Open any page from the left menu.',
+          'Click the `Presentation` tab, so the website shows beside the editor.',
+          'Go back to `Site stats` and click `Try again`.',
+        ],
+      },
+      {
+        kind: 'p',
+        text: 'You only do that once on each computer. It is how the website knows you are a board member and not a stranger.',
+      },
+      { kind: 'h', text: 'If it says it is not set up yet' },
+      {
+        kind: 'p',
+        text: 'That is a one-time setup step on the website, not something you can fix from the Studio. Tell Nathan and he will turn it on.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Want more detail?',
+        text: 'The full report lives in the Cloudflare dashboard, including which countries people come from. The `Open the Cloudflare dashboard` button takes you there. Ask Nathan for a login.',
+      },
+      { kind: 'seealso', items: ['Run a site checkup'] },
+    ],
+  },
+
+  {
     slug: 'start-of-year',
     category: 'Yearly jobs & housekeeping',
     title: 'Start a new school year',

@@ -48,6 +48,34 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Waiting on a human
 
+- **Mint the Cloudflare analytics token, then round-trip "Site stats" (added
+  2026-08-28).** The Studio's new **Site stats** tool (Public website
+  workspace) is inert until one Worker secret exists. Two steps, in order:
+
+  1. **Mint and set the token.** Full walkthrough in
+     [SANITY.md → Site stats](SANITY.md#site-stats-the-traffic-panel-added-2026-08-28).
+     Short version: dash.cloudflare.com → My Profile → API Tokens → Create
+     Custom Token, ONE permission (**Account · Account Analytics · Read**),
+     scoped to the one account, then from `site/`:
+     `npx wrangler secret put CF_ANALYTICS_TOKEN`. `CF_ACCOUNT_ID` is already
+     in `wrangler.jsonc` vars (it is not a secret). Until the token is set the
+     endpoint returns a plain 503 naming it, and the tool says "not set up
+     yet" — nothing else on the site is affected.
+  2. **Round-trip it in the DEPLOYED Studio.** Open `/studio/#/public`, open
+     any page's **Presentation** tab once (that is what issues the preview
+     cookie the endpoint checks), then click **Site stats**. Expect two
+     totals, a 28-bar chart, and no error card.
+
+  **The one thing local gates could NOT prove:** which time dimension
+  Cloudflare's `workersInvocationsAdaptive` dataset accepts. There is no
+  analytics token on this machine, so the query was never run. The endpoint
+  asks for `date` first and falls back once to `datetimeHour`; if BOTH are
+  rejected the tool shows Cloudflare's own message verbatim ("Cloudflare could
+  not answer: ..."). If that appears, the fix is a field name in
+  `src/pages/api/stats.ts` (`QUERY_BY_DATE` / `QUERY_BY_HOUR`) — the bucketing
+  in `src/lib/site-stats.ts` already handles either shape. A `403` instead
+  means the token is missing **Account Analytics · Read**.
+
 - **Verify "Publish later" and "Copy share link" in the DEPLOYED Studio (added
   2026-08-27).** Both shipped this session (ported from the starter; see
   docs/SANITY.md). Every local gate passes (types, lint, format, 381 unit tests,

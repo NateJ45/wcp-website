@@ -87,6 +87,14 @@ declare namespace Cloudflare {
     /** Shared secret sent with each webhook POST; must match the script's
      *  SHARED_TOKEN so strangers can't inject fake submissions. */
     FORMS_WEBHOOK_TOKEN?: string;
+    /** Cloudflare API token with Account Analytics:Read, used ONLY by
+     *  /api/stats to read this Worker's request counts for the Studio's
+     *  "Site stats" tool. Worker secret (`wrangler secret put`). Unset = the
+     *  tool shows its "not set up yet" card. Never logged. docs/SANITY.md. */
+    CF_ANALYTICS_TOKEN?: string;
+    /** Cloudflare account id. NOT a secret (it is in wrangler.jsonc vars);
+     *  it only names which account the analytics query asks about. */
+    CF_ACCOUNT_ID?: string;
     /** Newsletter provider: "buttondown" | "mailchimp". Unset = store-only. */
     NEWSLETTER_PROVIDER?: string;
     BUTTONDOWN_API_KEY?: string;
