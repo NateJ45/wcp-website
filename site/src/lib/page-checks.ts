@@ -1,15 +1,23 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
-// page-checks — the courtesy "Check this page" pass, as pure functions
+// page-checks - the courtesy "Check this page" pass, as pure functions
 // =============================================================================
-// WHAT THIS IS. A board member finishes a page and wants a second pair of eyes
+// WHAT THIS IS. An editor finishes a page and wants a second pair of eyes
 // before publishing. This walks the DRAFT document and reports three kinds of
 // "worth a look": a photo with no alt text, a section with nothing typed in it,
 // and a link to an address no page seems to own.
 //
-// WHAT THIS IS NOT. It never blocks a publish and it never edits anything. Every
-// finding is a suggestion, and every check is a HEURISTIC: it walks unknown
-// shapes generically rather than knowing all forty section types, so it can miss
-// things and it can be wrong. The wording in the Studio says so out loud.
+// WHAT THIS IS NOT. It never blocks a publish and it never edits anything.
+// Every finding is a suggestion, and every check is a HEURISTIC: it walks
+// unknown shapes generically rather than knowing every section type, so it can
+// miss things and it can be wrong. The wording in the Studio says so out loud.
+//
+// THE CONFIG OBJECT is what makes this file canonical. Every repo in the family
+// names its page-builder arrays differently (`pageBuilder`, `sections`,
+// `flexibleSections`), owns different code-only routes, and has its own list of
+// sections that fill themselves from a collection. All of that arrives as a
+// `PageCheckConfig` from the repo's own src/sanity/pageBuilderConfig.ts, so
+// this module stays byte-identical everywhere.
 //
 // It lives in src/lib (not src/sanity) and imports nothing, so it is unit
 // tested without a Studio, a browser, or a dataset. The Studio side of it is a
@@ -19,9 +27,53 @@
 /** The three things we look for. */
 export type CheckId = 'alt' | 'empty' | 'links';
 
+/** What one repo's pages look like, so the generic walk knows where to go. */
+export interface PageCheckConfig {
+  /**
+   * Array fields that hold page-builder sections, in the order they render.
+   * A document that has none of them simply produces no section units.
+   */
+  sectionArrays: readonly string[];
+  /**
+   * Fields that make up a banner ABOVE the sections, walked as one extra unit.
+   * Some repos model this as a single object field (`hero`), some as loose
+   * fields on the document (`heroHeadline`, `heroImage`); either works, because
+   * the unit is built from whichever named fields are present.
+   */
+  header?: {
+    /** How a finding names it, e.g. "Hero (top banner)". */
+    label: string;
+    fields: readonly string[];
+    /**
+     * Report "nothing typed here" for the header too. Off by default: a header
+     * is a fragment of a page, not a section, and a page whose banner is one
+     * background photo is a normal page in several repos.
+     */
+    checkEmpty?: boolean;
+  };
+  /**
+   * Section types that fill THEMSELVES from a list elsewhere in the Studio. A
+   * team section with no heading is not an empty section: it is a section that
+   * gets its words from the Team collection. A name that drifts off this list
+   * only costs a false "worth a look".
+   */
+  selfFillingSections: readonly string[];
+  /**
+   * Extra keys that hold a SETTING rather than words, on top of the shared list
+   * below. Only needed for a repo that invents its own knob name.
+   */
+  extraSettingKeys?: readonly string[];
+  /**
+   * First path segments the SITE CODE owns, not the page builder: a link to
+   * /journal or /events is fine even though no `page` document has that slug.
+   * Include the built asset folders too.
+   */
+  codeOwnedPaths: readonly string[];
+}
+
 /** One thing worth a look, tied to the part of the page it was found in. */
 export interface Finding {
-  /** Human location, e.g. "Hero" or "Section 3: Photo gallery". */
+  /** Human location, e.g. "Hero" or "Section 3: Gallery". */
   where: string;
   /** What we noticed, in plain words. */
   detail: string;
@@ -36,19 +88,21 @@ export interface CheckGroup {
   findings: Finding[];
 }
 
-/** One walkable piece of a page: the hero, then each section in order. */
+/** One walkable piece of a page: the header, then each section in order. */
 export interface PageUnit {
   where: string;
   /** Schema type name, e.g. `gallerySection`. Empty for a shapeless value. */
   type: string;
   value: unknown;
+  /** True for the header unit unless the config asks for it to be checked. */
+  skipEmptyCheck?: boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Shared walking helpers
 // ---------------------------------------------------------------------------
 
-/** Sanity's own bookkeeping keys — never content, never a link. */
+/** Sanity's own bookkeeping keys - never content, never a link. */
 const META_KEYS = new Set([
   '_type',
   '_key',
@@ -71,7 +125,7 @@ const META_KEYS = new Set([
  * still has several of them. Counting those as content would make the
  * "nothing typed here" check permanently silent.
  */
-const SETTING_KEYS = new Set([
+const SETTING_KEYS = [
   'align',
   'alignment',
   'appearance',
@@ -81,79 +135,22 @@ const SETTING_KEYS = new Set([
   'columns',
   'density',
   'direction',
+  'grayscale',
   'icon',
   'kind',
   'layout',
   'level',
+  'limit',
   'mediaType',
   'mode',
   'ratio',
   'size',
+  'source',
   'style',
   'theme',
   'tone',
   'variant',
   'width',
-]);
-
-/**
- * Section types that fill THEMSELVES from a list elsewhere in the Studio (the
- * "From your lists (auto-updating)" band of the insert menu, plus the money
- * and contact sections that read a singleton). A teachers section with no
- * heading is not an empty section: it is a section that gets its words from the
- * Staff list. Keep roughly in sync with src/sanity/schemaTypes/sections/index.ts
- * — a name that drifts off this list only costs a false "worth a look".
- */
-const SELF_FILLING_SECTIONS = new Set([
-  'albumSection',
-  'boardMembersSection',
-  'campaignSection',
-  'classCardsSection',
-  'contactDetailsSection',
-  'downloadsSection',
-  'enrollmentCtaSection',
-  'faqSection',
-  'instagramSection',
-  'jobsSection',
-  'latestPostsSection',
-  'logoStripSection',
-  'mapSection',
-  'newsletterSignupSection',
-  'programCardsSection',
-  'reviewFormSection',
-  'schoolYearSection',
-  'teacherSection',
-  'testimonialSection',
-  'tuitionCalculatorSection',
-  'tuitionTableSection',
-  'upcomingEventsSection',
-]);
-
-/**
- * First path segments the SITE CODE owns, not the page builder: a link to
- * /events or /news is fine even though no `page` document has that slug.
- * Mirrors RESERVED_PAGE_SLUGS in src/sanity/schemaTypes/documents/page.ts (kept
- * separate so this file imports nothing) plus the built asset folders.
- */
-export const CODE_OWNED_PATHS: readonly string[] = [
-  '404',
-  'api',
-  'colophon',
-  'curriculum',
-  'enrollment-packet',
-  'events',
-  'family-hub',
-  'hero',
-  'ig',
-  'news',
-  'newsletter',
-  'og',
-  'pagefind',
-  'preview',
-  'search',
-  'studio',
-  'supplies',
-  'thank-you',
 ];
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -172,38 +169,62 @@ function walk(value: unknown, visit: (key: string, value: unknown) => void): voi
   }
 }
 
-/** `splitMediaSection` → "Split media". No lookup table to fall out of date. */
+/**
+ * `sectionImageText` and `imageTextSection` both become "Image text". No lookup
+ * table to fall out of date, and one rule for both naming conventions in the
+ * family (some repos prefix the type name, some suffix it).
+ */
 export function sectionLabel(type: string): string {
-  const bare = type.replace(/Section$|Object$/, '');
+  const bare = type.replace(/^section(?=[A-Z])/, '').replace(/Section$|Object$/, '');
   const words = bare.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 /**
- * The hero and every section, in page order, each with the label a finding
+ * The header and every section, in page order, each with the label a finding
  * points at. Sections keep their 1-based position because that is how the
- * Sections list in the Studio counts them.
+ * Sections list in the Studio counts them, and the count runs on across several
+ * arrays (a repo that has both a main builder and an "extra sections" append
+ * zone shows them as one list to the editor).
  */
-export function pageUnits(doc: unknown): PageUnit[] {
+export function pageUnits(doc: unknown, config: PageCheckConfig): PageUnit[] {
   const page = isRecord(doc) ? doc : {};
   const units: PageUnit[] = [];
-  if (isRecord(page.hero)) {
-    units.push({ where: 'Hero (top banner)', type: 'heroObject', value: page.hero });
+
+  const header = config.header;
+  if (header) {
+    const held: Record<string, unknown> = {};
+    for (const field of header.fields) {
+      if (page[field] !== undefined && page[field] !== null) held[field] = page[field];
+    }
+    if (Object.keys(held).length > 0) {
+      units.push({
+        where: header.label,
+        type: 'header',
+        value: held,
+        skipEmptyCheck: header.checkEmpty !== true,
+      });
+    }
   }
-  const sections = Array.isArray(page.sections) ? page.sections : [];
-  sections.forEach((section, i) => {
-    const type = isRecord(section) && typeof section._type === 'string' ? section._type : '';
-    units.push({
-      where: `Section ${i + 1}${type ? `: ${sectionLabel(type)}` : ''}`,
-      type,
-      value: section,
-    });
-  });
+
+  let position = 0;
+  for (const field of config.sectionArrays) {
+    const sections = Array.isArray(page[field]) ? (page[field] as unknown[]) : [];
+    for (const section of sections) {
+      position += 1;
+      const type = isRecord(section) && typeof section._type === 'string' ? section._type : '';
+      units.push({
+        where: `Section ${position}${type ? `: ${sectionLabel(type)}` : ''}`,
+        type,
+        value: section,
+      });
+    }
+  }
   return units;
 }
 
 // ---------------------------------------------------------------------------
-// Check 1 — photos with no alt text
+// Check 1 - photos with no alt text
 // ---------------------------------------------------------------------------
 
 const nonEmptyString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
@@ -218,10 +239,10 @@ function isImageValue(v: unknown): v is Record<string, unknown> {
 /**
  * Does this image have a description somewhere a renderer would find it?
  *
- * The repo models alt text three ways and this covers all of them:
- *  - `figureImage`: `{ image: <img>, alt }`      → the parent's `alt`
- *  - the hero:      `{ image: <img>, imageAlt }` → the parent's `<key>Alt`
- *  - inline:        `{ ..., alt }` on the image  → the image's own `alt`
+ * The family models alt text three ways and this covers all of them:
+ *  - a figure object: `{ image: <img>, alt }`      -> the parent's `alt`
+ *  - a hero:          `{ image: <img>, imageAlt }` -> the parent's `<key>Alt`
+ *  - inline:          `{ ..., alt }` on the image  -> the image's own `alt`
  * A parent holding two images and one alt reads as "described", which is the
  * kind of miss this check is allowed to make.
  */
@@ -287,25 +308,28 @@ function checkAltText(units: PageUnit[]): CheckGroup {
 }
 
 // ---------------------------------------------------------------------------
-// Check 2 — sections with nothing typed in them
+// Check 2 - sections with nothing typed in them
 // ---------------------------------------------------------------------------
 
 /** Any real words anywhere in this value (settings and ids do not count). */
-export function hasTypedContent(value: unknown): boolean {
+export function hasTypedContent(value: unknown, config?: PageCheckConfig): boolean {
+  const settings = new Set<string>([...SETTING_KEYS, ...(config?.extraSettingKeys ?? [])]);
   let found = false;
   walk(value, (key, child) => {
     if (found) return;
-    if (META_KEYS.has(key) || SETTING_KEYS.has(key)) return;
+    if (META_KEYS.has(key) || settings.has(key)) return;
     if (nonEmptyString(child)) found = true;
   });
   return found;
 }
 
-function checkEmptySections(units: PageUnit[]): CheckGroup {
+function checkEmptySections(units: PageUnit[], config: PageCheckConfig): CheckGroup {
+  const selfFilling = new Set<string>(config.selfFillingSections);
   const findings: Finding[] = [];
   for (const unit of units) {
-    if (SELF_FILLING_SECTIONS.has(unit.type)) continue;
-    if (hasTypedContent(unit.value)) continue;
+    if (unit.skipEmptyCheck) continue;
+    if (selfFilling.has(unit.type)) continue;
+    if (hasTypedContent(unit.value, config)) continue;
     findings.push({
       where: unit.where,
       detail: 'Nothing is typed in this one yet, so it may show up blank.',
@@ -314,20 +338,20 @@ function checkEmptySections(units: PageUnit[]): CheckGroup {
   return {
     id: 'empty',
     title: 'Sections with nothing in them',
-    note: 'Sections that fill themselves from a list (Teachers, FAQs, News, Tuition and so on) are skipped, because their words live elsewhere.',
+    note: 'Sections that fill themselves from a list elsewhere in the Studio are skipped, because their words live there and not here.',
     findings,
   };
 }
 
 // ---------------------------------------------------------------------------
-// Check 3 — links to addresses no page owns
+// Check 3 - links to addresses no page owns
 // ---------------------------------------------------------------------------
 
-/** Trim a written link down to the path we can compare: `/about?x=1#top` → `/about`. */
+/** Trim a written link down to the path we can compare: `/about?x=1#top` -> `/about`. */
 export function normalizePath(href: string): string | null {
   const raw = href.trim();
   // Only same-site paths. Full URLs, mailto:, tel:, and bare anchors are
-  // somebody else's problem (the weekly link check covers external links).
+  // somebody else's problem (a link checker covers external links).
   if (!raw.startsWith('/') || raw.startsWith('//')) return null;
   const path = raw.split(/[?#]/)[0];
   if (path === '/') return '/';
@@ -347,13 +371,13 @@ export function internalPaths(value: unknown): string[] {
 }
 
 /**
- * Compare by FIRST SEGMENT, on purpose. `/events/fall-fair` and
- * `/curriculum/twos.pdf` are real addresses built by code from a list, and no
- * `page` document owns them, so matching the whole path would flag half the
- * site. First-segment matching under-reports and never cries wolf.
+ * Compare by FIRST SEGMENT, on purpose. `/journal/spring-refresh` and
+ * `/events/harvest-supper` are real addresses built by code from a collection,
+ * and no `page` document owns them, so matching the whole path would flag half
+ * the site. First-segment matching under-reports and never cries wolf.
  */
-function knownFirstSegments(knownSlugs: readonly string[]): Set<string> {
-  const set = new Set<string>(CODE_OWNED_PATHS);
+function knownFirstSegments(knownSlugs: readonly string[], config: PageCheckConfig): Set<string> {
+  const set = new Set<string>(config.codeOwnedPaths);
   for (const slug of knownSlugs) {
     const first = slug.split('/')[0];
     if (first) set.add(first);
@@ -361,8 +385,12 @@ function knownFirstSegments(knownSlugs: readonly string[]): Set<string> {
   return set;
 }
 
-function checkLinks(units: PageUnit[], knownSlugs: readonly string[]): CheckGroup {
-  const known = knownFirstSegments(knownSlugs);
+function checkLinks(
+  units: PageUnit[],
+  knownSlugs: readonly string[],
+  config: PageCheckConfig,
+): CheckGroup {
+  const known = knownFirstSegments(knownSlugs, config);
   const findings: Finding[] = [];
   for (const unit of units) {
     const unknown = new Set<string>();
@@ -393,13 +421,21 @@ function checkLinks(units: PageUnit[], knownSlugs: readonly string[]): CheckGrou
 /**
  * Run all three checks over a page document (the draft, when there is one).
  *
- * `knownSlugs` is every `page` slug in the dataset, e.g. `['home', 'about',
- * 'classes/twos']`. Always returns all three groups, in a fixed order, so the
- * dialog can show an all-clear line for the ones that found nothing.
+ * `knownSlugs` is every page slug in the dataset, e.g. `['studio-tour',
+ * 'press']`. Always returns all three groups, in a fixed order, so the dialog
+ * can show an all-clear line for the ones that found nothing.
  */
-export function checkPage(doc: unknown, knownSlugs: readonly string[] = []): CheckGroup[] {
-  const units = pageUnits(doc);
-  return [checkAltText(units), checkEmptySections(units), checkLinks(units, knownSlugs)];
+export function checkPage(
+  doc: unknown,
+  config: PageCheckConfig,
+  knownSlugs: readonly string[] = [],
+): CheckGroup[] {
+  const units = pageUnits(doc, config);
+  return [
+    checkAltText(units),
+    checkEmptySections(units, config),
+    checkLinks(units, knownSlugs, config),
+  ];
 }
 
 /** How many things the whole pass turned up. Zero is the celebrated case. */

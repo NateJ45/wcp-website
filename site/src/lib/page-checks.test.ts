@@ -1,3 +1,17 @@
+// =============================================================================
+// page-checks tests - this repo's Vitest copy of the canonical suite
+// =============================================================================
+// NOT marked PORTABLE on purpose. src/lib/page-checks.ts is byte-identical to
+// the starter's canonical copy, but the TEST FILE is per-runner: the starter
+// runs node:test, this repo runs Vitest, and vitest.config.ts globs
+// `src/**/*.test.ts`, so the node:test copy cannot simply be dropped in. The
+// CASES are the shared thing; the assertions are written in the local runner.
+//
+// Two config objects are used. WCP's real PAGE_CHECK_CONFIG pins what the
+// action actually reports, and a small fixture config covers the seams a
+// one-array repo cannot reach (several section arrays, an opt-out header,
+// extra setting keys).
+// =============================================================================
 import { describe, it, expect } from 'vitest';
 import {
   checkPage,
@@ -7,30 +21,49 @@ import {
   normalizePath,
   pageUnits,
   sectionLabel,
+  type CheckId,
+  type PageCheckConfig,
 } from './page-checks';
+import { PAGE_CHECK_CONFIG } from '../sanity/pageBuilderConfig';
+
+/** The seams WCP's own shape cannot exercise. */
+const FIXTURE: PageCheckConfig = {
+  sectionArrays: ['pageBuilder', 'extraSections'],
+  header: { label: 'Hero (top banner)', fields: ['hero'], checkEmpty: true },
+  selfFillingSections: ['teamSection', 'faqSection'],
+  codeOwnedPaths: ['events', 'news', 'og'],
+};
 
 const img = (ref = 'image-abc-800x600-jpg') => ({
   _type: 'image',
   asset: { _type: 'reference', _ref: ref },
 });
 
-const group = (doc: unknown, id: 'alt' | 'empty' | 'links', slugs: string[] = []) =>
-  checkPage(doc, slugs).find((g) => g.id === id)!;
+const group = (doc: unknown, id: CheckId, slugs: string[] = []) =>
+  checkPage(doc, PAGE_CHECK_CONFIG, slugs).find((g) => g.id === id)!;
 
 describe('sectionLabel', () => {
-  it('turns a type name into plain words', () => {
+  it('turns a suffixed type name into plain words', () => {
     expect(sectionLabel('splitMediaSection')).toBe('Split media');
     expect(sectionLabel('faqSection')).toBe('Faq');
     expect(sectionLabel('heroObject')).toBe('Hero');
+  });
+
+  it('turns a prefixed type name into the same plain words', () => {
+    expect(sectionLabel('sectionImageText')).toBe('Image text');
+    expect(sectionLabel('embed')).toBe('Embed');
   });
 });
 
 describe('pageUnits', () => {
   it('lists the hero then each section, numbered as the Studio numbers them', () => {
-    const units = pageUnits({
-      hero: { heading: 'Hi' },
-      sections: [{ _type: 'proseSection' }, { _type: 'gallerySection' }],
-    });
+    const units = pageUnits(
+      {
+        hero: { heading: 'Hi' },
+        sections: [{ _type: 'proseSection' }, { _type: 'gallerySection' }],
+      },
+      PAGE_CHECK_CONFIG,
+    );
     expect(units.map((u) => u.where)).toEqual([
       'Hero (top banner)',
       'Section 1: Prose',
@@ -39,8 +72,24 @@ describe('pageUnits', () => {
   });
 
   it('survives a page with no hero and no sections', () => {
-    expect(pageUnits({})).toEqual([]);
-    expect(pageUnits(null)).toEqual([]);
+    expect(pageUnits({}, PAGE_CHECK_CONFIG)).toEqual([]);
+    expect(pageUnits(null, PAGE_CHECK_CONFIG)).toEqual([]);
+  });
+
+  it('numbers straight on across several section arrays', () => {
+    const units = pageUnits(
+      { pageBuilder: [{ _type: 'quoteSection' }], extraSections: [{ _type: 'ctaBandSection' }] },
+      FIXTURE,
+    );
+    expect(units.map((u) => u.where)).toEqual(['Section 1: Quote', 'Section 2: Cta band']);
+  });
+
+  it('skips the header when none of its fields are present', () => {
+    const config: PageCheckConfig = {
+      ...FIXTURE,
+      header: { label: 'Hero', fields: ['heroTitle'] },
+    };
+    expect(pageUnits({ pageBuilder: [] }, config)).toEqual([]);
   });
 });
 
@@ -129,6 +178,25 @@ describe('empty section check', () => {
     expect(group(doc, 'empty').findings).toEqual([]);
   });
 
+  it('checks the hero, because this repo asks it to', () => {
+    const doc = { hero: { image: img() } };
+    expect(group(doc, 'empty').findings).toHaveLength(1);
+  });
+
+  it('leaves the header alone when the config does not ask for it', () => {
+    const quiet: PageCheckConfig = { ...FIXTURE, header: { label: 'Hero', fields: ['hero'] } };
+    const doc = { hero: { image: img() } };
+    expect(checkPage(doc, quiet).find((g) => g.id === 'empty')!.findings).toEqual([]);
+  });
+
+  it('honours an extra setting key from the config', () => {
+    const doc = { pageBuilder: [{ _type: 'proseSection', flavour: 'chapel' }] };
+    const loose = checkPage(doc, FIXTURE).find((g) => g.id === 'empty')!;
+    expect(loose.findings).toEqual([]);
+    const strict: PageCheckConfig = { ...FIXTURE, extraSettingKeys: ['flavour'] };
+    expect(checkPage(doc, strict).find((g) => g.id === 'empty')!.findings).toHaveLength(1);
+  });
+
   it('exposes the same rule on its own', () => {
     expect(hasTypedContent({ _type: 'x', variant: 'a' })).toBe(false);
     expect(hasTypedContent({ heading: 'Hello' })).toBe(true);
@@ -197,7 +265,7 @@ describe('link check', () => {
 
 describe('checkPage', () => {
   it('always returns the three groups, in order', () => {
-    expect(checkPage({}).map((g) => g.id)).toEqual(['alt', 'empty', 'links']);
+    expect(checkPage({}, PAGE_CHECK_CONFIG).map((g) => g.id)).toEqual(['alt', 'empty', 'links']);
   });
 
   it('counts nothing for a page that is in good shape', () => {
@@ -205,6 +273,6 @@ describe('checkPage', () => {
       hero: { _type: 'heroObject', heading: 'Welcome', image: img(), imageAlt: 'Our front door' },
       sections: [{ _type: 'ctaSection', heading: 'Book a tour', href: '/visit' }],
     };
-    expect(countFindings(checkPage(doc, ['home', 'visit']))).toBe(0);
+    expect(countFindings(checkPage(doc, PAGE_CHECK_CONFIG, ['home', 'visit']))).toBe(0);
   });
 });

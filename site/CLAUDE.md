@@ -101,6 +101,7 @@ src/
     *.astro                  # the ~30 shared presentational components sections render through
   sanity/
     schemaTypes/             # documents/, objects/, sections/, singletons/ + index.ts (registry)
+    pageBuilderConfig.ts     # this repo's page shape (builder arrays, hero, self-filling sections, code-owned paths) — feeds the PORTABLE src/lib/page-checks.ts and the two page-only actions
     structure.ts             # the Studio left-nav a volunteer sees
     resolve.ts               # Presentation Tool location map (doc → /preview route)
     guides/content.ts        # in-Studio "Help & Guide" volunteer walkthroughs (plain-language)

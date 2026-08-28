@@ -3,6 +3,7 @@ import { useClient, type DocumentActionComponent, type DocumentActionProps } fro
 import { Box, Button, Card, Flex, Stack, Text, TextInput, useToast } from '@sanity/ui';
 import { regenerateKeys } from '../../lib/sanity-keys';
 import { sectionLabel } from '../../lib/page-checks';
+import { PAGE_CHECK_CONFIG } from '../pageBuilderConfig';
 
 // =============================================================================
 // "Save a section as preset…" — capture one band of a page for reuse
@@ -70,21 +71,31 @@ export function previewText(value: unknown, limit = 60): string {
   return '';
 }
 
-/** The page's sections, as pickable rows. */
+/**
+ * The page's sections, as pickable rows. The builder arrays come from
+ * src/sanity/pageBuilderConfig.ts, and the rows are numbered straight on across
+ * them, exactly as `pageUnits` in src/lib/page-checks.ts numbers them, so the
+ * two dialogs never disagree about which section is "Section 3".
+ */
 function choicesFrom(doc: unknown): SectionChoice[] {
-  const sections = isRecord(doc) && Array.isArray(doc.sections) ? doc.sections : [];
-  return sections.flatMap((section, i) => {
-    if (!isRecord(section) || typeof section._type !== 'string') return [];
-    return [
-      {
-        key: typeof section._key === 'string' ? section._key : `i${i}`,
+  const page = isRecord(doc) ? doc : {};
+  const choices: SectionChoice[] = [];
+  let position = 0;
+  for (const field of PAGE_CHECK_CONFIG.sectionArrays) {
+    const sections = Array.isArray(page[field]) ? (page[field] as unknown[]) : [];
+    sections.forEach((section, i) => {
+      position += 1;
+      if (!isRecord(section) || typeof section._type !== 'string') return;
+      choices.push({
+        key: typeof section._key === 'string' ? section._key : `${field}-${i}`,
         type: section._type,
-        label: `${i + 1}. ${sectionLabel(section._type)}`,
+        label: `${position}. ${sectionLabel(section._type)}`,
         hint: previewText(section),
         value: section,
-      },
-    ];
-  });
+      });
+    });
+  }
+  return choices;
 }
 
 export const SaveSectionPresetAction: DocumentActionComponent = (props: DocumentActionProps) => {

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useClient, type DocumentActionComponent, type DocumentActionProps } from 'sanity';
 import { Box, Button, Card, Flex, Stack, Text, useToast } from '@sanity/ui';
 import { checkPage, countFindings, type CheckGroup } from '../../lib/page-checks';
+import { PAGE_CHECK_CONFIG } from '../pageBuilderConfig';
 
 // =============================================================================
 // "Check this page…" — a courtesy read-through before publishing
@@ -16,9 +17,17 @@ import { checkPage, countFindings, type CheckGroup } from '../../lib/page-checks
 // softer layer above it, and every line of copy in the dialog says "worth a
 // look" rather than "wrong". A page can be perfectly fine and still be listed.
 //
-// All the thinking is in src/lib/page-checks.ts (pure, unit tested). This file
-// is the shell: fetch the page slugs the link check compares against, run the
-// checks, render the answer.
+// All the thinking is in src/lib/page-checks.ts (pure, unit tested, and
+// byte-identical to the starter's canonical copy), shaped for this repo by
+// src/sanity/pageBuilderConfig.ts. This file is the shell: fetch the page slugs
+// the link check compares against, run the checks, render the answer.
+//
+// THIS FILE IS NOT THE CANONICAL SHELL. The starter's checkPage.tsx says the
+// same things with different words: "..." for the ellipsis, a @sanity/icons
+// icon instead of the emoji, and a slug reader from a pageOps.ts this repo does
+// not carry. Those are volunteer-visible labels that the in-Studio guide quotes,
+// so this repo keeps its own copy and takes only the config seam. See card 25 in
+// the starter's PORTS.md.
 // =============================================================================
 
 const API = { apiVersion: '2025-01-01' } as const;
@@ -73,7 +82,7 @@ export const CheckPageAction: DocumentActionComponent = (props: DocumentActionPr
       // reported. Both twins: a page whose slug only exists in a draft is still
       // an address the board is heading for.
       const slugs = await client.fetch<string[]>('*[_type == "page" && defined(slug)].slug');
-      setGroups(checkPage(doc, slugs ?? []));
+      setGroups(checkPage(doc, PAGE_CHECK_CONFIG, slugs ?? []));
     } catch (err) {
       console.error('[check-page] could not read the page list', err);
       toast.push({
@@ -81,7 +90,7 @@ export const CheckPageAction: DocumentActionComponent = (props: DocumentActionPr
         title: 'Checked without the link check',
         description: 'The list of pages could not be read, so links were skipped this time.',
       });
-      setGroups(checkPage(doc, []).filter((g) => g.id !== 'links'));
+      setGroups(checkPage(doc, PAGE_CHECK_CONFIG).filter((g) => g.id !== 'links'));
     }
   }, [client, doc, toast]);
 

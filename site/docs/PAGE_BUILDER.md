@@ -548,8 +548,22 @@ A second `page`-only document action,
 read-through of the DRAFT in a dialog. **It never blocks publish** and it is not
 validation; Sanity's own required-field rules already do that job. All the logic is pure
 and unit-tested in [`src/lib/page-checks.ts`](../src/lib/page-checks.ts)
-(`checkPage(doc, knownSlugs)` → three `CheckGroup`s); the action only fetches the page
-slugs and renders the answer. The three heuristics:
+(`checkPage(doc, config, knownSlugs)` → three `CheckGroup`s); the action only fetches the
+page slugs and renders the answer.
+
+**`page-checks.ts` is a PORTABLE canonical file** (library of record:
+`ncs-astro-sanity-starter`, card 25 in its `PORTS.md`) and imports nothing, so everything
+repo-specific arrives as a `PageCheckConfig` from
+[`src/sanity/pageBuilderConfig.ts`](../src/sanity/pageBuilderConfig.ts): the builder array
+names (`sections`), the hero header unit (`checkEmpty: true` — a WCP hero carries the page
+heading, so an empty one is a real finding), the self-filling section list, and
+`CODE_OWNED_PATHS`. That file also owns `SECTION_HOST_TYPES` / `PAGE_BUILDER_TYPES`, which
+is what `sanity.config.ts` uses to decide which document types get these two actions, and
+which builder array `saveSectionPreset.tsx` lists. **Change the lists there, never in
+`page-checks.ts`.** The unit tests stay local (`src/lib/page-checks.test.ts`, Vitest)
+because the canonical suite is written for `node:test`.
+
+The three heuristics:
 
 1. **Photos with no description.** Walks for any object carrying `asset._ref`, then looks
    for a non-empty `alt`/`altText` on the image itself, on its parent, or at the parent's
@@ -561,7 +575,8 @@ slugs and renders the answer. The three heuristics:
    fill themselves from a list (Teachers, FAQs, News, Tuition, …) are exempt.
 3. **Links worth a look.** Every same-site path written anywhere in the hero or sections,
    compared by FIRST SEGMENT against the `page` slugs plus the code-owned routes
-   (`CODE_OWNED_PATHS`, mirroring `RESERVED_PAGE_SLUGS` in `page.ts`). First-segment
+   (`CODE_OWNED_PATHS` in `pageBuilderConfig.ts`, mirroring `RESERVED_PAGE_SLUGS` in
+   `page.ts`). First-segment
    matching is deliberate: `/events/fall-fair` and `/curriculum/twos.pdf` are real
    addresses no `page` document owns. It under-reports on purpose.
 

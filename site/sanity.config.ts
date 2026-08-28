@@ -27,6 +27,7 @@ import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slug
 import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
 import { SaveSectionPresetAction } from './src/sanity/actions/saveSectionPreset';
 import { CheckPageAction } from './src/sanity/actions/checkPage';
+import { PAGE_BUILDER_TYPES } from './src/sanity/pageBuilderConfig';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
@@ -228,10 +229,14 @@ function workspace(opts: {
           ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
           : prev;
 
-        // Page-only helpers: keep one of this page's sections for reuse, and
+        // Page-builder helpers: keep one of this page's sections for reuse, and
         // the gentle pre-publish read-through. Both open a dialog and neither
         // blocks anything (src/sanity/actions/saveSectionPreset.tsx, checkPage.tsx).
-        const pageHelpers = schemaType === 'page' ? [SaveSectionPresetAction, CheckPageAction] : [];
+        // The type list lives in src/sanity/pageBuilderConfig.ts, beside the
+        // builder-array names those two actions read.
+        const pageHelpers = PAGE_BUILDER_TYPES.has(schemaType)
+          ? [SaveSectionPresetAction, CheckPageAction]
+          : [];
 
         if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
         if (schemaType === 'testimonialSubmission')
