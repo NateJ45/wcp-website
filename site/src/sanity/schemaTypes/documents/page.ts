@@ -69,7 +69,7 @@ export const page = defineType({
       type: 'string',
       group: 'settings',
       description:
-        'The address after the domain, e.g. "about" → /about, "classes/twos" → /classes/twos. Use "home" for the front page. Lowercase, words separated by hyphens. Do not change an existing page\'s slug (it would break links).',
+        'The address after the domain, e.g. "about" → /about, "classes/twos" → /classes/twos. Use "home" for the front page. Lowercase, words separated by hyphens. If you change this on a published page, we forward the old address to the new one for you, so old links keep working.',
       validation: (R) =>
         R.required().custom(async (value, context) => {
           if (typeof value !== 'string') return 'Required';

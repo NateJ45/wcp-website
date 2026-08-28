@@ -1757,7 +1757,7 @@ export const guides: Guide[] = [
     category: 'Website pages & menus',
     title: 'Fix a broken old link',
     icon: '↪️',
-    lead: 'Renamed or removed a page? Send its old link to the new place so nobody hits a dead end.',
+    lead: 'Renaming a page keeps old links working. We forward the old address for you.',
     diy: 'self',
     body: [
       {
@@ -1766,9 +1766,13 @@ export const guides: Guide[] = [
       },
       {
         kind: 'callout',
-        tone: 'primary',
-        title: 'Better yet, avoid renaming.',
-        text: 'The simplest fix is not to change an existing page’s web address in the first place. But when you must, add a redirect so no links break.',
+        tone: 'positive',
+        title: 'Renaming a page is safe. You do not have to do anything.',
+        text: 'Change a published page’s **Web address (slug)** and press `Publish`, and we write the redirect for you. A message says "Old link kept working". The old address forwards to the new one from then on. The same happens for a News post.',
+      },
+      {
+        kind: 'p',
+        text: 'You only add one by hand for an address that never existed on this site: a link from our old Squarespace site, or a path from a printed flyer.',
       },
       {
         kind: 'path',
@@ -1784,6 +1788,12 @@ export const guides: Guide[] = [
           'In **Send them to**, type the new page path, e.g. "/community" (or a full https:// link).',
           'Leave **Permanent move?** on, then `Publish`. It works a minute or two after the site rebuilds.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Redirects is also the list of every forward.',
+        text: 'Open **Site setup → Redirects** to see them all, written as "old address → new address". The ones we wrote for you carry a note saying which page moved and when.',
       },
       {
         kind: 'callout',

@@ -54,15 +54,46 @@ gated meeting blog and calendar, so they point into the hub — not the public `
 There should be nothing left to do here for the current set of pages. The rest of this doc
 is for adding more later.
 
-## How to add redirects
+## Renaming a page: the redirect files itself
 
-**The board can do this themselves now** — no code change. In the Studio, in the
+**A slug rename no longer breaks links, and nobody has to remember anything.** When a board
+member changes the **Web address (slug)** of an already-published `page` or `post` and hits
+Publish, the Studio creates the matching `redirect` document first (old path → new path,
+permanent), then publishes as normal. A toast confirms it: _"Old link kept working."_
+
+- **Where it lives:** [`src/sanity/actions/slugRedirect.tsx`](../src/sanity/actions/slugRedirect.tsx),
+  a thin wrapper around the stock Publish action, applied in `sanity.config.ts` to the types
+  in `SLUG_REDIRECT_TYPES` (`page`, `post`). It is purely additive — same button, same
+  shortcut, same states.
+- **Exactly when it fires:** on Publish, and only when the document already has a **published**
+  version whose slug differs from the one going live. A first publish, a draft rename that was
+  never live, and an ordinary content edit all do nothing.
+- **It never blocks publishing.** If the redirect write fails, the board gets a warning toast
+  telling them to add one by hand, and the page publishes anyway.
+- **No duplicates, no chains.** If a redirect already covers that old path, the existing one
+  wins (the board may have corrected it). And renaming twice (A→B, then B→C) repoints the old
+  A→B entry straight at C, so visitors take one hop.
+- **Paths are normalized** by [`src/lib/redirects.ts`](../src/lib/redirects.ts), the same
+  module the build uses, so `/old-page` and `/old-page/` can never disagree. `home` maps to
+  `/`; posts map to `/news/<slug>`.
+
+## How to add a redirect by hand
+
+Still needed for an address that never existed on this site — an old Squarespace URL, a
+printed flyer, a typo someone linked. **The board can do this themselves** — no code change. In the Studio, in the
 **Public website** workspace → **Site setup** → **Redirects** → **＋** and fill in the old path
 and where it should go. On Publish, the next rebuild (which the publish itself triggers)
 turns it into a real 301 (or a 302, if the board unchecks the doc's "permanent" box). `astro.config.mjs` reads these `redirect` documents at build via
 `fetchCmsRedirects()` and folds them into the `redirects` map alongside the launch ones
 below. Fully fail-safe: if Sanity is unreachable at build the CMS redirects are skipped and
 the build still succeeds on the static launch redirects.
+
+**Why build time and not per-request?** The public site is `output: 'static'`, so the 404
+route is prerendered and middleware never runs for it. Serving redirects at request time
+would mean making that route SSR and reading a list on every miss — a Worker invocation and a
+cache read in front of the one route that exists to be cheap, on an account whose KV is
+already near its free daily write cap. The build-time map costs nothing per request, is a
+real 301, and is live 1-2 minutes after publish. See the header comment in `src/lib/redirects.ts`.
 
 The developer-edited launch redirects (below) stay in code because they're SEO-critical and
 one-time. Anything the board adds later goes in the Studio.

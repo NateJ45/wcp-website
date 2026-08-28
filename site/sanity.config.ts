@@ -22,6 +22,7 @@ import { SetupWizard } from './src/sanity/components/SetupWizard';
 import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
+import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slugRedirect';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
@@ -201,18 +202,28 @@ function workspace(opts: {
       //  - archivable content: swap the destructive Delete for Archive (soft
       //    delete into "Recently deleted"); everything else (publish, duplicate…)
       //    stays.
+      //
+      // Before any of that, types with a public web address (page, post) get
+      // their stock Publish WRAPPED so renaming a slug files a redirect for the
+      // old address automatically — see src/sanity/actions/slugRedirect.tsx.
+      // The wrapper is memoized per wrapped component, so this stays a stable
+      // component identity across renders.
       actions: (prev, { schemaType }) => {
+        const base = SLUG_REDIRECT_TYPES.has(schemaType)
+          ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
+          : prev;
+
         if (schemaType === 'trashedItem') return [RestoreAction, DeleteForeverAction];
-        if (schemaType === 'testimonialSubmission') return [ApproveTestimonialAction, ...prev];
+        if (schemaType === 'testimonialSubmission') return [ApproveTestimonialAction, ...base];
         if (SINGLETON_TYPES.has(schemaType)) {
-          return prev.filter(
+          return base.filter(
             ({ action }) => !['unpublish', 'delete', 'duplicate'].includes(action || ''),
           );
         }
         if (ARCHIVABLE_TYPES.has(schemaType)) {
-          return [...prev.filter(({ action }) => action !== 'delete'), ArchiveAction];
+          return [...base.filter(({ action }) => action !== 'delete'), ArchiveAction];
         }
-        return prev;
+        return base;
       },
       // Keep singletons AND trashedItem out of the global "create new" menu
       // (you never hand-author a trash receipt, and legalPage is retired —

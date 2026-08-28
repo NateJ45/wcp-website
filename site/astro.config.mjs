@@ -9,6 +9,8 @@ import react from '@astrojs/react';
 import sanity from '@sanity/astro';
 import tailwindcss from '@tailwindcss/vite';
 
+import { buildRedirectMap } from './src/lib/redirects.ts';
+
 // -----------------------------------------------------------------------------
 // Board-managed redirects (read from Sanity at build time)
 // -----------------------------------------------------------------------------
@@ -19,6 +21,12 @@ import tailwindcss from '@tailwindcss/vite';
 // types), so it takes effect on the next rebuild like any other content edit.
 // FULLY fail-safe: any error (no token, Sanity down, bad data) → no CMS
 // redirects, and the build still succeeds with the static launch redirects.
+//
+// Most entries are now filed FOR the board rather than BY them: renaming a page
+// slug creates the redirect at publish time (src/sanity/actions/slugRedirect.tsx).
+// The shaping rules — normalize both sides, drop self-redirects and half-filled
+// rows — live in src/lib/redirects.ts, so the Studio and the build always agree
+// on what a path is.
 async function fetchCmsRedirects() {
   const env = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
   const token = process.env.SANITY_TOKEN || env.SANITY_TOKEN;
@@ -29,16 +37,7 @@ async function fetchCmsRedirects() {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) return {};
     const { result } = await res.json();
-    /** @type {Record<string, string | { status: number, destination: string }>} */
-    const map = {};
-    for (const r of result || []) {
-      if (!r.from || !r.to || r.from === r.to) continue;
-      map[r.from] =
-        r.permanent === false
-          ? { status: 302, destination: r.to }
-          : { status: 301, destination: r.to };
-    }
-    return map;
+    return buildRedirectMap(result || []);
   } catch {
     return {};
   }

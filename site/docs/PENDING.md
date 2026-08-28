@@ -48,6 +48,20 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 
 ## Waiting on a human
 
+- **Verify the safe-rename redirect in the DEPLOYED Studio (added 2026-08-27).**
+  Renaming a published page now files its own redirect at publish time
+  (`src/sanity/actions/slugRedirect.tsx`, wired in `sanity.config.ts`). Every
+  local gate passes (types, lint, format, 363 unit tests, build, 27/27 parity),
+  but the action only RUNS in the browser, and `/studio` is blank under
+  `npm run dev` on this machine (the spaces-in-path gotcha), so the runtime path
+  is unexercised. After the next deploy, do one round trip: open a low-stakes
+  published page, change its **Web address (slug)**, press `Publish`, and check
+  (1) a green "Old link kept working" toast appears, (2) a new entry shows under
+  **Site setup -> Redirects** reading `old -> new`, and (3) after the rebuild the
+  old address forwards. If the toast never appears, the wrapper is not being
+  applied — look at the `actions` resolver in `sanity.config.ts`. Publishing is
+  never blocked by this code, so a failure here is cosmetic, not destructive.
+
 - **DECISION: adopt a staging branch (2026-08-28).** This is the one repo in
   the site family that commits straight to `main`, and `main` auto-deploys.
   The presacademy flow (`staging` first, fast-forward `main` to release) adds

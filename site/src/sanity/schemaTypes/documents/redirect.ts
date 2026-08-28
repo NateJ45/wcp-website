@@ -4,11 +4,19 @@ import { defineType, defineField } from 'sanity';
 // redirect — an old path → new path forward (board-editable)
 // =============================================================================
 // When a page is renamed or moved, old links (bookmarks, Google results, other
-// sites) would 404. A redirect sends them to the right new place. These are
-// applied at REQUEST time by src/middleware.ts, so a new redirect takes effect
-// within about a minute of publishing — no code change, no rebuild. (The
-// launch-migration redirects from the Squarespace move still live in
-// astro.config.mjs; see docs/REDIRECTS.md.)
+// sites) would 404. A redirect sends them to the right new place.
+//
+// Most of these are now written FOR the board, not BY them: renaming the slug of
+// a published page or post files this document automatically at publish time
+// (src/sanity/actions/slugRedirect.tsx). The board still adds one by hand for an
+// address that never existed here — an old Squarespace link, or a printed flyer.
+//
+// They are applied at BUILD time: astro.config.mjs reads the published redirect
+// docs and folds them into Astro's `redirects` map, which the Cloudflare adapter
+// emits as real 301/302s. Publishing fires the deploy webhook, so a redirect is
+// live 1-2 minutes later, like any other content edit. The path rules live in
+// src/lib/redirects.ts. (The launch-migration redirects from the Squarespace
+// move stay in astro.config.mjs; see docs/REDIRECTS.md.)
 // =============================================================================
 export const redirect = defineType({
   name: 'redirect',

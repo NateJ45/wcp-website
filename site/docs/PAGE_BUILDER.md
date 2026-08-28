@@ -287,6 +287,11 @@ suites cover them.
   (`RESERVED_PAGE_SLUGS` in `documents/page.ts` — update it when adding a top-level
   route or `public/` folder), and a slug already used by another page (async
   uniqueness check, same pattern as `hubPage`).
+- **Safe rename (2026-08-27):** changing the slug of an already-published `page` (or `post`)
+  no longer breaks inbound links. The stock Publish action is wrapped by
+  `src/sanity/actions/slugRedirect.tsx`, which files a `redirect` document (old path → new
+  path, 301) before publishing and toasts the editor. Path shaping is shared with the
+  build-time redirect reader via `src/lib/redirects.ts`. See [REDIRECTS.md](REDIRECTS.md).
 
 **Refresh in the preview.** The section content is server-rendered Astro, so it can't
 re-render on the client the way a React app would. Instead
