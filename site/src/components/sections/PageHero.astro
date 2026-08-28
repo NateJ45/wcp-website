@@ -13,6 +13,7 @@ import type { ActionData } from './section-helpers';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
 import { withBase } from '@/lib/utils';
+import { emphasisHtml } from '@/lib/emphasis';
 
 interface HeroData {
   eyebrow?: string;
@@ -20,6 +21,8 @@ interface HeroData {
   accentWord?: string;
   accentColor?: 'orange' | 'sky' | 'amber' | 'green';
   lead?: string;
+  /** The lead's rich twin (bold / italic). Empty on every stored page. */
+  leadRich?: unknown;
   height?: 'tall' | 'medium';
   mediaType?: 'none' | 'image' | 'video';
   image?: unknown;
@@ -115,6 +118,8 @@ const titleFragment =
 // the drench. Photo / no-media heroes keep the full-bleed Hero (stills
 // compress fine; photo heroes carry the doodles in their scrim, no-media
 // heroes get the full drench). Selected here by content, no Sanity design knob.
+const heroLeadHtml = emphasisHtml(hero.leadRich);
+
 const framed = isVideo && Boolean(hero.videoFile?.url);
 ---
 
@@ -123,6 +128,7 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
     <HeroFramed
       eyebrow={hero.eyebrow}
       lead={hero.lead}
+      leadHtml={heroLeadHtml}
       sanityImage={hasImage ? (hero.image as never) : undefined}
       imageAlt={hero.imageAlt}
       video={hero.videoFile?.url}
@@ -176,6 +182,7 @@ const framed = isVideo && Boolean(hero.videoFile?.url);
       eyebrow={hero.eyebrow}
       title={hero.title}
       lead={hero.lead}
+      leadHtml={heroLeadHtml}
       height={hero.height ?? 'medium'}
       sanityImage={hasImage ? (hero.image as never) : undefined}
       imageAlt={hero.imageAlt}

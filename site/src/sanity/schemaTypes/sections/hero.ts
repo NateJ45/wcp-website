@@ -1,4 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
+import { richTwin, hiddenWhenRich } from '../objects/emphasisText';
 
 // =============================================================================
 // heroObject — the top-of-page banner (→ Hero.astro)
@@ -66,6 +67,11 @@ export const heroObject = defineType({
       rows: 3,
       group: 'text',
       description: 'An optional sentence or two under the headline.',
+      hidden: hiddenWhenRich('leadRich'),
+    }),
+    richTwin('leadRich', {
+      title: 'Intro line with bold or italic',
+      group: 'text',
     }),
     defineField({
       name: 'actions',

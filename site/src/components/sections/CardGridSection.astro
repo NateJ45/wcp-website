@@ -6,7 +6,14 @@ import PhoneList from '@/components/PhoneList.astro';
 import Callout from '@/components/Callout.astro';
 import Icon from '@/components/Icon.astro';
 import { renderPortableText, deEmDash } from '@/lib/portable-text';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { emphasisHtml } from '@/lib/emphasis';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 import { safeIcon } from '@/lib/icons';
 import { parsePhoneList } from '@/lib/phone-list';
 import { cn } from '@/lib/utils';
@@ -17,6 +24,8 @@ interface Card {
   title: string;
   statValue?: string;
   body?: string;
+  /** The body's rich twin (bold / italic). Empty on every stored card. */
+  bodyRich?: unknown;
   href?: string;
   linkLabel?: string;
 }
@@ -35,16 +44,22 @@ const cards = ((section.cards as Card[] | undefined) ?? []).map((c) => {
   // House style: no em-dashes. Card title/body are plain strings (not Portable
   // Text), so strip them here the way renderPortableText does for prose.
   const body = c.body ? deEmDash(c.body) : c.body;
+  // The rich twin, when the editor filled one in. '' means "render the plain
+  // body exactly as before".
+  const bodyHtml = emphasisHtml(c.bodyRich);
   return {
     ...c,
     icon: c.icon ? safeIcon(c.icon, 'sparkles') : undefined,
     title: deEmDash(c.title),
     body,
+    bodyHtml,
     // A body that's really a run-on list of phone numbers ("Emergency 911 ·
     // Police (513) 777-2231 · ...") renders as an unreadable wall of wrapping
     // text — turn it into a tap-to-call directory instead. null for every
-    // other card, which renders its body as plain prose.
-    phones: parsePhoneList(body),
+    // other card, which renders its body as plain prose. A rich twin is
+    // deliberately never phone-parsed: an editor who reached for bold wrote
+    // prose, not a directory.
+    phones: bodyHtml ? null : parsePhoneList(body),
   };
 });
 const columns = (section.columns as number | undefined) ?? 3;
@@ -70,6 +85,8 @@ const chipTint: Record<string, string> = {
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}
@@ -99,6 +116,8 @@ const chipTint: Record<string, string> = {
               <h3 class="text-heading">{c.title}</h3>
               {c.phones ? (
                 <PhoneList entries={c.phones} />
+              ) : c.bodyHtml ? (
+                <p class="mt-1 leading-relaxed text-ink" set:html={c.bodyHtml} />
               ) : (
                 c.body && <p class="mt-1 leading-relaxed text-ink">{c.body}</p>
               )}
@@ -125,7 +144,17 @@ const chipTint: Record<string, string> = {
                 {c.statValue && (
                   <span class="font-display text-3xl text-heading">{c.statValue}</span>
                 )}
-                {c.statValue ? <span class="mt-1 block">{c.body}</span> : c.body}
+                {c.bodyHtml ? (
+                  c.statValue ? (
+                    <span class="mt-1 block" set:html={c.bodyHtml} />
+                  ) : (
+                    <Fragment set:html={c.bodyHtml} />
+                  )
+                ) : c.statValue ? (
+                  <span class="mt-1 block">{c.body}</span>
+                ) : (
+                  c.body
+                )}
               </Fragment>
             )}
           </FeatureCard>

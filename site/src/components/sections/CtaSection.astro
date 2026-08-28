@@ -3,6 +3,7 @@ import CtaBanner from '@/components/CtaBanner.astro';
 import ActionButtons from './ActionButtons.astro';
 import TeacherSignoff from '@/components/hub/TeacherSignoff.astro';
 import { renderPortableText } from '@/lib/portable-text';
+import { emphasisHtml } from '@/lib/emphasis';
 import type { SectionData, ActionData } from './section-helpers';
 
 interface Props {
@@ -39,6 +40,8 @@ const accentClose = isClosing && storedTone === 'navy' && !teacherSlug;
 <CtaBanner
   title={section.title as string}
   lead={section.lead as string | undefined}
+  leadHtml={emphasisHtml(section.leadRich)}
+  accentWord={section.headingAccent as string | undefined}
   tone={tone}
   underlineAccent={accentClose}
   seam={section.seam as boolean}

@@ -2,6 +2,30 @@
 // Shared helpers for the section bridge components
 // =============================================================================
 import { withBase } from '@/lib/utils';
+import { emphasisHtml } from '@/lib/emphasis';
+
+/** The shared `sectionHeader` object, as fetched. */
+export interface HeaderData {
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  /** The lead's rich twin (bold / italic). Empty on every stored section. */
+  leadRich?: unknown;
+  /** A word or short phrase from `title` to give the crayon underline. */
+  headingAccent?: string;
+  align?: 'center' | 'left';
+}
+
+/**
+ * The header lead's rich-twin HTML, or '' when the twin holds nothing.
+ *
+ * Every bridge passes this to SectionHeader as `leadHtml`. '' means "render
+ * the plain `lead` string exactly as before", so a dataset with no twins
+ * produces byte-identical markup. See src/lib/emphasis.ts.
+ */
+export function headerLeadHtml(header?: HeaderData): string {
+  return emphasisHtml(header?.leadRich);
+}
 
 /** Loose shape of a fetched section (fields vary by _type). */
 export interface SectionData {
@@ -13,7 +37,7 @@ export interface SectionData {
    *  doodle tile (its neighbor already carries it). */
   noDoodle?: boolean;
   compact?: boolean;
-  header?: { eyebrow?: string; title?: string; lead?: string; align?: 'center' | 'left' };
+  header?: HeaderData;
   [key: string]: unknown;
 }
 

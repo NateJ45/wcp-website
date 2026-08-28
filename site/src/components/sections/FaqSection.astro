@@ -4,7 +4,13 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Faq from '@/components/faq/Faq.astro';
 import FaqItem from '@/components/faq/FaqItem.astro';
 import { renderPortableText, deEmDash } from '@/lib/portable-text';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface QA {
   question: string;
@@ -30,6 +36,8 @@ const items = (section.items as QA[] | undefined) ?? [];
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

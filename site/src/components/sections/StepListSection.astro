@@ -2,11 +2,20 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import StepList from '@/components/StepList.astro';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { emphasisHtml } from '@/lib/emphasis';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Step {
   title: string;
   body?: string;
+  /** The body's rich twin (bold / italic). Empty on every stored step. */
+  bodyRich?: unknown;
   note?: string;
 }
 interface Props {
@@ -17,6 +26,7 @@ const titleId = titleIdFor(section);
 const steps = ((section.steps as Step[] | undefined) ?? []).map((s) => ({
   title: s.title,
   body: s.body ?? '',
+  bodyHtml: emphasisHtml(s.bodyRich),
   note: s.note,
 }));
 ---
@@ -25,6 +35,8 @@ const steps = ((section.steps as Step[] | undefined) ?? []).map((s) => ({
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

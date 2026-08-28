@@ -12,7 +12,13 @@ import SanityImage from '@/components/SanityImage.astro';
 import { cmsFetch } from '@/lib/cms';
 import { BOARD_MEMBERS_QUERY } from '@/lib/queries';
 import type { SanityImageSource, SanityImageValue } from '@/lib/image';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Member {
   name?: string;
@@ -22,7 +28,7 @@ interface Member {
   email?: string;
 }
 const { section } = Astro.props as { section: SectionData };
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 const members = await cmsFetch<Member[]>(BOARD_MEMBERS_QUERY, {}, []);
 ---
@@ -36,6 +42,8 @@ const members = await cmsFetch<Member[]>(BOARD_MEMBERS_QUERY, {}, []);
       labelledby={titleId}
     >
       <SectionHeader
+        leadHtml={headerLeadHtml(header)}
+        accent={header?.headingAccent}
         eyebrow={header?.eyebrow}
         title={header?.title ?? 'Our board'}
         lead={header?.lead}

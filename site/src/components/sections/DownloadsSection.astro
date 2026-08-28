@@ -10,7 +10,13 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { cmsFetch } from '@/lib/cms';
 import { RESOURCES_QUERY } from '@/lib/queries';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Resource {
   title?: string;
@@ -20,7 +26,7 @@ interface Resource {
   fileUrl?: string;
 }
 const { section } = Astro.props as { section: SectionData };
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 const cat = (section.category as string) || 'all';
 
@@ -46,6 +52,8 @@ const resources = all.filter(
       labelledby={titleId}
     >
       <SectionHeader
+        leadHtml={headerLeadHtml(header)}
+        accent={header?.headingAccent}
         eyebrow={header?.eyebrow}
         title={header?.title ?? 'Downloads & resources'}
         lead={header?.lead}

@@ -2,7 +2,13 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import CompareTable from '@/components/CompareTable.astro';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Row {
   feature: string;
@@ -21,6 +27,8 @@ const rows = (section.rows as Row[] | undefined) ?? [];
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

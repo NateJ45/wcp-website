@@ -19,7 +19,13 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import type { SanityImageSource } from '@/lib/image';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface MomentPhoto {
   image?: SanityImageSource;
@@ -48,6 +54,8 @@ const TILTS = ['-rotate-2', 'rotate-1', '-rotate-1'];
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

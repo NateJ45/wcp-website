@@ -54,6 +54,19 @@ describe('sectionCoach', () => {
     ).toBeNull();
   });
 
+  it('stays quiet when the only content is in a rich twin', () => {
+    // A CTA whose lead was typed in the bold/italic twin instead of the plain
+    // box still has content. Coaching it as empty would tell a volunteer to
+    // fill in a section they just filled in.
+    const rich = [
+      { _type: 'block', children: [{ _type: 'span', text: 'Come and see us.', marks: [] }] },
+    ];
+    expect(sectionCoach({ ...fresh('ctaSection'), leadRich: rich })).toBeNull();
+    // An opened-but-blank twin is still empty.
+    const blank = [{ _type: 'block', children: [{ _type: 'span', text: '  ', marks: [] }] }];
+    expect(sectionCoach({ ...fresh('ctaSection'), leadRich: blank })).not.toBeNull();
+  });
+
   it('treats blank text as empty', () => {
     expect(sectionCoach({ ...fresh('pullQuoteSection'), quote: '   ' })).not.toBeNull();
     expect(sectionCoach({ ...fresh('noticeBarSection'), text: '' })).not.toBeNull();

@@ -207,6 +207,62 @@ volunteer chooses _what_ and _what order_ and fills in words and photos; the sty
 is the components'. This is the guardrail that keeps new pages on-brand. **Do not add
 design controls to section schemas.**
 
+## The emphasis layer (added 2026-08-28)
+
+Two ways for an editor to stress a word. Both are opt-in, and both leave a stored
+page byte-identical until somebody uses them.
+
+**Bold / italic in body copy — "rich twins".** A curated set of plain-string body
+fields each grew a sibling field of type
+[`emphasisText`](../src/sanity/schemaTypes/objects/emphasisText.ts): Portable Text
+with one block style and only the `strong` + `em` marks. No links, no lists, no
+headings. The seven twins are:
+
+| Where                               | Plain field | Rich twin   |
+| ----------------------------------- | ----------- | ----------- |
+| `sectionHeader` (~28 section types) | `lead`      | `leadRich`  |
+| `heroObject`                        | `lead`      | `leadRich`  |
+| `ctaSection`                        | `lead`      | `leadRich`  |
+| `iconCard` (card grids)             | `body`      | `bodyRich`  |
+| `stepListSection.steps[]`           | `body`      | `bodyRich`  |
+| `splitMediaSection.rows[]`          | `body`      | `bodyRich`  |
+| `scheduleSection`                   | `intro`     | `introRich` |
+
+The pairing rule is the same everywhere: the plain field **hides itself** once the
+twin holds text (`hiddenWhenRich`), and the renderer prefers the twin and otherwise
+renders the plain string exactly as before. `emphasisHtml()`
+([`src/lib/emphasis.ts`](../src/lib/emphasis.ts)) renders the twin to an **inline**
+fragment (`<strong>` / `<em>` / `<br />` inside a `.wcp-emphasis` span) because every
+call site already has its own `<p>`. The class sets weight and slant only, never a
+colour: these fields render on navy bands too, and prose's `text-heading` bold would
+be unreadable there.
+
+**Headline accents — `headingAccent`.** An optional string on `sectionHeader` and on
+`ctaSection`. The editor types a word or short phrase from the heading; the renderer
+finds the first case-insensitive match and wraps it in
+[`HeadingAccent.astro`](../src/components/HeadingAccent.astro), the static amber
+crayon underline the closing CTA band already used. There is no colour choice, and
+display type is never faux-bolded: a heading's stress is the underline.
+
+Two traps this cost real time on, both worth keeping in mind:
+
+- **Stega.** A preview heading carries invisible marker characters, so the match runs
+  on a stega-CLEANED copy (`splitHeadingAccent`). An accented heading therefore loses
+  click-to-edit **in the Studio preview only**; the live static site never encodes.
+  `headingAccent` and the hero's `accentWord` are both in `NON_STEGA_FIELDS`
+  ([`src/lib/cms-preview.ts`](../src/lib/cms-preview.ts)) — they are needles for a
+  search, never displayed on their own.
+- **Scoped CSS on a component nobody rendered.** The accent first reused
+  `Underline.astro`, whose scroll-draw animation lives in a scoped `<style>`. Astro
+  inlines a component's scoped CSS into every page that IMPORTS it, so importing it
+  into `SectionHeader` (which is on every page) shipped unused CSS site-wide; the
+  page-parity harness caught it. `HeadingAccent.astro` is Tailwind-only for that
+  reason.
+
+Coverage: `src/lib/emphasis.test.ts` (the matcher, the stega case, the escaping) and
+one case in `src/lib/section-coach.test.ts` (a CTA whose only copy is in its twin
+must not coach as empty).
+
 ## The renderer
 
 [`src/components/sections/SectionRenderer.astro`](../src/components/sections/SectionRenderer.astro)

@@ -4,7 +4,13 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import Prose from '@/components/Prose.astro';
 import Callout from '@/components/Callout.astro';
 import { renderPortableText } from '@/lib/portable-text';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Props {
   section: SectionData;
@@ -27,6 +33,8 @@ const isSignature = section._key === 'seed-signature';
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

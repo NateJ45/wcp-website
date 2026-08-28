@@ -5,7 +5,13 @@ import Testimonial from '@/components/Testimonial.astro';
 import TestimonialWall from '@/components/TestimonialWall.astro';
 import Button from '@/components/ui/Button.astro';
 import type { SanityImageValue } from '@/lib/image';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 import { cn } from '@/lib/utils';
 
 interface Quote {
@@ -43,6 +49,8 @@ const confetti = Boolean(section.confetti);
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

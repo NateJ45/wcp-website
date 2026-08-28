@@ -4,7 +4,13 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import TuitionTable from '@/components/TuitionTable.astro';
 import Callout from '@/components/Callout.astro';
 import { renderPortableText } from '@/lib/portable-text';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface ClassItem {
   name: string;
@@ -55,6 +61,8 @@ const rows = classes.map((c) => [
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

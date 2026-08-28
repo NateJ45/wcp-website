@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity';
 import { iconField } from './_shared';
+import { richTwin, hiddenWhenRich } from './emphasisText';
 
 // Reusable "icon + title + short text" card. Used by the many card grids across
 // the site (class "what they learn", reasons, facilities, etc.) and by the
@@ -39,7 +40,14 @@ export const iconCard = defineType({
       description:
         'Shows a large number above the text, e.g. "2" on a "Dedicated classrooms" card. Cards layout only — the compact icon list shows just icon, title, and text.',
     }),
-    defineField({ name: 'body', title: 'Text', type: 'text', rows: 3 }),
+    defineField({
+      name: 'body',
+      title: 'Text',
+      type: 'text',
+      rows: 3,
+      hidden: hiddenWhenRich('bodyRich'),
+    }),
+    richTwin('bodyRich', { title: 'Text with bold or italic' }),
     defineField({
       name: 'href',
       title: 'Link (optional)',

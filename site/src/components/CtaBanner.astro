@@ -16,14 +16,22 @@
    ============================================================================ */
 import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
+import HeadingAccent from '@/components/HeadingAccent.astro';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
 import { displayTitleHtml } from '@/lib/typography';
+import { splitHeadingAccent } from '@/lib/emphasis';
 
 interface Props {
   title: string;
   titleId?: string;
   lead?: string;
+  /** Pre-rendered inline HTML for the lead, from a `leadRich` rich twin. When
+      set it REPLACES `lead`. See src/lib/emphasis.ts. */
+  leadHtml?: string;
+  /** A Board-chosen word from `title` to underline. It TAKES OVER from the
+      automatic last-word choice below; blank keeps that behaviour exactly. */
+  accentWord?: string;
   tone?: 'navy' | 'cream' | 'amber' | 'sky';
   /** Cloud seam at the top. On by default — the closing CTA is always a color
       change from the content above. Set false when a same-color band (a navy
@@ -47,6 +55,8 @@ const {
   title,
   titleId = 'cta-title',
   lead,
+  leadHtml,
+  accentWord: chosenAccent,
   tone = 'navy',
   seam = true,
   rating = true,
@@ -54,15 +64,27 @@ const {
   class: className,
 } = Astro.props;
 
-// Accent split: the final word carries the crayon underline (nowrap so the
-// underlined word never breaks off its stroke). Escaping stays in
-// displayTitleHtml for the leading part; the last word is escaped there too.
+// Accent split. Two ways to choose the underlined word:
+//   1. The Board names one (`accentWord`, the ctaSection field). It wins when
+//      it really appears in the headline.
+//   2. Nothing named: the closing-band doctrine underlines the FINAL word.
+// Either way the word renders nowrap, so it never breaks off its stroke, and
+// escaping stays in displayTitleHtml for every part.
+// The named match runs on a stega-CLEANED title (a preview title carries
+// invisible markers that break any search), so a closer with a named accent
+// loses click-to-edit on its heading inside the Studio preview. The live site
+// never encodes, so it is unaffected.
+const chosen = splitHeadingAccent(title, chosenAccent);
 const words = title.trim().split(/\s+/);
 // Cap: a nowrap accent word longer than ~12 chars can overflow a 320px
 // column (the threes closer's 'three-year-old?' did, caught by reflow CI).
 const lastWord = words[words.length - 1] ?? '';
-const accentWord = underlineAccent && words.length > 1 && lastWord.length <= 12 ? lastWord : null;
-const titleLead = accentWord ? words.slice(0, -1).join(' ') + ' ' : title;
+const autoAccent = underlineAccent && words.length > 1 && lastWord.length <= 12 ? lastWord : null;
+const accentWord = chosen ? chosen.accent : autoAccent;
+// Everything before the accent. The chosen path keeps the real text after it
+// too (the automatic path only ever accents the LAST word, so there is none).
+const titleLead = chosen ? chosen.before : accentWord ? words.slice(0, -1).join(' ') + ' ' : title;
+const titleTail = chosen ? chosen.after : '';
 const isNavy = tone === 'navy';
 const isAmber = tone === 'amber';
 const isSky = tone === 'sky';
@@ -90,29 +112,25 @@ const bandClass = isNavy
       data-reveal
     >
       <Fragment set:html={displayTitleHtml(titleLead)} />{
-        accentWord && (
-          <span class="relative inline-block whitespace-nowrap">
-            <Fragment set:html={displayTitleHtml(accentWord)} />
-            <svg
-              class="absolute right-0 -bottom-[0.12em] left-0 h-[0.2em] w-full"
-              viewBox="0 0 120 12"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M3 8 C 30 3, 62 10, 88 6 S 114 4, 117 7"
-                fill="none"
-                stroke="var(--color-amber)"
-                stroke-width="5"
-                stroke-linecap="round"
-              />
-            </svg>
-          </span>
-        )
-      }
+        accentWord && <HeadingAccent text={accentWord} />
+      }{titleTail && <Fragment set:html={displayTitleHtml(titleTail)} />}
     </h2>{/* escaped + hyphen-compounds glued — closers say "co-op", never "CO- / OP" */}
     {
-      lead && (
+      leadHtml && (
+        <p
+          class={cn(
+            'mx-auto mt-4 max-w-xl text-lg leading-relaxed',
+            isNavy && 'text-white/90',
+            (isAmber || isSky) && 'wcp-drench-muted',
+          )}
+          data-reveal
+          style="--reveal-delay: 120ms"
+          set:html={leadHtml}
+        />
+      )
+    }
+    {
+      !leadHtml && lead && (
         <p
           class={cn(
             'mx-auto mt-4 max-w-xl text-lg leading-relaxed',

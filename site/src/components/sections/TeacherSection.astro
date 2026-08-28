@@ -4,7 +4,13 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import TeacherCard from '@/components/TeacherCard.astro';
 import Callout from '@/components/Callout.astro';
 import { renderPortableText } from '@/lib/portable-text';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 import { cn } from '@/lib/utils';
 
 interface Person {
@@ -30,6 +36,8 @@ const cols = people.length <= 1 ? 'sm:grid-cols-1 max-w-md' : 'sm:grid-cols-2 ma
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}

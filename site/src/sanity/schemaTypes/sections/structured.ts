@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { bandFields } from '../objects/_shared';
+import { richTwin, hiddenWhenRich } from '../objects/emphasisText';
 
 // =============================================================================
 // Structured sections: schedule timeline, step list, compare table, gallery,
@@ -26,6 +27,11 @@ export const scheduleSection = defineType({
       title: 'Intro line (optional)',
       type: 'text',
       rows: 2,
+      group: 'content',
+      hidden: hiddenWhenRich('introRich'),
+    }),
+    richTwin('introRich', {
+      title: 'Intro line with bold or italic (optional)',
       group: 'content',
     }),
     defineField({
@@ -96,7 +102,14 @@ export const stepListSection = defineType({
           name: 'step',
           fields: [
             { name: 'title', title: 'Title', type: 'string', validation: (R) => R.required() },
-            { name: 'body', title: 'Text', type: 'text', rows: 3 },
+            {
+              name: 'body',
+              title: 'Text',
+              type: 'text',
+              rows: 3,
+              hidden: hiddenWhenRich('bodyRich'),
+            },
+            richTwin('bodyRich', { title: 'Text with bold or italic' }),
             { name: 'note', title: 'Note (optional)', type: 'string' },
           ],
           preview: { select: { title: 'title' } },
@@ -332,7 +345,14 @@ export const splitMediaSection = defineType({
               type: 'string',
               validation: (R) => R.required().error('Give this row a title.'),
             },
-            { name: 'body', title: 'Text', type: 'text', rows: 3 },
+            {
+              name: 'body',
+              title: 'Text',
+              type: 'text',
+              rows: 3,
+              hidden: hiddenWhenRich('bodyRich'),
+            },
+            richTwin('bodyRich', { title: 'Text with bold or italic' }),
             { name: 'linkLabel', title: 'Link text (optional)', type: 'string' },
             {
               name: 'linkUrl',

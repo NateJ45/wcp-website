@@ -26,6 +26,7 @@
 // and no em-dashes (house style).
 // =============================================================================
 import type { SectionData } from '@/components/sections/section-helpers';
+import { hasEmphasis } from '@/lib/emphasis';
 
 export interface SectionCoachInfo {
   /** The section's plain-language name, the same words the Studio picker uses. */
@@ -64,7 +65,12 @@ const COACH: Record<string, CoachEntry> = {
   ctaSection: {
     name: 'Call-to-action banner',
     hint: 'Add a heading and a button that tells people what to do next.',
-    isEmpty: (s) => noText(s.title) && noText(s.lead) && noItems(s.actions),
+    // `leadRich` is the lead's bold/italic twin. A CTA whose only copy lives
+    // in the twin is NOT empty, so the coach must read both (the registry's
+    // one field pair where a rich twin changes emptiness; every other twin
+    // sits inside an array row, and the row array is what the coach counts).
+    isEmpty: (s) =>
+      noText(s.title) && noText(s.lead) && !hasEmphasis(s.leadRich) && noItems(s.actions),
   },
   testimonialSection: {
     name: 'Testimonials',

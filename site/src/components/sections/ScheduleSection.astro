@@ -2,7 +2,14 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ScheduleTimeline from '@/components/ScheduleTimeline.astro';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import { emphasisHtml } from '@/lib/emphasis';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Entry {
   time?: string;
@@ -15,6 +22,9 @@ interface Props {
 }
 const { section } = Astro.props;
 const titleId = titleIdFor(section);
+// '' unless the editor filled the intro's rich twin, in which case it replaces
+// the plain intro line.
+const introHtml = emphasisHtml(section.introRich);
 const entries = ((section.entries as Entry[] | undefined) ?? []).map((e) => ({
   time: e.time,
   timePm: e.timePm,
@@ -27,6 +37,8 @@ const entries = ((section.entries as Entry[] | undefined) ?? []).map((e) => ({
   {
     section.header?.title && (
       <SectionHeader
+        leadHtml={headerLeadHtml(section.header)}
+        accent={section.header.headingAccent}
         eyebrow={section.header.eyebrow}
         title={section.header.title}
         lead={section.header.lead}
@@ -37,7 +49,12 @@ const entries = ((section.entries as Entry[] | undefined) ?? []).map((e) => ({
     )
   }
   {
-    section.intro && (
+    introHtml && (
+      <p class="mx-auto mt-4 max-w-2xl text-center leading-relaxed text-ink" set:html={introHtml} />
+    )
+  }
+  {
+    !introHtml && section.intro && (
       <p class="mx-auto mt-4 max-w-2xl text-center leading-relaxed text-ink">{section.intro}</p>
     )
   }

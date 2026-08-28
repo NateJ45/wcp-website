@@ -8,8 +8,10 @@
    this reads correctly on any Section background with no per-use color props.
    ============================================================================ */
 import Eyebrow from './Eyebrow.astro';
+import HeadingAccent from './HeadingAccent.astro';
 import { cn } from '@/lib/utils';
 import { displayTitleHtml } from '@/lib/typography';
+import { splitHeadingAccent } from '@/lib/emphasis';
 
 interface Props {
   eyebrow?: string;
@@ -18,6 +20,13 @@ interface Props {
   titleId?: string;
   as?: 'h1' | 'h2' | 'h3';
   lead?: string;
+  /** Pre-rendered inline HTML for the lead, from a `leadRich` rich twin.
+      When set it REPLACES `lead`; when blank the plain `lead` renders exactly
+      as it always has. See src/lib/emphasis.ts. */
+  leadHtml?: string;
+  /** A word or short phrase from `title` to give the crayon underline. Blank
+      (the stored state everywhere today) renders the heading untouched. */
+  accent?: string;
   align?: 'center' | 'left';
   class?: string;
 }
@@ -29,11 +38,19 @@ const {
   titleId,
   as = 'h2',
   lead,
+  leadHtml,
+  accent,
   align = 'center',
   class: className,
 } = Astro.props;
 
 const Heading = as;
+
+// The accent split runs on a stega-CLEANED copy of the title (a preview title
+// carries invisible markers that break any search), so an accented heading
+// loses click-to-edit inside the Studio preview. That is the accepted trade:
+// the heading is still editable from the form, and the live site never encodes.
+const accentParts = splitHeadingAccent(title, accent);
 ---
 
 <div
@@ -50,6 +67,17 @@ const Heading = as;
       compounds ("Pre-K", "co-op") so display type never breaks at a hyphen.
       Mid-word hyphenation is off in the public layer (globals). */
   }
-  <Heading id={titleId} class="text-balance" set:html={displayTitleHtml(title)} />
-  {lead && <p class="mt-4 text-lg leading-relaxed">{lead}</p>}
+  {
+    accentParts ? (
+      <Heading id={titleId} class="text-balance">
+        <Fragment set:html={displayTitleHtml(accentParts.before)} />
+        <HeadingAccent text={accentParts.accent} />
+        <Fragment set:html={displayTitleHtml(accentParts.after)} />
+      </Heading>
+    ) : (
+      <Heading id={titleId} class="text-balance" set:html={displayTitleHtml(title)} />
+    )
+  }
+  {leadHtml && <p class="mt-4 text-lg leading-relaxed" set:html={leadHtml} />}
+  {!leadHtml && lead && <p class="mt-4 text-lg leading-relaxed">{lead}</p>}
 </div>

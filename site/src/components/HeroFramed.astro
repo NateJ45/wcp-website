@@ -35,6 +35,9 @@ interface Props {
   eyebrow?: string;
   titleId?: string;
   lead?: string;
+  /** Pre-rendered inline HTML for the lead, from a `leadRich` rich twin.
+      When set it REPLACES `lead`. See src/lib/emphasis.ts. */
+  leadHtml?: string;
   sanityImage?: SanityImageSource;
   imageAlt?: string;
   video?: string;
@@ -47,6 +50,7 @@ const {
   eyebrow,
   titleId = 'hero-title',
   lead,
+  leadHtml,
   sanityImage,
   imageAlt = '',
   video,
@@ -90,7 +94,17 @@ const {
         <slot name="title" />
       </h1>
       {
-        lead && (
+        leadHtml && (
+          <p
+            class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
+            data-reveal
+            style="--reveal-delay: 150ms"
+            set:html={leadHtml}
+          />
+        )
+      }
+      {
+        !leadHtml && lead && (
           <p
             class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
             data-reveal

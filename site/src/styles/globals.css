@@ -964,6 +964,22 @@
   line-height: 1.3;
 }
 
+/* -- Inline emphasis (the Studio's bold / italic body fields) ---------------
+   `emphasisHtml()` (src/lib/emphasis.ts) wraps a rich twin's output in this
+   class. It matches Prose's own `[&_strong]:font-bold` weight, so a bold word
+   reads the same wherever it appears.
+
+   It deliberately does NOT set a colour. Prose pairs its bold with
+   `text-heading`, which is correct on a white page but unreadable inside a
+   navy band, and these fields (section leads, CTA leads, hero leads) render on
+   navy too. Inheriting the band's own text colour is the only safe rule. */
+.wcp-emphasis strong {
+  font-weight: 700;
+}
+.wcp-emphasis em {
+  font-style: italic;
+}
+
 /* flow + card sections shed their band chrome: the wrapper owns spacing (flow)
    or padding (card), so the section fills the block flush and unpadded. */
 .hub-doc-block[data-treatment='flow'] .wcp-section,

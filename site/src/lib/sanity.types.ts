@@ -2340,6 +2340,7 @@ export type SplitMediaSection = {
     eyebrow?: string;
     title?: string;
     body?: string;
+    bodyRich?: EmphasisText;
     linkLabel?: string;
     linkUrl?: string;
     _type: 'row';
@@ -2548,6 +2549,7 @@ export type StepListSection = {
   steps?: Array<{
     title?: string;
     body?: string;
+    bodyRich?: EmphasisText;
     note?: string;
     _type: 'step';
     _key: string;
@@ -2561,6 +2563,7 @@ export type ScheduleSection = {
   _type: 'scheduleSection';
   header?: SectionHeader;
   intro?: string;
+  introRich?: EmphasisText;
   entries?: Array<{
     time?: string;
     timePm?: string;
@@ -2680,7 +2683,9 @@ export type TestimonialSection = {
 export type CtaSection = {
   _type: 'ctaSection';
   title?: string;
+  headingAccent?: string;
   lead?: string;
+  leadRich?: EmphasisText;
   tone?: 'navy' | 'cream';
   actions?: Array<
     {
@@ -2736,6 +2741,7 @@ export type HeroObject = {
   accentWord?: string;
   accentColor?: 'amber' | 'orange' | 'sky' | 'green';
   lead?: string;
+  leadRich?: EmphasisText;
   actions?: Array<
     {
       _key: string;
@@ -2946,9 +2952,26 @@ export type SectionHeader = {
   _type: 'sectionHeader';
   eyebrow?: string;
   title?: string;
+  headingAccent?: string;
   lead?: string;
+  leadRich?: EmphasisText;
   align?: 'center' | 'left';
 };
+
+export type EmphasisText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: 'span';
+    _key: string;
+  }>;
+  style?: 'normal';
+  listItem?: never;
+  markDefs?: null;
+  level?: number;
+  _type: 'block';
+  _key: string;
+}>;
 
 export type InlineText = Array<{
   children?: Array<{
@@ -3054,6 +3077,7 @@ export type IconCard = {
   title?: string;
   statValue?: string;
   body?: string;
+  bodyRich?: EmphasisText;
   href?: string;
   linkLabel?: string;
 };
@@ -3336,6 +3360,7 @@ export type AllSanitySchemaTypes =
   | ActionButton
   | Page
   | SectionHeader
+  | EmphasisText
   | InlineText
   | FormField
   | IconCard

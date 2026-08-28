@@ -10,6 +10,7 @@
 // Objects (embedded / reusable)
 import { blockContent } from './blockContent';
 import { inlineText } from './objects/inlineText';
+import { emphasisText } from './objects/emphasisText';
 import { richProse } from './objects/richProse';
 import { postBody } from './objects/postBody';
 import { iconCard } from './objects/iconCard';
@@ -89,6 +90,7 @@ export const schemaTypes = [
   // Shared objects
   blockContent,
   inlineText,
+  emphasisText,
   richProse,
   postBody,
   iconCard,

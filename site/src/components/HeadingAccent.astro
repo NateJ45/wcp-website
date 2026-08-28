@@ -1,0 +1,44 @@
+---
+/* ============================================================================
+   HeadingAccent — the static crayon underline under one word of a heading
+   ============================================================================
+   The closing CTA band has drawn its accent this way since the boldness pass:
+   a nowrap span with a hand-drawn amber stroke laid under it. This component
+   is that exact markup, so the closing band and a Board-chosen
+   `headingAccent` on any section heading draw the same line.
+
+   It is deliberately NOT Underline.astro. That one carries a scoped <style>
+   block for its scroll-draw animation, and Astro inlines a component's scoped
+   CSS into every page that IMPORTS it, rendered or not. SectionHeader is on
+   every page, so importing Underline there put ~300 bytes of unused CSS on all
+   27 of them (the page-parity harness caught it). Underline stays the hero's
+   animated accent; this is the static one for headings.
+
+   The stroke is always brand amber. The page builder gives volunteers content
+   control, never colour control.
+   ============================================================================ */
+import { displayTitleHtml } from '@/lib/typography';
+
+interface Props {
+  /** The accent text. Escaped and hyphen-glued by displayTitleHtml. */
+  text: string;
+}
+const { text } = Astro.props;
+---
+
+<span class="relative inline-block whitespace-nowrap">
+  <Fragment set:html={displayTitleHtml(text)} />
+  <svg
+    class="absolute right-0 -bottom-[0.12em] left-0 h-[0.2em] w-full"
+    viewBox="0 0 120 12"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M3 8 C 30 3, 62 10, 88 6 S 114 4, 117 7"
+      fill="none"
+      stroke="var(--color-amber)"
+      stroke-width="5"
+      stroke-linecap="round"></path>
+  </svg>
+</span>

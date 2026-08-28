@@ -34,6 +34,9 @@ interface Props {
   title: string;
   titleId?: string;
   lead?: string;
+  /** Pre-rendered inline HTML for the lead, from a `leadRich` rich twin.
+      When set it REPLACES `lead`. See src/lib/emphasis.ts. */
+  leadHtml?: string;
   image?: ImageMetadata | string;
   /** A Sanity-hosted background image (page builder). Takes precedence over `image`. */
   sanityImage?: SanityImageSource;
@@ -52,6 +55,7 @@ const {
   title,
   titleId = 'hero-title',
   lead,
+  leadHtml,
   image,
   sanityImage,
   imageAlt = '',
@@ -205,7 +209,17 @@ const alignClass = align === 'center' ? 'text-center' : 'text-left';
         {Astro.slots.has('title') ? <slot name="title" /> : title}
       </h1>
       {
-        lead && (
+        leadHtml && (
+          <p
+            class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
+            data-reveal
+            style="--reveal-delay: 150ms"
+            set:html={leadHtml}
+          />
+        )
+      }
+      {
+        !leadHtml && lead && (
           <p
             class="mt-4 max-w-xl text-lg leading-relaxed text-white/90"
             data-reveal

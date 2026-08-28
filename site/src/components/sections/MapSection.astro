@@ -10,14 +10,20 @@
 import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { mapEmbedUrl, mapDirectionsUrl } from '@/lib/embeds';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Props {
   section: SectionData;
   linkBase?: string;
 }
 const { section } = Astro.props;
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 const hasHeader = Boolean(header?.title);
 const address = (section.address as string) ?? '';
@@ -35,6 +41,8 @@ const directions = mapDirectionsUrl(address);
   {
     hasHeader && (
       <SectionHeader
+        leadHtml={headerLeadHtml(header)}
+        accent={header?.headingAccent}
         eyebrow={header?.eyebrow}
         title={header?.title ?? ''}
         lead={header?.lead}

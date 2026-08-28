@@ -24,10 +24,16 @@ import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
 import { imageUrl, type SanityImageValue } from '@/lib/image';
 import { fetchInstagram, type InstaTile } from '@/lib/instagram';
 import { site } from '@/data/site';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 const { section } = Astro.props as { section: SectionData };
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
@@ -89,6 +95,8 @@ if (tiles.length === 0) {
       class="overflow-x-clip"
     >
       <SectionHeader
+        leadHtml={headerLeadHtml(header)}
+        accent={header?.headingAccent}
         eyebrow={header?.eyebrow ?? 'Follow along'}
         title={header?.title ?? 'Life inside WCP.'}
         lead={

@@ -6,14 +6,20 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import { normalizeCustomFields } from '@/lib/custom-form-fields';
-import { titleIdFor, eyebrowTone, bandSize, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 
 interface Props {
   section: SectionData;
   linkBase?: string;
 }
 const { section } = Astro.props;
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 const formId = `form-${section._key}`;
 // Board-written questions. Empty (the normal case) → the form keeps asking the
@@ -28,6 +34,8 @@ const customFields = normalizeCustomFields(section.fields);
   labelledby={titleId}
 >
   <SectionHeader
+    leadHtml={headerLeadHtml(header)}
+    accent={header?.headingAccent}
     eyebrow={header?.eyebrow}
     title={header?.title ?? 'Get in touch'}
     lead={header?.lead}

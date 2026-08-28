@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { bandFields } from '../objects/_shared';
+import { richTwin, hiddenWhenRich } from '../objects/emphasisText';
 
 // =============================================================================
 // Basic sections: prose, CTA banner, notice bar, contact details
@@ -64,13 +65,26 @@ export const ctaSection = defineType({
       description: 'The headline, e.g. "Come see us in person".',
       validation: (R) => R.required().error('The banner needs a headline.'),
     }),
+    // The closing band is the biggest heading on a page, so it gets the same
+    // crayon underline the heroes use. Without a chosen word the closer still
+    // underlines its LAST word (the code-owned closing doctrine); naming a
+    // word here simply takes over that choice.
+    defineField({
+      name: 'headingAccent',
+      title: 'Word to underline (optional)',
+      type: 'string',
+      description:
+        'Type one word or short phrase from the headline above to draw the crayon underline under it.',
+    }),
     defineField({
       name: 'lead',
       title: 'Intro line',
       type: 'text',
       rows: 2,
       description: 'An optional sentence under the headline.',
+      hidden: hiddenWhenRich('leadRich'),
     }),
+    richTwin('leadRich', { title: 'Intro line with bold or italic' }),
     defineField({
       name: 'tone',
       title: 'Band color',

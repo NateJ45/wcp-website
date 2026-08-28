@@ -59,6 +59,14 @@ const NON_STEGA_FIELDS = new Set([
   // board-written question draws. An encoded value misses every branch.
   'variant',
   'kind',
+  // Heading accents: the editor types a word from a heading and the renderer
+  // SEARCHES the heading for it (splitHeadingAccent, src/lib/emphasis.ts).
+  // These two are needles, never shown on their own, so encoding them buys no
+  // click-to-edit and only breaks the search. `accentWord` is the hero's
+  // long-standing field, which had this same latent bug; `headingAccent` is
+  // its section-level twin.
+  'accentWord',
+  'headingAccent',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {

@@ -11,7 +11,14 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import { renderPortableText } from '@/lib/portable-text';
 import { cmsFetch } from '@/lib/cms';
 import { OPEN_JOBS_QUERY } from '@/lib/queries';
-import { titleIdFor, eyebrowTone, bandSize, isExternal, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  isExternal,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 import { withBase } from '@/lib/utils';
 
 interface Job {
@@ -22,7 +29,7 @@ interface Job {
   applyUrl?: string;
 }
 const { section, linkBase = '' } = Astro.props as { section: SectionData; linkBase?: string };
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 const emptyMessage =
   (section.emptyMessage as string) || 'No open positions right now — check back soon.';
@@ -42,6 +49,8 @@ const TYPE_LABEL: Record<string, string> = {
   labelledby={titleId}
 >
   <SectionHeader
+    leadHtml={headerLeadHtml(header)}
+    accent={header?.headingAccent}
     eyebrow={header?.eyebrow}
     title={header?.title ?? 'Join our team'}
     lead={header?.lead}

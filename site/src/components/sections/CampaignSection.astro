@@ -12,7 +12,14 @@ import Section from '@/components/Section.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import { cmsFetch } from '@/lib/cms';
 import { ACTIVE_CAMPAIGNS_QUERY } from '@/lib/queries';
-import { titleIdFor, eyebrowTone, bandSize, isExternal, type SectionData } from './section-helpers';
+import {
+  titleIdFor,
+  eyebrowTone,
+  bandSize,
+  isExternal,
+  type SectionData,
+  headerLeadHtml,
+} from './section-helpers';
 import { withBase } from '@/lib/utils';
 
 interface Campaign {
@@ -25,7 +32,7 @@ interface Campaign {
   linkUrl?: string;
 }
 const { section, linkBase = '' } = Astro.props as { section: SectionData; linkBase?: string };
-const header = section.header as { eyebrow?: string; title?: string; lead?: string } | undefined;
+const header = section.header;
 const titleId = titleIdFor(section);
 
 const campaigns = (await cmsFetch<Campaign[]>(ACTIVE_CAMPAIGNS_QUERY, {}, [])) ?? [];
@@ -62,6 +69,8 @@ const sectionLead = header?.lead ?? (single ? campaigns[0]?.summary : undefined)
       labelledby={titleId}
     >
       <SectionHeader
+        leadHtml={headerLeadHtml(header)}
+        accent={header?.headingAccent}
         eyebrow={header?.eyebrow}
         title={sectionTitle ?? 'Our campaign'}
         lead={sectionLead}

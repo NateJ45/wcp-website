@@ -360,12 +360,93 @@ export const guides: Guide[] = [
         items: [
           'Edit the menus',
           'Photos and images',
+          'Make words bold or stand out',
           'Save a section and use it again',
           'Check a page before you publish',
           'Publish later',
           'Show someone a draft',
           'Do it yourself vs. ask for help',
         ],
+      },
+    ],
+  },
+
+  {
+    slug: 'emphasis',
+    category: 'Website pages & menus',
+    title: 'Make words bold or stand out',
+    icon: '🖍️',
+    lead: 'Two small ways to give one word more weight: bold and italic inside a sentence, and a crayon underline under a word in a heading.',
+    diy: 'self',
+    body: [
+      { kind: 'h', text: 'Bold or italic inside a sentence' },
+      {
+        kind: 'p',
+        text: 'Some text boxes come in pairs. There is the plain box you already know, and under it a second box with the same name plus **with bold or italic**. The second box has a small toolbar with `B` and `I`.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Find the box named "… with bold or italic" under the plain one.',
+          'Type your sentence there instead of in the plain box.',
+          'Select a word, then click `B` for bold or `I` for italic.',
+          'The plain box above hides itself, so you only ever have one copy of the sentence.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Changed your mind?',
+        text: 'Delete everything in the "with bold or italic" box. The plain box comes straight back, with the words you had before.',
+      },
+      {
+        kind: 'p',
+        text: 'You can do this in the intro line under a heading, the intro line under a page banner, the text on a card, the text in a numbered step, the text beside a photo row, the intro on a daily schedule, and the line under a big call-to-action headline.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Bold is a spice, not a sauce.',
+        text: 'One or two bold words in a paragraph make a point. A whole bold paragraph reads as shouting, and nothing stands out any more.',
+      },
+      { kind: 'h', text: 'A crayon underline under a word in a heading' },
+      {
+        kind: 'p',
+        text: 'Headings are already big, so there is no bold button on them. Instead you can pick **one word** from the heading and the site draws a hand-drawn amber line under it, the same line the page banners use.',
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open the section and find the box named "Word to underline".',
+          'Type one word, or a short phrase, that already appears in the heading above it.',
+          'Capital letters do not matter. Type "belong" and it finds "Belong".',
+          '`Publish`, and check the page.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Nothing happened?',
+        text: 'The word has to appear in that heading, spelled the same way. If it does not, the heading simply stays plain, so a typo can never break the page.',
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'One underline per page.',
+        text: 'The underline works because it is rare. Use it on the heading you most want people to read, and leave the others alone. Keep it to a word or two, not a whole sentence.',
+      },
+      { kind: 'h', text: 'What you cannot do, on purpose' },
+      {
+        kind: 'bullets',
+        items: [
+          'No colours, fonts, or sizes. The site owns those, which is what keeps every page looking like the school.',
+          'No links or lists in these boxes. For a paragraph that needs links or bullet points, use a **Text section** instead.',
+          'No bold inside a heading. A heading gets the underline; that is its way of standing out.',
+        ],
+      },
+      {
+        kind: 'seealso',
+        items: ['Build or edit a page', 'Check a page before you publish'],
       },
     ],
   },
