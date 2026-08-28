@@ -187,12 +187,20 @@ member does to a page, not only typing:
   twin, so it is not in this log and cannot be stepped over. Undo also refuses rather than
   writing over a change it cannot see ("Someone else edited since"), and it will not delete
   a draft that has no published copy behind it ("This would remove the only copy").
+- **An undo that changes nothing is not an undo** (fix ported 2026-08-28). A transaction
+  that CREATED the draft carries an EMPTY revert patch, not a null one, so absence is read
+  from the patch shape. Before any write, undo compares the candidate with the current
+  document, ignoring `_rev` and `_updatedAt`; if nothing moves, it skips that transaction
+  and tries the next one back. Undo never reports success while the page stands still.
 - **Text boxes keep their own undo.** With focus in an input, a textarea or a rich-text
   editor, the shortcut does nothing at all, so the browser's per-field undo runs.
+- **The preview iframe eats the key.** A key pressed inside the Presentation page picture
+  goes to the iframe, not to the Studio. Use the two menu actions, or click into the Studio
+  panel first.
 - **In memory, gone on reload.** Undo is for the last few minutes. **Version history** is
   still the deep restore, and the volunteer guide says so.
 - Tests: [`src/lib/undoRedo.test.ts`](../src/lib/undoRedo.test.ts) (this repo's Vitest copy
-  of the canonical 27 cases; the shared module itself is byte-identical to the starter's).
+  of the canonical 41 cases; the shared module itself is byte-identical to the starter's).
 
 ## The Studio
 
