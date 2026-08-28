@@ -29,3 +29,18 @@ export function sectionEditAttr(doc: EditDoc, key: string): string {
     baseUrl: '/studio',
   })(`sections[_key=="${key}"]`).toString();
 }
+
+/**
+ * The `data-sanity` value that targets a field on ANY document — the
+ * WordPress-template-part gesture (2026-08-28). PreviewLayout wraps the shared
+ * Header and Footer in this attribute (header → the navigation doc's mainNav,
+ * footer → siteSettings), so in Edit mode the chrome outlines as an editable
+ * surface and a click switches the edit panel to the owning document.
+ */
+export function docEditAttr(id: string, type: string, path: string): string {
+  return createDataAttribute({
+    id: id.replace(/^drafts\./, ''),
+    type,
+    baseUrl: '/studio',
+  })(path).toString();
+}

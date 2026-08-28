@@ -18,6 +18,7 @@ import '../styles/globals.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
+import { docEditAttr } from '@/lib/preview-edit-attr';
 
 interface Props {
   title: string;
@@ -30,6 +31,13 @@ interface Props {
   chrome?: 'public' | 'bare';
 }
 const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
+
+// The WordPress-template-part gesture (2026-08-28): the chrome is an editable
+// surface. In Edit mode the overlay outlines header and footer; a click opens
+// the owning document in the edit panel — header → the Menus doc at mainNav,
+// footer → Site settings (its contact/identity content).
+const headerAttr = docEditAttr('navigation', 'navigation', 'mainNav');
+const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
 ---
 
 <!doctype html>
@@ -66,7 +74,13 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
     </style>
   </head>
   <body class="relative">
-    {chrome === 'public' && <Header linkBase="/preview" />}
+    {
+      chrome === 'public' && (
+        <div data-sanity={headerAttr}>
+          <Header linkBase="/preview" />
+        </div>
+      )
+    }
     <p
       data-reconnect-hint
       class="border-b border-black/10 bg-cream px-4 py-2 text-center text-sm font-semibold text-ink"
@@ -74,7 +88,13 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
       Draft session ended — reload the Studio browser tab to reconnect the preview.
     </p>
     <main id="main"><slot /></main>
-    {chrome === 'public' && <Footer linkBase="/preview" />}
+    {
+      chrome === 'public' && (
+        <div data-sanity={footerAttr}>
+          <Footer linkBase="/preview" />
+        </div>
+      )
+    }
 
     {
       draftMode && (
