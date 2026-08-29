@@ -28,8 +28,10 @@ import ThemeToggle from '@/components/ThemeToggle.astro';
 import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
-import { calendarFeedUrlFallback, helperScheduleFallback } from '@/data/hub/live-links';
+import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import { payUrl } from '@/data/classes';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classTiles } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
 
@@ -147,32 +149,22 @@ try {
 // classes → a small dropdown with a link per class.
 const helperMap: Record<string, string> = {};
 const payMap: Record<string, string> = {};
-try {
-  const rows = await sanityFetch<{ slug?: string; helperScheduleUrl?: string; payId?: string }[]>(
-    `*[_type == "class"]{ "slug": slug.current, helperScheduleUrl, payId }`,
-    {},
-    { cache: BOARD_CONTENT_CACHE },
-  );
-  for (const r of rows ?? []) {
-    if (!r.slug) continue;
-    const helper = r.helperScheduleUrl || helperScheduleFallback[r.slug];
-    if (helper) helperMap[r.slug] = helper;
-    if (r.payId) payMap[r.slug] = payUrl(r.payId);
+// The classes come from the `class` documents, in ONE read the rail has already
+// paid for (board-content cache, in-isolate) — so a class the Board adds gets
+// its quick links by itself, and the topbar costs no extra round-trip.
+const classrooms = await getHubClassrooms();
+for (const room of classrooms) {
+  for (const c of room.classes) {
+    if (c.helperScheduleUrl) helperMap[c.slug] = c.helperScheduleUrl;
+    if (c.payId) payMap[c.slug] = payUrl(c.payId);
   }
-} catch {
-  /* leave both maps empty — the quick links fall back to their default hrefs */
 }
 // Ordered class labels for the multi-class dropdowns.
-const CLASS_LABELS: Record<string, string> = {
-  twos: 'Twos',
-  threes: 'Threes',
-  'pre-k-am': 'Pre-K AM',
-  'pre-k-pm': 'Pre-K PM',
-};
+const hubClasses = classTiles(classrooms);
 const linksFor = (map: Record<string, string>) =>
-  Object.keys(CLASS_LABELS)
-    .filter((s) => map[s])
-    .map((s) => ({ slug: s, label: CLASS_LABELS[s], url: map[s] }));
+  hubClasses
+    .filter((c) => map[c.slug])
+    .map((c) => ({ slug: c.slug, label: c.label, url: map[c.slug] }));
 const helperLinks = linksFor(helperMap);
 const payLinks = linksFor(payMap);
 

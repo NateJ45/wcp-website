@@ -61,7 +61,9 @@ Every `/family-hub/*` page renders inside `HubShell` → `BaseLayout chrome="hub
 draws the hub's persistent chrome:
 
 - **Desktop (≥ `lg`):** a sticky left navigation **rail** (`HubRail.astro`), built from the
-  single grouped nav config in `src/data/hub-nav.ts` — Home, Classes, News & Events,
+  single grouped nav config in `src/data/hub-nav.ts` — Home, Classes (SELF-FILLING: the
+  group carries `autoClasses`, so its links are derived from the `class` documents, one per
+  classroom page — see "Class pages are DERIVED" below), News & Events,
   Resources (Getting Started, Become a Super Helper), Money, Community (Directory, Co-op
   Jobs, Celebrations, the external Store link), each group with its own accent color — the active page highlighted, a
   light/dark `ThemeToggle`, and Sign out. The rail collapses to an icon rail
@@ -244,17 +246,17 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Hub settings |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                          |
-| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                 |
-| Documents                     | `hubDocument` docs                                                                                                           |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                          |
-| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)                                                   |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                           |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                              |
-| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                   |
+| Section                       | Live data source                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Hub settings                                      |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                                                               |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                                                      |
+| Documents                     | `hubDocument` docs                                                                                                                                                |
+| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                                                               |
+| Classes                       | `class` docs (the whole page: facts, colour, icon, links, tuition button) + an optional `hubPage` naming them (the handbook) + `teacherNote` docs (welcome modal) |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                                                                |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                                                                   |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                                                        |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -356,10 +358,12 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   - **Routes resolve by CONVENTION, not a registry.** `hubPageRoute()` takes
     `/family-hub/<hubKey>` when hub-nav says that page exists, so a hub page
     added later indexes itself. Two escape hatches: `HUB_PAGE_OVERRIDES` for the
-    routes that don't match (`twos` → `/family-hub/twos-threes`, `home` →
+    routes that don't match (`home` →
     `/family-hub`), and `HUB_PAGE_DENY` for docs that must never be indexed
-    (`directory` = PII, `threes` = a doc NO page renders, since twos-threes
-    reads the twos doc for both classes). Deny always wins over convention.
+    (`directory` = PII). Deny always wins over convention. The route set the
+    convention is checked against is the resolved nav WITH its classroom pages
+    filled in, so a class the Board adds is searchable — page name and handbook
+    words — the day it publishes.
     This replaced a hardcoded allow-list that failed silently — add a page,
     forget to register it, and search omitted it forever.
 
@@ -394,8 +398,17 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **My classes** (`my-class.ts`, localStorage `wcp-my-classes`, no accounts):
   MULTI-select toggle chips on the home dashboard (plenty of families have kids in
   more than one class); each picked class's helper tile moves to the front with a
-  "Your class" tag, its photo album gets a ring, and its rail link gets a dot (the
-  shared Pre-K page link is never double-dotted).
+  "Your class" tag, its photo album gets a ring, and its rail link gets a dot (two
+  classes sharing one classroom page never double-dot it).
+  **The class list is DATA, not code.** `HubRail` prints it once per page as a
+  `<script type="application/json" data-hub-classes>` block — slug, label, and the
+  classroom page each class lives on — straight from the `class` documents. The
+  script reads that, so a class the Board adds appears in the picker, the tiles and
+  the rail dots with no code change. It used to be a hardcoded map of the four
+  2026-27 slugs, which is what made the hub blind to a new class.
+  `hub-page-links.ts` reads the same block for its prose auto-links (a derived class
+  target always requires the literal " page" suffix, because a class name is an
+  ordinary word).
 - **"New since your last visit"** (`hub-fresh.ts`, localStorage `wcp-updates-seen`):
   home announcement/minutes items newer than your last Updates visit get a "New"
   pill and the Updates links (rail/drawer/tab bar) a count badge; opening Updates
@@ -503,7 +516,7 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **Signed sign-off CTA.** The handbook's **closing** CTA on a class page becomes a signed
   sign-off card: the teacher's headshot in a class-colour ring + **Email** / **Call or
   text** pill buttons (`TeacherSignoff.astro`), which stand in for the CTA's plain-text
-  note. `HubSectionedBody` takes a `signoff` slug (`twos` / `pre-k`) and renders that
+  note. `HubSectionedBody` takes `signoff` (the classroom's teacher-note keys) and renders that
   page's LAST `ctaSection` through `CtaSection` with a `teacherSlug`, so a mid-handbook CTA
   never gets a signature. Contact comes from the same `teacherNote` (email + the
   2026-07-15 `phone` field); phone falls back to `teacherPhoneFallback` (`live-links.ts`)
@@ -511,8 +524,10 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   closing note. Erin signs Twos & Threes; Mrs. Lisa signs Pre-K.
 - **Curriculum guide PDFs.** The class-page header action row carries the handbook pill
   (`handbookUrl` from the class's `hubPage` doc) plus a **"Curriculum guide (PDF)"** pill
-  linking a static, brand-styled PDF in `public/curriculum/` (`twos-` / `threes-` /
-  `pre-k-curriculum.pdf`; the Twos & Threes page shows one per class since the objectives
+  linking a static, brand-styled PDF in `public/curriculum/` (`<key>-curriculum.pdf`, one per
+  `curriculumGuide` document — a pill only appears when the document exists, and
+  `generate-curriculum.mjs` renders a guide for any document, not just the shipped three; the
+  Twos & Threes page shows one per class since the objectives
   differ, Pre-K shows one shared guide). These are NOT CMS-editable: the objectives + the
   layout are the SOURCE OF TRUTH in `scripts/generate-curriculum.mjs` (`npm run
 gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined). Edit the
@@ -520,12 +535,14 @@ gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined)
   school's old name.
 - **Supply list.** The same action row carries a **"Supply list (PDF)"** pill on both class
   pages, linking `public/supplies/supply-list.pdf` — one brand-styled one-pager covering
-  ALL four classes, each list card in its class colour. Like the curriculum guides it is
-  NOT CMS-editable: the items + layout are the SOURCE OF TRUTH in
+  every class, each list card in its class colour. The items are Board-editable in the
+  `supplyList` singleton and its "Class" dropdown reads the LIVE classes, so a class the Board
+  adds gets its own card (the generator derives the card's name and colour from the class
+  document). The layout and the committed defaults live in
   `scripts/generate-supplies.mjs` (`npm run gen:supplies`), which also renders a 1080x1350
   social carousel (`public/supplies/social/*.png` — cover, one slide per class, wish list)
   for the Facebook/Instagram back-to-school posts. The filename is deliberately year-less
-  so the pill links never rot; each fall update `YEAR` + the items and regenerate.
+  so the pill links never rot; each fall update the school year + the items in the Studio.
 
 ## Updates / meeting blog
 
@@ -624,8 +641,9 @@ starting content with `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage
 
 **All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —
 new-family onboarding), Calendar, Co-op Jobs, Documents, Tuition, Updates, Fundraising,
-Health, Directory, and the class pages (the merged `twos-threes` and `pre-k` — each class
-pair shares one page, with the per-class routes 301-redirecting there). Each
+Health, Directory, and the class pages (DERIVED from the `class` documents since 2026-08-29 —
+see "Class pages are DERIVED" below; `twos-threes` and `pre-k` each cover a class pair, with the
+per-class addresses 301-redirecting there). Each
 reads its `hubPage` doc for an editable heading, intro, and a stack of hub-safe sections,
 wrapped around a **fixed widget** that stays locked in code:
 
@@ -637,19 +655,69 @@ coop-jobs / tuition / fundraising / calendar / twos / threes by
 The source PDFs are uploaded as gated `hubDocument` files on the Documents page — the
 PDFs themselves are gitignored (they contain the hub password and phone numbers).
 
-**Each class page carries that teacher's entire parent handbook** as editable sections. Pre-K
-(daily schedules, drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom,
-communication, dress code, FAQs, and the class-pet band) is seeded from Mrs. Lisa's 2026-27 PDF
-by `node scripts/seed-pre-k-page.mjs`; its fixed widget is the pair of AM/PM fact cards (facts,
-pay button, helper sheet, photo album per class). **Twos + Threes** likewise share ONE page,
-`/family-hub/twos-threes` (same teacher Ms. Erin, same 9:30-noon rhythm, same handbook): the
-combined page shows Erin's teacher card + a Twos and a Threes fact card side by side, and reads
-the handbook from the single `hubPage-twos-threes` doc (ONE doc for the one page since
-2026-08-24 — `patch-merge-twos-threes.mjs` consolidated the old per-class twos/threes docs,
-which had drifted while only the twos one rendered; the historical
-`seed-twos-threes-page.mjs` seeded the old pair and must not be re-run as-is). `/family-hub/twos`
-and `/family-hub/threes` 301-redirect to the combined page; the nav + home class cards point
-there. Re-running a seed RESETS that page to its baseline; day-to-day edits happen in the Studio.
+### Class pages are DERIVED — the classroom model (2026-08-29)
+
+**A class the Board adds gets its whole hub presence with no code change.** This was the last
+developer-only corner of the site: the class pages were hand-written `.astro` routes over a
+hardcoded slug union in `src/data/classes.ts`, so a `class` document that existed only in Sanity
+was invisible to the hub. Now the hub derives its class pages from the `class` documents, the
+same way the public site already derived its tuition table, calculator, card grids, Classes menu
+and teacher cards.
+
+**The one idea is a CLASSROOM** ([`src/lib/hub-classrooms.ts`](../src/lib/hub-classrooms.ts),
+pure + unit-tested). A classroom is one hub page. It covers one class, or several classes that
+share a teacher and a handbook. Two rules build the list:
+
+1. A `hubPage` may name the classes it is the class page for — **"Classes on this page"**. That
+   page becomes their shared classroom, at its own address (`hubKey` for a page that came with
+   the site, else its web address). This is how `/family-hub/twos-threes` (Ms. Erin's Twos +
+   Threes) and `/family-hub/pre-k` (Mrs. Lisa's AM + PM) keep the addresses families bookmarked.
+2. Any class no such page names becomes **its own classroom**, at `/family-hub/<class slug>`,
+   with no document at all. The page is complete from the class entry alone: facts, teacher card,
+   class-rep card, pay button, helper-schedule sheet, photo album, the supply list, and a coaching
+   empty state where the handbook would go. Every pill and card that needs a value it has not got
+   (no pay link yet, no album yet, no curriculum guide yet) is simply not rendered — a class page
+   never shows a dead link while it is being filled in.
+
+**Routing.** All of it is served by the gated catch-all
+[`src/pages/family-hub/[...slug].astro`](../src/pages/family-hub/%5B...slug%5D.astro). The six
+`.astro` files that used to do this (`twos`, `threes`, `pre-k`, `pre-k-am`, `pre-k-pm`,
+`twos-threes`) are deleted; the old per-class addresses 301-redirect to the page that covers them,
+from data rather than from four redirect files. `HubClassroomBody.astro` renders the whole page.
+
+**Precedence** is one unit-tested function, `hubPathKind()`: a real `.astro` route, then a
+CLASSROOM, then a Board-created page, then 404. A class page outranks a Board page at the same
+address because its address is DERIVED from the class rather than typed by a person — and the
+Studio refuses to save a Board page at a class's address, so that collision is caught before it
+can happen (`hubPage.ts` slug validation). `RESERVED_HUB_SLUGS` no longer lists the class slugs:
+they are Sanity data now, not files on disk.
+
+**Handbook content.** Pre-K (daily schedules, drop-off/pick-up, the helper-day playbook, snack
+duty, helper wisdom, communication, dress code, FAQs, and the class-pet band) is seeded from
+Mrs. Lisa's 2026-27 PDF by `node scripts/seed-pre-k-page.mjs`. The Twos & Threes handbook lives
+in the single `hubPage-twos-threes` doc (ONE doc for the one page since 2026-08-24 —
+`patch-merge-twos-threes.mjs` consolidated the old per-class docs, which had drifted while only
+the twos one rendered; the historical `seed-twos-threes-page.mjs` seeded the old pair and must
+not be re-run as-is). Re-running a seed RESETS that page to its baseline; day-to-day edits happen
+in the Studio.
+
+**The one-shot migration** was `node scripts/patch-hub-classrooms.mjs --apply` (run 2026-08-29,
+idempotent, dry-run by default): it set "Classes on this page" on the two shipped class pages and
+moved the four committed class icons into their `class` documents.
+
+**What a volunteer does to add a class, end to end:**
+
+1. Studio → **Classes** → **＋** — name, web address, colour, icon, days, time, ages, tuition,
+   PayPal links, helper-schedule sheet, photo album, teacher. Publish.
+2. The class is immediately in the tuition table, the calculator, the card grids, the public
+   Classes menu, the hub rail, the hub home's helper tile and photo-album tile, the my-classes
+   picker, the first-visit tour, the ⌘K palette, the directory filter, and **its own hub page**.
+3. Optional, from buttons on the class document: **Create its page** (the public detail page) and
+   **Create its hub page** (the handbook, as a draft to fill in).
+4. Optional: a **Teacher's welcome note** and a **Curriculum guide** — both dropdowns now list the
+   live class pages, so the new class is there to pick. **Who's who this year** also gains a
+   “<Class name> Rep” seat per live class (`makeRoleSelectInput`), so the class-rep card on the
+   new page can hold a real person instead of “To be announced” for ever.
 
 The handbook body (and Getting Started) renders through `HubSectionedBody` → the shared
 `SectionRenderer`, i.e. the SAME page-builder sections the public site uses. Their marketing
@@ -725,8 +793,8 @@ Workers-UTC gotcha). `HUB_PAGE_QUERY` projects `_updatedAt`. Both helpers are Vi
 
 A `card` section shows a small **type-derived icon chip** above its title (map in
 `HubSectionedBody`; no Sanity field, so it stays brand-locked), and the whole column can be
-**tinted to a class color** via `HubSectionedBody`'s `tint` prop (a class slug — the pre-k and
-twos-threes handbooks pass theirs): the card chips use that class's `iconChip` and the active TOC
+**tinted to a class color** via `HubSectionedBody`'s `tint` prop (a brand COLOUR from the class
+document, e.g. `amber` — every classroom passes its own): the card chips use that class's `iconChip` and the active TOC
 entry picks up the class color through `--hub-doc-accent`. Getting Started stays neutral sky.
 
 `src/scripts/hub-doc.ts` (one client script, superseding the old `hub-toc.ts`, imported once from
@@ -929,8 +997,12 @@ PDF uploaded at Hub settings → Each year → Family Handbook, with the committ
 fallback, so the yearly re-upload needs no code edit.
 
 **The curriculum guides and the supply list are Board-editable** (2026-08-17): their content
-moved from the generator scripts into `curriculumGuide` documents (one per class) and the
-`supplyList` singleton, seeded by `scripts/seed-pdf-content.mjs`. The generators read the
+moved from the generator scripts into `curriculumGuide` documents (one per class page) and the
+`supplyList` singleton, seeded by `scripts/seed-pdf-content.mjs`. Since 2026-08-29 the
+generator renders a guide for ANY `curriculumGuide` document, not just the three the script
+ships content for — a class the Board adds can be given its own guide, in its own class colour,
+and the hub shows the pill only for guides that exist. "Which class" is a dropdown of the LIVE
+class pages (`ClassroomPickInput`), so a guide can cover one class or a whole shared page. The generators read the
 Studio at build time (committed content = fallback) and run in postbuild with `--dist`, so a
 publish regenerates the PDFs on the next deploy; the deploy workflow installs Playwright's
 Chromium for the render, and a build without a browser skips gracefully and ships the

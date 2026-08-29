@@ -46,6 +46,8 @@ interface HubPageDoc {
   title?: string;
   heading?: string;
   intro?: string;
+  /** Set on a CLASSROOM page — the classes it is the class page for. */
+  classSlugs?: string[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
@@ -80,10 +82,13 @@ const BUILTIN_WIDGETS: Record<string, string> = {
     'The campaign progress bars and the year-at-a-glance table come from Campaigns and the treasurer sheet.',
   health: 'The per-child health details are private family data and only show on the real page.',
   directory: 'The family map and list are private family data and only show on the real page.',
-  'twos-threes': 'The class facts card (teacher, times, links) comes from the Classes entries.',
-  'pre-k': 'The class facts card (teacher, times, links) comes from the Classes entries.',
 };
-const builtinNote = BUILTIN_WIDGETS[key];
+// A CLASSROOM page says so for itself: the doc names its classes, so the note
+// is derived instead of listed here (which is what made a class the Board added
+// preview as though it had no built-in part at all).
+const CLASSROOM_NOTE =
+  'The class facts at the top of this page — the teacher, the reps, the times, the pay button, the helper sheet and the photo album — come from the Classes entries.';
+const builtinNote = page.classSlugs?.length ? CLASSROOM_NOTE : BUILTIN_WIDGETS[key];
 
 // Navigation between hub pages lives in the Studio's navigator side panel
 // (src/sanity/components/PreviewNavigator.tsx), not in the page itself.

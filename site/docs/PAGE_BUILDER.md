@@ -504,8 +504,10 @@ and `node scripts/page-parity.mjs compare` must stay at 27/27.
 is one (the newest words), regenerates every nested `_key` (two array members with one
 key is a Studio-level error), strips `_id`/`_rev`/`_createdAt`/`_updatedAt`, titles the
 copy "… copy", and takes the first free `<slug>-copy`, `<slug>-copy-2`, … A hub copy
-also drops `hubKey`: two documents claiming one built-in hub page would make the page
-a coin toss. The copy is created as `drafts.<uuid>` and opened in the edit panel.
+also drops `hubKey` and "Classes on this page": two documents claiming one built-in hub
+page would make the page a coin toss, and a class belongs to exactly one classroom page
+(`src/lib/hub-classrooms.ts`), so a copy claiming the same classes would leave one of the
+two pages rendering to nobody. The copy is created as `drafts.<uuid>` and opened in the edit panel.
 
 **2. Archive & restore** — a real trash, and NOT the same thing as "Recently deleted".
 

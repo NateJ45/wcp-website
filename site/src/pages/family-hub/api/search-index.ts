@@ -28,7 +28,9 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { isUsableHubSlug } from '@/lib/hub-pages';
-import { hubNav } from '@/data/hub-nav';
+import { resolveHubNav } from '@/lib/hub-nav-doc';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classLookup } from '@/lib/hub-classrooms';
 import { getCalendarEvents, eventDate } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import {
@@ -52,7 +54,13 @@ interface HubPageRow {
 export const GET: APIRoute = async () => {
   const entries: SearchEntry[] = [];
 
-  for (const group of hubNav) {
+  // The nav with its CLASSROOM pages filled in from the `class` documents, so a
+  // class the Board adds is findable in the palette — both by page name here,
+  // and by the words inside its handbook through `knownRoutes` below.
+  const classrooms = await getHubClassrooms().catch(() => []);
+  const nav = resolveHubNav(null, classrooms);
+
+  for (const group of nav) {
     for (const link of group.links) {
       if (link.external) continue;
       entries.push({ title: link.label, href: link.href, kind: 'page', sub: group.label });
@@ -92,7 +100,7 @@ export const GET: APIRoute = async () => {
       ),
       // The generated PDFs, findable by their Studio titles.
       sanityFetch<{ cls?: string; title?: string }[]>(
-        `*[_type == "curriculumGuide"]{ "cls": class, title }`,
+        `*[_type == "curriculumGuide" && defined(class)]{ "cls": class, title }`,
         {},
         { cache: BOARD_CONTENT_CACHE },
       ),
@@ -103,21 +111,19 @@ export const GET: APIRoute = async () => {
       ),
     ]);
 
-    // The branded PDFs (public static assets, regenerated each deploy). Titles
-    // come from the Studio documents; the committed names are the fallback, so
-    // the entries exist even before the documents do.
-    const PDF_NAMES: Record<string, string> = {
-      twos: 'Twos Curriculum Guide',
-      threes: 'Threes Curriculum Guide',
-      'pre-k': 'Pre-K Curriculum Guide',
-    };
-    for (const [cls, file] of [
-      ['twos', 'twos-curriculum.pdf'],
-      ['threes', 'threes-curriculum.pdf'],
-      ['pre-k', 'pre-k-curriculum.pdf'],
-    ] as const) {
-      const title = guides.find((g) => g.cls === cls)?.title || PDF_NAMES[cls];
-      entries.push({ title, href: `/curriculum/${file}`, kind: 'document', sub: 'PDF' });
+    // The branded PDFs (public static assets, regenerated each deploy). ONE
+    // entry per Curriculum guide DOCUMENT — the list used to be the three
+    // classes hardcoded here, so a guide the Board added was unsearchable. The
+    // document's title wins; the class name is the fallback.
+    const named = classLookup(classrooms);
+    for (const g of guides) {
+      if (!g.cls) continue;
+      entries.push({
+        title: g.title || `${named.label(g.cls)} Curriculum Guide`,
+        href: `/curriculum/${g.cls}-curriculum.pdf`,
+        kind: 'document',
+        sub: 'PDF',
+      });
     }
     entries.push({
       title: `School Supply List${supplies?.year ? ` (${supplies.year})` : ''}`,
@@ -126,7 +132,7 @@ export const GET: APIRoute = async () => {
       sub: 'PDF',
     });
 
-    const knownRoutes = hubRoutesFromNav(hubNav);
+    const knownRoutes = hubRoutesFromNav(nav);
     for (const page of pages) {
       // Two kinds of hub page. A BUILT-IN one resolves its hubKey to a route;
       // a BOARD-CREATED one is served by the catch-all at its own slug. Both

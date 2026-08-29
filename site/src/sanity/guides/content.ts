@@ -853,7 +853,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Every **class page** carries that teacher’s entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more (Pre-K shares one page for both AM and PM). When the teacher changes a routine, edit the matching section right here so the page stays the source of truth.',
+        text: 'Every **class page** carries that teacher’s entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more (Twos and Threes share one page, and so do the two Pre-K classes, because each pair shares a teacher). When the teacher changes a routine, edit the matching section right here so the page stays the source of truth. A class with no handbook page yet still has a working hub page — use **Create its hub page** on the class to start one.',
       },
       {
         kind: 'p',
@@ -1072,8 +1072,8 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and `Publish`.',
-          'For the supply list: update the **School year**, the per-class items, or the wish list, and `Publish`.',
+          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and `Publish`. To write one for a class you added, make a NEW curriculum guide and pick that class — the PDF and the button on its hub page both appear by themselves.',
+          'For the supply list: update the **School year**, the per-class items, or the wish list, and `Publish`. Added a class? Add a row under **Per-class lists**, pick it, and type its items — it gets its own card on the printed list, in its own colour.',
           'Give the site a few minutes to rebuild, then open the PDF from the class page to check it.',
         ],
       },
@@ -1674,14 +1674,22 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'To add a brand-new class' },
       {
         kind: 'p',
-        text: 'Maybe a summer class or a new session. You can add as many as you like. Two steps: make the class, then give it a page. Everything else follows on its own.',
+        text: 'Maybe a summer class or a new session. You can add as many as you like. Make the class and almost everything follows on its own — including its **Family Hub page**, which exists the moment you publish. Two optional buttons fill in the rest.',
       },
       {
         kind: 'steps',
         items: [
-          '**Make the class.** Click **Classes**, then the `＋` (new) button. Fill in the name, click `Generate` for the web address (slug), then fill in the schedule, ages, and tuition, and pick the teacher from the Staff list. `Publish`. The class is now in the **tuition table**, the **tuition calculator**, and every automatic **class cards** row (Home, Enroll, Visit) — all by itself.',
-          '**Give it its own page.** On the class, open the `⋯` menu and click **Create its page**. That copies an existing class page to the right address and opens the draft. Put in this class’s words and photos, then `Publish`. The moment the page is live, the **Classes menu** adds its link automatically.',
+          '**Make the class.** Click **Classes**, then the `＋` (new) button. Fill in the name, click `Generate` for the web address (slug), then pick a **colour** and an **icon**, and fill in the schedule, ages, and tuition. Pick the teacher from the Staff list, and paste in the **Helper schedule link** and the **Class photo album link**. `Publish`.',
+          '**Check the Family Hub.** The class is already there: its own page at `/family-hub/<web address>`, a link in the hub menu, a helper-schedule tile and a photo-album tile on the hub home, a button in the "Which classes are yours?" picker, a row on the hub Tuition page, and a filter in the Directory. Nothing to set up.',
+          '**Optional — give it a public page.** On the class, open the `⋯` menu and click **Create its page**. That copies an existing class page to the right address and opens the draft. Put in this class’s words and photos, then `Publish`. The moment the page is live, the **Classes menu** adds its link automatically.',
+          '**Optional — give it a handbook.** On the class, open the `⋯` menu and click **Create its hub page**. That starts the teacher’s parent handbook (daily routine, drop-off and pick-up, snack duty, the helper playbook) as a draft at the right address. Fill it in and `Publish`. Until you do, the class’s hub page still works — it just says the handbook is not written yet.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Two classes that share a teacher share ONE hub page.',
+        text: 'Twos and Threes are one page, and both Pre-K classes are another, because each pair shares a teacher and a handbook. That is set on the hub page itself: **Classes on this page**. Leave it empty on a normal page. Put two or more classes in it and they get one shared classroom page, with a fact card, pay button, helper sheet and photo album for each.',
       },
       {
         kind: 'callout',
@@ -1697,6 +1705,12 @@ export const guides: Guide[] = [
           'The **PayPal button** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
           SITE.contactName +
           ' before filling those in.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'A welcome note and a curriculum guide, too.',
+        text: 'The **Teacher welcome note** and the **Curriculum guide (PDF)** both ask which class page they belong to, and that list now includes every class you add. Pick the new class and it appears on its hub page — the note as a first-visit letter, the guide as a "Curriculum guide (PDF)" button. **Who’s who this year** gains a “<Class name> Rep” seat for the class too, so its class-rep card can be filled in instead of staying "To be announced".',
       },
       { kind: 'seealso', items: ['Change tuition or fees', 'Add or edit a teacher'] },
     ],

@@ -79,10 +79,49 @@ function currentSlug(): string {
   return m?.[1] ?? '';
 }
 
+/** Escape a class name so it is matched literally inside the combined regex. */
+const escapeRe = (s: string): string => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+/**
+ * One extra target per CLASS, read from the list the rail prints
+ * (`data-hub-classes`, see HubRail.astro).
+ *
+ * The committed TARGETS above name the pages the site shipped with, so a class
+ * the Board adds would never link from prose. These derive themselves. The
+ * literal " page" suffix is REQUIRED on every one of them: a class name is an
+ * ordinary word ("Summer", "Fours") and linking it bare would turn half the
+ * handbook into links. The group name is positional so it can never collide
+ * with a committed one.
+ */
+function classTargets(): [group: string, slug: string, src: string][] {
+  const tag = document.querySelector('[data-hub-classes]');
+  if (!tag?.textContent) return [];
+  try {
+    const rows = JSON.parse(tag.textContent) as { label?: string; page?: string }[];
+    if (!Array.isArray(rows)) return [];
+    const seen = new Set<string>();
+    const out: [string, string, string][] = [];
+    for (const row of rows) {
+      const label = row?.label?.trim();
+      const slug = row?.page?.split('/').pop();
+      if (!label || !slug || seen.has(label)) continue;
+      seen.add(label);
+      out.push([`cls${out.length}`, slug, `${escapeRe(label)} page`]);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 function linkifyPageRefs(root: ParentNode, currentRoute: string): void {
   // Drop the current page's own target so it never self-links, then build one
-  // case-sensitive, global matcher from the rest.
-  const active = TARGETS.filter(([, slug]) => slug !== currentRoute);
+  // case-sensitive, global matcher from the rest. A committed target wins over
+  // a derived one at the same address (the committed ones link without the
+  // " page" suffix, which is the friendlier match).
+  const known = new Set(TARGETS.map(([, slug]) => slug));
+  const all = [...TARGETS, ...classTargets().filter(([, slug]) => !known.has(slug))];
+  const active = all.filter(([, slug]) => slug !== currentRoute);
   if (active.length === 0) return;
   const groupSlug = new Map(active.map(([group, slug]) => [group, slug]));
   // Leading boundary is a captured (^|\W), not a (?<!\w) lookbehind: lookbehind

@@ -141,6 +141,74 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 }`;
 
 // -----------------------------------------------------------------------------
+// Family Hub classrooms — every class, and the pages that group them
+// -----------------------------------------------------------------------------
+// ONE gated read that tells the hub what its class pages are: the `class`
+// documents in the Board's drag order, plus every hubPage that names classes on
+// it ("Classes on this page"). src/lib/hub-classrooms.ts turns the two lists
+// into the classroom pages. Sections are deliberately NOT here — the classroom
+// route fetches those for the one page it renders, so the rail and the home
+// tiles never pay for two handbooks' worth of content.
+export const HUB_CLASSROOMS_QUERY = `{
+  "classes": *[_type == "class" && defined(slug.current)] | order(orderRank){
+    "slug": slug.current, name, icon, color, days, time, age, monthly, annual,
+    studentFee, payId, studentFeePayId, helperScheduleUrl, photoAlbumUrl,
+    // The PUBLIC page for this class, so the hub can offer "See the full
+    // program" without knowing the page list. Same longest-prefix rule the
+    // Classes menu uses (NAVIGATION_QUERY above): the "-" sentinel lets
+    // classes/pre-k claim pre-k-am and pre-k-pm without claiming pre-kinder.
+    // A class with no public page yields null, and the pill is not shown.
+    "publicSlug": *[_type == "page" && archived != true
+      && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+      | order(length(slug) desc)[0].slug
+  },
+  "pages": *[_type == "hubPage" && count(classes) > 0 && archived != true]{
+    hubKey, slug, title, heading, navIcon,
+    "classSlugs": classes[]->slug.current
+  },
+  // Which curriculum PDFs exist, by the key they are filed under (a class slug,
+  // or a whole classroom's address when one guide covers several classes). It
+  // rides along here rather than in its own read: same cache tier, same kind of
+  // board content, and a classroom page needs both in the same breath.
+  "guides": *[_type == "curriculumGuide" && defined(class)].class
+}`;
+
+/**
+ * One classroom page's editable content, by its address.
+ *
+ * Matches `hubKey` OR `slug`, because a classroom page is either one that came
+ * with the site (twos-threes, pre-k) or one the Board made for a class it
+ * added. The projection mirrors HUB_PAGE_QUERY so the same sections render.
+ */
+export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key) && archived != true][0]{
+  title, heading, intro, navIcon, _updatedAt,
+  "handbookUrl": handbookFile.asset->url,
+  "classSlugs": classes[]->slug.current,
+  sections[]{
+    ...,
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url },
+    _type == "faqSection" => {
+      "items": select(
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
+        source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
+    }
+  }
+}`;
+
+// -----------------------------------------------------------------------------
 // Family Hub pages (gated, request-time) — the hub page-builder
 // -----------------------------------------------------------------------------
 // One hubPage per hub, fetched by hubKey behind the gate. Only the hub-safe
@@ -218,6 +286,7 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
  */
 export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key)][0]{
   _id, title, heading, intro,
+  "classSlugs": classes[]->slug.current,
   sections[]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
@@ -262,7 +331,7 @@ export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
  */
 export const HUB_NAV_MENU_QUERY = `*[_type == "hubNavMenu"][0]{
   groups[]{
-    label, accent,
+    label, accent, autoClasses,
     links[]{
       _type, target, label, hidden, url, icon,
       "page": page->{ title, heading, slug, navIcon }

@@ -11,17 +11,20 @@
 import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
+import { TEACHER_NOTE_CARD_QUERY, pickNote, telHref as toTel } from '@/lib/hub-teacher-note';
 import { teacherPhoneFallback } from '@/data/hub/live-links';
 
 interface Props {
-  /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
-  slug: string;
+  /** Note keys for this classroom, most specific first (teacherNoteKeys()). */
+  keys: string[];
+  /** The classroom's brand colour, from the class document. */
+  color?: string;
 }
-const { slug } = Astro.props;
-const noteClass = slug.startsWith('pre-k') ? 'pre-k' : slug;
+const { keys, color } = Astro.props;
 
 interface TeacherDoc {
+  key?: string;
   signName?: string;
   signRole?: string;
   email?: string;
@@ -30,16 +33,19 @@ interface TeacherDoc {
 }
 let teacher: TeacherDoc | null = null;
 try {
-  teacher = await sanityFetch<TeacherDoc | null>(
-    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, phone, photo }`,
-    { cls: noteClass },
-    { cache: BOARD_CONTENT_CACHE },
+  teacher = pickNote(
+    await sanityFetch<TeacherDoc[]>(
+      TEACHER_NOTE_CARD_QUERY,
+      { keys },
+      { cache: BOARD_CONTENT_CACHE },
+    ),
+    keys,
   );
 } catch {
   teacher = null;
 }
 
-const cc = classStyles(slug);
+const cc = colorStyles(color);
 // Portrait-preserving (no forced square crop): the browser crops the circle
 // with `object-top`, so a head sitting high in the frame is never sliced off.
 // The card renders an 80px (h-20 w-20) circle, so 160px covers 2x/retina.
@@ -50,11 +56,8 @@ const photoUrl = teacher?.photo?.asset
       .url()
   : null;
 // Studio value wins; fall back to the committed number until the field is set.
-const phone = teacher?.phone || teacherPhoneFallback[noteClass];
-// A tel: href from any human-typed phone (keep a leading +, drop other symbols).
-const telHref = phone
-  ? `tel:${phone.trim().startsWith('+') ? '+' : ''}${phone.replace(/[^\d]/g, '')}`
-  : null;
+const phone = teacher?.phone || keys.map((k) => teacherPhoneFallback[k]).find(Boolean);
+const telHref = toTel(phone);
 ---
 
 {

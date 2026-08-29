@@ -21,7 +21,8 @@ import { AUTH_FILE } from './tests/auth-file';
 // fresh `npm run build` first (bundled into the command below).
 export default defineConfig({
   testDir: './tests',
-  testMatch: /(hub-(shell|home|sections|gate|pages|tour|hints)\.spec|hub-auth\.setup)\.ts$/,
+  testMatch:
+    /(hub-(shell|home|sections|gate|pages|tour|hints|classroom)\.spec|hub-auth\.setup)\.ts$/,
   // 60s, not the usual 30s. The hub HOME page fans out to several external
   // origins server-side (Apps Script calendar, two gviz sheets, the store),
   // each with its own 8s timeout, and `cached()` cannot help on the first hit
@@ -78,7 +79,7 @@ export default defineConfig({
     // shell/home specs assert desktop-rail layout and drive their own viewports.
     {
       name: 'chromium',
-      testMatch: /hub-(shell|home|sections|pages|tour|hints)\.spec\.ts$/,
+      testMatch: /hub-(shell|home|sections|pages|tour|hints|classroom)\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
       dependencies: ['setup'],
     },

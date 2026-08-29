@@ -2608,6 +2608,11 @@ li:nth-child(3n + 3) .wcp-testi {
 .wcp-glow-sky {
   background: radial-gradient(closest-side, var(--color-sky), transparent 70%);
 }
+/* Navy completes the set: `class.color` offers five colours, so a class the
+   Board tints navy needs its own wash like the other four. */
+.wcp-glow-navy {
+  background: radial-gradient(closest-side, var(--color-navy), transparent 70%);
+}
 
 /* 5. Scroll-reveal system ----------------------------------------------------
    Tag any element with data-reveal; the IntersectionObserver in BaseLayout

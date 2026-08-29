@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
+import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Class / Program
@@ -38,10 +39,16 @@ export const classType = defineType({
       description: 'The web address piece, e.g. "twos". Click Generate.',
       validation: (R) => R.required().error('Click Generate to give this class a web address.'),
     }),
-    // DEAD (field audit 2026-08-23): nothing renders a class icon — the hub
-    // deliberately reads its icons from src/data/classes.ts. Hidden, not
-    // removed, so old documents keep validating. See docs/FIELD_AUDIT.md.
-    defineField({ name: 'icon', title: 'Icon', type: 'string', hidden: true }),
+    // LIVE AGAIN (2026-08-29): the hub used to read every class icon from
+    // src/data/classes.ts, which only knows the four classes the site shipped
+    // with — so a class added later had no icon anywhere. The Studio owns it
+    // now; the committed icon is the fallback for the original four.
+    iconField('icon', {
+      title: 'Class icon',
+      group: 'basics',
+      description:
+        'The little picture beside this class on the Family Hub — its tile, its page, and its photo album link.',
+    }),
     defineField({
       name: 'color',
       title: 'Class color',

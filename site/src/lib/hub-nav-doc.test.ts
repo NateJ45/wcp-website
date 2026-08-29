@@ -7,6 +7,7 @@ import {
   type NavDocLink,
 } from './hub-nav-doc';
 import { hubNav } from '@/data/hub-nav';
+import { buildClassrooms } from '@/lib/hub-classrooms';
 
 const builtin = (target: string, over: Partial<NavDocLink> = {}): NavDocLink => ({
   _type: 'builtinLink',
@@ -21,10 +22,34 @@ const pageLink = (slug: string, title = 'Playground Committee'): NavDocLink => (
 const doc = (groups: HubNavDoc['groups']): HubNavDoc => ({ groups });
 
 describe('BUILTIN_HUB_LINKS', () => {
-  it('offers every committed link except Home', () => {
-    const committed = hubNav.slice(1).flatMap((g) => g.links);
+  it('offers every committed link except Home and the self-filling classes', () => {
+    const committed = hubNav
+      .slice(1)
+      .filter((g) => !g.autoClasses)
+      .flatMap((g) => g.links);
     expect(BUILTIN_HUB_LINKS).toHaveLength(committed.length);
     expect(BUILTIN_HUB_LINKS.map((l) => l.href)).not.toContain('/family-hub');
+  });
+
+  it('leaves the class pages out — that section fills itself', () => {
+    // Listing them would invite a Board to hand-pin a link that a class rename
+    // leaves stale. Turning the section on is the supported way.
+    const classHrefs = hubNav
+      .slice(1)
+      .filter((g) => g.autoClasses)
+      .flatMap((g) => g.links.map((l) => l.href));
+    expect(classHrefs.length).toBeGreaterThan(0);
+    for (const href of classHrefs) {
+      expect(BUILTIN_HUB_LINKS.map((l) => l.href)).not.toContain(href);
+    }
+  });
+
+  it('still RESOLVES a class link saved before the section became self-filling', () => {
+    // A stored builtinLink row pointing at a class page must keep working;
+    // dropping it would silently empty a Board-edited menu section.
+    const href = hubNav.slice(1).find((g) => g.autoClasses)!.links[0].href;
+    const nav = resolveHubNav(doc([{ label: 'Classes', links: [builtin(href)] }]));
+    expect(nav[1].links.map((l) => l.href)).toEqual([href]);
   });
 });
 
@@ -247,5 +272,46 @@ describe('resolveHubNav', () => {
     const hrefs = out.slice(1).flatMap((g) => g.links.map((l) => l.href));
     expect(hrefs).toHaveLength(96);
     expect(new Set(hrefs).size).toBe(96);
+  });
+});
+
+describe('the self-filling Classes section', () => {
+  // Two classes that share a page (Twos + Threes) are ONE link, because they
+  // are one page; a class on its own page gets its own link.
+  const rooms = buildClassrooms(
+    [
+      { slug: 'twos', name: 'Twos', icon: 'blocks', color: 'amber' },
+      { slug: 'threes', name: 'Threes', icon: 'sprout', color: 'green' },
+      { slug: 'summer', name: 'Summer', icon: 'sun', color: 'navy' },
+    ],
+    [{ key: 'twos-threes', classSlugs: ['twos', 'threes'], heading: 'Twos & Threes Classroom' }],
+  );
+
+  it('fills the committed menu from the classrooms', () => {
+    const nav = resolveHubNav(null, rooms);
+    const classes = nav.find((g) => g.autoClasses)!;
+    expect(classes.links.map((l) => l.href)).toEqual([
+      '/family-hub/twos-threes',
+      '/family-hub/summer',
+    ]);
+    expect(classes.links[0].label).toBe('Twos & Threes Classroom');
+  });
+
+  it('fills a Board-edited section that has the switch on', () => {
+    const nav = resolveHubNav(doc([{ label: 'Our rooms', autoClasses: true, links: [] }]), rooms);
+    expect(nav[1].label).toBe('Our rooms');
+    expect(nav[1].links).toHaveLength(2);
+  });
+
+  it('leaves the committed links alone when there are no classrooms', () => {
+    // A failed gated read must not empty the rail of its class pages.
+    const nav = resolveHubNav(null, []);
+    expect(nav).toEqual(hubNav);
+  });
+
+  it('gives a navy class a sky rail accent, never navy on navy', () => {
+    const nav = resolveHubNav(null, rooms);
+    const summer = nav.find((g) => g.autoClasses)!.links[1];
+    expect(summer.iconColor).toBe('#7dd3fc');
   });
 });

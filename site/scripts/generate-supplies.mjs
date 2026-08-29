@@ -60,6 +60,9 @@ const THEMES = {
   green: { bright: '#22c55e', ink: '#0e7b2e', tint: '#e7f6ec', ring: '#bfe6cb' },
   orange: { bright: '#ff8c00', ink: '#a85300', tint: '#fff1e0', ring: '#f8d3ad' },
   sky: { bright: '#40aaed', ink: '#166fa8', tint: '#e8f3fc', ring: '#bddef4' },
+  // The fifth `class.color` value, so a class the Board tints navy still gets
+  // a card instead of failing on a missing theme.
+  navy: { bright: '#01457e', ink: '#01457e', tint: '#e6eef6', ring: '#b3c9dd' },
 };
 
 // ---------------------------------------------------------------------------
@@ -408,9 +411,15 @@ async function fetchStudioSupplies() {
       return null;
     })();
   if (!token) return null;
-  const query = encodeURIComponent(
-    '*[_type == "supplyList"][0]{ year, backpackNote, dueNote, waterNote, lists, wishList }',
-  );
+  // The classes ride along: a card for a class the Board added needs that
+  // class's NAME and COLOUR, and this file only knows the four the site shipped
+  // with. Same reason the hub reads them (src/lib/hub-classrooms.ts).
+  const query = encodeURIComponent(`{
+    "doc": *[_type == "supplyList"][0]{ year, backpackNote, dueNote, waterNote, lists, wishList },
+    "classes": *[_type == "class" && defined(slug.current)] | order(orderRank){
+      "slug": slug.current, name, color
+    }
+  }`);
   const res = await fetch(
     `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,
     { headers: { Authorization: `Bearer ${token}` } },
@@ -419,8 +428,19 @@ async function fetchStudioSupplies() {
   return (await res.json()).result ?? null;
 }
 
-/** The committed values, overlaid with the Studio document where set. */
-function mergedContent(doc) {
+/**
+ * The committed values, overlaid with the Studio document where set — PLUS a
+ * card for any class the Board added.
+ *
+ * The committed LISTS know only the four classes the site shipped with, so a
+ * fifth class used to be missing from the printed list entirely, with nothing
+ * to say so. A Studio row whose class has no committed twin now becomes its own
+ * card, in that class's own colour and icon.
+ */
+function mergedContent(result) {
+  const doc = result?.doc ?? null;
+  const classes = result?.classes ?? [];
+  const known = new Set(LISTS.map((l) => l.slug));
   const lists = doc?.lists?.length
     ? LISTS.map((base) => {
         const row = doc.lists.find((l) => l.slug === base.slug);
@@ -428,6 +448,20 @@ function mergedContent(doc) {
         return { ...base, items: row.items?.length ? row.items : base.items };
       })
     : LISTS;
+  for (const row of doc?.lists ?? []) {
+    if (!row?.slug || known.has(row.slug) || !row.items?.length) continue;
+    const cls = classes.find((c) => c.slug === row.slug);
+    lists.push({
+      slug: row.slug,
+      name: cls?.name ?? row.slug,
+      color: THEMES[cls?.color] ? cls.color : 'sky',
+      // The card icons here are EMOJI, not the lucide names the site uses, so
+      // a derived card takes a neutral school emoji rather than the class's
+      // own icon name (which would print as the word "graduation-cap").
+      icon: '🎒',
+      items: row.items,
+    });
+  }
   return {
     year: doc?.year ?? YEAR,
     backpackNote: doc?.backpackNote ?? BACKPACK_NOTE,
@@ -448,9 +482,10 @@ function mergedContent(doc) {
 }
 
 async function main() {
-  const doc = await fetchStudioSupplies();
-  if (doc) {
-    const merged = mergedContent(doc);
+  // One read: the supply-list document AND the classes (see fetchStudioSupplies).
+  const studio = await fetchStudioSupplies();
+  if (studio) {
+    const merged = mergedContent(studio);
     ({
       year: YEAR,
       backpackNote: BACKPACK_NOTE,
@@ -462,7 +497,7 @@ async function main() {
     );
     WISH_LIST = merged.wishList;
   }
-  console.log(doc ? 'Supply content: Studio' : 'Supply content: committed fallback');
+  console.log(studio ? 'Supply content: Studio' : 'Supply content: committed fallback');
   mkdirSync(SOCIAL_DIR, { recursive: true });
   const browser = await chromium.launch();
   try {

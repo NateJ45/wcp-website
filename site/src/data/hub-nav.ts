@@ -29,16 +29,15 @@ export interface HubGroup {
   /** AA-safe (>=4.5:1 on navy) hex for the group label + default icon color. */
   accent?: string;
   links: HubLink[];
+  /**
+   * The self-filling Classes section. When true the rail replaces this group's
+   * links with one per CLASSROOM page, derived from the `class` documents
+   * (src/lib/hub-classrooms.ts) — so a class the Board adds appears in the menu
+   * by itself, in its own colour, with no code change and no menu edit. The
+   * links below are the fallback when the gated read fails.
+   */
+  autoClasses?: boolean;
 }
-
-// The four class colors, bright-tint tier (AA-safe as label text on navy, and
-// matching each class's brand color from src/lib/class-colors.ts).
-const CLASS_ACCENT: Record<string, string> = {
-  twos: '#ffa334', // amber
-  threes: '#4ade80', // green
-  'pre-k-am': '#fdba74', // orange
-  'pre-k-pm': '#7dd3fc', // sky
-};
 
 export const hubNav: HubGroup[] = [
   {
@@ -48,6 +47,9 @@ export const hubNav: HubGroup[] = [
   {
     label: 'Classes',
     accent: '#7dd3fc', // sky label; each class link carries its own class color
+    // Self-filling from the class documents — see `autoClasses` above. The two
+    // links below are what renders if that read fails.
+    autoClasses: true,
     links: [
       // One page for both Twos and Threes — same teacher (Ms. Erin), same
       // handbook; each class's facts live side by side on the page itself.
@@ -55,14 +57,14 @@ export const hubNav: HubGroup[] = [
         label: 'Twos & Threes',
         href: '/family-hub/twos-threes',
         icon: 'blocks',
-        iconColor: CLASS_ACCENT.twos,
+        iconColor: '#ffa334', // amber
       },
       // One page for both Pre-K classes — same teacher, same handbook.
       {
         label: 'Pre-K',
         href: '/family-hub/pre-k',
         icon: 'sun',
-        iconColor: CLASS_ACCENT['pre-k-am'],
+        iconColor: '#fdba74', // orange
       },
     ],
   },

@@ -9,7 +9,14 @@
 // =============================================================================
 
 export interface WcpClass {
-  slug: 'twos' | 'threes' | 'pre-k-am' | 'pre-k-pm';
+  /**
+   * Any class slug. This was a union of the four 2026-27 slugs, which made the
+   * whole hub blind to a fifth class — every consumer typed itself against
+   * those four names and a class that existed only in Sanity could not be
+   * expressed. Sanity is the source now (src/lib/hub-classes.ts); this file is
+   * the per-field fallback for the four the site shipped with.
+   */
+  slug: string;
   name: string;
   /** Lucide icon used on the hub nav + class hero. */
   icon: string;
@@ -92,10 +99,10 @@ export const classes: WcpClass[] = [
   },
 ];
 
-export const classBySlug = Object.fromEntries(classes.map((c) => [c.slug, c])) as Record<
-  WcpClass['slug'],
-  WcpClass
->;
+/** The committed classes by slug. A slug not in this file returns undefined. */
+export const classBySlug: Record<string, WcpClass | undefined> = Object.fromEntries(
+  classes.map((c) => [c.slug, c]),
+);
 
 /**
  * Build the PayPal checkout URL for a stored pay value.

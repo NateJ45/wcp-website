@@ -63,9 +63,18 @@ export const hubNavMenu = defineType({
               initialValue: 'sky',
             }),
             defineField({
+              name: 'autoClasses',
+              title: 'Fill this section with the class pages',
+              type: 'boolean',
+              initialValue: false,
+              description:
+                'On: this section lists every class page by itself, in the order the classes are in, and a class you add later appears here with no menu edit. Any links you add below are ignored while this is on.',
+            }),
+            defineField({
               name: 'links',
               title: 'Links',
               type: 'array',
+              hidden: ({ parent }) => Boolean((parent as { autoClasses?: boolean })?.autoClasses),
               of: [
                 // -- A page that came with the site -------------------------
                 defineArrayMember({

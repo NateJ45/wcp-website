@@ -1,29 +1,36 @@
 ---
 /* ============================================================================
-   Family Hub — Board-created pages (GATED, catch-all)
+   Family Hub — classroom pages and Board-created pages (GATED, catch-all)
    ============================================================================
-   Every other hub page is a hand-written route, because each carries a
+   Every OTHER hub page is a hand-written route, because each carries a
    code-owned widget (the calendar embed, the PayPal buttons, the directory
-   map, class facts). That made the hub the one part of the site a future board
-   could not grow: adding a page meant a developer, a new .astro file, a new
-   `hubKey` option, and a hardcoded link in hub-nav.ts.
+   map). This one route answers for the two kinds of page nobody should need a
+   developer to create:
 
-   This route closes that. A volunteer creates a `hubPage` in the Studio, leaves
-   `hubKey` empty, gives it a web address, and the page exists here — built from
-   the same hub-safe section palette as every other hub page, inside the same
-   shell, and placed in the rail from the document's own "Where it appears"
-   fields (src/lib/hub-pages.ts merges it in).
+     1. CLASSROOM pages. Publishing a `class` document now gives that class a
+        hub page at /family-hub/<class slug>, built from the class entry alone —
+        facts, teacher, reps, pay button, helper sheet, photo album — plus the
+        handbook sections of the `hubPage` that names it, when one exists.
+        Classes that share a teacher and a handbook share one page (Twos &
+        Threes; Pre-K AM & PM), and each class's own address redirects there,
+        which is how the shipped bookmarks keep working. See
+        src/lib/hub-classrooms.ts.
+     2. BOARD-CREATED pages. A volunteer makes a `hubPage`, leaves `hubKey`
+        empty, gives it a web address, and the page exists here.
+
+   PRECEDENCE: `hubPathKind` in src/lib/hub-classrooms.ts is the rule, written
+   once and unit-tested there rather than left to Astro's route ranking. In
+   short: a real .astro route, then a CLASSROOM, then a Board page, then 404 —
+   a class page outranks a Board page at the same address because its address is
+   DERIVED from the class rather than typed by a person. The Studio refuses to
+   save a Board page at a class's address for the same reason (see hubPage.ts),
+   so this is a second line of defence, not the only one.
 
    GATING: this lives under /family-hub and sets `prerender = false`, which is
    the whole contract — src/middleware.ts protects it exactly like every other
    hub route, with no per-page auth code. Do not add a prerendered branch here.
-   tests/hub-gate.spec.ts asserts a Board page 302s to the login page for a
-   signed-out visitor, so that protection cannot silently lapse.
-
-   Astro matches static routes BEFORE a catch-all, so a document whose slug
-   collides with a built-in page would simply never render. Rather than let that
-   be a silent mystery, RESERVED_HUB_SLUGS rejects those slugs in the Studio,
-   and this route 404s on one as a second line of defence.
+   tests/hub-gate.spec.ts asserts a signed-out visitor is bounced from a
+   classroom page, a Board page and a made-up address alike.
    ============================================================================ */
 export const prerender = false;
 
@@ -31,17 +38,27 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+import HubClassroomBody from '@/components/hub/HubClassroomBody.astro';
+import TeacherNoteModal from '@/components/hub/TeacherNoteModal.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_BY_SLUG_QUERY } from '@/lib/queries';
+import {
+  HUB_PAGE_BY_SLUG_QUERY,
+  HUB_CLASSROOM_PAGE_QUERY,
+  ROLE_HOLDERS_QUERY,
+} from '@/lib/queries';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { isUsableHubSlug } from '@/lib/hub-pages';
+import { getHubClassData } from '@/lib/hub-classes';
+import { matchClassroom, teacherNoteKeys } from '@/lib/hub-classrooms';
+import { toHolderMap, type Holder, type RoleHolderRow } from '@/lib/hub-org';
 
 interface HubPageDoc {
   title?: string;
   heading?: string;
   intro?: string;
   navIcon?: string;
+  handbookUrl?: string;
   _updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
@@ -54,8 +71,57 @@ interface HubPageDoc {
 const raw = Astro.params.slug ?? '';
 const slug = Array.isArray(raw) ? raw.join('/') : raw;
 
+// ---- 1. Classroom? ---------------------------------------------------------
+// ONE read gives the class pages AND which of them have a curriculum PDF; the
+// rail and the topbar then hit the same cache entry for free.
+const { classrooms, guides } = await getHubClassData();
+const match = matchClassroom(classrooms, slug);
+
+// An old per-class bookmark (/family-hub/twos, /family-hub/pre-k-am) lands on
+// the page that now covers it. 301, because the move is permanent.
+if (match?.kind === 'redirect') return Astro.redirect(match.to, 301);
+
+let room = match?.kind === 'render' ? match.classroom : null;
+let repHolders = new Map<string, Holder>();
+
+if (room) {
+  // Two reads: the classroom's own hubPage (heading, intro, handbook PDF,
+  // sections) and who the class reps are. The rep read carries PII once a rep
+  // links a Directory entry, so it passes NO cache — see the caching rules in
+  // CLAUDE.md. They run together because the page cannot render without both.
+  const [page, holders] = await Promise.all([
+    sanityFetch<(HubPageDoc & { classSlugs?: string[] }) | null>(
+      HUB_CLASSROOM_PAGE_QUERY,
+      { key: room.key },
+      { cache: BOARD_CONTENT_CACHE },
+    ).catch(() => null),
+    sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY).catch(() => [] as RoleHolderRow[]),
+  ]);
+
+  repHolders = toHolderMap(holders ?? []);
+  // The classroom carries the page's METADATA from the light query already;
+  // this fills in the parts only the full read has (intro, handbook, sections).
+  if (page) {
+    room = {
+      ...room,
+      page: {
+        key: room.key,
+        title: page.title,
+        heading: page.heading,
+        intro: page.intro,
+        navIcon: page.navIcon,
+        handbookUrl: page.handbookUrl,
+        updatedAt: page._updatedAt,
+        classSlugs: page.classSlugs ?? room.classes.map((c) => c.slug),
+        sections: page.sections,
+      },
+    };
+  }
+}
+
+// ---- 2. A Board-created page ----------------------------------------------
 let doc: HubPageDoc | null = null;
-if (isUsableHubSlug(slug)) {
+if (!room && isUsableHubSlug(slug)) {
   try {
     doc = await sanityFetch<HubPageDoc | null>(
       HUB_PAGE_BY_SLUG_QUERY,
@@ -67,15 +133,17 @@ if (isUsableHubSlug(slug)) {
   }
 }
 
-// No document, an unusable slug, or a slug that shadows a real route: a genuine
-// 404. Returning the hub's own 404 rather than an empty shell means a mistyped
-// address behaves like a mistyped address everywhere else on the site.
-if (!doc) return new Response(null, { status: 404 });
+// Neither: a genuine 404. Returning the hub's own 404 rather than an empty
+// shell means a mistyped address behaves like a mistyped address everywhere
+// else on the site.
+if (!room && !doc) return new Response(null, { status: 404 });
 
-const title = doc.heading || doc.title || 'Family Hub';
-const sections = doc.sections ?? [];
+const title = room
+  ? room.page?.heading?.trim() || room.label
+  : doc!.heading || doc!.title || 'Family Hub';
+const sections = doc?.sections ?? [];
 const readMinutes = estimateReadMinutes(sections);
-const updated = formatMonthYear(doc._updatedAt);
+const updated = formatMonthYear(doc?._updatedAt);
 ---
 
 <HubShell
@@ -86,20 +154,34 @@ const updated = formatMonthYear(doc._updatedAt);
 >
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
-      <HubPageHeader
-        title={title}
-        subtitle={doc.intro}
-        icon={doc.navIcon || 'file-text'}
-        readMinutes={readMinutes}
-        updated={updated}
-      />
-
       {
-        /* The same Board-editable body every other hub page uses, so a page
-          created in 2035 behaves exactly like one shipped in 2026 — including
-          the "On this page" TOC once it has enough sections. */
+        room ? (
+          <HubClassroomBody room={room} holders={repHolders} guides={guides} />
+        ) : (
+          <>
+            <HubPageHeader
+              title={title}
+              subtitle={doc!.intro}
+              icon={doc!.navIcon || 'file-text'}
+              readMinutes={readMinutes}
+              updated={updated}
+            />
+
+            {/* The same Board-editable body every other hub page uses, so a page
+              created in 2035 behaves exactly like one shipped in 2026 —
+              including the "On this page" TOC once it has enough sections. */}
+            <HubSectionedBody
+              sections={sections}
+              label={`${title} sections`}
+              class="mt-8"
+              emptyTitle="This page is being written."
+            />
+          </>
+        )
       }
-      <HubSectionedBody sections={sections} label={`${title} sections`} class="mt-8" />
     </div>
   </Section>
+
+  {/* The teacher's welcome letter — first-visit modal on a classroom page. */}
+  {room && <TeacherNoteModal keys={teacherNoteKeys(room)} color={room.color} />}
 </HubShell>

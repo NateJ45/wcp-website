@@ -498,7 +498,10 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     // the draft twin when there is one (the newest words). Every nested `_key`
     // is replaced: two array members with one key is a Studio-level error.
     // A hub copy loses its `hubKey` on purpose — a second document claiming a
-    // built-in page would make which one the hub shows a coin toss.
+    // built-in page would make which one the hub shows a coin toss. It loses
+    // "Classes on this page" for the same reason: a class belongs to exactly
+    // one classroom page, and a copy claiming the same classes would leave one
+    // of the two pages rendering to nobody (src/lib/hub-classrooms.ts).
     const duplicatePage = useCallback(
       async (row: NavRow) => {
         setBusyId(row.id);
@@ -518,6 +521,7 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
           delete copy._createdAt;
           delete copy._updatedAt;
           delete copy.hubKey;
+          delete copy.classes;
 
           const takenSlugs = new Set(
             await client.fetch<string[]>('*[_type == $type && defined(slug)].slug', {

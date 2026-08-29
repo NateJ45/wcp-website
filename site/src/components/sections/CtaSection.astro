@@ -9,10 +9,13 @@ import type { SectionData, ActionData } from './section-helpers';
 interface Props {
   section: SectionData;
   linkBase?: string;
-  /** When set (class hub pages), the closing CTA becomes a signed sign-off
+  /** When set (classroom hub pages), the closing CTA becomes a signed sign-off
       card: the teacher's headshot + Email / Call-or-text pills stand in for the
-      plain-text note. Omitted everywhere else, so the CTA is unchanged. */
-  teacherSlug?: string;
+      plain-text note. Omitted everywhere else, so the CTA is unchanged. These
+      are the classroom's teacher-note keys (see src/lib/hub-classrooms.ts). */
+  teacherKeys?: string[];
+  /** The classroom's brand colour, for the sign-off's photo ring. */
+  teacherColor?: string;
   /** Set by SectionRenderer when this CTA is the page's FINAL band. The
       closing-band doctrine (boldness pass 2026-07): a closing navy CTA renders
       as the AMBER DRENCH instead — the old site ended every page on its thick
@@ -25,16 +28,25 @@ interface Props {
       login. */
   hideRating?: boolean;
 }
-const { section, linkBase = '', teacherSlug, isClosing = false, hideRating = false } = Astro.props;
+const {
+  section,
+  linkBase = '',
+  teacherKeys,
+  teacherColor,
+  isClosing = false,
+  hideRating = false,
+} = Astro.props;
+// One boolean for the three places the sign-off changes the banner.
+const signed = Boolean(teacherKeys?.length);
 const actions = (section.actions as ActionData[] | undefined) ?? [];
-const noteHtml = teacherSlug ? '' : renderPortableText(section.note as never, linkBase);
+const noteHtml = signed ? '' : renderPortableText(section.note as never, linkBase);
 const storedTone = (section.tone as 'navy' | 'cream') ?? 'navy';
 // Closers stay NAVY: white text on navy (9.75:1) with ORANGE as accent only
 // (crayon underline, seam trace, amber glow). Nathan ruled out dark text on
 // warm fills entirely (amber 2026-07-19a, sky 2026-07-19b); white on navy is
 // the AA-passing way to keep the color energy.
 const tone = storedTone;
-const accentClose = isClosing && storedTone === 'navy' && !teacherSlug;
+const accentClose = isClosing && storedTone === 'navy' && !signed;
 ---
 
 <CtaBanner
@@ -45,16 +57,16 @@ const accentClose = isClosing && storedTone === 'navy' && !teacherSlug;
   tone={tone}
   underlineAccent={accentClose}
   seam={section.seam as boolean}
-  rating={!teacherSlug && !hideRating}
+  rating={!signed && !hideRating}
   titleId={`sec-${section._key}`}
 >
   <Fragment slot="actions">
     <ActionButtons actions={actions} linkBase={linkBase} size="lg" tone={tone} />
   </Fragment>
   {
-    teacherSlug && (
+    signed && (
       <Fragment slot="signature">
-        <TeacherSignoff slug={teacherSlug} />
+        <TeacherSignoff keys={teacherKeys!} color={teacherColor} />
       </Fragment>
     )
   }

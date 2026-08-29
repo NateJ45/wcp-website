@@ -21,25 +21,25 @@
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { classReps } from '@/data/hub/org-holders';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { telHref, applyHolder, type Holder } from '@/lib/hub-org';
 
 interface Props {
-  /** Class slug for the accent color (e.g. 'pre-k-am', 'twos'). */
-  slug: string;
+  /** The class's brand colour, from its document (e.g. 'orange'). */
+  color?: string;
   /** Role label to look up in `classReps`, e.g. 'Pre-K AM Rep'. */
   role: string;
-  /** Subtitle under the name, e.g. 'Morning class rep · 2026-27'. */
+  /** Subtitle under the name, e.g. 'Pre-K AM class rep'. */
   label: string;
   /** Role holders from the page's single read, keyed by role label. */
   holders?: Map<string, Holder>;
 }
-const { slug, role, label, holders } = Astro.props;
+const { color, role, label, holders } = Astro.props;
 
 const fallback = classReps.find((r) => r.role === role);
 const person = fallback ? applyHolder(fallback, holders) : undefined;
-const cc = classStyles(slug);
+const cc = colorStyles(color);
 const named = Boolean(person?.name);
 
 const email = person?.email;

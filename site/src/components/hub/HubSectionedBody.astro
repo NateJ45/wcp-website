@@ -31,16 +31,16 @@
    The actual card/flow/bleed styling lives in globals.css, keyed off
    `data-treatment` — see the "Handbook document column" block there.
 
-   `tint` (a class slug) tints the doc column to that class's brand color — the
-   card icon chips and the active TOC accent — so a class handbook feels like
-   its class. Omitted on Getting Started, which stays neutral sky.
+   `tint` (a brand COLOR from the class document, e.g. "amber") tints the doc
+   column — the card icon chips and the active TOC accent — so a class handbook
+   feels like its class. Omitted on Getting Started, which stays neutral sky.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import CtaSection from '@/components/sections/CtaSection.astro';
 import HubSectionIndex from '@/components/hub/HubSectionIndex.astro';
 import HubEmptyState from '@/components/hub/HubEmptyState.astro';
-import { classColor, classStyles } from '@/lib/class-colors';
+import { colorStyles, toClassColor } from '@/lib/class-colors';
 import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
 import { sectionEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
@@ -50,11 +50,12 @@ interface Props {
   sections?: any[];
   /** Accessible name for the TOC, e.g. "Handbook sections". */
   label: string;
-  /** Class slug to tint the column (card icons + active TOC accent). */
+  /** Brand colour to tint the column (card icons + active TOC accent). */
   tint?: string;
-  /** Class slug whose teacher signs off the closing CTA (headshot + contact
-      pills). Set on the class handbooks; omitted on Getting Started. */
-  signoff?: string;
+  /** Set on a classroom handbook: the teacher's note keys (teacherNoteKeys()).
+      The closing CTA then becomes a signed sign-off card — headshot + contact
+      pills. Omitted on Getting Started and every non-class page. */
+  signoff?: string[];
   /** Extra classes on the grid root (e.g. top margin from the page). */
   class?: string;
   /** Hub PREVIEW route only: the hubPage doc these sections belong to. Each
@@ -62,8 +63,20 @@ interface Props {
       draws section-level controls (move / duplicate / delete / insert). The
       live hub pages never pass this. See src/lib/preview-edit-attr.ts. */
   editDoc?: EditDoc;
+  /** The empty-state headline. The default suits a classroom (its body IS the
+      handbook); a generic Board page passes its own — a brand-new "Lost &
+      Found" page read "This handbook is being written", found 2026-08-29. */
+  emptyTitle?: string;
 }
-const { sections, label, tint, signoff, class: className, editDoc } = Astro.props;
+const {
+  sections,
+  label,
+  tint,
+  signoff,
+  class: className,
+  editDoc,
+  emptyTitle = 'This handbook is being written.',
+} = Astro.props;
 
 const items = sections ?? [];
 
@@ -122,14 +135,14 @@ const CARD_ICON: Record<string, string> = {
 
 // The teacher signs off only the CLOSING CTA (the LAST ctaSection), so a
 // mid-handbook ctaSection the Board might add never gets a teacher signature.
-const lastCtaKey = signoff
+const lastCtaKey = signoff?.length
   ? [...items].reverse().find((s) => s?._type === 'ctaSection')?._key
   : undefined;
 
 // Tint: class iconChip for the card icons, and a CSS accent color for the TOC
 // active state. Neutral sky when there's no class (Getting Started).
-const iconChip = tint ? classStyles(tint).iconChip : 'bg-sky/15 text-sky-ink';
-const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` : undefined;
+const iconChip = tint ? colorStyles(tint).iconChip : 'bg-sky/15 text-sky-ink';
+const accentStyle = tint ? `--hub-doc-accent: var(--color-${toClassColor(tint)})` : undefined;
 ---
 
 {
@@ -138,7 +151,7 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
        column — the handbook body is entirely Board-editable, so an unseeded
        page shouldn't read as broken. */
     <div class:list={['hub-doc', className]}>
-      <HubEmptyState spot="documents" title="This handbook is being written." source="sanity" />
+      <HubEmptyState spot="documents" title={emptyTitle} source="sanity" />
     </div>
   ) : (
     <div
@@ -161,10 +174,12 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
           const icon = treatment === 'card' ? CARD_ICON[section?._type] : undefined;
           // The closing CTA on a class handbook becomes a signed sign-off card
           // (teacher headshot + contact pills). Rendered via CtaSection directly
-          // so it can take the extra teacherSlug prop SectionRenderer doesn't
+          // so it can take the extra teacher props SectionRenderer doesn't
           // forward; every other section goes through SectionRenderer as before.
           const isSignoffCta =
-            Boolean(signoff) && section?._type === 'ctaSection' && section?._key === lastCtaKey;
+            Boolean(signoff?.length) &&
+            section?._type === 'ctaSection' &&
+            section?._key === lastCtaKey;
           return (
             <div
               class="hub-doc-block"
@@ -179,7 +194,7 @@ const accentStyle = tint ? `--hub-doc-accent: var(--color-${classColor(tint)})` 
                 </span>
               )}
               {isSignoffCta ? (
-                <CtaSection section={section} teacherSlug={signoff} />
+                <CtaSection section={section} teacherKeys={signoff} teacherColor={tint} />
               ) : (
                 <SectionRenderer sections={[section]} site={site} cardWatermark hub />
               )}

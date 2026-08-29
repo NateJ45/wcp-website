@@ -123,7 +123,12 @@ const CHECKS: Check[] = [
     id: 'drafts',
     run: async (c) => {
       const drafts = await c.fetch<{ _type: string; label?: string; _updatedAt: string }[]>(
-        `*[_id in path("drafts.**") && !(_type in [
+        // `sanity.*` is excluded as a PATTERN, not by name: the Presentation
+        // preview mints `sanity.previewUrlSecret` DRAFTS on every session, and
+        // this check once told a volunteer "4 edits waiting to publish" about
+        // internal secrets no Studio pane can open (found 2026-08-29). Any
+        // future system type the platform adds stays excluded too.
+        `*[_id in path("drafts.**") && !(_type match "sanity.*") && !(_type in [
           "trashedItem","submission","testimonialSubmission","subscriber",
           "signupEntry","photoSubmission","hoursLog","linkHealth"
         ])] | order(_updatedAt asc) {

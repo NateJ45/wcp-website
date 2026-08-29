@@ -1,4 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
+import { ClassPickInput } from '../../components/ClassSelectInput';
 
 // =============================================================================
 // supplyList — the yearly School Supply List, Board-editable
@@ -47,23 +48,20 @@ export const supplyList = defineType({
       name: 'lists',
       title: 'Per-class lists',
       type: 'array',
-      description: 'The items for each class. The class colours and icons stay fixed.',
+      description:
+        'The items for each class. The class colour comes from the class itself; the layout stays fixed. Add a row for a class you have added and it appears on the printed list.',
       of: [
         defineArrayMember({
           type: 'object',
           fields: [
+            // The LIVE classes, not a hardcoded four: a class the Board adds
+            // gets its own card on the printed list the same day
+            // (scripts/generate-supplies.mjs derives the card from the class).
             defineField({
               name: 'slug',
               title: 'Class',
               type: 'string',
-              options: {
-                list: [
-                  { title: 'Twos', value: 'twos' },
-                  { title: 'Threes', value: 'threes' },
-                  { title: 'Pre-K AM', value: 'pre-k-am' },
-                  { title: 'Pre-K PM', value: 'pre-k-pm' },
-                ],
-              },
+              components: { input: ClassPickInput },
               validation: (R) => R.required().error('Pick which class this list is for.'),
             }),
             defineField({

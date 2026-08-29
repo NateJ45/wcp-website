@@ -26,7 +26,13 @@ import { celebrate } from '@/scripts/confetti';
 
 const SEEN_KEY = 'wcp-tour-seen';
 const PICKS_KEY = 'wcp-my-classes';
-const CLASS_ORDER = ['twos', 'threes', 'pre-k-am', 'pre-k-pm'];
+// The class order comes from the page, not from a list in here: the tour's own
+// chips are rendered from the `class` documents, so reading them keeps the tour
+// correct when the Board adds a class (2026-08-29).
+const classOrder = (): string[] =>
+  [...document.querySelectorAll<HTMLElement>('[data-tour-class-pick]')]
+    .map((el) => el.dataset.tourClassPick ?? '')
+    .filter(Boolean);
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 let openTimer: ReturnType<typeof setTimeout> | null = null;
@@ -173,7 +179,7 @@ function getPicks(): string[] {
   try {
     const raw = JSON.parse(localStorage.getItem(PICKS_KEY) ?? '[]');
     if (!Array.isArray(raw)) return [];
-    return CLASS_ORDER.filter((slug) => raw.includes(slug));
+    return classOrder().filter((slug) => raw.includes(slug));
   } catch {
     return [];
   }
@@ -190,7 +196,7 @@ function toggleClass(slug: string): void {
   const picks = getPicks();
   const next = picks.includes(slug)
     ? picks.filter((s) => s !== slug)
-    : CLASS_ORDER.filter((s) => picks.includes(s) || s === slug);
+    : classOrder().filter((s) => picks.includes(s) || s === slug);
   try {
     localStorage.setItem(PICKS_KEY, JSON.stringify(next));
   } catch {

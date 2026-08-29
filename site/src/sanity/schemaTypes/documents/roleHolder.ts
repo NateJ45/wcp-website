@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { makeRoleSelectInput } from '../../components/ClassSelectInput';
 
 // =============================================================================
 // roleHolder — WHO fills each co-op role this school year
@@ -22,6 +23,11 @@ import { defineType, defineField } from 'sanity';
 // The roles the chart draws, in chart order. Keep in sync with
 // src/data/hub/org-holders.ts — the seed script (scripts/seed-role-holders.mjs)
 // creates one document per entry here.
+//
+// The CLASS REP seats below are the four classes the site shipped with. The
+// dropdown adds one "<Class name> Rep" per live class on top of this list (see
+// makeRoleSelectInput), so a class the Board adds can be given its rep the same
+// day instead of showing "To be announced" for ever.
 const ROLES = [
   'President',
   'Vice President',
@@ -58,8 +64,8 @@ export const roleHolder = defineType({
       type: 'string',
       group: 'who',
       description:
-        'Which seat on the org chart this is. Pick from the list — the chart matches on this exactly.',
-      options: { list: ROLES.map((r) => ({ title: r, value: r })) },
+        'Which seat on the org chart this is. Pick from the list — the chart matches on this exactly. Every class gets a "<Class name> Rep" seat automatically.',
+      components: { input: makeRoleSelectInput(ROLES) },
       validation: (R) => R.required().error('Pick which role this is.'),
     }),
     defineField({

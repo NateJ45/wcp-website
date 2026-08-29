@@ -298,6 +298,13 @@ const currentPath = Astro.url.pathname;
               `@view-transition { navigation: auto }`, so `none` wins here;
               public pages (no override) keep their cross-fade. */}
           <style is:inline set:html="@view-transition { navigation: none; }" />
+          {/* The classes and the page each one lives on, for the device-local
+              my-classes personalization (src/scripts/my-class.ts). It is here,
+              once per hub page, because that script runs on EVERY hub page —
+              the class list used to be hardcoded in the script, which is what
+              made the hub blind to a class the Board added. Derived from the
+              `class` documents; the read is the one the rail already paid for
+              (board-content cache, in-isolate). */}
           {/* The rail floats as a lifted panel: the aside carries a small
               gutter (p-2) on the grey canvas, and the inner wrapper rounds +
               shadows the navy so it reads as separated from the content (and no

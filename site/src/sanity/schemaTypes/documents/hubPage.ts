@@ -93,17 +93,78 @@ export const hubPage = defineType({
             // Two pages at one address: the site can only serve one of them,
             // and which one it picks is arbitrary. Catch it here instead.
             const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
-            const taken = await context
-              .getClient({ apiVersion: '2025-01-01' })
-              .fetch<string | null>(
-                `*[_type == "hubPage" && slug == $slug && !(_id in [$id, "drafts." + $id])][0].title`,
-                { slug: value, id },
-              );
-            return taken
-              ? `“${value}” is already used by the page “${taken}”. Pick a different web address.`
-              : true;
+            const client = context.getClient({ apiVersion: '2025-01-01' });
+            const taken = await client.fetch<string | null>(
+              `*[_type == "hubPage" && slug == $slug && !(_id in [$id, "drafts." + $id])][0].title`,
+              { slug: value, id },
+            );
+            if (taken) {
+              return `“${value}” is already used by the page “${taken}”. Pick a different web address.`;
+            }
+
+            // Every class already has a hub page at its own address, whether or
+            // not anyone made one (src/lib/hub-classrooms.ts). A page taking a
+            // class's address would never show, because the class page answers
+            // there first — UNLESS this page IS that class's classroom page,
+            // which is exactly how a new class gets a handbook.
+            const owner = await client.fetch<string | null>(
+              `*[_type == "class" && slug.current == $slug][0].name`,
+              { slug: value },
+            );
+            if (owner) {
+              const mine = ((context.document as { classes?: { _ref?: string }[] })?.classes ?? [])
+                .map((r) => r?._ref)
+                .filter(Boolean);
+              const isMine =
+                mine.length > 0 &&
+                (await client.fetch<boolean>(
+                  `count(*[_type == "class" && slug.current == $slug && _id in $ids]) > 0`,
+                  { slug: value, ids: mine },
+                ));
+              if (!isMine) {
+                return `“${value}” is the ${owner} class's own page address. Add ${owner} under “Classes on this page” to make this its classroom page, or pick a different web address.`;
+              }
+            }
+            return true;
           }),
     }),
+    // --- Classroom pages ----------------------------------------------------
+    // A hub page becomes the CLASSROOM page for the classes named here. Twos
+    // and Threes share one (same teacher, same handbook), and so do Pre-K AM
+    // and PM. A class that no page names still gets a hub page — the site
+    // builds it from the class entry alone — so this field is only for putting
+    // two or more classes together, or for giving one class a handbook.
+    defineField({
+      name: 'classes',
+      title: 'Classes on this page',
+      type: 'array',
+      group: 'settings',
+      of: [defineArrayMember({ type: 'reference', to: [{ type: 'class' }] })],
+      description:
+        'Leave empty for a normal page. Pick one or more classes to make this their classroom page: the class facts, teacher, pay button and photo album appear at the top, and everything you add below becomes their handbook. Classes that share a teacher and a handbook go on one page together.',
+      validation: (R) =>
+        R.custom(async (value, context) => {
+          const refs = (value ?? []) as { _ref?: string }[];
+          if (refs.length === 0) return true;
+
+          // Two pages claiming one class: the site can only show it on one, so
+          // catch it here instead of letting the other page look broken.
+          const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
+          const ids = refs.map((r) => r?._ref).filter(Boolean);
+          const clash = await context
+            .getClient({ apiVersion: '2025-01-01' })
+            .fetch<{ title?: string; name?: string } | null>(
+              `*[_type == "hubPage" && !(_id in [$id, "drafts." + $id]) && count(classes[@._ref in $ids]) > 0][0]{
+                 title, "name": classes[@._ref in $ids][0]->name
+               }`,
+              { id, ids },
+            );
+          return clash
+            ? `“${clash.name ?? 'That class'}” is already on the page “${clash.title ?? 'another hub page'}”. A class can only have one classroom page.`
+            : true;
+        }),
+    }),
+
     defineField({
       name: 'navIcon',
       title: 'Page icon',

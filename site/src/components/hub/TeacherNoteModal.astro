@@ -18,15 +18,20 @@ import Prose from '@/components/Prose.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { renderPortableText } from '@/lib/portable-text';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
+import { TEACHER_NOTE_LETTER_QUERY, pickNote } from '@/lib/hub-teacher-note';
 import type { PortableTextBlock } from '@portabletext/types';
 
 interface Props {
-  slug: string;
+  /** Note keys for this classroom, most specific first (teacherNoteKeys()). */
+  keys: string[];
+  /** The classroom's brand colour, from the class document. */
+  color?: string;
 }
-const { slug } = Astro.props;
+const { keys, color } = Astro.props;
 
 interface TeacherNote {
+  key?: string;
   active?: boolean;
   version?: string;
   heading?: string;
@@ -41,10 +46,7 @@ interface TeacherNote {
 
 let note: TeacherNote | null = null;
 try {
-  note = await sanityFetch<TeacherNote | null>(
-    `*[_type == "teacherNote" && class == $slug][0]{ active, version, heading, dateLabel, salutation, body, signName, signRole, email, photo }`,
-    { slug },
-  );
+  note = pickNote(await sanityFetch<TeacherNote[]>(TEACHER_NOTE_LETTER_QUERY, { keys }), keys);
 } catch {
   note = null;
 }
@@ -52,7 +54,7 @@ try {
 const show = Boolean(note?.active && note?.version && note?.heading && note?.body?.length);
 const bodyHtml = show ? renderPortableText(note!.body) : '';
 const initial = (note?.signName ?? 'W').trim().charAt(0).toUpperCase();
-const cc = classStyles(slug);
+const cc = colorStyles(color);
 // Year labels like "2026-27" must never wrap mid-year (see PresidentNoteModal).
 const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
 ---
@@ -62,7 +64,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
     <div
       hidden
       data-note-modal
-      data-storage-key={`wcp-teacher-note-${slug}`}
+      data-storage-key={`wcp-teacher-note-${note?.key ?? keys[0]}`}
       data-version={note!.version}
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
     >

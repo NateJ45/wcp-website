@@ -21,6 +21,8 @@
 
 import { hubNav, type HubGroup, type HubLink } from '@/data/hub-nav';
 import { isUsableHubSlug } from '@/lib/hub-pages';
+import { colorStyles } from '@/lib/class-colors';
+import type { Classroom } from '@/lib/hub-classrooms';
 
 /**
  * The bright-tint hexes that hold >= 4.5:1 as small bold label text on the
@@ -34,12 +36,27 @@ export const HUB_ACCENTS: Record<string, string> = {
   orange: '#fdba74',
 };
 
-/** Every built-in link, keyed by route — the dropdown the Studio offers. */
+/**
+ * The links the Studio's "which page" dropdown offers.
+ *
+ * The CLASS pages are not among them: that section fills itself from the class
+ * documents now, so listing them would invite a Board to hand-pin a link that
+ * a class rename would leave stale. Turning the section on ("Fill this section
+ * with the class pages") is the supported way.
+ */
 export const BUILTIN_HUB_LINKS: readonly HubLink[] = hubNav
   .slice(1) // group 0 is Home, pinned in code and not menu-editable
+  .filter((g) => !g.autoClasses)
   .flatMap((g) => g.links);
 
-const builtinByHref = new Map(BUILTIN_HUB_LINKS.map((l) => [l.href, l]));
+// Resolution still knows the class links, so a menu row saved before the
+// section became self-filling keeps working instead of silently disappearing.
+const builtinByHref = new Map(
+  hubNav
+    .slice(1)
+    .flatMap((g) => g.links)
+    .map((l) => [l.href, l]),
+);
 
 /** One link row as the hubNavMenu document stores it. */
 export interface NavDocLink {
@@ -66,6 +83,8 @@ export interface NavDocGroup {
   label?: string | null;
   accent?: string | null;
   links?: NavDocLink[] | null;
+  /** The self-filling Classes section (see classroomLinks below). */
+  autoClasses?: boolean | null;
 }
 
 export interface HubNavDoc {
@@ -105,6 +124,37 @@ function resolveLink(row: NavDocLink): HubLink | null {
 }
 
 /**
+ * One rail link per CLASSROOM page, in class order.
+ *
+ * This is the hub's answer to the public site's self-maintaining Classes
+ * dropdown: the menu is derived from the `class` documents, so publishing a
+ * class puts it in the rail, and two classes that share a page (Twos & Threes)
+ * read as ONE link because they are one page. Each link carries its class's
+ * bright accent — the rail is a theme-stable navy island, so the accent is the
+ * AA-checked bright tier, not a page-side `-ink` token.
+ */
+export function classroomLinks(classrooms: Classroom[]): HubLink[] {
+  return classrooms.map((room) => ({
+    label: room.label,
+    href: room.route,
+    icon: room.icon,
+    iconColor: colorStyles(room.color).railAccent,
+  }));
+}
+
+/**
+ * Fill a group's links from the classrooms when it is the Classes group.
+ *
+ * A group with no classrooms to show keeps its committed links, so a failed
+ * gated read leaves the menu exactly as it shipped rather than dropping the
+ * class pages out of the rail.
+ */
+function withClassrooms(group: HubGroup, classrooms: Classroom[]): HubGroup {
+  if (!group.autoClasses || classrooms.length === 0) return group;
+  return { ...group, links: classroomLinks(classrooms) };
+}
+
+/**
  * The rail's nav: the pinned Home group, then the document's groups.
  *
  * Falls back to the COMMITTED nav whenever the document yields nothing — no
@@ -112,19 +162,26 @@ function resolveLink(row: NavDocLink): HubLink | null {
  * is honoured as-is: a Board that deliberately trims the menu to two groups
  * gets two groups, not two plus a fallback.
  */
-export function resolveHubNav(doc?: HubNavDoc | null): HubGroup[] {
+export function resolveHubNav(doc?: HubNavDoc | null, classrooms: Classroom[] = []): HubGroup[] {
   const homeGroup = hubNav[0];
 
   const groups: HubGroup[] = (doc?.groups ?? [])
-    .map((g) => ({
-      label: g?.label?.trim() ?? '',
-      accent: HUB_ACCENTS[g?.accent ?? ''] ?? HUB_ACCENTS.sky,
-      links: (g?.links ?? []).map(resolveLink).filter((l): l is HubLink => l !== null),
-    }))
+    .map((g) =>
+      withClassrooms(
+        {
+          label: g?.label?.trim() ?? '',
+          accent: HUB_ACCENTS[g?.accent ?? ''] ?? HUB_ACCENTS.sky,
+          autoClasses: g?.autoClasses === true,
+          links: (g?.links ?? []).map(resolveLink).filter((l): l is HubLink => l !== null),
+        },
+        classrooms,
+      ),
+    )
     // A group with no label or no surviving links renders as an empty heading
-    // or a dangling label — drop it instead.
+    // or a dangling label — drop it instead. A self-filling Classes group with
+    // no hand-written links survives, because the classrooms fill it.
     .filter((g) => g.label && g.links.length > 0);
 
-  if (groups.length === 0) return hubNav;
+  if (groups.length === 0) return hubNav.map((g) => withClassrooms(g, classrooms));
   return [homeGroup, ...groups];
 }

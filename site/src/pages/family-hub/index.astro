@@ -40,8 +40,16 @@ import {
   HUB_STORE_QUERY,
   DIRECTORY_FAMILY_COUNT_QUERY,
 } from '@/lib/queries';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classTiles } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
+
+// The classes a family can pick, and the page each one lives on. Derived from
+// the `class` documents, so the picker, the tour chips and my-class.ts all
+// learn a new class the moment it publishes (src/lib/hub-classrooms.ts). The
+// read rides the same board-content cache the rail already paid for.
+const myClassOptions = classTiles(await getHubClassrooms());
 
 // The handbook link follows the Studio upload (Hub settings → Each year),
 // so the yearly re-upload never needs a code edit. The committed URL is the
@@ -233,15 +241,15 @@ const firstDay = settings?.firstDay;
         >
           <span class="font-semibold text-heading">Which classes are yours?</span>
           {
-            [
-              { slug: 'twos', label: 'Twos' },
-              { slug: 'threes', label: 'Threes' },
-              { slug: 'pre-k-am', label: 'Pre-K AM' },
-              { slug: 'pre-k-pm', label: 'Pre-K PM' },
-            ].map((c) => (
+            /* One chip per class, in the Board's class order. `data-my-class-page`
+              carries the classroom this class lives on, so my-class.ts marks the
+              right rail link without a class list of its own. */
+            myClassOptions.map((c) => (
               <button
                 type="button"
                 data-my-class-pick={c.slug}
+                data-my-class-page={c.page}
+                data-my-class-name={c.label}
                 aria-pressed="false"
                 class="rounded-full border border-border bg-white px-3 py-1 font-semibold text-ink transition-colors hover:border-navy hover:text-heading aria-pressed:border-navy aria-pressed:bg-navy aria-pressed:text-white dark:bg-surface"
               >
@@ -503,7 +511,7 @@ const firstDay = settings?.firstDay;
 
   {/* The President's welcome letter — pops once per version stamp. */}
   <PresidentNoteModal />
-  <HubTourModal />
+  <HubTourModal classes={myClassOptions} />
 
   {
     /* Event details dialog for the Upcoming Events widget rows — same shared

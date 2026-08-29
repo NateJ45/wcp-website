@@ -20,6 +20,8 @@
 import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import { resolveHubNav, type HubNavDoc } from '@/lib/hub-nav-doc';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classTiles } from '@/lib/hub-classrooms';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_NAV_MENU_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
@@ -54,11 +56,30 @@ try {
 } catch {
   navDoc = null;
 }
-const nav = resolveHubNav(navDoc);
+// The Classes section fills itself from the `class` documents, so a class the
+// Board adds is in the rail the moment it publishes. Same cache, so the second
+// render of the rail (the mobile drawer) is free.
+const classrooms = await getHubClassrooms();
+const nav = resolveHubNav(navDoc, classrooms);
+
+// The classes and the page each one lives on, for the device-local my-classes
+// personalization (src/scripts/my-class.ts). That script runs on EVERY hub
+// page, and its class list used to be hardcoded — which is what made the hub
+// blind to a class the Board added. Printed once per page: only the DESKTOP
+// rail carries it, because the drawer renders a second copy of this component
+// and two JSON blocks would be one too many. The desktop rail is always in the
+// DOM (it is hidden with CSS below `lg`, not skipped), so a phone still gets it.
+const classJson = collapsible
+  ? JSON.stringify(
+      classTiles(classrooms).map((c) => ({ slug: c.slug, label: c.label, page: c.page })),
+    )
+  : null;
 
 const homeLink = nav[0].links[0];
 const groups = nav.slice(1);
 ---
+
+{classJson && <script type="application/json" data-hub-classes is:inline set:html={classJson} />}
 
 <div class="flex h-full flex-col gap-1 bg-navy px-3 py-4 text-white/85">
   <div class="mb-1 px-2 pb-2" data-rail-top>

@@ -5,7 +5,7 @@ patch script, add a row; when you run one, delete its row AND remove its
 stopgap (each row says how). A stale row here misleads the next session, which
 defeats the point.
 
-_Last reviewed: 2026-08-08._
+_Last reviewed: 2026-08-29._
 
 ## The 2026-08-04 quota-reset close-out (context)
 
@@ -23,6 +23,26 @@ nav link resolved to "/" on the live site (the whole public nav pointed home).
 Fixed same day: the script now writes real references and re-ran, and
 `resolveNavigation` warns at build time if a page link ever loses its
 reference again.
+
+## Run and closed out
+
+| Script (`site/scripts/`)   | What it did                                                                                                                                                                                                                                                    | Run                    |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `patch-hub-classrooms.mjs` | Set "Classes on this page" on the two shipped Family Hub class pages (`twos-threes` → Twos + Threes, `pre-k` → Pre-K AM + PM) and moved the four committed class icons into their `class` documents. Idempotent; re-running reports "already …" for every row. | 2026-08-29 (`--apply`) |
+
+## Needs a human
+
+- **The page-parity baseline is stale by one CONTENT change (2026-08-29).**
+  `node scripts/page-parity.mjs compare` reports 0/27 and the ONLY difference on
+  all 27 pages is the site-wide alert banner: the `closureAlert` singleton was
+  switched OFF in the Studio at 15:05 UTC, and the committed baselines in
+  `scripts/.parity/` were captured at 13:45 UTC with it ON. The diff has ZERO
+  added markup anywhere, and every removed line belongs to `ClosureBanner.astro`,
+  which no code change has touched — so the harness is reporting content drift,
+  not a regression. **To close it:** confirm the alert is meant to be off, then
+  `npm run build && node scripts/page-parity.mjs capture` and commit the new
+  baselines. Until then the harness fails on every run, which is how a real
+  regression gets ignored.
 
 ## Queued patch scripts
 

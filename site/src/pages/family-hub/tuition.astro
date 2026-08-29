@@ -20,7 +20,7 @@ import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { payUrl } from '@/data/classes';
 import { getHubClasses } from '@/lib/hub-classes';
 import { deriveStudentFeeBands } from '@/lib/student-fees';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
 import { safeIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { site } from '@/data/site';
@@ -199,7 +199,7 @@ const intro =
                     <span
                       class={cn(
                         'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
-                        classStyles(c.slug).iconChip,
+                        colorStyles(c.color).iconChip,
                       )}
                       aria-hidden="true"
                     >
@@ -209,7 +209,7 @@ const intro =
                       <span
                         class={cn(
                           'inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold tracking-wide uppercase',
-                          classStyles(c.slug).badge,
+                          colorStyles(c.color).badge,
                         )}
                       >
                         {c.name}
@@ -217,7 +217,7 @@ const intro =
                       <p class="mt-1 text-sm text-ink-muted">{c.days}</p>
                     </div>
                     <p class="ml-auto text-right">
-                      <span class={cn('block text-2xl font-extrabold', classStyles(c.slug).text)}>
+                      <span class={cn('block text-2xl font-extrabold', colorStyles(c.color).text)}>
                         {c.monthly}
                       </span>
                       <span class="block text-xs text-ink-muted">/ month</span>
@@ -232,16 +232,20 @@ const intro =
                     <dd class="text-right font-semibold text-heading">{c.annual}</dd>
                   </dl>
                 </div>
-                <Button
-                  href={payUrl(c.payId)}
-                  target="_blank"
-                  rel="noopener"
-                  variant="primary"
-                  size="md"
-                  class={cn('mt-5 w-full', classStyles(c.slug).button)}
-                >
-                  Pay {c.name} Tuition
-                </Button>
+                {/* A class with no PayPal button yet shows no pay button —
+                  a dead checkout link is worse than none. */}
+                {c.payId && (
+                  <Button
+                    href={payUrl(c.payId)}
+                    target="_blank"
+                    rel="noopener"
+                    variant="primary"
+                    size="md"
+                    class={cn('mt-5 w-full', colorStyles(c.color).button)}
+                  >
+                    Pay {c.name} Tuition
+                  </Button>
+                )}
               </HubCard>
             ))
           }

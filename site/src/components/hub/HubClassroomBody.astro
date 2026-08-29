@@ -1,0 +1,293 @@
+---
+/* ============================================================================
+   HubClassroomBody — the whole of a Family Hub classroom page
+   ============================================================================
+   ONE component for every class page on the hub. It used to be two hand-written
+   routes (twos-threes.astro, pre-k.astro) plus four redirect files, all typed
+   against a hardcoded list of four classes — so a class the Board added had no
+   hub page at all. Now the classroom comes from the `class` documents (see
+   src/lib/hub-classrooms.ts) and this renders it, whether the classroom holds
+   one class or four.
+
+   What is FIXED (code-owned, in this order):
+     1. The header: classroom name, intro, and the document pills — handbook
+        PDF, a curriculum guide per class that has one, the supply list, and
+        "See the full program" for each class's public page.
+     2. The people: the teacher card, then one class-rep card per class.
+     3. Who to ask for what (ClassAskGuide).
+     4. A fact card per class — days, time, ages, money — each in its own class
+        colour, with its pay button, helper-schedule sheet and photo album.
+   What is EDITABLE: everything below that. The classroom's `hubPage` document
+   holds the handbook as page-builder sections. A classroom with no document
+   yet renders a coaching empty state instead of a blank page, so the page is
+   complete from the moment the class is published.
+   ============================================================================ */
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import HubEmptyState from '@/components/hub/HubEmptyState.astro';
+import TeacherCard from '@/components/hub/TeacherCard.astro';
+import ClassRepCard from '@/components/hub/ClassRepCard.astro';
+import ClassAskGuide from '@/components/hub/ClassAskGuide.astro';
+import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/Icon.astro';
+import { payUrl } from '@/data/classes';
+import { colorStyles } from '@/lib/class-colors';
+import { teacherNoteKeys, type Classroom } from '@/lib/hub-classrooms';
+import { cn } from '@/lib/utils';
+import { estimateReadMinutes } from '@/lib/hub-reading-time';
+import { formatMonthYear } from '@/lib/hub-dashboard-dates';
+import type { Holder } from '@/lib/hub-org';
+
+interface Props {
+  room: Classroom;
+  /** Role holders for the class-rep cards (one read, done by the route). */
+  holders?: Map<string, Holder>;
+  /** The `curriculumGuide` keys that have a PDF (a class slug, or the
+      classroom address when one guide covers the whole room). */
+  guides?: string[];
+}
+const { room, holders, guides = [] } = Astro.props;
+
+const page = room.page;
+const cc = colorStyles(room.color);
+const noteKeys = teacherNoteKeys(room);
+const single = room.classes.length === 1;
+
+const title = page?.heading?.trim() || room.label;
+// The intro is the Board's when they wrote one. Otherwise say what the page is,
+// in the same warm register as the two hand-written pages it replaces.
+const intro =
+  page?.intro?.trim() ||
+  `Everything about the ${room.label} year in one place: the schedule, who to ask, and how to pay.`;
+const readMinutes = estimateReadMinutes(page?.sections);
+const updated = formatMonthYear(page?.updatedAt);
+
+// Curriculum guides. One guide can cover a whole classroom (the shipped Pre-K
+// guide is filed under the page address), or there can be one per class.
+const guideKeys = noteKeys.filter((k) => guides.includes(k));
+const guideLabel = (key: string) =>
+  key === room.key && !single
+    ? `${room.label} curriculum (PDF)`
+    : `${room.classes.find((c) => c.slug === key)?.name ?? room.label} curriculum (PDF)`;
+
+// "See the full program" — one pill per PUBLIC class page. Two classes sharing
+// one public page (Pre-K AM + PM) collapse to a single pill, and one pill needs
+// no class name on it. A class with no public page yet gets no pill.
+const publicPages = [
+  ...new Map(room.classes.filter((c) => c.publicSlug).map((c) => [c.publicSlug!, c])).entries(),
+];
+const programs = publicPages.map(([slug, c]) => ({
+  href: `/${slug}`,
+  label: publicPages.length === 1 ? 'See the full program' : `See the ${c.name} program`,
+}));
+---
+
+<HubPageHeader
+  title={title}
+  subtitle={intro}
+  icon={room.icon}
+  iconChip={cc.iconChip}
+  readMinutes={readMinutes}
+  updated={updated}
+>
+  <div slot="action" class="flex flex-wrap gap-2">
+    {
+      page?.handbookUrl && (
+        <Button
+          href={`${page.handbookUrl}?dl=`}
+          target="_blank"
+          rel="noopener"
+          variant="outline"
+          size="sm"
+        >
+          <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+          Download the handbook (PDF)
+        </Button>
+      )
+    }
+    {
+      /* Curriculum guides — branded PDFs in public/curriculum, regenerated by
+        scripts/generate-curriculum.mjs from the Studio's Curriculum guide
+        documents. A class with no document gets no pill. */
+    }
+    {
+      guideKeys.map((key) => (
+        <Button
+          href={`/curriculum/${key}-curriculum.pdf`}
+          target="_blank"
+          rel="noopener"
+          variant="outline"
+          size="sm"
+        >
+          <Icon name="book-open" class="h-4 w-4" aria-hidden="true" />
+          {guideLabel(key)}
+        </Button>
+      ))
+    }
+    {
+      /* Supply list — one branded one-pager for ALL classes (each class in its
+        own colour inside), generated by scripts/generate-supplies.mjs. */
+    }
+    <Button
+      href="/supplies/supply-list.pdf"
+      target="_blank"
+      rel="noopener"
+      variant="outline"
+      size="sm"
+    >
+      <Icon name="clipboard-list" class="h-4 w-4" aria-hidden="true" />
+      Supply list (PDF)
+    </Button>
+    {
+      programs.map((p) => (
+        <Button href={p.href} variant="outline" size="sm">
+          {p.label}
+        </Button>
+      ))
+    }
+  </div>
+</HubPageHeader>
+
+{
+  /* The people who run the room: the teacher, then one parent rep per class.
+    Reps are elected each fall — a placeholder card holds the seat until then.
+    The grid follows the count so one class does not leave a hole. */
+}
+<div class={cn('mb-4 grid gap-4', single ? 'lg:grid-cols-2' : 'lg:grid-cols-3')}>
+  <TeacherCard keys={noteKeys} color={room.color} />
+  {
+    room.classes.map((c) => (
+      <ClassRepCard
+        color={c.color}
+        role={`${c.name} Rep`}
+        label={single ? 'Your class rep' : `${c.name} class rep`}
+        holders={holders}
+      />
+    ))
+  }
+</div>
+
+{/* Who to ask for what — teacher vs. class rep. */}
+<ClassAskGuide class="mb-4" />
+
+{/* FIXED: a fact card per class, each in its own colour. */}
+<div class={cn('grid gap-4', single ? '' : 'lg:grid-cols-2')}>
+  {
+    room.classes.map((c) => {
+      const s = colorStyles(c.color);
+      return (
+        <HubCard class="flex flex-col">
+          <div class="flex-1">
+            <div class="flex items-center gap-3">
+              <span
+                class={cn(
+                  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                  s.iconChip,
+                )}
+                aria-hidden="true"
+              >
+                <Icon name={c.icon} class="h-5 w-5" />
+              </span>
+              <div class="min-w-0">
+                <span
+                  class={cn(
+                    'inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold tracking-wide uppercase',
+                    s.badge,
+                  )}
+                >
+                  {c.name}
+                </span>
+                {c.age && <p class="mt-1 text-sm text-ink-muted">{c.age}</p>}
+              </div>
+            </div>
+            <dl class="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 text-sm">
+              {[
+                { label: 'Days', value: c.days },
+                { label: 'Time', value: c.time },
+                { label: 'Monthly', value: c.monthly, accent: true },
+                { label: 'Student fee', value: c.studentFee },
+              ]
+                .filter((f) => f.value)
+                .map((f) => (
+                  <div>
+                    <dt class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                      {f.label}
+                    </dt>
+                    <dd class={cn('mt-0.5 font-bold', f.accent ? s.text : 'text-heading')}>
+                      {f.value}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-2">
+            {c.payId && (
+              <Button
+                href={payUrl(c.payId)}
+                target="_blank"
+                rel="noopener"
+                variant="primary"
+                size="sm"
+                class={cn('flex-1', s.button)}
+              >
+                Pay tuition
+              </Button>
+            )}
+            {c.helperScheduleUrl && (
+              <Button
+                href={c.helperScheduleUrl}
+                target="_blank"
+                rel="noopener"
+                variant="outline"
+                size="sm"
+                class="flex-1"
+              >
+                Helper schedule
+              </Button>
+            )}
+            {c.photoAlbumUrl && (
+              <Button
+                href={c.photoAlbumUrl}
+                target="_blank"
+                rel="noopener"
+                variant="outline"
+                size="sm"
+                class="flex-1"
+              >
+                Photo album
+              </Button>
+            )}
+          </div>
+        </HubCard>
+      );
+    })
+  }
+</div>
+
+{
+  /* The handbook — Board/teacher-editable page-builder sections. A classroom
+    with no page yet gets a friendly, honest empty state instead: the facts
+    above are already a complete page, and this says what to add and where. */
+  page?.sections?.length ? (
+    <HubSectionedBody
+      sections={page.sections}
+      label="Handbook sections"
+      tint={room.color}
+      signoff={noteKeys}
+      class="mt-8"
+    />
+  ) : (
+    <HubEmptyState
+      spot="documents"
+      title={`The ${room.label} handbook is not written yet`}
+      class="mt-8"
+    >
+      <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
+        Everything above comes from this class's entry in the Studio, so the page works as it is. To
+        add the handbook — the daily routine, drop-off and pick-up, snack duty, the helper playbook
+        — open the class in the Studio and press <strong>Create its hub page</strong>.
+      </p>
+    </HubEmptyState>
+  )
+}

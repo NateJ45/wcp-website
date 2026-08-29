@@ -1,48 +1,29 @@
 ---
 /* ============================================================================
-   ClassHelperRow — the four class helper-schedule tiles on the Family Hub home
+   ClassHelperRow — a helper-schedule tile per class on the Family Hub home
    ============================================================================
-   One tile per class, tinted with the shared class-color helper (never a
-   hardcoded color — see src/lib/class-colors.ts). Each links to that class's
-   HELPER SCHEDULE Google Sheet — the single most-repeated parent task, so it
-   gets the prime tiles (the class hub pages stay one click away in the rail).
-   The sheet link is Board-editable on each `class` doc (`helperScheduleUrl`),
-   with the current working sheets as fallbacks (live-links.ts); a class with
-   no sheet link anywhere falls back to linking its class hub page.
+   One tile per CLASS (not per class page: Pre-K AM and PM keep separate tiles
+   because they sign up on separate sheets). The list comes from the `class`
+   documents, so a class the Board adds gets its tile with no code change —
+   src/lib/hub-classrooms.ts. Tints come from each class's own colour through
+   the shared helper (never a hardcoded colour — src/lib/class-colors.ts).
+
+   Each tile links to that class's HELPER SCHEDULE Google Sheet — the single
+   most-repeated parent task, so it gets the prime tiles (the class hub pages
+   stay one click away in the rail). The sheet link is Board-editable on each
+   `class` doc (`helperScheduleUrl`); a class with no sheet link falls back to
+   linking its classroom page.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { classStyles, classColor } from '@/lib/class-colors';
-import { sanityFetch } from '@/lib/sanity';
-import { helperScheduleFallback } from '@/data/hub/live-links';
+import { colorStyles } from '@/lib/class-colors';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classTiles } from '@/lib/hub-classrooms';
 
-const CLASSES = [
-  { slug: 'twos', label: 'Twos', icon: 'blocks', pageHref: '/family-hub/twos-threes' },
-  { slug: 'threes', label: 'Threes', icon: 'sprout', pageHref: '/family-hub/twos-threes' },
-  // AM/PM keep separate helper-schedule tiles (separate sheets) even though
-  // they share one class hub page.
-  { slug: 'pre-k-am', label: 'Pre-K AM', icon: 'sun', pageHref: '/family-hub/pre-k' },
-  { slug: 'pre-k-pm', label: 'Pre-K PM', icon: 'moon', pageHref: '/family-hub/pre-k' },
-] as const;
-
-interface HelperRow {
-  slug?: string;
-  helperScheduleUrl?: string;
-}
-let sanityLinks: Record<string, string> = {};
-try {
-  const rows = await sanityFetch<HelperRow[]>(
-    `*[_type == "class"]{ "slug": slug.current, helperScheduleUrl }`,
-  );
-  for (const r of rows ?? [])
-    if (r.slug && r.helperScheduleUrl) sanityLinks[r.slug] = r.helperScheduleUrl;
-} catch {
-  sanityLinks = {};
-}
-
-const tiles = CLASSES.map((c) => {
-  const sheet = sanityLinks[c.slug] ?? helperScheduleFallback[c.slug];
-  return { ...c, href: sheet ?? c.pageHref, external: Boolean(sheet) };
-});
+const tiles = classTiles(await getHubClassrooms()).map((c) => ({
+  ...c,
+  href: c.helperScheduleUrl ?? c.page,
+  external: Boolean(c.helperScheduleUrl),
+}));
 ---
 
 {
@@ -58,7 +39,7 @@ const tiles = CLASSES.map((c) => {
 <ul class="grid gap-4 sm:grid-cols-2 lg:flex-1">
   {
     tiles.map((c) => {
-      const styles = classStyles(c.slug);
+      const styles = colorStyles(c.color);
       return (
         /* data-class-tile: the my-class picker (src/scripts/my-class.ts)
            moves YOUR class first and unhides its tag. */
@@ -74,7 +55,7 @@ const tiles = CLASSES.map((c) => {
                 inherits currentColor) — Icon takes no style prop. */}
             <span
               class="pointer-events-none absolute -right-5 -bottom-7 rotate-6 opacity-[0.08] transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100"
-              style={`color: var(--color-${classColor(c.slug)})`}
+              style={`color: var(--color-${c.color})`}
               aria-hidden="true"
             >
               <Icon name={c.icon} class="h-28 w-28" />

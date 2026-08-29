@@ -1,10 +1,12 @@
 import { defineType, defineField } from 'sanity';
+import { ClassroomPickInput } from '../components/ClassSelectInput';
 
 // =============================================================================
 // teacherNote — the teacher's welcome letter modal on a class hub page
 // =============================================================================
-// One per class: the same first-visit letter pattern as the President's note,
-// but shown on that class's Family Hub page. Closing it remembers the
+// One per class PAGE: the same first-visit letter pattern as the President's
+// note, but shown on that class's Family Hub page. Classes that share a page
+// (Twos & Threes; Pre-K AM & PM) share one letter. Closing it remembers the
 // dismissal on that device; bumping the "version stamp" (e.g. for a new
 // school year's letter) shows it once more for everyone in that class.
 // =============================================================================
@@ -17,19 +19,15 @@ export const teacherNote = defineType({
     { name: 'showing', title: 'When it shows' },
   ],
   fields: [
+    // The list reads the LIVE class pages (see ClassroomPickInput), so a class
+    // the Board adds can be given a welcome note the same day. It used to be a
+    // hardcoded list of three, which made that impossible.
     defineField({
       name: 'class',
-      title: 'Class',
+      title: 'Class page',
       type: 'string',
       group: 'showing',
-      options: {
-        list: [
-          { title: 'Twos', value: 'twos' },
-          { title: 'Threes', value: 'threes' },
-          { title: 'Pre-K (AM + PM)', value: 'pre-k' },
-        ],
-        layout: 'dropdown',
-      },
+      components: { input: ClassroomPickInput },
       description: 'Which class page shows this letter.',
       validation: (R) => R.required().error('Pick which class page shows this letter.'),
     }),

@@ -70,7 +70,7 @@ export type TeacherNote = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  class?: 'twos' | 'threes' | 'pre-k';
+  class?: string;
   active?: boolean;
   version?: string;
   heading?: string;
@@ -596,24 +596,7 @@ export type RoleHolder = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  role?:
-    | 'President'
-    | 'Vice President'
-    | 'Treasurer'
-    | 'Secretary'
-    | 'Teacher \u2014 Pre-K'
-    | 'Teacher \u2014 Twos & Threes'
-    | 'Administrator'
-    | 'Publicity Chair'
-    | 'Enrichment Coordinator'
-    | 'Copy Room Helper'
-    | 'Facilities Chair'
-    | 'Family Activities Chair'
-    | 'Fundraising Chair'
-    | 'Twos Rep'
-    | 'Threes Rep'
-    | 'Pre-K AM Rep'
-    | 'Pre-K PM Rep';
+  role?: string;
   person?: string;
   photo?: {
     asset?: SanityImageAssetReference;
@@ -1279,7 +1262,77 @@ export type Class = {
   _rev: string;
   name?: string;
   slug?: Slug;
-  icon?: string;
+  icon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'scale'
+    | 'bell'
+    | 'building-2'
+    | 'blocks'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'hand-heart'
+    | 'banknote'
+    | 'file-check'
+    | 'check'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'file-text'
+    | 'circle-dollar-sign'
+    | 'dumbbell'
+    | 'egg'
+    | 'mail'
+    | 'eye'
+    | 'file-pen'
+    | 'flower'
+    | 'folder'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'heart-handshake'
+    | 'heart'
+    | 'heart-pulse'
+    | 'house'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'map-pin'
+    | 'megaphone'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'book-open'
+    | 'door-open'
+    | 'folder-open'
+    | 'palette'
+    | 'send'
+    | 'party-popper'
+    | 'pencil'
+    | 'users'
+    | 'phone'
+    | 'image'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'school'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'message-circle'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down';
   color?: 'amber' | 'green' | 'orange' | 'sky' | 'navy';
   tagline?: string;
   teacher?: StaffReference;
@@ -1428,7 +1481,7 @@ export type SupplyList = {
   dueNote?: string;
   waterNote?: string;
   lists?: Array<{
-    slug?: 'twos' | 'threes' | 'pre-k-am' | 'pre-k-pm';
+    slug?: string;
     items?: Array<string>;
     _key: string;
   }>;
@@ -1445,7 +1498,7 @@ export type CurriculumGuide = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  class?: 'twos' | 'threes' | 'pre-k';
+  class?: string;
   kicker?: string;
   title?: string;
   intro?: string;
@@ -1618,11 +1671,10 @@ export type HubNavMenu = {
   groups?: Array<{
     label?: string;
     accent?: 'sky' | 'amber' | 'green' | 'orange';
+    autoClasses?: boolean;
     links?: Array<
       | {
           target?:
-            | '/family-hub/twos-threes'
-            | '/family-hub/pre-k'
             | '/family-hub/updates'
             | '/family-hub/calendar'
             | '/family-hub/getting-started'
@@ -1729,6 +1781,13 @@ export type HubNavMenu = {
   }>;
 };
 
+export type ClassReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'class';
+};
+
 export type HubPage = {
   _id: string;
   _type: 'hubPage';
@@ -1749,6 +1808,11 @@ export type HubPage = {
     | 'twos-threes'
     | 'pre-k';
   slug?: string;
+  classes?: Array<
+    {
+      _key: string;
+    } & ClassReference
+  >;
   navIcon?:
     | 'arrow-right'
     | 'award'
@@ -2625,13 +2689,6 @@ export type FaqSection = {
   compact?: boolean;
 };
 
-export type ClassReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'class';
-};
-
 export type ClassCardsSection = {
   _type: 'classCardsSection';
   header?: SectionHeader;
@@ -3307,6 +3364,7 @@ export type AllSanitySchemaTypes =
   | HubTour
   | HubPageReference
   | HubNavMenu
+  | ClassReference
   | HubPage
   | SiteMicrocopy
   | CoopGuidance
@@ -3348,7 +3406,6 @@ export type AllSanitySchemaTypes =
   | TuitionTableSection
   | SchoolYearSection
   | FaqSection
-  | ClassReference
   | ClassCardsSection
   | TeacherSection
   | TestimonialReference

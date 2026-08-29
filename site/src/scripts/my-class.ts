@@ -1,28 +1,48 @@
 // ============================================================================
 // My classes — device-level personalization, no accounts
 // ============================================================================
-// One localStorage key ('wcp-my-classes': JSON array of twos | threes |
-// pre-k-am | pre-k-pm) picked on the hub home. MULTI-select on purpose —
-// plenty of families have kids in more than one class. Effects, all
-// progressive enhancement (nothing breaks or changes without JS):
+// One localStorage key ('wcp-my-classes': a JSON array of class slugs) picked
+// on the hub home. MULTI-select on purpose — plenty of families have kids in
+// more than one class. Effects, all progressive enhancement (nothing breaks or
+// changes without JS):
 //   - the home picker chips toggle (aria-pressed); Done shows the
 //     "Your classes: X, Y · Change" strip
 //   - each of your classes' helper tiles moves to the front (order kept)
 //     and unhides its "Your class" tag
 //   - each of your classes' photo-album buttons gets an amber ring
-//   - your classes' rail/drawer links get a small amber dot (the shared
-//     Pre-K page gets one dot, not two)
+//   - your classes' rail/drawer links get a small amber dot (two classes that
+//     share one classroom page get one dot, not two)
+//
+// THE CLASS LIST IS DATA, NOT CODE. It used to be a hardcoded map of the four
+// 2026-27 slugs here, which is exactly why a class the Board added was invisible
+// to the hub. BaseLayout's hub branch now prints the list — slug, label, and the
+// classroom page each class lives on — into a `data-hub-classes` JSON tag on
+// every hub page, straight from the `class` documents.
 // ============================================================================
 import { onPageLoad } from '@/scripts/_page-load';
 
 const KEY = 'wcp-my-classes';
-const CLASSES: Record<string, { label: string; page: string }> = {
-  twos: { label: 'Twos', page: '/family-hub/twos-threes' },
-  threes: { label: 'Threes', page: '/family-hub/twos-threes' },
-  'pre-k-am': { label: 'Pre-K AM', page: '/family-hub/pre-k' },
-  'pre-k-pm': { label: 'Pre-K PM', page: '/family-hub/pre-k' },
-};
-const ORDER = Object.keys(CLASSES);
+
+interface HubClassEntry {
+  slug: string;
+  label: string;
+  page: string;
+}
+
+/** The classes this hub knows, in the Board's order. Empty is a valid answer. */
+function classList(): HubClassEntry[] {
+  const tag = document.querySelector('[data-hub-classes]');
+  if (!tag?.textContent) return [];
+  try {
+    const rows = JSON.parse(tag.textContent);
+    return Array.isArray(rows) ? rows.filter((r) => r?.slug && r?.page) : [];
+  } catch {
+    return [];
+  }
+}
+
+let CLASSES: Record<string, HubClassEntry> = {};
+let ORDER: string[] = [];
 
 function getPicks(): string[] {
   try {
@@ -72,9 +92,9 @@ function apply(picks: string[]): void {
       ?.classList.add('ring-2', 'ring-amber');
   }
 
-  // Rail + drawer links: one amber dot per unique class page (AM + PM share
-  // the Pre-K page — never double-dot it).
-  const pages = [...new Set(picks.map((slug) => CLASSES[slug].page))];
+  // Rail + drawer links: one amber dot per unique CLASSROOM page (two classes
+  // that share one page — Pre-K AM + PM — never double-dot it).
+  const pages = [...new Set(picks.map((slug) => CLASSES[slug]?.page).filter(Boolean))];
   for (const page of pages) {
     for (const link of document.querySelectorAll<HTMLElement>(`aside a[href="${page}"]`)) {
       const dot = document.createElement('span');
@@ -102,13 +122,17 @@ function syncStrips(picks: string[], editing: boolean): void {
 
   if (picks.length > 0) {
     const label = current.querySelector<HTMLElement>('[data-my-class-label]');
-    if (label) label.textContent = picks.map((slug) => CLASSES[slug].label).join(', ');
+    if (label) label.textContent = picks.map((slug) => CLASSES[slug]?.label ?? slug).join(', ');
     const plural = current.querySelector<HTMLElement>('[data-my-class-plural]');
     if (plural) plural.hidden = picks.length === 1;
   }
 }
 
 onPageLoad(() => {
+  const rows = classList();
+  CLASSES = Object.fromEntries(rows.map((r) => [r.slug, r]));
+  ORDER = rows.map((r) => r.slug);
+
   let picks = getPicks();
   syncStrips(picks, false);
   apply(picks);
