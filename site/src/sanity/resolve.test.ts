@@ -139,6 +139,14 @@ describe('locations agree with the same schema', () => {
     expect(LOCATIONS).toContain('references(*[_type == "class" && references($id)]._id)');
   });
 
+  it('a class always lists the tuition table, which no reference can see', () => {
+    // The table lists every class through a wildcard query, so references()
+    // never catches it — a brand-new class would otherwise read "not shown
+    // anywhere" while already being in the table. Pinned so the guarantee
+    // stays even if the ALWAYS map is refactored.
+    expect(LOCATIONS).toMatch(/const ALWAYS[\s\S]*?class:[\s\S]*?href: '\/preview\/tuition'/);
+  });
+
   it('resolve.ts delegates locations to the resolver', () => {
     expect(RESOLVE).toMatch(/import \{ locations \} from '\.\/locations'/);
     expect(RESOLVE).toMatch(/^  locations,$/m);

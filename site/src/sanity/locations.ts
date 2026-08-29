@@ -95,6 +95,17 @@ const FIXED: Record<string, { title: string; href: string }> = {
   feeSchedule: { title: 'Tuition & Fees', href: '/preview/tuition' },
 };
 
+// Locations a document ALWAYS has, whatever references it. The tuition table
+// and calculator list EVERY class through a wildcard query, not a reference, so
+// `references()` never sees them — yet every class appears on /tuition by
+// construction. Without this a brand-new class reads "not shown on any page",
+// which is wrong: it is already in the table. A staff member has no such
+// guaranteed home (they appear only where a page picks them), so staff is not
+// listed here.
+const ALWAYS: Record<string, { title: string; href: string }[]> = {
+  class: [{ title: 'Tuition & Fees (the table lists every class)', href: '/preview/tuition' }],
+};
+
 // One query, two hops. `direct` catches a page holding the reference itself
 // (a Teachers section, a class-cards pick). `viaClass` catches the indirect
 // path: pages render a teacher through class->teacher, and prices through the
@@ -131,16 +142,20 @@ export const locations: DocumentLocationResolver = ({ id, type }, { documentStor
 
   // Reference-carried content: staff, class, testimonial, faqItem, event,
   // and anything added later — the query does not care about the type.
+  const always = ALWAYS[type] ?? [];
+
   return mapState<{ direct?: Row[]; viaClass?: Row[] } | null>(
     documentStore.listenQuery(USAGE_QUERY, { id: publishedId }, { perspective: 'published' }),
     (result) => {
       const seen = new Set<string>();
       const rows: { title: string; href: string }[] = [];
-      for (const row of [...(result?.direct ?? []), ...(result?.viaClass ?? [])]) {
-        const href = hrefFor(row);
+      for (const row of [...always, ...(result?.direct ?? []), ...(result?.viaClass ?? [])]) {
+        // `always` rows are already {title, href}; queried rows carry a type.
+        const href = 'href' in row ? row.href : hrefFor(row as Row);
+        const title = 'title' in row ? row.title : (row as Row).t || href || '';
         if (!href || seen.has(href)) continue;
         seen.add(href);
-        rows.push({ title: row.t || href, href });
+        rows.push({ title, href });
       }
       if (!rows.length) {
         return {

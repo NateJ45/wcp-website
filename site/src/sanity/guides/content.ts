@@ -1674,16 +1674,22 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'To add a brand-new class' },
       {
         kind: 'p',
-        text: 'Maybe a summer class or a new session. You can add as many as you like.',
+        text: 'Maybe a summer class or a new session. You can add as many as you like. A new class takes four steps: make the class, give it a page, add it to the menu, and add it to the class cards. The first step feeds the **tuition table** on its own. The other three put the class where families browse.',
       },
       {
         kind: 'steps',
         items: [
-          'Click **Classes**, then the `＋` (new) button at the top of the list.',
-          'Fill in the name, then click `Generate` next to the web address (slug).',
-          'Fill in the schedule, ages, and tuition. Pick the teacher from the Staff list.',
-          '`Publish`. The new class appears on the site automatically.',
+          '**Make the class.** Click **Classes**, then the `＋` (new) button. Fill in the name, click `Generate` for the web address (slug), then fill in the schedule, ages, and tuition, and pick the teacher from the Staff list. `Publish`. The class is now in the **tuition table** and the tuition calculator automatically.',
+          '**Give it its own page.** In **Pages**, find an existing class page (for example **Twos Class**), click its `⋯` and choose **Duplicate**. Rename the copy, set its web address to `classes/` + your class name (for example `classes/fours`), edit the words and photos, then `Publish`. This is the page families open from the menu.',
+          '**Add it to the menu.** Open **Menus (header & footer)**. In the **Classes** dropdown, add a link that points to the new class page. `Publish`.',
+          '**Add it to the class cards.** The rows of class cards on the **Home**, **Enroll**, and **Visit** pages are hand-picked, so a new class does not appear until you add it. Open each page, find its **Class cards** section, and add the new class to the list. `Publish`.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Not sure where a class already shows?',
+        text: 'Open the class and look at the **Used on** panel at the top. It lists every page the class appears on. A brand-new class shows only **Tuition & Fees** until you add its page, menu link, and cards — that panel is your checklist.',
       },
       {
         kind: 'callout',
