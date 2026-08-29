@@ -17,8 +17,12 @@
 import '../styles/globals.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import ClosureBanner from '@/components/ClosureBanner.astro';
 import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
 import { docEditAttr } from '@/lib/preview-edit-attr';
+import { previewFetch } from '@/lib/cms-preview';
+import { CLOSURE_ALERT_QUERY } from '@/lib/queries';
+import type { ClosureAlert } from '@/lib/cms';
 
 interface Props {
   title: string;
@@ -63,6 +67,31 @@ const showChrome = chrome === 'public' && !softRefresh;
 // footer → Site settings (its contact/identity content).
 const headerAttr = docEditAttr('navigation', 'navigation', 'mainNav');
 const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
+
+// THE SITE-WIDE ALERT, WHICH THIS SHELL USED TO SWALLOW (2026-08-29).
+// BaseLayout draws ClosureBanner at the top of every public page; this shell
+// never did. So an editor could switch the Alert on, watch the preview, see
+// nothing change, and have no way to check the wording or the tone before
+// publishing it to the whole site — which is the one piece of content where
+// getting it wrong in public matters most.
+//
+// Read draft-aware, so the banner appears the moment the toggle flips rather
+// than after Publish, and gated on the same `active && message` rule
+// getClosureAlert applies — the preview must not show a banner the live site
+// would not.
+//
+// Skipped on a soft refresh with the rest of the chrome: it renders OUTSIDE
+// <main>, which is the only thing the overlay's reconcile reads back, so
+// rendering it there would cost a Sanity read whose output is discarded. The
+// consequence is that toggling the Alert shows up on the next full navigation,
+// not mid-keystroke — the same deal Header and Footer already have.
+// Gated on softRefresh, NOT on showChrome: BaseLayout draws this banner on
+// every page including the hub, and it is the marketing header/footer that the
+// hub preview drops, not an urgent closure notice.
+const alertDoc = softRefresh
+  ? null
+  : await previewFetch<ClosureAlert | null>(draftMode, CLOSURE_ALERT_QUERY);
+const closureAlert = alertDoc?.active && alertDoc.message ? alertDoc : null;
 ---
 
 <!doctype html>
@@ -99,6 +128,7 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
     </style>
   </head>
   <body class="relative">
+    {closureAlert && <ClosureBanner alert={closureAlert} />}
     {
       showChrome && (
         <div data-sanity={headerAttr}>
