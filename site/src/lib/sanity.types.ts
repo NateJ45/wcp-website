@@ -64,6 +64,254 @@ export type SignupEntry = {
   submittedAt?: string;
 };
 
+export type HubPageReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'hubPage';
+};
+
+export type UpdateReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'update';
+};
+
+export type HubSpotlight = {
+  _id: string;
+  _type: 'hubSpotlight';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  heading?: string;
+  dateLabel?: string;
+  summary?: string;
+  body?: PostBody;
+  tone?: 'info' | 'good' | 'warning' | 'brand';
+  icon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'scale'
+    | 'bell'
+    | 'building-2'
+    | 'blocks'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'hand-heart'
+    | 'banknote'
+    | 'file-check'
+    | 'check'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'file-text'
+    | 'circle-dollar-sign'
+    | 'dumbbell'
+    | 'egg'
+    | 'mail'
+    | 'eye'
+    | 'file-pen'
+    | 'flower'
+    | 'folder'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'heart-handshake'
+    | 'heart'
+    | 'heart-pulse'
+    | 'house'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'map-pin'
+    | 'megaphone'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'book-open'
+    | 'door-open'
+    | 'folder-open'
+    | 'palette'
+    | 'send'
+    | 'party-popper'
+    | 'pencil'
+    | 'users'
+    | 'phone'
+    | 'image'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'school'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'message-circle'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down';
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: 'image';
+  };
+  linkLabel?: string;
+  linkKind?: 'builtin' | 'hubPage' | 'update' | 'url' | 'store';
+  builtinHref?:
+    | '/family-hub/updates'
+    | '/family-hub/calendar'
+    | '/family-hub/getting-started'
+    | '/family-hub/super-helper'
+    | '/family-hub/documents'
+    | '/family-hub/health'
+    | '/family-hub/tuition'
+    | '/family-hub/fundraising'
+    | '/family-hub/directory'
+    | '/family-hub/coop-jobs'
+    | '/family-hub/celebrations'
+    | 'https://store.westchesterpreschool.org/';
+  page?: HubPageReference;
+  update?: UpdateReference;
+  url?: string;
+  active?: boolean;
+  version?: string;
+  showFrom?: string;
+  showUntil?: string;
+  orderRank?: string;
+};
+
+export type SanityImageCrop = {
+  _type: 'sanity.imageCrop';
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+export type SanityImageHotspot = {
+  _type: 'sanity.imageHotspot';
+  x?: number;
+  y?: number;
+  height?: number;
+  width?: number;
+};
+
+export type EventReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'event';
+};
+
+export type PostBody = Array<
+  | {
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: 'span';
+        _key: string;
+      }>;
+      style?: 'normal' | 'h2' | 'h3' | 'blockquote';
+      listItem?: 'bullet' | 'number';
+      markDefs?: Array<{
+        href?: string;
+        _type: 'link';
+        _key: string;
+      }>;
+      level?: number;
+      _type: 'block';
+      _key: string;
+    }
+  | {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+      _type: 'image';
+      _key: string;
+    }
+  | {
+      tone?: 'sky' | 'warm';
+      text?: string;
+      _type: 'calloutBlock';
+      _key: string;
+    }
+  | {
+      label?: string;
+      url?: string;
+      _type: 'buttonBlock';
+      _key: string;
+    }
+  | {
+      sheet?: SignupSheetReference;
+      _type: 'signupCard';
+      _key: string;
+    }
+  | {
+      event?: EventReference;
+      _type: 'eventCard';
+      _key: string;
+    }
+  | {
+      headerRow?: boolean;
+      rows?: Array<{
+        cells?: Array<string>;
+        _type: 'tableRow';
+        _key: string;
+      }>;
+      _type: 'tableBlock';
+      _key: string;
+    }
+  | {
+      left?: BlockContent;
+      right?: BlockContent;
+      _type: 'twoColumns';
+      _key: string;
+    }
+  | {
+      url?: string;
+      title?: string;
+      _type: 'videoEmbed';
+      _key: string;
+    }
+  | {
+      images?: Array<{
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        caption?: string;
+        _type: 'image';
+        _key: string;
+      }>;
+      _type: 'postGallery';
+      _key: string;
+    }
+  | {
+      file?: FileAttachmentFile;
+      title?: string;
+      _type: 'fileAttachment';
+      _key: string;
+    }
+>;
+
 export type TeacherNote = {
   _id: string;
   _type: 'teacherNote';
@@ -89,22 +337,6 @@ export type TeacherNote = {
     alt?: string;
     _type: 'image';
   };
-};
-
-export type SanityImageCrop = {
-  _type: 'sanity.imageCrop';
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
-export type SanityImageHotspot = {
-  _type: 'sanity.imageHotspot';
-  x?: number;
-  y?: number;
-  height?: number;
-  width?: number;
 };
 
 export type BlockContent = Array<{
@@ -254,108 +486,6 @@ export type Update = {
   audience?: string;
   body?: PostBody;
 };
-
-export type EventReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'event';
-};
-
-export type PostBody = Array<
-  | {
-      children?: Array<{
-        marks?: Array<string>;
-        text?: string;
-        _type: 'span';
-        _key: string;
-      }>;
-      style?: 'normal' | 'h2' | 'h3' | 'blockquote';
-      listItem?: 'bullet' | 'number';
-      markDefs?: Array<{
-        href?: string;
-        _type: 'link';
-        _key: string;
-      }>;
-      level?: number;
-      _type: 'block';
-      _key: string;
-    }
-  | {
-      asset?: SanityImageAssetReference;
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      alt?: string;
-      caption?: string;
-      _type: 'image';
-      _key: string;
-    }
-  | {
-      tone?: 'sky' | 'warm';
-      text?: string;
-      _type: 'calloutBlock';
-      _key: string;
-    }
-  | {
-      label?: string;
-      url?: string;
-      _type: 'buttonBlock';
-      _key: string;
-    }
-  | {
-      sheet?: SignupSheetReference;
-      _type: 'signupCard';
-      _key: string;
-    }
-  | {
-      event?: EventReference;
-      _type: 'eventCard';
-      _key: string;
-    }
-  | {
-      headerRow?: boolean;
-      rows?: Array<{
-        cells?: Array<string>;
-        _type: 'tableRow';
-        _key: string;
-      }>;
-      _type: 'tableBlock';
-      _key: string;
-    }
-  | {
-      left?: BlockContent;
-      right?: BlockContent;
-      _type: 'twoColumns';
-      _key: string;
-    }
-  | {
-      url?: string;
-      title?: string;
-      _type: 'videoEmbed';
-      _key: string;
-    }
-  | {
-      images?: Array<{
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        caption?: string;
-        _type: 'image';
-        _key: string;
-      }>;
-      _type: 'postGallery';
-      _key: string;
-    }
-  | {
-      file?: FileAttachmentFile;
-      title?: string;
-      _type: 'fileAttachment';
-      _key: string;
-    }
->;
 
 export type Slug = {
   _type: 'slug';
@@ -1671,13 +1801,6 @@ export type HubTour = {
   searchBody?: string;
   helpTitle?: string;
   helpBody?: string;
-};
-
-export type HubPageReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'hubPage';
 };
 
 export type HubNavMenu = {
@@ -3326,15 +3449,18 @@ export type AllSanitySchemaTypes =
   | FileAttachmentFile
   | SignupSheetReference
   | SignupEntry
-  | TeacherNote
+  | HubPageReference
+  | UpdateReference
+  | HubSpotlight
   | SanityImageCrop
   | SanityImageHotspot
+  | EventReference
+  | PostBody
+  | TeacherNote
   | BlockContent
   | HubDocument
   | Celebration
   | Update
-  | EventReference
-  | PostBody
   | Slug
   | Resource
   | JobPosting
@@ -3382,7 +3508,6 @@ export type AllSanitySchemaTypes =
   | LinkHealth
   | HubHints
   | HubTour
-  | HubPageReference
   | HubNavMenu
   | HubPage
   | SiteMicrocopy

@@ -2693,6 +2693,67 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'spotlight-popups',
+    category: 'Family Hub',
+    title: 'Put a spotlight in front of families',
+    icon: '🔦',
+    lead: 'A pop-up that greets families on any Family Hub page, for the one thing you want them to notice.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'A **spotlight** is a pop-up in the same style as the President’s note, but you can have as many as the year needs: the supply lists in August, the auction in March, a store offer in December. It greets a family on **whatever hub page they open**, not only the hub home, and each family sees each one **once**.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Spotlight pop-ups', '＋ new', 'turn on', 'Publish'],
+        link: { pane: 'orderable-hubSpotlight', ws: 'family-hub' },
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Spotlight pop-ups** in the left menu, under Everyday edits, then `＋`.',
+          'Give it a **name** (just for you) and a **heading** families read first. Add a **short line**, and a **message** if you want more.',
+          'The message uses the same editor as News and Updates: **bold**, italic, links, lists, pictures, and **attachments** families can download.',
+          'Optional: add a **picture** across the top, a little **icon**, and pick one of the four **colours** for the pop-up edge.',
+          'Optional: add ONE **button**. It can open a page that came with the site, a page you made, an update, an outside link, or the merch store.',
+          'Under **When it shows**, flip **Turn it on**. Add **Start showing** / **Stop showing** dates if you want it to appear and stop on its own.',
+          '`Publish`. Families see it on their next hub page, about a minute later.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Edited it after families saw it? Show it again.',
+        text: 'Change the **version stamp** (e.g. from "v1" to "v2") and everyone sees that pop-up one more time. Turn **Turn it on** off to retire it.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Several at once:** turn on as many as you like. Families get ONE pop-up with **arrows** to page through them, in the order you drag them in the list. Drag the most important to the top.',
+          '**One pop-up per visit:** on a family’s very first sign-in the President’s note and the tour come first, so the spotlight waits for their next page. Nobody ever gets two pop-ups stacked.',
+          '**It is a nudge, not the only way in:** put the real content on a hub page or an update, and let the spotlight point at it.',
+          '**Tidy up:** the **Checkup** tool lists any spotlight left switched on past its end date, and the **Start of year** tool reminds you each summer.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Use them sparingly.',
+        text: 'A pop-up on every page is the fastest way to teach families to close it without reading. One at a time, for something that really matters.',
+      },
+      {
+        kind: 'seealso',
+        items: [
+          'The first-visit tour',
+          'Post an announcement bar or popup',
+          'Edit a Family Hub page',
+        ],
+      },
+    ],
+  },
+
+  {
     slug: 'celebrations',
     category: 'Family Hub',
     title: 'Post a celebration',

@@ -54,6 +54,7 @@ interface SetupData {
   classesMissing: number;
   events: number;
   expiredAnnouncements: number;
+  expiredSpotlights: number;
 }
 
 const SETUP_QUERY = `{
@@ -66,7 +67,8 @@ const SETUP_QUERY = `{
   "hasFees": count(*[_type == "feeSchedule"]) > 0,
   "classesMissing": count(*[_type == "class" && !(_id in path("drafts.**")) && !defined(monthly)]),
   "events": count(*[_type == "schoolYearEvent"]),
-  "expiredAnnouncements": count(*[_type == "announcement" && enabled == true && defined(showUntil) && showUntil < now()])
+  "expiredAnnouncements": count(*[_type == "announcement" && enabled == true && defined(showUntil) && showUntil < now()]),
+  "expiredSpotlights": count(*[_type == "hubSpotlight" && active == true && defined(showUntil) && showUntil < now()])
 }`;
 
 const ENROLL_LABEL: Record<string, string> = {
@@ -74,6 +76,21 @@ const ENROLL_LABEL: Record<string, string> = {
   waitlist: 'Waitlist',
   closed: 'Closed',
 };
+
+// "Clear out old notices" covers THREE things a Board leaves switched on over
+// the summer: public announcement bars, public popups, and Family Hub
+// spotlight pop-ups. The card names whichever kinds are actually still on.
+function expiredNoticeDetail(data: SetupData): string {
+  const parts: string[] = [];
+  const a = data.expiredAnnouncements;
+  const s = data.expiredSpotlights;
+  if (a > 0) parts.push(`${a} announcement${a === 1 ? '' : 's'}`);
+  if (s > 0) parts.push(`${s} spotlight pop-up${s === 1 ? '' : 's'}`);
+  if (parts.length === 0) {
+    return 'Retire last year’s announcement bars, popups, and Family Hub spotlight pop-ups. The Checkup tool lists anything left on.';
+  }
+  return `${parts.join(' and ')} past their end date are still on. Turn them off.`;
+}
 
 function buildSections(data: SetupData, basePath: string): Section[] {
   const s = data.settings ?? {};
@@ -217,11 +234,8 @@ function buildSections(data: SetupData, basePath: string): Section[] {
           key: 'old-announcements',
           icon: '🧹',
           title: 'Clear out old notices',
-          detail:
-            data.expiredAnnouncements > 0
-              ? `${data.expiredAnnouncements} announcement${data.expiredAnnouncements === 1 ? '' : 's'} past their end date are still on. Turn them off.`
-              : 'Retire last year’s announcements and popups. The Checkup tool lists anything left on.',
-          status: data.expiredAnnouncements > 0 ? 'todo' : 'done',
+          detail: expiredNoticeDetail(data),
+          status: data.expiredAnnouncements + data.expiredSpotlights > 0 ? 'todo' : 'done',
           path: `${basePath}/checkup`,
           linkText: 'Open Checkup',
         },
@@ -325,6 +339,7 @@ export function SetupWizard() {
         classesMissing: 0,
         events: 0,
         expiredAnnouncements: 0,
+        expiredSpotlights: 0,
       });
     } finally {
       setBusy(false);

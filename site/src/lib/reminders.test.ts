@@ -8,6 +8,7 @@ const base: ReminderState = {
   now: NOW,
   bannerOn: false,
   expiredAnnouncements: 0,
+  expiredSpotlights: 0,
   oldUnanswered: 0,
   drafts: 0,
   enrollmentDeadline: null,
@@ -54,6 +55,12 @@ describe('computeReminders — attention', () => {
     expect(ids).toContain('old-messages');
     expect(ids).toContain('drafts');
     expect(r.every((x) => x.kind === 'attention')).toBe(true);
+  });
+
+  it('flags a hub spotlight pop-up left on past its end date', () => {
+    const r = computeReminders({ ...base, expiredSpotlights: 1 });
+    expect(r.map((x) => x.id)).toEqual(['expired-spotlights']);
+    expect(r[0].title).toContain('1 spotlight pop-up is');
   });
 
   it('pluralizes correctly', () => {

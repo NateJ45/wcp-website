@@ -62,6 +62,26 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // The hub-side twin of ann-expired: a Family Hub spotlight pop-up whose
+    // end date has passed while its master switch is still on. It shows
+    // nothing to families, but the Board should retire it rather than leave a
+    // stale row switched on for a year.
+    id: 'spotlight-expired',
+    run: async (c) => {
+      const n = await c.fetch<number>(
+        'count(*[_type == "hubSpotlight" && active == true && defined(showUntil) && showUntil < now()])',
+      );
+      return n > 0
+        ? {
+            severity: 'warn',
+            label: `${n} spotlight pop-up${n === 1 ? '' : 's'} past its end date but still on`,
+            detail:
+              'Worth a look: turn it off, or clear its "Stop showing" date. (It already stopped showing to families on its own.)',
+          }
+        : null;
+    },
+  },
+  {
     id: 'unanswered',
     run: async (c) => {
       const cutoff = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
@@ -253,6 +273,7 @@ const CHECKS: Check[] = [
         now,
         bannerOn: false,
         expiredAnnouncements: 0,
+        expiredSpotlights: 0,
         oldUnanswered: 0,
         drafts: 0,
         enrollmentDeadline: snap.enrollmentDeadline ?? null,

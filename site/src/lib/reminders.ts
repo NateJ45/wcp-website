@@ -21,6 +21,8 @@ export interface ReminderState {
   now: number;
   bannerOn: boolean;
   expiredAnnouncements: number;
+  /** Hub spotlight pop-ups past their end date but still switched on. */
+  expiredSpotlights: number;
   oldUnanswered: number;
   drafts: number;
   enrollmentDeadline?: string | null;
@@ -76,6 +78,15 @@ export function computeReminders(state: ReminderState, horizonDays = 14): Remind
       id: 'expired-announcements',
       kind: 'attention',
       title: `${n} ${plural(n, 'announcement is', 'announcements are')} past their end date`,
+      detail: 'They are still switched on. Turn them off or clear the end date.',
+    });
+  }
+  if (state.expiredSpotlights > 0) {
+    const n = state.expiredSpotlights;
+    out.push({
+      id: 'expired-spotlights',
+      kind: 'attention',
+      title: `${n} spotlight ${plural(n, 'pop-up is', 'pop-ups are')} past their end date`,
       detail: 'They are still switched on. Turn them off or clear the end date.',
     });
   }

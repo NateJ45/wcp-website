@@ -440,6 +440,16 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
       S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
       singleton(S, 'presidentNote', "President's note", emoji('💌')),
+      // The collection sibling of the President's note: several pop-ups a
+      // year, each greeting families once on any hub page. Drag to set which
+      // one wins when more than one is on.
+      orderableDocumentListDeskItem({
+        type: 'hubSpotlight',
+        S,
+        context,
+        title: 'Spotlight pop-ups',
+        icon: emoji('🔦'),
+      }),
       S.documentTypeListItem('signupSheet')
         .title('Sign-ups & RSVPs (create sheets)')
         .icon(emoji('📝')),

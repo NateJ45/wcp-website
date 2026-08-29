@@ -51,6 +51,16 @@ setup('sign in to the family hub', async ({ page, context }) => {
     const tour = document.querySelector('[data-tour-modal]');
     const version = tour?.getAttribute('data-tour-version') ?? '';
     localStorage.setItem('wcp-tour-seen', version);
+
+    // Same treatment for any Board spotlight pop-up that is live: it renders on
+    // EVERY hub page, so an undismissed one would overlay every other suite.
+    // tests/hub-spotlight.spec.ts clears this on purpose to test the pop-up.
+    const seen: Record<string, string> = {};
+    for (const el of document.querySelectorAll('[data-spotlight-modal]')) {
+      seen[el.getAttribute('data-spotlight-id') ?? ''] =
+        el.getAttribute('data-spotlight-version') ?? '';
+    }
+    localStorage.setItem('wcp-spotlights-seen', JSON.stringify(seen));
   });
 
   await context.storageState({ path: AUTH_FILE });

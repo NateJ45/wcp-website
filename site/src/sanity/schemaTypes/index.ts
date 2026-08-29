@@ -84,6 +84,7 @@ import { hubDocument } from './hubDocument';
 import { teacherNote } from './teacherNote';
 import { directoryEntry } from './directoryEntry';
 import { hubPage } from './documents/hubPage';
+import { hubSpotlight } from './documents/hubSpotlight';
 import { signupSheet, signupEntry } from './documents/signupSheet';
 
 export const schemaTypes = [
@@ -160,6 +161,7 @@ export const schemaTypes = [
   teacherNote,
   directoryEntry,
   hubPage,
+  hubSpotlight,
   signupSheet,
   signupEntry,
 ];
@@ -210,6 +212,7 @@ export const ARCHIVABLE_TYPES = new Set([
   'photoAlbum',
   'hubPage',
   'update',
+  'hubSpotlight',
   'hubDocument',
   'teacherNote',
   'directoryEntry',

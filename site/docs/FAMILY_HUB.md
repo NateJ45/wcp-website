@@ -545,6 +545,90 @@ gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined)
   for the Facebook/Instagram back-to-school posts. The filename is deliberately year-less
   so the pill links never rot; each fall update the school year + the items in the Studio.
 
+## Spotlight pop-ups
+
+A **spotlight** is a Board-managed pop-up that greets a signed-in family on **any** hub
+page. It is the collection sibling of the President's note (one letter, hub home only) and
+the answer to "the board wants to draw attention to the supply lists in August, the auction
+in March, a store offer in December".
+
+**Why a new `hubSpotlight` type and not the public `announcement`.** An `announcement` is a
+STATIC-site thing: `getAnnouncements()` reads it through `src/lib/cms.ts` at BUILD time,
+BaseLayout renders it only when `chrome === 'site'`, its `pages` field references public
+`page` documents, and its placement model is public paths. A hub pop-up is read at REQUEST
+time behind the password gate and links to hub routes, hub pages, updates, and the store.
+Extending `announcement` would have coupled hub SSR to the build-time query path and grown
+a second placement axis nobody could explain to a volunteer. So the two stay separate, and
+each stays simple.
+
+| Concern             | File                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
+| Schema              | `src/sanity/schemaTypes/documents/hubSpotlight.ts`                            |
+| Studio pane         | `src/sanity/structure.ts` (Family Hub → Everyday edits, drag-orderable)       |
+| Rules + GROQ        | `src/lib/hub-spotlight.ts` (pure, unit-tested)                                |
+| Rendering           | `src/components/hub/HubSpotlightModal.astro`                                  |
+| Behaviour           | `src/scripts/hub-spotlight.ts`                                                |
+| Mounted             | `src/layouts/BaseLayout.astro`, hub branch (every hub page)                   |
+| Checkup / reminders | `HealthTool.tsx`, `SetupWizard.tsx`, `src/lib/reminders.ts`, `/api/reminders` |
+| Guide               | Help & Guide → "Put a spotlight in front of families"                         |
+| Tests               | `src/lib/hub-spotlight.test.ts`, `tests/hub-spotlight.spec.ts`                |
+
+**What the Board controls.** A name (for the list), a heading, an optional date line, an
+optional short line, a rich **message**, an optional picture and icon, one of four
+validated **tones** (the pop-up's edge colour), ONE optional button, show-from / show-until
+dates, a master on/off, a **version stamp**, and the drag order.
+
+**The message is `postBody`** — the same editor News posts, newsletter issues, and Updates
+use, rendered by the same `renderPostBody()`. So it carries bold, italic, links, lists,
+pictures with required alt text, **file attachments** families download with one tap,
+callout boxes, buttons, tables, and click-to-load video. There is deliberately **no colour
+picker**: brand-lock forbids design knobs, and coloured body text on a tinted surface is the
+hub's #1 dark-mode AA trap. Colour is expressed through the four-tone edge and the callout
+box's two looks.
+
+**The button offers five kinds**, the same plain-language vocabulary as the hub menu:
+"Page that came with the site" (a dropdown of real hub routes), "Page you made" (a `hubPage`
+reference), "An update" (an `update` reference, so linking a new announcement is a pick and
+not a pasted URL), "Outside link", and "The merch store" (the address is dereferenced from
+the `hubStore` singleton, so it never needs pasting). A kind whose target went missing
+renders NO button rather than a dead one. Every link field validates only when a button is
+asked for AND that kind is chosen, so a hidden field can never block publishing (the
+hubNavMenu lesson).
+
+**One pop-up per visit, and the ordering.** `hub-spotlight.ts` opens nothing while the
+President's note or the first-visit tour is still due, so the order a family meets things is
+note → tour → spotlight, one per page load, never stacked. On every hub page other than the
+home there is no note and no tour, so a spotlight opens straight away (1100ms after load,
+later than the note's 700ms and the tour's 900ms so a race cannot stack them).
+
+**Several live at once paginate.** The modal holds one PAGE per live spotlight (capped at
+`MAX_RENDERED_SPOTLIGHTS`, 3) in the Board's drag order, with prev/next arrows, an
+aria-live "2 of 3" counter, Left/Right arrow keys, and the dialog label following the
+visible page's heading. With ONE spotlight live the arrows and counter do not render at
+all, so it reads exactly like its sibling note modals. No swipe: gestures are not worth
+hand-rolling, and the arrows are 44px targets.
+
+**Seen is per spotlight, marked on DISPLAY** — not on close. `localStorage`
+`wcp-spotlights-seen` holds `{ spotlightId: version }`, so closing after reading 2 of 3
+leaves the third to greet the family next visit, and bumping ONE version stamp resurfaces
+exactly that one. Device-local, like the rest of the hub app layer.
+
+**No-JS = no pop-up**, deliberately. A spotlight points at content that already lives on a
+hub page; it is promotion, not the only path to any information.
+
+**The read rides `BOARD_CONTENT_CACHE`** (5 min fresh, L1-only, **zero KV writes**).
+CLAUDE.md keeps COLLECTIONS live so lists feel fresh, but a spotlight is not a list: it is
+board-edited chrome that renders on EVERY hub page, which is exactly what that cache tier
+exists for (the topbar and the `hubPage` docs use it). An uncached read here would put a
+Sanity round-trip on every hub navigation, and five minutes of staleness on a promotional
+pop-up costs nothing.
+
+**Housekeeping.** The Checkup tool flags a spotlight past its end date but still switched
+on; the same count feeds `/api/reminders` (the board's daily email) and the Start-of-year
+tool's "Clear out old notices" card, which now names announcements and spotlights
+separately. `scripts/patch-hub-spotlight-example.mjs` creates one example document,
+**switched off**, so a Board opens a filled-in form instead of a blank one.
+
 ## Updates / meeting blog
 
 The **Updates** section is the meeting blog, migrated in full from the old Squarespace

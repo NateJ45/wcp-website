@@ -22,6 +22,7 @@ import { computeReminders, type ReminderState, type UpcomingItem } from '@/lib/r
 interface Snapshot {
   bannerOn: boolean;
   expiredAnnouncements: number;
+  expiredSpotlights: number;
   oldUnanswered: number;
   drafts: number;
   enrollmentDeadline?: string | null;
@@ -32,6 +33,7 @@ interface Snapshot {
 const SNAPSHOT_QUERY = `{
   "bannerOn": count(*[_type == "closureAlert" && active == true]) > 0,
   "expiredAnnouncements": count(*[_type == "announcement" && enabled == true && defined(showUntil) && showUntil < now()]),
+  "expiredSpotlights": count(*[_type == "hubSpotlight" && active == true && defined(showUntil) && showUntil < now()]),
   "oldUnanswered": count(*[_type == "submission" && handled != true && submittedAt < $weekAgo]),
   "drafts": count(*[_id in path("drafts.**") && _type in ["page","post","event","announcement","newsletterIssue"]]),
   "enrollmentDeadline": *[_type == "siteSettings"][0].enrollmentDeadline,
@@ -62,6 +64,7 @@ export const GET: APIRoute = async (context) => {
     now,
     bannerOn: !!snap?.bannerOn,
     expiredAnnouncements: snap?.expiredAnnouncements ?? 0,
+    expiredSpotlights: snap?.expiredSpotlights ?? 0,
     oldUnanswered: snap?.oldUnanswered ?? 0,
     drafts: snap?.drafts ?? 0,
     enrollmentDeadline: snap?.enrollmentDeadline ?? null,

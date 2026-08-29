@@ -16,6 +16,7 @@ import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
 import HubSearch from '@/components/hub/HubSearch.astro';
+import HubSpotlightModal from '@/components/hub/HubSpotlightModal.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import AnnouncementBars from '@/components/AnnouncementBars.astro';
 import AnnouncementModal from '@/components/AnnouncementModal.astro';
@@ -383,6 +384,11 @@ const currentPath = Astro.url.pathname;
             <HubTabBar />
             <HubSearch />
             <BackToTop surface="hub" />
+            {/* Board spotlight pop-ups. Here, in the hub branch, because a
+                spotlight greets a family on ANY hub page — unlike the
+                President's note, which is the hub home only. It renders
+                nothing when no spotlight is switched on and in its dates. */}
+            <HubSpotlightModal />
           </div>
         </div>
       ) : chrome === 'bare' ? (
