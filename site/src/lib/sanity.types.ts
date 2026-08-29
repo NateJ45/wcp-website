@@ -2634,6 +2634,7 @@ export type ClassReference = {
 export type ClassCardsSection = {
   _type: 'classCardsSection';
   header?: SectionHeader;
+  source?: 'all' | 'manual';
   classes?: Array<
     {
       _key: string;
@@ -2772,6 +2773,7 @@ export type HeroObject = {
 export type NavGroup = {
   _type: 'navGroup';
   label?: string;
+  autoClasses?: boolean;
   children?: Array<
     {
       _key: string;

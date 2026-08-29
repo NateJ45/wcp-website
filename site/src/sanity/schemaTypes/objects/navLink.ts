@@ -74,6 +74,21 @@ export const navGroup = defineType({
       description: 'The wording shown in the menu.',
       validation: (R) => R.required().error('Give the menu item a label.'),
     }),
+    // The self-maintaining Classes dropdown (2026-08-29). With this on, the
+    // group starts with one link per class page, derived from the Classes
+    // list: each class points at the page whose address is classes/<slug>,
+    // in the same drag order as the class list. A class with no page yet is
+    // simply absent (never a dead link), and two classes sharing one page -
+    // Pre-K AM and PM do - collapse to a single link carrying the PAGE's
+    // title. The links below then follow the automatic ones.
+    defineField({
+      name: 'autoClasses',
+      title: 'Start with a link for every class, automatically',
+      type: 'boolean',
+      description:
+        'Adds a link for each class that has its own page, kept up to date by itself. Your links below appear after them.',
+      initialValue: false,
+    }),
     defineField({
       name: 'children',
       title: 'Links',
@@ -82,10 +97,11 @@ export const navGroup = defineType({
     }),
   ],
   preview: {
-    select: { title: 'label', children: 'children' },
-    prepare({ title, children }) {
+    select: { title: 'label', children: 'children', autoClasses: 'autoClasses' },
+    prepare({ title, children, autoClasses }) {
       const n = Array.isArray(children) ? children.length : 0;
-      return { title: title || '(group)', subtitle: `${n} link${n === 1 ? '' : 's'}` };
+      const auto = autoClasses ? 'all classes + ' : '';
+      return { title: title || '(group)', subtitle: `${auto}${n} link${n === 1 ? '' : 's'}` };
     },
   },
 });

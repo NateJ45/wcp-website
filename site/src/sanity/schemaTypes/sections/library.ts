@@ -160,6 +160,27 @@ export const classCardsSection = defineType({
       type: 'sectionHeader',
       group: 'content',
     }),
+    // Which classes the row shows (2026-08-29). "all" is the answer to the
+    // stale-grid problem found in the add-a-class walkthrough: the featured
+    // rows on Home / Enroll / Visit each hand-picked every class, so a new
+    // class silently missed all three. In "all" mode the row derives from the
+    // Classes list itself (same drag order), and a new class appears the
+    // moment it publishes. Manual stays for rows that genuinely curate - the
+    // Pre-K page shows only its own two classes.
+    defineField({
+      name: 'source',
+      title: 'Which classes?',
+      type: 'string',
+      group: 'content',
+      options: {
+        layout: 'radio',
+        list: [
+          { title: 'All classes, automatically (updates itself)', value: 'all' },
+          { title: 'Only the ones I pick below', value: 'manual' },
+        ],
+      },
+      initialValue: 'manual',
+    }),
     defineField({
       name: 'classes',
       title: 'Classes',
@@ -167,7 +188,15 @@ export const classCardsSection = defineType({
       group: 'content',
       of: [defineArrayMember({ type: 'reference', to: [{ type: 'class' }] })],
       description: 'Pick from Classes — schedule, ages, and price come from there.',
-      validation: (R) => R.min(1).error('Pick at least one class, or remove this section.'),
+      hidden: ({ parent }) => (parent as { source?: string } | undefined)?.source === 'all',
+      validation: (R) =>
+        R.custom((value, context) => {
+          const source = (context.parent as { source?: string } | undefined)?.source;
+          if (source === 'all') return true;
+          return Array.isArray(value) && value.length > 0
+            ? true
+            : 'Pick at least one class, switch to "All classes", or remove this section.';
+        }),
     }),
     ...bandFields('white'),
   ],

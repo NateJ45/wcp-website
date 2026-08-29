@@ -29,7 +29,27 @@ export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
   mainNav[]{
     _type, label,
     _type == "navLink" => { linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
-    _type == "navGroup" => { children[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } }
+    _type == "navGroup" => {
+      autoClasses,
+      // One candidate link per class, carrying the PAGE's title. The page is
+      // the LONGEST slug that class-path starts on a "-" boundary - exact
+      // match usually, but Pre-K AM (pre-k-am) and PM share the classes/pre-k
+      // page, which no exact match can see (found 2026-08-29: the automatic
+      // dropdown shipped without a Pre-K link). The "-" sentinel keeps
+      // classes/pre-k from also claiming a hypothetical pre-kinder. Two
+      // classes on one page yield the same link twice; nav.ts dedupes. A
+      // class with no page yields null and is dropped - never a dead link.
+      autoClasses == true => {
+        "autoChildren": *[_type == "class"] | order(orderRank){
+          "p": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0]{
+            "label": title, "linkType": "page", "pageSlug": slug, "pageArchived": archived
+          }
+        }[defined(p)].p
+      },
+      children[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url }
+    }
   },
   headerCta{ show, label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
   footerColumns[]{ label, links[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } },
@@ -69,7 +89,13 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       "people": staff[]->{ name, honorific, role, email, photo, bio }
     },
     _type == "classCardsSection" => {
-      "classItems": classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+      // "all" derives the row from the Classes list itself (same drag order),
+      // so a new class appears the moment it publishes; manual keeps the
+      // hand-picked list (the Pre-K page shows only its own two classes).
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      ),
       // Same preview-fidelity rule as the calculator below: fees ride the
       // page query so a draft fee change previews on the cards too.
       "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
@@ -121,6 +147,12 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
       )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      )
     }
   }
 }`;
@@ -143,6 +175,12 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
       )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      )
     }
   }
 }`;
@@ -163,6 +201,12 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
       "items": select(
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
       )
     }
   }

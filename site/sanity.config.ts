@@ -22,6 +22,7 @@ import { SetupWizard } from './src/sanity/components/SetupWizard';
 import { StatsTool } from './src/sanity/components/StatsTool';
 import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
+import { CreateClassPageAction } from './src/sanity/actions/createClassPage';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slugRedirect';
 import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
@@ -276,11 +277,17 @@ function workspace(opts: {
             shareDraftLinkAction,
           ];
         }
+        // One-click page scaffolding for a class (2026-08-29): every
+        // mechanical step of "give this class its own page" on a button, so
+        // the four-step add-a-class checklist loses its fiddliest step.
+        const classHelpers = schemaType === 'class' ? [CreateClassPageAction] : [];
+
         if (ARCHIVABLE_TYPES.has(schemaType)) {
           return [
             ...base.filter(({ action }) => action !== 'delete'),
             ...undoRedo,
             ...pageHelpers,
+            ...classHelpers,
             ArchiveAction,
             shareDraftLinkAction,
           ];

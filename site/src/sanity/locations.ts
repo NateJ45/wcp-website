@@ -106,14 +106,23 @@ const ALWAYS: Record<string, { title: string; href: string }[]> = {
   class: [{ title: 'Tuition & Fees (the table lists every class)', href: '/preview/tuition' }],
 };
 
-// One query, two hops. `direct` catches a page holding the reference itself
+// One query, three arms. `direct` catches a page holding the reference itself
 // (a Teachers section, a class-cards pick). `viaClass` catches the indirect
 // path: pages render a teacher through class->teacher, and prices through the
 // class doc, so a page referencing the CLASS is showing this document too.
+// `ownPage` catches a class's own detail page, which references NOTHING about
+// its class - the link is the slug convention classes/<slug>, matched on the
+// same longest-prefix-with-"-"-sentinel rule the automatic menu uses (Pre-K
+// AM and PM share classes/pre-k, which no exact match can see).
 const USAGE_QUERY = `{
   "direct": *[_type in ["page", "hubPage", "post"] && !(_id in path("drafts.**")) && references($id)] ${ROW},
   "viaClass": *[_type in ["page", "hubPage"] && !(_id in path("drafts.**"))
-    && references(*[_type == "class" && references($id)]._id)] ${ROW}
+    && references(*[_type == "class" && references($id)]._id)] ${ROW},
+  "ownPage": *[_type == "class" && _id == $id][0]{
+    "p": *[_type == "page" && !(_id in path("drafts.**")) && archived != true
+      && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+      | order(length(slug) desc)[0] ${ROW}
+  }.p
 }`;
 
 const SELF_QUERY = `*[_id in [$id, "drafts." + $id]] | order(_updatedAt desc) [0] ${ROW}`;
@@ -144,12 +153,18 @@ export const locations: DocumentLocationResolver = ({ id, type }, { documentStor
   // and anything added later — the query does not care about the type.
   const always = ALWAYS[type] ?? [];
 
-  return mapState<{ direct?: Row[]; viaClass?: Row[] } | null>(
+  return mapState<{ direct?: Row[]; viaClass?: Row[]; ownPage?: Row | null } | null>(
     documentStore.listenQuery(USAGE_QUERY, { id: publishedId }, { perspective: 'published' }),
     (result) => {
       const seen = new Set<string>();
       const rows: { title: string; href: string }[] = [];
-      for (const row of [...always, ...(result?.direct ?? []), ...(result?.viaClass ?? [])]) {
+      const own = result?.ownPage ? [result.ownPage] : [];
+      for (const row of [
+        ...own,
+        ...always,
+        ...(result?.direct ?? []),
+        ...(result?.viaClass ?? []),
+      ]) {
         // `always` rows are already {title, href}; queried rows carry a type.
         const href = 'href' in row ? row.href : hrefFor(row as Row);
         const title = 'title' in row ? row.title : (row as Row).t || href || '';

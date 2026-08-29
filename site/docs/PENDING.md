@@ -109,18 +109,19 @@ those keys.** Two gaps:
   defence; if it proves not enough, a Cloudflare dashboard rate-limit
   rule on `/api/*` needs no code.
 
-### 2. Adding a class is a 4-step job, not 1 (guide now says so)
+### 2. Adding a class - BUILT DOWN TO 2 STEPS (2026-08-29, same day)
 
-Verified live: creating a `class` doc puts it in the tuition table and
-calculator automatically, but it gets NO detail page (a class page is a
-separate `page` doc), NO menu link, and is absent from the hand-picked
-class-card rows on Home / Enroll / Visit. The guide's "add a class"
-walkthrough was corrected to the real checklist, and the class's "Used
-on" panel is now the live checklist (a new class shows only "Tuition &
-Fees" until its page, menu link, and cards exist). If one-step class
-adding is wanted later, the options are: auto-create a class page on
-publish (a document action), or give `classCardsSection` an "all
-classes" mode - both are schema/UX decisions, not bugs.
+The 4-step finding below was closed the same day: `classCardsSection`
+gained an "All classes, automatically" source mode (the Home / Enroll /
+Visit / A Day rows now use it; the Pre-K page's 2-class row stays
+manual), the Classes dropdown gained `autoClasses` (derives one link per
+class page, longest-prefix matched so Pre-K AM + PM share the
+classes/pre-k link; hand links like "A Day at WCP" follow), and the
+class doc gained a "Create its page" action that scaffolds the detail
+page from an existing class page as a draft. What remains manual is
+exactly the content: writing the new page's words and photos, and any
+deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
+(ran 2026-08-29) flipped the existing content; parity held 27/27.
 
 ## Waiting on a human
 

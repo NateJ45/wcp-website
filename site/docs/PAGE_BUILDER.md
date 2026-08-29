@@ -61,7 +61,7 @@ at build time, hiding the whole band when there's nothing to show.
 | `ctaSection`               | `CtaBanner.astro`                 | every call-to-action banner                                                                                                   |
 | `testimonialSection`       | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                                                                           |
 | `teacherSection`           | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                                                                          |
-| `classCardsSection`        | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                                                                                    |
+| `classCardsSection`        | `ClassCard.astro`                 | class cards (source: all classes automatically, or picked `class` refs)                                                       |
 | `faqSection`               | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                                                                           |
 | `schoolYearSection`        | `SchoolYear.astro`                | school-year timeline                                                                                                          |
 | `tuitionTableSection`      | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                                                                         |
