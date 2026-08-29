@@ -84,6 +84,44 @@ Fix pattern when one starts to matter: move the feed into the page query
 under a `_type == "..." =>` arm and keep the component fetch as the fallback
 for renderers that skip the page query (the hub body).
 
+## Pre-staff-handoff testing (2026-08-29): findings
+
+An in-depth "act as a volunteer, then try to break it" pass. Fixed items
+shipped this session; the two below are decisions/setup left for a human.
+
+### 1. Anti-spam is built but OFF, and covers only 2 of 4 public write forms
+
+Turnstile verification is wired and DORMANT - it turns on when
+`TURNSTILE_SECRET_KEY` (Worker secret) and `PUBLIC_TURNSTILE_SITE_KEY`
+(env var) are set. See docs/FORMS.md. **Before the public launch, set
+those keys.** Two gaps:
+
+- Only `/api/contact` and `/family-hub/api/photo-submit` verify the
+  token. `/api/testimonial` and `/api/subscribe` are public, write to
+  Sanity on every POST, and have ONLY the honeypot. A non-browser
+  script can spoof the Origin header (so the CSRF check does not stop
+  it) and skip the honeypot field, then flood the board's review inbox
+  and newsletter list, burning the Sanity write quota. Extending the
+  dormant Turnstile check to those two endpoints (and rendering the
+  widget on their forms) is a small, low-risk follow-up - worth doing
+  in the same pass that activates the keys.
+- There is no rate limit on any endpoint. Turnstile is the intended
+  defence; if it proves not enough, a Cloudflare dashboard rate-limit
+  rule on `/api/*` needs no code.
+
+### 2. Adding a class is a 4-step job, not 1 (guide now says so)
+
+Verified live: creating a `class` doc puts it in the tuition table and
+calculator automatically, but it gets NO detail page (a class page is a
+separate `page` doc), NO menu link, and is absent from the hand-picked
+class-card rows on Home / Enroll / Visit. The guide's "add a class"
+walkthrough was corrected to the real checklist, and the class's "Used
+on" panel is now the live checklist (a new class shows only "Tuition &
+Fees" until its page, menu link, and cards exist). If one-step class
+adding is wanted later, the options are: auto-create a class page on
+publish (a document action), or give `classCardsSection` an "all
+classes" mode - both are schema/UX decisions, not bugs.
+
 ## Waiting on a human
 
 - **Mint the Cloudflare analytics token, then round-trip "Site stats" (added
