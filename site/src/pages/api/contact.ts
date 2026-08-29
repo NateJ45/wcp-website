@@ -16,13 +16,24 @@ import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 import { site } from '@/data/site';
 import { parseCustomFieldEntries } from '@/lib/custom-form-fields';
+import { readForm } from '@/lib/read-form';
 
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const clip = (s: string, max: number) => s.slice(0, max);
 
 export const POST: APIRoute = async (context) => {
-  const form = await context.request.formData();
   const wantsJson = (context.request.headers.get('accept') ?? '').includes('application/json');
+  // A non-form body (JSON, empty, truncated) used to crash formData() with a
+  // 500; answer it as a clean 400 instead. A real browser form never gets here.
+  const form = await readForm(context.request);
+  if (!form) {
+    return wantsJson
+      ? new Response(JSON.stringify({ ok: false, error: 'Bad request.' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        })
+      : context.redirect('/', 303);
+  }
   const referer = context.request.headers.get('referer') ?? '';
 
   const honeypot = String(form.get('company') ?? '').trim();

@@ -15,6 +15,7 @@ import { env } from 'cloudflare:workers';
 import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 import { normalizeHours, isHoursCategory, categoryLabel } from '@/lib/coop-hours';
+import { readForm } from '@/lib/read-form';
 
 const clip = (s: unknown, max: number) =>
   String(s ?? '')
@@ -22,8 +23,17 @@ const clip = (s: unknown, max: number) =>
     .slice(0, max);
 
 export const POST: APIRoute = async (context) => {
-  const form = await context.request.formData();
   const wantsJson = (context.request.headers.get('accept') ?? '').includes('application/json');
+  // A non-form body used to crash formData() with a 500; reject it cleanly.
+  const form = await readForm(context.request);
+  if (!form) {
+    return wantsJson
+      ? new Response(JSON.stringify({ ok: false, error: 'Bad request.' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        })
+      : context.redirect('/family-hub', 303);
+  }
 
   const familyName = clip(form.get('familyName'), 120);
   const hours = normalizeHours(form.get('hours'));
