@@ -69,6 +69,21 @@ rather than debt — re-read this before "finishing the job":
   not before; adding either to the shared `ToolTheme` today would force a copy
   into every sibling repo for nobody's benefit.
 
+## Preview fidelity: 10 section bridges still fetch published-only (2026-08-29)
+
+Found in the volunteer walkthrough: a section component that calls `cmsFetch`
+itself reads the PUBLISHED perspective even inside the Studio preview, so a
+draft never shows there. The two money surfaces are fixed (the tuition
+calculator and the class-cards fees now ride `PAGE_BY_SLUG_QUERY`, which is
+draft-aware through `previewFetch` — same pattern as `tuitionTableSection`).
+Still published-only in preview: AlbumSection, BoardMembersSection,
+CampaignSection, DownloadsSection, InstagramSection, JobsSection,
+LatestPostsSection, LogoStripSection, ProgramCardsSection,
+UpcomingEventsSection. Live pages are unaffected (published is correct there).
+Fix pattern when one starts to matter: move the feed into the page query
+under a `_type == "..." =>` arm and keep the component fetch as the fallback
+for renderers that skip the page query (the hub body).
+
 ## Waiting on a human
 
 - **Mint the Cloudflare analytics token, then round-trip "Site stats" (added

@@ -69,7 +69,10 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       "people": staff[]->{ name, honorific, role, email, photo, bio }
     },
     _type == "classCardsSection" => {
-      "classItems": classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      "classItems": classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
+      // Same preview-fidelity rule as the calculator below: fees ride the
+      // page query so a draft fee change previews on the cards too.
+      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
     },
     _type == "faqSection" => {
       "items": select(
@@ -83,6 +86,18 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "tuitionTableSection" => {
       "classItems": *[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee },
       "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+    },
+    // Expanded HERE, not fetched by the component (2026-08-29). The calculator
+    // used to run its own cmsFetch, which reads the PUBLISHED perspective no
+    // matter who is rendering - so in the Studio preview a draft class showed
+    // up in the tuition TABLE (this query, draft-aware via previewFetch) while
+    // the calculator two sections down still offered the old four. Same page,
+    // two answers. Riding the page query gives both surfaces the same
+    // perspective; the component keeps its own fetch only as a fallback for
+    // renderers that do not come through this query (the hub body).
+    _type == "tuitionCalculatorSection" => {
+      "calcClasses": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
+      "calcFees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
     }
   }
 }`;

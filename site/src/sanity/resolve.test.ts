@@ -119,14 +119,28 @@ describe('route order', () => {
 });
 
 describe('locations agree with the same schema', () => {
-  it('page locations read slug as a string', () => {
-    // previewHref(slug) compares slug === 'home' and interpolates it directly.
-    // That was always right; it is the filters that disagreed with it.
-    expect(RESOLVE).toMatch(/const previewHref = \(slug\?: string\)/);
-    expect(RESOLVE).toMatch(/select: \{ title: 'title', slug: 'slug' \}/);
+  // The "Used on" panel moved to ./locations.ts on 2026-08-29 and now QUERIES
+  // the dataset for real usage. These pin the slug handling there instead.
+  const LOCATIONS = read('./locations.ts');
+
+  it('page hrefs treat slug as a plain string', () => {
+    expect(LOCATIONS).toMatch(/const previewHref = \(slug\?: string\)/);
+    expect(LOCATIONS).toMatch(/typeof row\.slug === 'string' \? previewHref\(row\.slug\)/);
   });
 
-  it('post locations select slug.current', () => {
-    expect(RESOLVE).toMatch(/select: \{ title: 'title', slug: 'slug\.current' \}/);
+  it('post hrefs read slug.current, the one slug-typed field', () => {
+    expect(LOCATIONS).toMatch(/row\.slug\?\.current/);
+  });
+
+  it('the usage query excludes drafts and covers the class hop', () => {
+    // Published perspective answers "where does this appear on the SITE?";
+    // the viaClass arm is how a teacher reaches pages through class->teacher.
+    expect(LOCATIONS).toContain('!(_id in path("drafts.**")) && references($id)');
+    expect(LOCATIONS).toContain('references(*[_type == "class" && references($id)]._id)');
+  });
+
+  it('resolve.ts delegates locations to the resolver', () => {
+    expect(RESOLVE).toMatch(/import \{ locations \} from '\.\/locations'/);
+    expect(RESOLVE).toMatch(/^  locations,$/m);
   });
 });

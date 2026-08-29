@@ -65,7 +65,12 @@ const pageSlugFor = (slug?: string) =>
 // Empty-object fallback, not null: cmsFetch's fallback is typed as the payload,
 // and an empty schedule degrades gracefully — feesFor() simply omits any fee it
 // has no value for, so a Sanity outage costs a line on the card, never a crash.
-const fees = showFees ? await cmsFetch<FeeSchedule>(FEE_SCHEDULE_QUERY, {}, {}) : {};
+// Prefer the fees the page query expanded (draft-aware in the preview); fall
+// back to the published fetch for renderers that skip PAGE_BY_SLUG_QUERY.
+const expandedFees = (section as unknown as { fees?: FeeSchedule }).fees;
+const fees = showFees
+  ? (expandedFees ?? (await cmsFetch<FeeSchedule>(FEE_SCHEDULE_QUERY, {}, {})))
+  : {};
 const registration = fees?.registrationFee;
 const deposit = fees?.participationFee;
 

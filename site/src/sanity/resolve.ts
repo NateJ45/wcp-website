@@ -1,8 +1,5 @@
-import {
-  defineDocuments,
-  defineLocations,
-  type PresentationPluginOptions,
-} from 'sanity/presentation';
+import { defineDocuments, type PresentationPluginOptions } from 'sanity/presentation';
+import { locations } from './locations';
 
 // =============================================================================
 // Presentation Tool location resolver
@@ -17,16 +14,12 @@ import {
 //    the more specific routes (news, classes) come before the catch-all page
 //    route. Nested page slugs like "classes/twos" are rebuilt in the filter.
 //
-//  - `locations` (document -> URL): the reverse, so opening a document from the
-//    Studio nav points the preview at the right page. Every `page` document is a
-//    full page-builder doc with its own /preview/[...slug] route, so `page`
-//    resolves generically from the slug. Reference doc types (testimonial/class/
-//    staff/faqItem) can be pulled into many pages at once — they map to the page
-//    where they most prominently live as a sensible landing spot.
+//  - `locations` (document -> URL): the reverse — the "Used on" panel. Lives
+//    in ./locations.ts, and since 2026-08-29 it QUERIES the dataset for real
+//    usage (direct references, plus the page -> class -> staff hop) instead of
+//    naming one hardcoded page per type. The old map sent every staff member
+//    to /preview/about, a page that stopped existing on 2026-08-04.
 // =============================================================================
-
-// Turn a page slug into its /preview href ("home" is the site root).
-const previewHref = (slug?: string) => (slug === 'home' ? '/preview' : `/preview/${slug}`);
 
 export const resolve: PresentationPluginOptions['resolve'] = {
   mainDocuments: defineDocuments([
@@ -55,67 +48,5 @@ export const resolve: PresentationPluginOptions['resolve'] = {
     },
     { route: '/preview/:slug', filter: '_type == "page" && slug == $slug' },
   ]),
-  locations: {
-    page: defineLocations({
-      select: { title: 'title', slug: 'slug' },
-      resolve: (doc) => {
-        const slug = doc?.slug;
-        if (!slug) return { locations: [], message: 'Give this page a slug to preview it.' };
-        return { locations: [{ title: doc?.title ?? slug, href: previewHref(slug) }] };
-      },
-    }),
-    // Hub pages preview their EDITABLE surface (heading/intro/sections) on
-    // the gated /preview/family-hub route — the hub chrome and widgets are
-    // code-owned and don't render there.
-    hubPage: defineLocations({
-      select: { title: 'title', heading: 'heading', hubKey: 'hubKey', slug: 'slug' },
-      resolve: (doc) => {
-        const key = doc?.hubKey || doc?.slug;
-        if (!key)
-          return { locations: [], message: 'Give this hub page a key or slug to preview it.' };
-        return {
-          locations: [
-            { title: doc?.heading || doc?.title || key, href: `/preview/family-hub/${key}` },
-          ],
-        };
-      },
-    }),
-    post: defineLocations({
-      select: { title: 'title', slug: 'slug.current' },
-      resolve: (doc) => {
-        const slug = doc?.slug;
-        if (!slug) return { locations: [], message: 'Give this post a slug to preview it.' };
-        return { locations: [{ title: doc?.title ?? slug, href: `/preview/news/${slug}` }] };
-      },
-    }),
-    siteSettings: {
-      locations: [{ title: 'Site Settings', href: '/preview' }],
-    },
-    navigation: {
-      locations: [{ title: 'Menus (header & footer)', href: '/preview' }],
-    },
-    testimonial: {
-      // Testimonials are pulled into several pages (home, co-op-life, why-wcp,
-      // classes/*); the homepage carries the featured wall, so land there.
-      locations: [{ title: 'Home', href: '/preview' }],
-    },
-    class: defineLocations({
-      select: { name: 'name' },
-      resolve: (doc) => ({
-        locations: [{ title: doc?.name ?? 'Class', href: '/preview/tuition' }],
-      }),
-    }),
-    feeSchedule: {
-      locations: [{ title: 'Tuition & Fees', href: '/preview/tuition' }],
-    },
-    staff: defineLocations({
-      select: { name: 'name' },
-      resolve: (doc) => ({
-        locations: [{ title: doc?.name ?? 'Staff member', href: '/preview/about' }],
-      }),
-    }),
-    faqItem: {
-      locations: [{ title: 'FAQ', href: '/preview/faq' }],
-    },
-  },
+  locations,
 };

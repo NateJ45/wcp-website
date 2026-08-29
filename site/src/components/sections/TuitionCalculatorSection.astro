@@ -40,7 +40,18 @@ const header = section.header;
 const titleId = titleIdFor(section);
 const note = section.note as string | undefined;
 
-const data = await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
+// Prefer the data the PAGE QUERY expanded (draft-aware in the preview, and
+// the reason a draft class shows here at the same moment it shows in the
+// tuition table). The component's own fetch survives only as the fallback for
+// renderers that do not come through PAGE_BY_SLUG_QUERY, like the hub body -
+// cmsFetch reads published content, which is correct on every live surface.
+const expanded = section as unknown as {
+  calcClasses?: CalcClass[];
+  calcFees?: CalcData['fees'];
+};
+const data: CalcData = expanded.calcClasses
+  ? { classes: expanded.calcClasses, fees: expanded.calcFees ?? null }
+  : await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
 // Shared with the class cards and the client script (src/lib/tuition.ts), so
 // the same price can never render differently on two surfaces.
 const money = parseMoney;
