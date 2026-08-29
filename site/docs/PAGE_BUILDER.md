@@ -207,6 +207,10 @@ volunteer chooses _what_ and _what order_ and fills in words and photos; the sty
 is the components'. This is the guardrail that keeps new pages on-brand. **Do not add
 design controls to section schemas.**
 
+The in-canvas band card (below) does not bend this rule: it offers the SAME four bands
+`bandFields()` already declares, read from one registry that a drift gate checks against
+the schema. It adds no field and no value.
+
 ## The emphasis layer (added 2026-08-28)
 
 Two ways for an editor to stress a word. Both are opt-in, and both leave a stored
@@ -733,6 +737,85 @@ Every path then logs one line: `instant-text` names which feed made the swap (`l
 or `actor`), and `soft-refresh` says what happened to the page (`unchanged (skipped)`,
 `main morphed`, `main replaced (morph bailed)`, or `discarded (stale)`). See
 [`overlay/timing.ts`](../src/components/preview/overlay/timing.ts).
+
+## The in-canvas controls (added 2026-08-28)
+
+Three floating controls inside the Presentation canvas, in Edit mode only. Each one
+writes to a box that already exists in the form, so this is a shorter route, never a
+second source of truth.
+
+| Gesture                    | Where it appears                                                     | What it writes                                                               |
+| -------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Band colour card**       | A `🎨` handle in each band's TOP-RIGHT corner                        | `background` (white/grey/cream/navy), or `tone` on `ctaSection` (navy/cream) |
+| **Click-a-word underline** | On a section heading (`header.title`) and the CTA headline (`title`) | `header.headingAccent`, or `headingAccent` on `ctaSection`                   |
+| **`✎ Edit here` card**     | On the seven rich twins and on `hero.title`                          | the twin (`…Rich`), or the plain hero headline                               |
+
+Wiring: [`components/preview/overlay/index.ts`](../src/components/preview/overlay/index.ts)
+is the `components` resolver handed to `<VisualEditing>`; the three cards live beside it;
+every write goes through `useDraftDocument`'s `patch()`, which sends the mutation over the
+comlink to the parent Studio. **No token reaches the browser**, every write lands in the
+DRAFT, and the Studio's own undo covers it.
+
+**The pure half is [`lib/section-fields.ts`](../src/lib/section-fields.ts)**, a registry of
+which section type carries which field, plus the path→control decision. It duplicates the
+schema, so **[`section-fields.test.ts`](../src/lib/section-fields.test.ts) is a DRIFT
+GATE**: it parses `schemaTypes/sections/*.ts`, `objects/sectionHeader.ts` and
+`objects/iconCard.ts` and fails the suite when a section gains or loses one of these
+fields without the registry being updated. It also reads `Section.astro` (the band classes
+must match, or the optimistic recolour silently refuses) and every bridge component (each
+one must actually pass `headingAccent` through, or the picker would offer a word nothing
+underlines).
+
+Six mechanics are load-bearing, and each has a comment where it lives:
+
+- **A custom overlay component only mounts on a node the schema resolves to a FIELD.** A
+  bare array-item path (`sections[_key=="x"]`) yields no resolver context, so the band card
+  cannot hang off the section wrapper. `SectionRenderer.astro` renders a preview-only
+  handle whose `data-sanity` names `…[_key=="x"].background` (see `sectionFieldEditAttr` in
+  [`preview-edit-attr.ts`](../src/lib/preview-edit-attr.ts)), and the card hangs off that.
+- **The handle is TOP-RIGHT, inside the band.** A section is usually taller than the
+  viewport, so its bottom corner is off screen exactly when the editor is looking at it.
+- **Controls open on CLICK, not hover.** The host renders overlay components for every
+  element that is `activated || focused`, and `activated` means "in the viewport"; a
+  hover-gated layer would paper the page in buttons.
+- **Each card keeps its OWN open state.** `focused` is recomputed on every
+  `presentation/focus` the Studio sends, so a card gated on it unmounts itself moments
+  after opening. Only the close button, Escape, or a press outside may close it, and the
+  band card renders flush to its handle so the pointer never crosses unowned pixels.
+- **Gating is PER INSTANCE, not per type.** `bandApplies()` refuses a type with no band
+  field (`noticeBarSection`; `statBandSection`, whose bridge READS `background` but whose
+  schema has no such field), and refuses any instance rendering as the dashed
+  `SectionCoach` note, which is a plain `<div>` with no band on it at all.
+- **Writes apply optimistically.** Clicking a colour swaps the band's classes immediately,
+  then the reconcile confirms; a failed write puts them back, and a band not wearing the
+  classes the registry predicted is left alone rather than half-rewritten.
+
+Stega: a heading arrives with an invisible payload, so every value is cleaned through
+`cleanHeadingText` before it is matched or shown. The word buttons come from
+`splitHeadingWords` in [`emphasis.ts`](../src/lib/emphasis.ts), which refuses to offer a
+word longer than the accent matcher accepts — a control must never promise what the
+renderer will not honour. The rich-twin serializer is
+[`emphasis-write.ts`](../src/lib/emphasis-write.ts): an allow-list HTML parser (so a Word
+paste keeps its bold and loses everything else) and a builder that keeps ONE BLOCK PER
+LINE, because `emphasisHtml` joins stored blocks with `<br />` and collapsing them would
+delete a line break the moment somebody opened the card.
+
+**A saved section now arrives dressed for the page.** `adaptBandToNeighbour` (same file)
+gives a preset inserted from the navigator the band of the section it lands under, so it
+reads as a continuation instead of a seam. Only the band travels, and a `ctaSection` keeps
+its own tone when the band above is one its two-colour radio does not list.
+
+**Two things this layer deliberately leaves alone.** The hero's `accentWord` is the same
+idea under an older name and is not offered (the layer covers the two `headingAccent`
+fields card 26 added, and the drift gate counts them). And the Family Hub preview gets no
+handle: `HubSectionedBody` calls `SectionRenderer` without `editDoc`, which is right —
+`.hub-doc-block` overrides the band colour in CSS, so the card would promise a change the
+hub does not render.
+
+**Nothing here touches the live-site path.** The handle is gated on the same `editDoc` the
+section wrapper already uses, which only the `/preview` routes pass;
+`node scripts/page-parity.mjs compare` stays 27/27. The island chunk is preview-only and no
+static page references it.
 
 ## News / blog
 

@@ -1,6 +1,7 @@
 import { VisualEditing } from '@sanity/visual-editing/react';
 import type { HistoryAdapter, HistoryRefresh } from '@sanity/visual-editing';
 import { useCallback, useEffect, useRef } from 'react';
+import { inCanvasControls } from './overlay/index.ts';
 import { SOFT_REFRESH_EVENT, useInstantText } from './overlay/useInstantText.ts';
 import { startTiming } from './overlay/timing.ts';
 import {
@@ -107,6 +108,13 @@ const mpaHistory: HistoryAdapter = {
 //     the document it just applied is the newest one anybody knows about, so
 //     any render started before it is stale even though no SSE signal has
 //     arrived for it yet.
+//  4. THE IN-CANVAS CONTROLS (`components`, 2026-08-28, card 28): a band-colour
+//     card on a section, a click-a-word picker on a heading, a text card on the
+//     curated lines and the hero headline. They live in ./overlay/, they write
+//     through the optimistic document API (no token in the browser, every write
+//     lands in the draft and is covered by the Studio's own undo), and their
+//     edits come back through the same refresh loop above as any other change.
+//     See ./overlay/index.ts.
 //
 // This deliberately does NOT re-render the whole page per keystroke: that would
 // require porting the Astro section renderer to React, recreating the two-
@@ -393,5 +401,7 @@ export default function VisualEditingOverlay({ pageId }: Props) {
     [pageId, softRefresh],
   );
 
-  return <VisualEditing portal refresh={refresh} history={mpaHistory} />;
+  return (
+    <VisualEditing portal refresh={refresh} history={mpaHistory} components={inCanvasControls} />
+  );
 }

@@ -9,8 +9,9 @@
    ============================================================================ */
 import type { SectionData } from './section-helpers';
 import { effectiveBg, wantsSeam } from './section-helpers';
-import { sectionEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
+import { sectionEditAttr, sectionFieldEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
 import { sectionCoach } from '@/lib/section-coach';
+import { bandApplies, bandFieldFor } from '@/lib/section-fields';
 import SectionCoach from './SectionCoach.astro';
 import { deEmDashDeep } from '@/lib/portable-text';
 import PhotoStrip from '@/components/PhotoStrip.astro';
@@ -361,9 +362,50 @@ const MAP: Record<string, any> = {
       ) : (
         rendered
       );
+    // -------------------------------------------------------------------
+    // The band handle (2026-08-28, card 28) — PREVIEW ONLY, same editDoc gate
+    // -------------------------------------------------------------------
+    // The in-canvas band card needs a node the Studio schema resolves to a
+    // FIELD. The wrapper above names a bare array item, which resolves to
+    // none, so a custom overlay component can never mount on it (learned in a
+    // deployed Studio; see sectionFieldEditAttr). This little square is that
+    // node: it points at the section's own band field, so clicking it selects
+    // that field and the overlay answers with the card.
+    //
+    // Exactly one per section, and only for sections that HAVE a band to
+    // change: `bandApplies` refuses a type with no band field (the notice bar,
+    // the stat band) and refuses any instance that is rendering as the dashed
+    // coaching note, which is a plain div with no band on it at all.
+    //
+    // TOP-RIGHT, INSIDE the band. A section is usually taller than the
+    // viewport, so its bottom-right corner is below the fold exactly when the
+    // volunteer is looking at the section; its top-right is on screen the
+    // moment the band is. It renders after the content so it paints above it,
+    // and it carries its styles inline because the preview loads no
+    // preview-only stylesheet.
+    const bandField = bandFieldFor(section._type);
+    const handleAttr =
+      editAttr && editDoc && section._key && bandField && bandApplies(section._type, section)
+        ? sectionFieldEditAttr(editDoc, section._key, bandField)
+        : undefined;
     return (
       <>
-        {grammarWrapped && editAttr && <div data-sanity={editAttr}>{grammarWrapped}</div>}
+        {grammarWrapped && editAttr && (
+          <div data-sanity={editAttr} style="position:relative">
+            {grammarWrapped}
+            {handleAttr && (
+              <div
+                data-sanity={handleAttr}
+                data-band-handle
+                title="Band colour"
+                aria-hidden="true"
+                style="position:absolute;top:12px;right:12px;z-index:5;width:28px;height:28px;border-radius:999px;background:#ffffff;border:1px solid rgba(26,26,26,0.18);box-shadow:0 2px 8px rgba(1,69,126,0.22);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;"
+              >
+                🎨
+              </div>
+            )}
+          </div>
+        )}
         {grammarWrapped && !editAttr && grammarWrapped}
         {strips.map((m) =>
           m.kind === 'interlude' ? (

@@ -69,6 +69,51 @@ export function hasEmphasis(value: unknown): boolean {
 }
 
 /**
+ * One run of text and the two marks it may carry.
+ *
+ * A run whose text is exactly '\n' is a HARD BREAK, not text: it stands for the
+ * `<br />` that `emphasisHtml` puts between two stored blocks. Keeping the break
+ * inside the run list lets the in-canvas editor (src/lib/emphasis-write.ts) read
+ * a two-block twin, show it, and store it back with both blocks intact.
+ */
+export interface InlineRun {
+  text: string;
+  strong: boolean;
+  em: boolean;
+}
+
+/** The hard-break run. Compare with `run.text === RUN_BREAK`. */
+export const RUN_BREAK = '\n';
+
+/**
+ * Flatten an `emphasisText` value to runs, in order, with a RUN_BREAK between
+ * blocks. This is the READ half of the in-canvas text popover; `emphasisHtml`
+ * above is the read half of the rendered page. They walk the same shape, so the
+ * popover and the page can never disagree about what a twin says.
+ *
+ * Marks other than `strong` and `em` cannot occur (the schema allows no others)
+ * and are ignored if they somehow do, so a stray annotation degrades to plain
+ * text instead of throwing.
+ */
+export function emphasisRuns(value: unknown): InlineRun[] {
+  if (!Array.isArray(value)) return [];
+  const runs: InlineRun[] = [];
+  (value as PortableTextBlock[]).forEach((block, i) => {
+    if (i > 0 && runs.length) runs.push({ text: RUN_BREAK, strong: false, em: false });
+    for (const span of spansOf(block)) {
+      if (typeof span.text !== 'string' || span.text === '') continue;
+      const marks = Array.isArray(span.marks) ? span.marks : [];
+      runs.push({
+        text: span.text,
+        strong: marks.includes('strong'),
+        em: marks.includes('em'),
+      });
+    }
+  });
+  return runs;
+}
+
+/**
  * Render an `emphasisText` value to an INLINE HTML fragment: text, <strong>,
  * <em>, and <br /> between blocks. No <p> wrapper, because every call site
  * already has one (a <p> inside a <p> is invalid HTML and would reflow).
@@ -154,4 +199,65 @@ export function splitHeadingAccent(
     accent: haystack.slice(at, at + needle.length),
     after: haystack.slice(at + needle.length),
   };
+}
+
+// -----------------------------------------------------------------------------
+// Picking the word by clicking it (in-canvas controls, 2026-08-28)
+// -----------------------------------------------------------------------------
+// The guide's steps for the underlined word are: read the heading, choose a
+// word, copy it into a box, and "if nothing changes, check the spelling".
+// Clicking the word removes all three steps. The overlay draws the heading a
+// second time, as a row of buttons, one button per word. The value it stores is
+// then a slice of the heading, so `splitHeadingAccent` above cannot miss it.
+//
+// Two rules keep the buttons honest:
+//  1. The heading is CLEANED first. A preview heading carries invisible stega
+//     markers, and a value cut out of an encoded string would never match.
+//  2. Punctuation stays in the LABEL and leaves the VALUE. A button reading
+//     "belong," beside its comma looks like the heading, but storing the comma
+//     would make the underline swallow it.
+
+/** One clickable piece of a heading. Whitespace comes through as `word: false`. */
+export interface HeadingToken {
+  /** Exactly as it appears in the cleaned heading, punctuation and all. */
+  text: string;
+  /** What to store when an editor picks this token. Empty for whitespace. */
+  value: string;
+  /** True when this token is a word an editor may pick. */
+  word: boolean;
+}
+
+/** Characters that belong to the sentence rather than to the word. */
+const EDGE_PUNCTUATION = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
+
+/**
+ * Split a heading into clickable word tokens and the whitespace between them.
+ * Order is preserved, so joining every `text` returns the cleaned heading.
+ *
+ * A word longer than MAX_ACCENT_LENGTH is NOT offered: `splitHeadingAccent`
+ * refuses that needle, so a button for it would store a value the renderer then
+ * ignores. A control must never promise what the renderer will not honour.
+ */
+export function splitHeadingWords(heading?: string | null): HeadingToken[] {
+  const clean = typeof heading === 'string' ? cleanHeadingText(heading) : '';
+  if (clean === '') return [];
+  return clean
+    .split(/(\s+)/)
+    .filter((piece) => piece !== '')
+    .map((piece) => {
+      if (/^\s+$/.test(piece)) return { text: piece, value: '', word: false };
+      const value = piece.replace(EDGE_PUNCTUATION, '');
+      return { text: piece, value, word: value !== '' && value.length <= MAX_ACCENT_LENGTH };
+    });
+}
+
+/**
+ * True when `token` is the word the stored accent points at, so the overlay can
+ * ring it and a second click can clear it. Case-insensitive, like the match.
+ */
+export function isAccentedWord(token: HeadingToken, accent?: string | null): boolean {
+  if (!token.word || typeof accent !== 'string') return false;
+  const needle = cleanHeadingText(accent).trim();
+  if (needle === '') return false;
+  return token.value.toLowerCase() === needle.toLowerCase();
 }

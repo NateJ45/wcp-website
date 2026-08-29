@@ -240,6 +240,25 @@ export const guides: Guide[] = [
         title: 'This is the "click anything to edit" view.',
         text: 'The preview on the right is the real page. Clicking straight on the thing you want to change is usually faster than hunting through the boxes on the left.',
       },
+      { kind: 'h', text: 'Three things you can change without leaving the page' },
+      {
+        kind: 'p',
+        text: 'Small buttons appear on whatever you point at in the preview. They write to the same boxes on the left, so nothing here is a second way of doing things, only a shorter one. Nothing goes live until you `Publish`, and `Undo last change` works on all three.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**The band colour.** Every band has a small `🎨` button in its top right corner. Click it and a short list opens: White, Light grey, Warm cream, Navy. Click one and the band changes colour under your hand. (A call-to-action banner offers its own two, Navy and Warm cream.)',
+          '**The underlined word in a heading.** Click a heading, then `Underline a word`, then click the word. See "Make words bold or stand out".',
+          '**The words themselves.** Click an intro line or a card line, then `✎ Edit here`, and type in the small card that opens. Enter saves, Esc cancels.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'A band with nothing in it yet has no colour button.',
+        text: 'A section you have just added shows the grey "nothing here yet" note instead of a real band, so there is no colour to change. Fill in its words and the `🎨` appears.',
+      },
       {
         kind: 'callout',
         tone: 'positive',
@@ -396,6 +415,12 @@ export const guides: Guide[] = [
       },
       {
         kind: 'callout',
+        tone: 'positive',
+        title: 'Or type it straight on the page.',
+        text: 'Click the sentence in the live preview and a small `✎ Edit here` button appears on it. Click that and a little card opens with the words already in it, and with `B` and `I` buttons. Type, then press Enter or click `Save`. It writes to the same box, so both ways do the same thing. Paste from Word or Google Docs is safe here: the bold comes through and the fonts and colours are dropped.',
+      },
+      {
+        kind: 'callout',
         tone: 'primary',
         title: 'Changed your mind?',
         text: 'Delete everything in the "with bold or italic" box. The plain box comes straight back, with the words you had before.',
@@ -423,6 +448,12 @@ export const guides: Guide[] = [
           'Capital letters do not matter. Type "belong" and it finds "Belong".',
           '`Publish`, and check the page.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Easier: click the word itself.',
+        text: 'Click the heading in the live preview and an `Underline a word` button appears on it. Click that and the heading comes back as a row of buttons, one per word. Click the word you want. Click it again to take the underline away. There is no typing, so there is no spelling to get wrong.',
       },
       {
         kind: 'callout',

@@ -26,6 +26,7 @@ import { useShareDraftLink, SHARE_LINK_TTL_PHRASE } from './shareDraftLink';
 import { LiveDraftBridge } from './LiveDraftBridge';
 import { newKey, regenerateKeys } from '../../lib/sanity-keys';
 import { sectionLabel } from '../../lib/page-checks';
+import { adaptBandToNeighbour } from '../../lib/section-fields';
 import { startNav, stepNav, type PendingNav } from '../../lib/preview-navigation';
 
 // =============================================================================
@@ -658,10 +659,34 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
             string,
             unknown
           >;
+
+          // -----------------------------------------------------------------
+          // Arrive dressed for the page (2026-08-28, card 28)
+          // -----------------------------------------------------------------
+          // A saved section lands at the BOTTOM, so the band it will sit under
+          // is whichever section is last right now. Adopting that band means
+          // the new section reads as a continuation instead of a seam a
+          // volunteer then has to go and fix. Only the band travels, and a
+          // Call-to-action banner keeps its own tone when the band above is one
+          // its two-colour radio does not list. See adaptBandToNeighbour in
+          // src/lib/section-fields.ts.
+          //
+          // The read is the DRAFT first, exactly as the append is.
+          const twins = await client.fetch<{ _id: string; sections?: unknown[] }[]>(
+            '*[_id in $ids]{_id, sections}',
+            { ids: [draftId, currentRow.id] },
+          );
+          const source = twins.find((d) => d._id.startsWith('drafts.')) ?? twins[0];
+          const existing = Array.isArray(source?.sections) ? source.sections : [];
+          const previous = (existing[existing.length - 1] ?? null) as Record<
+            string,
+            unknown
+          > | null;
+
           await client
             .patch(draftId)
             .setIfMissing({ sections: [] })
-            .append('sections', [section])
+            .append('sections', [adaptBandToNeighbour(section, previous)])
             .commit();
 
           refetch();

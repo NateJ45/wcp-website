@@ -31,6 +31,28 @@ export function sectionEditAttr(doc: EditDoc, key: string): string {
 }
 
 /**
+ * The `data-sanity` value that targets one FIELD inside one section
+ * (2026-08-28, the in-canvas controls).
+ *
+ * The distinction from `sectionEditAttr` above is load-bearing, and it was
+ * learned the hard way in a deployed Studio. The overlay will happily OUTLINE an
+ * element whose attribute names a bare array item, which is what gives the
+ * section its insert / duplicate / drag menu. But a custom overlay COMPONENT
+ * only mounts on a node the Studio schema resolves to a FIELD, and an array item
+ * on its own is not one: `getField` returns nothing and the component resolver
+ * is never called. Pointing a small handle at `…[_key=="…"].background` gives
+ * the same section a node that DOES resolve, which is how the band card gets on
+ * screen. See src/components/preview/overlay/index.ts.
+ */
+export function sectionFieldEditAttr(doc: EditDoc, key: string, field: string): string {
+  return createDataAttribute({
+    id: doc.id.replace(/^drafts\./, ''),
+    type: doc.type,
+    baseUrl: '/studio',
+  })(`sections[_key=="${key}"].${field}`).toString();
+}
+
+/**
  * The `data-sanity` value that targets a field on ANY document — the
  * WordPress-template-part gesture (2026-08-28). PreviewLayout wraps the shared
  * Header and Footer in this attribute (header → the navigation doc's mainNav,

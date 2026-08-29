@@ -10,7 +10,17 @@
 //      accent quietly disappears in preview only.
 // =============================================================================
 import { describe, expect, it } from 'vitest';
-import { cleanHeadingText, emphasisHtml, hasEmphasis, splitHeadingAccent } from './emphasis';
+import {
+  RUN_BREAK,
+  cleanHeadingText,
+  emphasisHtml,
+  emphasisRuns,
+  hasEmphasis,
+  isAccentedWord,
+  splitHeadingAccent,
+  splitHeadingWords,
+  type HeadingToken,
+} from './emphasis';
 
 /** A single emphasisText block with the given spans. */
 const block = (children: { text: string; marks?: string[] }[]) => ({
@@ -162,5 +172,126 @@ describe('splitHeadingAccent', () => {
   it('refuses an accent long enough to overflow a 320px column', () => {
     const long = 'a phrase that is far too long to underline';
     expect(splitHeadingAccent(`Say ${long} here`, long)).toBeNull();
+  });
+});
+
+// =============================================================================
+// The in-canvas half (2026-08-28)
+// =============================================================================
+// `emphasisRuns` is what the floating text card reads, and `emphasisHtml` above
+// is what the page renders. They walk the same stored shape, so a case here that
+// disagrees with one above is a real bug in one of them.
+
+describe('emphasisRuns', () => {
+  it('flattens spans to runs, marks and all', () => {
+    expect(
+      emphasisRuns([block([{ text: 'Two mornings a ' }, { text: 'week', marks: ['strong'] }])]),
+    ).toEqual([
+      { text: 'Two mornings a ', strong: false, em: false },
+      { text: 'week', strong: true, em: false },
+    ]);
+  });
+
+  it('puts a hard break between blocks, matching emphasisHtml’s <br />', () => {
+    const value = [block([{ text: 'one' }]), block([{ text: 'two' }])];
+    expect(emphasisRuns(value)).toEqual([
+      { text: 'one', strong: false, em: false },
+      { text: RUN_BREAK, strong: false, em: false },
+      { text: 'two', strong: false, em: false },
+    ]);
+    expect(emphasisHtml(value)).toContain('<br />');
+  });
+
+  it('reads both marks at once', () => {
+    expect(emphasisRuns([block([{ text: 'x', marks: ['strong', 'em'] }])])).toEqual([
+      { text: 'x', strong: true, em: true },
+    ]);
+  });
+
+  it('ignores a mark the schema does not allow, rather than throwing', () => {
+    expect(emphasisRuns([block([{ text: 'x', marks: ['underline'] }])])).toEqual([
+      { text: 'x', strong: false, em: false },
+    ]);
+  });
+
+  it('is empty for anything that is not a stored twin', () => {
+    expect(emphasisRuns(undefined)).toEqual([]);
+    expect(emphasisRuns('a string')).toEqual([]);
+    expect(emphasisRuns([])).toEqual([]);
+  });
+});
+
+describe('splitHeadingWords', () => {
+  it('splits a heading into words and the whitespace between them', () => {
+    expect(splitHeadingWords('Where kids belong').map((t) => t.text)).toEqual([
+      'Where',
+      ' ',
+      'kids',
+      ' ',
+      'belong',
+    ]);
+  });
+
+  it('joining every piece returns the cleaned heading', () => {
+    const heading = 'Where  kids   belong.';
+    expect(
+      splitHeadingWords(heading)
+        .map((t) => t.text)
+        .join(''),
+    ).toBe(heading);
+  });
+
+  it('keeps punctuation in the label and drops it from the stored value', () => {
+    const [word] = splitHeadingWords('belong,');
+    expect(word.text).toBe('belong,');
+    expect(word.value).toBe('belong');
+    expect(word.word).toBe(true);
+  });
+
+  it('cleans the stega payload a preview heading carries', () => {
+    const tokens = splitHeadingWords(encoded('Where kids belong'));
+    expect(tokens.map((t) => t.value).filter(Boolean)).toEqual(['Where', 'kids', 'belong']);
+  });
+
+  it('refuses to offer a word splitHeadingAccent would then reject', () => {
+    // Longer than MAX_ACCENT_LENGTH: a button for it would store a value the
+    // renderer ignores, which is the exact promise this layer must not make.
+    const long = 'extraordinarilyunderlineable';
+    const [token] = splitHeadingWords(long);
+    expect(token.word).toBe(false);
+    expect(splitHeadingAccent(long, long)).toBeNull();
+  });
+
+  it('marks pure punctuation as not pickable', () => {
+    const tokens = splitHeadingWords('Hello — world');
+    expect(tokens.filter((t) => t.word).map((t) => t.value)).toEqual(['Hello', 'world']);
+  });
+
+  it('is empty for an empty heading', () => {
+    expect(splitHeadingWords('')).toEqual([]);
+    expect(splitHeadingWords(undefined)).toEqual([]);
+    expect(splitHeadingWords(null)).toEqual([]);
+  });
+});
+
+describe('isAccentedWord', () => {
+  const tokens = splitHeadingWords('Where kids belong.');
+  const belong = tokens.find((t) => t.value === 'belong') as HeadingToken;
+
+  it('rings the word the stored accent points at, whatever its case', () => {
+    expect(isAccentedWord(belong, 'belong')).toBe(true);
+    expect(isAccentedWord(belong, 'BELONG')).toBe(true);
+    expect(isAccentedWord(belong, ' belong ')).toBe(true);
+  });
+
+  it('does not ring anything else', () => {
+    expect(isAccentedWord(belong, 'kids')).toBe(false);
+    expect(isAccentedWord(belong, '')).toBe(false);
+    expect(isAccentedWord(belong, undefined)).toBe(false);
+    expect(isAccentedWord({ text: ' ', value: '', word: false }, 'belong')).toBe(false);
+  });
+
+  it('a ringed word is one splitHeadingAccent really does find', () => {
+    expect(splitHeadingAccent('Where kids belong.', belong.value)?.accent).toBe('belong');
   });
 });
