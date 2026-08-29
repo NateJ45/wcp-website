@@ -744,7 +744,15 @@ export function html(data) {
        column, so a short card no longer inherits the row height of a tall
        neighbour. break-inside:avoid keeps each card (and each bullet) whole
        across column AND page fragmentation. */
-    .grid{column-count:2;column-gap:9px}
+    /* READABILITY PASS (2026-08-29, Nathan): the guide used to print at a
+       10.2px body in two columns - accurate, but small for a kitchen-counter
+       read. CSS zoom scales the WHOLE design uniformly (type, chips, paddings,
+       borders - like printing at 200%) and Chromium's print pipeline reflows
+       and repaginates around it, so the layout language survives while every
+       size doubles. One column instead of two, because a doubled type size in
+       a half-width column leaves four words a line. */
+    body{zoom:2}
+    .grid{column-count:1;column-gap:9px}
     /* Full-width masthead inside the column flow (anchors columns to page 1). */
     .spanhead{column-span:all;break-after:avoid}
     .card{break-inside:avoid;margin:0 0 9px;background:#fff;border:1px solid #e7e3da;border-radius:11px;padding:10px 12px 11px;box-shadow:0 1px 0 rgba(1,69,126,.04)}

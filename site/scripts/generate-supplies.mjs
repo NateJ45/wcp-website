@@ -196,7 +196,14 @@ export function pdfHtml() {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
     ${FONT_FACES}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Quicksand',system-ui,sans-serif;color:#1a1a1a;font-size:10.6px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    /* READABILITY PASS (2026-08-29, Nathan): the print list rendered at a
+       10.6px body across a 2-up card grid - small for a fridge-door read. CSS
+       zoom scales the whole design uniformly and Chromium repaginates around
+       it, so every size doubles with the layout language intact. The card
+       grid goes 1-up, because doubled type in a half-width card leaves four
+       words a line. The social carousel below has its own fixed 1080x1350
+       canvas and is NOT scaled. */
+    body{font-family:'Quicksand',system-ui,sans-serif;color:#1a1a1a;font-size:10.6px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact;zoom:2}
     h1,h2,.wordmark,.badge{font-family:'Captain Comic',system-ui,sans-serif}
 
     .masthead{display:flex;align-items:center;gap:14px;padding-bottom:11px;border-bottom:3px solid #ffa334;margin-bottom:12px}
@@ -216,7 +223,7 @@ export function pdfHtml() {
     .backpack p{font-size:10.6px;font-weight:600;color:#2b2f38;line-height:1.4}
     .backpack strong{color:#a85300}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .grid{display:grid;grid-template-columns:1fr;gap:9px}
     .card{background:#fff;border:1px solid #e7e3da;border-radius:11px;padding:10px 12px 11px;box-shadow:0 1px 0 rgba(1,69,126,.04);border-top:3px solid var(--bright)}
     .card-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
     .chip{width:23px;height:23px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--tint);border-radius:7px}
