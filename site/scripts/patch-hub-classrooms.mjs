@@ -144,4 +144,39 @@ for (const [slug, icon] of Object.entries(ICONS)) {
   await mutate([{ patch: { id: doc._id, set: { icon } } }]);
 }
 
+// --- The Classes menu group -> automatic --------------------------------------
+// Found live 2026-08-29, AFTER the first run of this script: the redesign
+// removed the class pages from BUILTIN_HUB_LINKS, so the menu's two stored
+// Classes links turned invalid - a red "2 errors" badge on the volunteer's
+// screen, and (before the validation fix in hubNavMenu.ts) a publish block
+// with the failing fields hidden. The conversion belongs to this migration:
+// turn the group automatic and drop the links the automatic list replaces.
+const menu = await query(`*[_id == "hubNavMenu"][0]{
+  "hasDraft": defined(*[_id == "drafts.hubNavMenu"][0]),
+  "group": groups[_key == "classes"][0]{ autoClasses, "links": links[]{_key, target} }
+}`);
+if (!menu?.group) {
+  console.log('Menu: no Classes group - nothing to do.');
+} else if (menu.group.autoClasses) {
+  console.log('Menu: Classes group already automatic.');
+} else if (menu.hasDraft) {
+  console.log(
+    'Menu: the menu doc HAS A DRAFT - flip "Fill this section with the class pages" by hand.',
+  );
+} else {
+  const dead = (menu.group.links ?? []).filter((l) => l.target?.startsWith('/family-hub/'));
+  console.log(
+    `Menu: ${APPLY ? 'turning' : 'would turn'} the Classes group automatic, removing ${dead.length} legacy link(s).`,
+  );
+  await mutate([
+    {
+      patch: {
+        id: 'hubNavMenu',
+        set: { 'groups[_key=="classes"].autoClasses': true },
+        unset: dead.map((l) => `groups[_key=="classes"].links[_key=="${l._key}"]`),
+      },
+    },
+  ]);
+}
+
 console.log(APPLY ? 'Done.' : 'Dry run - nothing written. Pass --apply to write.');

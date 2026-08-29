@@ -22,6 +22,22 @@ import { BUILTIN_HUB_LINKS } from '../../../lib/hub-nav-doc';
 //     the routes that actually exist.
 // =============================================================================
 
+// True when the group a link sits in has "Fill this section with the class
+// pages" on. Links in such a group are hidden and ignored by the site - so
+// their validation must PASS, whatever they hold. Learned live 2026-08-29: the
+// classroom redesign removed the class pages from BUILTIN_HUB_LINKS, the two
+// stored links in the Classes group turned invalid, and switching the group to
+// automatic HID them while their errors still BLOCKED publishing - a volunteer
+// stared at "validation errors" with nothing visible to fix.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function groupIsAutomatic(context: any): boolean {
+  const path = context?.path as unknown[] | undefined;
+  const doc = context?.document as { groups?: { _key?: string; autoClasses?: boolean }[] };
+  const groupKey = (path?.[1] as { _key?: string } | undefined)?._key;
+  if (!groupKey || !Array.isArray(doc?.groups)) return false;
+  return doc.groups.find((g) => g?._key === groupKey)?.autoClasses === true;
+}
+
 export const hubNavMenu = defineType({
   name: 'hubNavMenu',
   title: 'Family Hub menu',
@@ -89,7 +105,14 @@ export const hubNavMenu = defineType({
                       options: {
                         list: BUILTIN_HUB_LINKS.map((l) => ({ title: l.label, value: l.href })),
                       },
-                      validation: (R) => R.required().error('Pick which page this links to.'),
+                      validation: (R) =>
+                        R.custom((value, context) => {
+                          if (groupIsAutomatic(context)) return true;
+                          if (!value) return 'Pick which page this links to.';
+                          return BUILTIN_HUB_LINKS.some((l) => l.href === value)
+                            ? true
+                            : 'This page no longer exists — pick another, or remove this link.';
+                        }),
                     }),
                     defineField({
                       name: 'label',
@@ -136,7 +159,12 @@ export const hubNavMenu = defineType({
                         // linked with the option above, by its real route.
                         filter: 'defined(slug) && !defined(hubKey)',
                       },
-                      validation: (R) => R.required().error('Pick which page this links to.'),
+                      validation: (R) =>
+                        R.custom((value, context) =>
+                          groupIsAutomatic(context) || value
+                            ? true
+                            : 'Pick which page this links to.',
+                        ),
                     }),
                     defineField({
                       name: 'label',
@@ -162,7 +190,10 @@ export const hubNavMenu = defineType({
                       name: 'label',
                       title: 'Shown as',
                       type: 'string',
-                      validation: (R) => R.required().error('Give the link a name.'),
+                      validation: (R) =>
+                        R.custom((value, context) =>
+                          groupIsAutomatic(context) || value ? true : 'Give the link a name.',
+                        ),
                     }),
                     defineField({
                       name: 'url',
@@ -170,9 +201,9 @@ export const hubNavMenu = defineType({
                       type: 'url',
                       description: 'e.g. the store, or a sign-up site the school uses.',
                       validation: (R) =>
-                        R.required()
-                          .uri({ scheme: ['http', 'https'] })
-                          .error('Paste a full web address.'),
+                        R.uri({ scheme: ['http', 'https'] }).custom((value, context) =>
+                          groupIsAutomatic(context) || value ? true : 'Paste a full web address.',
+                        ),
                     }),
                     defineField({
                       name: 'icon',
