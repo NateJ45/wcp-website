@@ -1,0 +1,65 @@
+name: Deploy staging preview
+
+# Deploys the `staging` branch to a SEPARATE Cloudflare Worker
+# (wcp-website-staging) so a change can be checked on the real edge — security
+# headers, the Sanity CDN image pipeline, redirects, the SSR Family Hub routes —
+# before it reaches the live site at wcp-website.
+#
+# This is the ONLY safe way to rehearse a risky change here: production deploys
+# on every push to main AND on every Sanity publish webhook, so there is no
+# quiet window on main to test in.
+#
+# Mirrors deploy.yml step for step, with three deliberate differences:
+#   - it fires on `staging`, never on main or a webhook;
+#   - it overrides the Worker name, so production is never touched;
+#   - it has no schedule, because nothing depends on staging staying fresh.
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: site
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Same reason as deploy.yml: without Chromium the postbuild PDF
+      # generators skip and the committed PDFs ship, which would make the
+      # preview disagree with production about the one thing it exists to check.
+      - name: Install Playwright Chromium (PDF generators)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+
+      # The adapter-generated config, NOT the source wrangler.jsonc — a plain
+      # `wrangler deploy` 404s every sub-route on this hybrid static+SSR build.
+      # `--name` then points that config at the staging Worker.
+      - name: Deploy to the staging Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 7e75a15ddc72aae04dca71aca5c7294b
+          workingDirectory: site
+          command: deploy -c dist/server/wrangler.json --name wcp-website-staging
