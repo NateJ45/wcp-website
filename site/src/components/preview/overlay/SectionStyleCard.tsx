@@ -44,6 +44,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { OverlayComponentProps } from '@sanity/visual-editing';
 import {
   BAND_BY_VALUE,
+  SECTION_ARRAY_FIELDS,
   bandApplies,
   bandChoicesFor,
   bandFieldFor,
@@ -61,6 +62,21 @@ import {
   panel,
   panelHead,
 } from './styles.ts';
+import { TOOL_ACCENT, dialogReset } from './tool-theme.ts';
+
+/**
+ * A band's swatch, split-filled: light value over dark value, so a band that
+ * changes with the site theme LOOKS like it does.
+ *
+ * The canonical `optionDot` takes a finished CSS background string, which is
+ * what lets one shared style carry a repo whose swatches are two-toned and a
+ * repo whose swatches are flat. This is the half that is ours.
+ */
+function dotFill(band: { dot: string; dotDark: string }): string {
+  return band.dot === band.dotDark
+    ? band.dot
+    : `linear-gradient(135deg, ${band.dot} 0 50%, ${band.dotDark} 50% 100%)`;
+}
 
 interface Chosen {
   type: string;
@@ -110,8 +126,9 @@ function applyClasses(
 
 export default function SectionStyleCard(props: OverlayComponentProps): React.ReactNode {
   const { node, PointerEvents, focused, element } = props;
-  const section = readSectionPath(node.path);
+  const section = readSectionPath(node.path, SECTION_ARRAY_FIELDS);
   const key = section?.key;
+  const array = section?.array;
   const { read, write } = useDraftDocument(node.id);
   const [chosen, setChosen] = useState<Chosen | null>(null);
   const [open, setOpen] = useState(false);
@@ -125,18 +142,18 @@ export default function SectionStyleCard(props: OverlayComponentProps): React.Re
   // One read on open. Every later value is the one this card just set, so the
   // tick moves the instant it is clicked rather than after a round trip.
   useEffect(() => {
-    if (!key) return undefined;
+    if (!key || !array) return undefined;
     let alive = true;
     void read().then((doc) => {
       if (!alive || !doc) return;
-      const found = sectionByKey(doc, key);
+      const found = sectionByKey(doc, array, key);
       const type = typeof found?._type === 'string' ? found._type : '';
       setChosen({ type, raw: found, band: storedBand(type, found) });
     });
     return () => {
       alive = false;
     };
-  }, [read, key]);
+  }, [read, key, array]);
 
   // Clicking the handle is what selects this node, so the host telling us we
   // just became focused IS the open gesture. Only the TRANSITION opens: a later
@@ -204,7 +221,7 @@ export default function SectionStyleCard(props: OverlayComponentProps): React.Re
         ref={cardRef}
         aria-label="Band colour"
         tabIndex={-1}
-        style={panel}
+        style={{ ...panel, ...dialogReset }}
         onKeyDown={onKeyDown}
         onClick={(event) => event.stopPropagation()}
       >
@@ -232,7 +249,10 @@ export default function SectionStyleCard(props: OverlayComponentProps): React.Re
               type="button"
               title={band.hint}
               aria-pressed={selected}
-              style={optionRow(selected, hovered === band.value)}
+              style={{
+                ...optionRow(selected, hovered === band.value),
+                borderLeftColor: selected ? TOOL_ACCENT : 'transparent',
+              }}
               onMouseEnter={() => setHovered(band.value)}
               onMouseLeave={() => setHovered((was) => (was === band.value ? null : was))}
               onFocus={() => setHovered(band.value)}
@@ -242,9 +262,9 @@ export default function SectionStyleCard(props: OverlayComponentProps): React.Re
                 choose(band.value);
               }}
             >
-              <span aria-hidden="true" style={optionDot(band)} />
+              <span aria-hidden="true" style={optionDot(dotFill(band))} />
               <span style={{ flex: 1, minWidth: 0 }}>{band.title}</span>
-              <span aria-hidden="true" style={{ color: TOOL.brand, width: '10px' }}>
+              <span aria-hidden="true" style={{ color: TOOL_ACCENT, width: '10px' }}>
                 {selected ? '✓' : ''}
               </span>
             </button>

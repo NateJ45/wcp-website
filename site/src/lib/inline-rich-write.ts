@@ -1,39 +1,57 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
-// emphasis-write — the WRITE half of the rich twins (2026-08-28)
+// inline-rich-write — the WRITE half of the rich twins (2026-08-28)
 // =============================================================================
-// src/lib/emphasis.ts READS a rich twin: `emphasisText`, which is portable text
-// with one block style and exactly two marks, bold and italic. This is its
-// mirror, and it exists for the in-canvas text popover: the small card that
-// opens over an intro line in the Presentation preview, so a volunteer types
-// the line where the line is instead of hunting for its box in the form.
+// src/lib/inline-rich.ts reads a rich twin: portable text restricted to one
+// paragraph with exactly two marks, bold and italic. This is its mirror, and it
+// exists for the in-canvas text popover — the little card that opens over a
+// subhead in the Presentation preview so an editor can type the line where the
+// line lives instead of hunting for its box in the form.
 //
 // The popover's rich field is a `contenteditable` div, not a portable-text
 // editor. @portabletext/editor is a Studio-weight dependency and this code ships
 // in the site's preview island, so the browser's own editing surface does the
-// typing and these functions do the translation:
+// typing and these two functions do the translation:
 //
-//   blocks -> HTML   emphasisToHtml()   seeds the box with what is stored
-//   HTML   -> blocks htmlToEmphasis()   turns what was typed back into data
+//   blocks  -> HTML   inlineRichToHtml()   seeds the box with what is stored
+//   HTML    -> blocks htmlToInlineRich()   turns what was typed back into data
 //
 // THE HTML SIDE IS UNTRUSTED. A contenteditable hands back whatever the browser
-// felt like emitting, plus whatever the editor pasted out of a Word document:
+// felt like emitting, plus whatever the editor pasted in from a Word document:
 // nested spans, inline styles, tables, stray script tags. So the parser here is
-// an ALLOW-LIST, not a sanitiser. It understands bold, italic and line breaks.
-// Every other tag contributes its text and nothing else. No tag name can reach
-// the stored document, because the output is built from scratch out of plain
-// strings and two booleans.
+// an ALLOW-LIST, not a sanitiser. It understands bold, italic and line breaks;
+// every other tag contributes nothing but its text. No tag name can reach the
+// stored document, because the output is built from scratch out of plain strings
+// and two booleans.
 //
-// LINE BREAKS SURVIVE, and that is this file's one difference from the
-// presacademy original it is ported from. There, a twin is always ONE block. On
-// this site `emphasisHtml()` joins stored blocks with `<br />`, so a volunteer
-// who typed two lines in the Studio form has two blocks. Collapsing them here
-// would delete a line break the moment somebody opened the in-canvas card. A
-// hard break therefore travels through the run list as `RUN_BREAK`, and
-// `runsToEmphasis` splits the runs back into one block per line.
+// ONE PARAGRAPH BY DEFAULT, LINES WHERE A REPO RENDERS THEM (2026-08-28, folded
+// back from the WCP repo). This template's inline-rich.ts joins multiple blocks
+// with a space when it renders, because these fields are one sentence of support
+// text inside one <p>; so a line break typed in the popover becomes a space
+// rather than a second block that would only be flattened again. WCP's twin
+// renders `<br />` BETWEEN blocks, so a volunteer who typed two lines in the
+// form has two blocks, and collapsing them here would delete a line break the
+// moment anybody opened the in-canvas card.
+//
+// Both are right for their own renderer, so the behaviour is a SEAM rather than
+// a fork: `RichWriteOptions.multiline` is off by default (one block, a break is
+// a space) and a repo whose reader renders breaks turns it on at its call sites.
+// A hard break travels through the run list as RUN_BREAK and `runsToInlineRich`
+// starts a new block at each one.
 // =============================================================================
 
-import { RUN_BREAK, emphasisRuns, type InlineRun } from '@/lib/emphasis';
-import type { PortableTextBlock } from '@portabletext/types';
+import type { InlineRichBlock, InlineRun } from './inline-rich.ts';
+import { RUN_BREAK, inlineRichRuns } from './inline-rich.ts';
+
+/** How a repo wants line breaks handled. See the header. */
+export interface RichWriteOptions {
+  /**
+   * Keep hard line breaks as separate blocks. Default false: a break becomes a
+   * space and the value is always ONE block, which is what a reader that joins
+   * blocks with a space wants.
+   */
+  multiline?: boolean;
+}
 
 // -----------------------------------------------------------------------------
 // HTML -> runs
@@ -43,7 +61,7 @@ import type { PortableTextBlock } from '@portabletext/types';
 const STRONG_TAGS = new Set(['b', 'strong']);
 /** Tags that turn italic on for their contents. */
 const EM_TAGS = new Set(['i', 'em']);
-/** Tags whose boundaries are a line break in the text. */
+/** Tags whose boundaries are a break in the text. */
 const BREAK_TAGS = new Set(['br', 'div', 'p', 'li', 'tr', 'blockquote', 'h1', 'h2', 'h3', 'h4']);
 /** Tags whose CONTENTS are not text at all and must be dropped whole. */
 const DROP_CONTENT_TAGS = new Set(['script', 'style', 'head', 'title']);
@@ -66,7 +84,7 @@ function decodeEntities(text: string): string {
           ? Number.parseInt(body.slice(2), 16)
           : Number.parseInt(body.slice(1), 10);
       if (!Number.isFinite(code) || code < 1 || code > 0x10ffff) return whole;
-      // 160 is a non-breaking space. It is a space as far as stored text goes.
+      // 160 is a non-breaking space; it is a space as far as stored text goes.
       return code === 160 ? ' ' : String.fromCodePoint(code);
     }
     const named = ENTITIES[body.toLowerCase()];
@@ -85,10 +103,10 @@ function styleMarks(attrs: string): { strong: boolean; em: boolean } {
 }
 
 /**
- * Flatten an HTML fragment to runs. An unknown tag keeps its text and loses
- * itself; a script tag loses both.
+ * Flatten an HTML fragment to the runs the twin stores. Unknown tags keep their
+ * text and lose themselves; script tags and friends lose both.
  */
-export function htmlToRuns(html?: string | null): InlineRun[] {
+export function htmlToRuns(html?: string | null, options: RichWriteOptions = {}): InlineRun[] {
   if (typeof html !== 'string' || html === '') return [];
 
   const raw: InlineRun[] = [];
@@ -100,8 +118,12 @@ export function htmlToRuns(html?: string | null): InlineRun[] {
   let i = 0;
 
   const pushText = (text: string) => {
-    if (text === '') return;
-    raw.push({ text, strong: strong > 0, em: em > 0 });
+    // Whitespace is squeezed HERE, not only in normalizeRuns, so that source
+    // formatting between two tags can never arrive as a run whose whole text is
+    // a newline - which normalizeRuns would then read as a deliberate break.
+    const squeezed = text.replace(/\s+/g, ' ');
+    if (squeezed === '') return;
+    raw.push({ text: squeezed, strong: strong > 0, em: em > 0 });
   };
 
   while (i < html.length) {
@@ -136,7 +158,11 @@ export function htmlToRuns(html?: string | null): InlineRun[] {
       continue;
     }
     if (BREAK_TAGS.has(tag)) {
-      raw.push({ text: RUN_BREAK, strong: false, em: false });
+      // A break carries NO marks: it is a boundary, not text. Collapsed to a
+      // space it must inherit them instead, or `<b>a<br>b</b>` would store three
+      // spans where one says the same thing.
+      if (options.multiline) raw.push({ text: RUN_BREAK, strong: false, em: false });
+      else pushText(' ');
       if (tag === 'br') continue;
     }
 
@@ -166,26 +192,26 @@ export function htmlToRuns(html?: string | null): InlineRun[] {
 }
 
 /**
- * Collapse runs into what should actually be stored: every stretch of
- * whitespace squeezed to one space, neighbours with identical marks merged,
- * each line trimmed at both ends, and blank lines dropped.
+ * Collapse runs into what should actually be stored: whitespace squeezed to
+ * single spaces, neighbours with identical marks merged, each LINE trimmed at
+ * both ends, and blank lines dropped.
  *
  * RUN_BREAK is a boundary, never text. Two runs on opposite sides of one never
- * merge, so `bold\nitalic` keeps its two lines and its two marks.
+ * merge, so `bold\nitalic` keeps its two lines and its two marks. A value with
+ * no break in it is one line, which is the single-paragraph behaviour this
+ * function has always had.
  */
 export function normalizeRuns(runs: InlineRun[]): InlineRun[] {
-  // 1. Split every run's text on RUN_BREAK, so a break is always its own run.
+  // 1. Squeeze whitespace. Only a run whose WHOLE text is RUN_BREAK is a break;
+  //    a newline inside a run is ordinary whitespace and becomes a space.
   const flat: InlineRun[] = [];
   for (const run of runs) {
     if (run.text === RUN_BREAK) {
       flat.push({ text: RUN_BREAK, strong: false, em: false });
       continue;
     }
-    const pieces = run.text.split(RUN_BREAK);
-    pieces.forEach((piece, i) => {
-      if (i > 0) flat.push({ text: RUN_BREAK, strong: false, em: false });
-      if (piece !== '') flat.push({ ...run, text: piece.replace(/\s+/g, ' ') });
-    });
+    const text = run.text.replace(/\s+/g, ' ');
+    if (text !== '') flat.push({ ...run, text });
   }
 
   // 2. Group into lines, merging same-mark neighbours inside each line.
@@ -195,15 +221,23 @@ export function normalizeRuns(runs: InlineRun[]): InlineRun[] {
       lines.push([]);
       continue;
     }
+    let text = run.text;
     const line = lines[lines.length - 1];
     const last = line[line.length - 1];
     if (last && last.strong === run.strong && last.em === run.em) {
       // Two spaces meeting across a tag boundary are still one space.
-      last.text = (last.text + run.text).replace(/ {2,}/g, ' ');
+      last.text = (last.text + text).replace(/ {2,}/g, ' ');
       continue;
     }
-    if (!last && run.text === ' ') continue;
-    line.push({ ...run });
+    // THE SAME RULE ACROSS A MARK BOUNDARY (2026-08-28, found porting this to
+    // ncs-church-starter). `<b>a </b><i> b</i>` cannot merge its two runs, so
+    // the collapse above never sees the pair and TWO spaces get stored. Drop it
+    // from the SECOND run rather than the first: a leading space inside an
+    // emphasised span renders as a wide bold or an over-long underline.
+    if (last?.text.endsWith(' ') && text.startsWith(' ')) text = text.slice(1);
+    if (text === '') continue;
+    if (!last && text === ' ') continue;
+    line.push({ ...run, text });
   }
 
   // 3. Trim each line at both ends, then drop the lines that hold nothing.
@@ -226,6 +260,22 @@ export function normalizeRuns(runs: InlineRun[]): InlineRun[] {
   return out;
 }
 
+/**
+ * Plain text as runs. The other half of a paste: a clipboard with no `text/html`
+ * flavour still has to reach the same normalizer, and in a repo that keeps line
+ * breaks the newlines in it are breaks rather than spaces.
+ */
+export function textToRuns(text?: string | null, options: RichWriteOptions = {}): InlineRun[] {
+  if (typeof text !== 'string' || text === '') return [];
+  if (!options.multiline) return normalizeRuns([{ text, strong: false, em: false }]);
+  const runs: InlineRun[] = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (i > 0) runs.push({ text: RUN_BREAK, strong: false, em: false });
+    if (line !== '') runs.push({ text: line, strong: false, em: false });
+  });
+  return normalizeRuns(runs);
+}
+
 // -----------------------------------------------------------------------------
 // runs -> portable text
 // -----------------------------------------------------------------------------
@@ -236,24 +286,24 @@ export type KeyFactory = () => string;
 const randomKey: KeyFactory = () => Math.random().toString(36).slice(2, 12);
 
 /**
- * Build the `emphasisText` value the twin stores: ONE BLOCK PER LINE, so the
- * `<br />` joins that `emphasisHtml` renders come back out unchanged.
+ * Build the portable text value the twin stores: ONE BLOCK PER LINE, which is
+ * one block for any value that carries no RUN_BREAK.
  *
- * Returns `[]` when there is nothing to store. That is what an editor who
- * cleared the box meant, and it is what makes the plain string underneath the
- * twin render again.
+ * Returns `[]` when there is nothing to store — which is what an editor who
+ * cleared the box meant, and what makes the plain string underneath render
+ * again.
  */
-export function runsToEmphasis(
+export function runsToInlineRich(
   runs: InlineRun[],
   nextKey: KeyFactory = randomKey,
-): PortableTextBlock[] {
+): InlineRichBlock[] {
   const lines: InlineRun[][] = [[]];
   for (const run of runs) {
     if (run.text === RUN_BREAK) lines.push([]);
     else if (run.text !== '') lines[lines.length - 1].push(run);
   }
 
-  const blocks = lines
+  return lines
     .filter((line) => line.some((run) => run.text.trim() !== ''))
     .map(
       (line) =>
@@ -268,18 +318,17 @@ export function runsToEmphasis(
             text: run.text,
             marks: [...(run.strong ? ['strong'] : []), ...(run.em ? ['em'] : [])],
           })),
-        }) as unknown as PortableTextBlock,
+        }) as InlineRichBlock,
     );
-
-  return blocks;
 }
 
 /** The whole write direction: what the contenteditable holds -> what is stored. */
-export function htmlToEmphasis(
+export function htmlToInlineRich(
   html?: string | null,
   nextKey: KeyFactory = randomKey,
-): PortableTextBlock[] {
-  return runsToEmphasis(htmlToRuns(html), nextKey);
+  options: RichWriteOptions = {},
+): InlineRichBlock[] {
+  return runsToInlineRich(htmlToRuns(html, options), nextKey);
 }
 
 // -----------------------------------------------------------------------------
@@ -287,7 +336,7 @@ export function htmlToEmphasis(
 // -----------------------------------------------------------------------------
 
 /** Escape the three characters that would otherwise be read as markup. */
-export function escapeRunHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
@@ -296,7 +345,7 @@ export function runsToHtml(runs: InlineRun[]): string {
   return runs
     .map((run) => {
       if (run.text === RUN_BREAK) return '<br>';
-      let html = escapeRunHtml(run.text);
+      let html = escapeHtml(run.text);
       if (run.em) html = `<em>${html}</em>`;
       if (run.strong) html = `<strong>${html}</strong>`;
       return html;
@@ -305,9 +354,9 @@ export function runsToHtml(runs: InlineRun[]): string {
 }
 
 /**
- * The whole read direction, reusing `emphasisRuns` from src/lib/emphasis.ts so
- * the popover and the rendered page can never disagree about what a twin says.
+ * The whole read direction, reusing inline-rich.ts's flattener so the popover
+ * and the rendered page can never disagree about what a twin says.
  */
-export function emphasisToHtml(value?: unknown): string {
-  return runsToHtml(emphasisRuns(value));
+export function inlineRichToHtml(value?: unknown): string {
+  return runsToHtml(inlineRichRuns(value));
 }

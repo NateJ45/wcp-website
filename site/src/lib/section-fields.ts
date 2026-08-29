@@ -35,7 +35,7 @@
 // =============================================================================
 
 import { cleanHeadingText, emphasisRuns, hasEmphasis, type InlineRun } from '@/lib/emphasis';
-import { normalizeRuns } from '@/lib/emphasis-write';
+import { normalizeRuns } from '@/lib/inline-rich-write';
 import { sectionCoach } from '@/lib/section-coach';
 import {
   parseSanityPath,
@@ -44,6 +44,16 @@ import {
   type PathSegment,
 } from '@/lib/sanity-path';
 import type { SectionData } from '@/components/sections/section-helpers';
+
+/**
+ * The page-builder array field in this schema. A section is an item in it. Both
+ * the `page` document and the `hubPage` document name it the same way, so one
+ * literal covers every surface the preview renders.
+ *
+ * `readSectionPath` is canonical and TAKES these names rather than baking any
+ * repo's in, so the list lives here beside the rest of this schema's vocabulary.
+ */
+export const SECTION_ARRAY_FIELDS: readonly string[] = ['sections'];
 
 // -----------------------------------------------------------------------------
 // The band: one designed choice, under two field names
@@ -292,9 +302,9 @@ export function resolveAccentTarget(
   doc: Record<string, unknown>,
   path?: string | null,
 ): AccentTarget | null {
-  const section = readSectionPath(path);
+  const section = readSectionPath(path, SECTION_ARRAY_FIELDS);
   if (!section) return null;
-  const item = sectionByKey(doc, section.key);
+  const item = sectionByKey(doc, section.array, section.key);
   if (!item) return null;
   const type = typeof item._type === 'string' ? item._type : '';
 
@@ -462,7 +472,7 @@ export function resolveTextTarget(
   doc: Record<string, unknown>,
   path?: string | null,
 ): TextTarget | null {
-  const section = readSectionPath(path);
+  const section = readSectionPath(path, SECTION_ARRAY_FIELDS);
 
   if (!section) {
     // A document field. Only the hero's two lines are offered.
@@ -488,7 +498,7 @@ export function resolveTextTarget(
     return null;
   }
 
-  const item = sectionByKey(doc, section.key);
+  const item = sectionByKey(doc, section.array, section.key);
   if (!item) return null;
   const type = typeof item._type === 'string' ? item._type : '';
   const [first, second, third] = section.rest;
@@ -546,7 +556,7 @@ export type OverlayControl = 'band' | 'headingAccent' | 'text';
  * each other.
  */
 export function overlayControlsForPath(path?: string | null): OverlayControl[] {
-  const section = readSectionPath(path);
+  const section = readSectionPath(path, SECTION_ARRAY_FIELDS);
 
   if (!section) {
     const segments = parseSanityPath(path);

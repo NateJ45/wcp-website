@@ -1,19 +1,17 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
-// usePopover — Escape closes, Tab stays inside (2026-08-28)
+// usePopover - Escape closes, Tab stays inside (2026-08-28)
 // =============================================================================
 // The two floating cards in this layer (the word picker and the text editor) owe
-// a volunteer the same two keyboard promises any dialog does: Escape gets me out
+// the editor the same two keyboard promises any dialog does: Escape gets me out
 // without saving, and Tab does not wander off into the page behind the card while
 // it is open. Both are small, both are easy to get subtly wrong, so they live in
 // one place and each card calls it once.
 //
 // The listener is on the CARD, not the document, so it cannot swallow an Escape
-// meant for Presentation's own chrome when no card is open. The card takes focus
-// on open, which is what makes Escape reach it at all, and each caller hands
-// focus back to the control that opened it on close, so the keyboard is never
-// left nowhere.
-//
-// Ported from the presacademy repo.
+// meant for Presentation's own chrome when no card is open. The card gets focus
+// on open (that is what makes Escape reach it at all) and hands focus back to the
+// control that opened it on close, so the keyboard is never left nowhere.
 // =============================================================================
 import { useCallback, useEffect, type KeyboardEvent, type RefObject } from 'react';
 
@@ -26,9 +24,9 @@ export interface PopoverKeys {
 }
 
 /**
- * Wire a card's keyboard behaviour. `onClose` runs for Escape. What a card does
- * when focus LEAVES it is the caller's business: the text editor saves, the word
- * picker just closes.
+ * Wire a card's keyboard behaviour. `onClose` is called for Escape, and for the
+ * card losing focus is the caller's business (the text editor saves on blur, the
+ * word picker just closes).
  */
 export function usePopover(
   open: boolean,

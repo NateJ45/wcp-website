@@ -15,6 +15,7 @@ import {
   sectionByKey,
   valueAtPath,
 } from './sanity-path';
+import { SECTION_ARRAY_FIELDS } from './section-fields';
 
 describe('parseSanityPath', () => {
   it('reads a plain dotted path', () => {
@@ -112,7 +113,8 @@ describe('valueAtPath', () => {
 
 describe('readSectionPath', () => {
   it('reads a path pointing inside a section', () => {
-    expect(readSectionPath('sections[_key=="k"].header.title')).toEqual({
+    expect(readSectionPath('sections[_key=="k"].header.title', SECTION_ARRAY_FIELDS)).toEqual({
+      array: 'sections',
       key: 'k',
       itemPath: ['sections', { _key: 'k' }],
       rest: ['header', 'title'],
@@ -120,7 +122,8 @@ describe('readSectionPath', () => {
   });
 
   it('reads the bare section item, with an empty rest', () => {
-    expect(readSectionPath('sections[_key=="k"]')).toEqual({
+    expect(readSectionPath('sections[_key=="k"]', SECTION_ARRAY_FIELDS)).toEqual({
+      array: 'sections',
       key: 'k',
       itemPath: ['sections', { _key: 'k' }],
       rest: [],
@@ -128,14 +131,14 @@ describe('readSectionPath', () => {
   });
 
   it('returns null for anything outside the page-builder array', () => {
-    expect(readSectionPath('hero.title')).toBeNull();
-    expect(readSectionPath('title')).toBeNull();
+    expect(readSectionPath('hero.title', SECTION_ARRAY_FIELDS)).toBeNull();
+    expect(readSectionPath('title', SECTION_ARRAY_FIELDS)).toBeNull();
     // An index, not a key: the mutation API wants keys, so this is not ours.
-    expect(readSectionPath('sections[0].title')).toBeNull();
+    expect(readSectionPath('sections[0].title', SECTION_ARRAY_FIELDS)).toBeNull();
     // Some other array on the document.
-    expect(readSectionPath('mainNav[_key=="n"].label')).toBeNull();
-    expect(readSectionPath('')).toBeNull();
-    expect(readSectionPath(undefined)).toBeNull();
+    expect(readSectionPath('mainNav[_key=="n"].label', SECTION_ARRAY_FIELDS)).toBeNull();
+    expect(readSectionPath('', SECTION_ARRAY_FIELDS)).toBeNull();
+    expect(readSectionPath(undefined, SECTION_ARRAY_FIELDS)).toBeNull();
   });
 });
 
@@ -143,12 +146,12 @@ describe('sectionByKey', () => {
   const doc = { sections: [{ _key: 'a' }, { _key: 'b', _type: 'ctaSection' }] };
 
   it('finds the item', () => {
-    expect(sectionByKey(doc, 'b')).toEqual({ _key: 'b', _type: 'ctaSection' });
+    expect(sectionByKey(doc, 'sections', 'b')).toEqual({ _key: 'b', _type: 'ctaSection' });
   });
 
   it('returns null for a missing key or a missing array', () => {
-    expect(sectionByKey(doc, 'zz')).toBeNull();
-    expect(sectionByKey({}, 'a')).toBeNull();
-    expect(sectionByKey(null, 'a')).toBeNull();
+    expect(sectionByKey(doc, 'sections', 'zz')).toBeNull();
+    expect(sectionByKey({}, 'sections', 'a')).toBeNull();
+    expect(sectionByKey(null, 'sections', 'a')).toBeNull();
   });
 });

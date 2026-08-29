@@ -73,7 +73,7 @@ export function hasEmphasis(value: unknown): boolean {
  *
  * A run whose text is exactly '\n' is a HARD BREAK, not text: it stands for the
  * `<br />` that `emphasisHtml` puts between two stored blocks. Keeping the break
- * inside the run list lets the in-canvas editor (src/lib/emphasis-write.ts) read
+ * inside the run list lets the in-canvas editor (src/lib/inline-rich-write.ts) read
  * a two-block twin, show it, and store it back with both blocks intact.
  */
 export interface InlineRun {

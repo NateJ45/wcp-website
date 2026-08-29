@@ -1,26 +1,32 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
-// sanity-path — reading the `path` a visual-editing node carries (2026-08-28)
+// sanity-path - reading the `path` a visual-editing node carries (2026-08-28)
 // =============================================================================
 // Every element the Presentation overlay knows about arrives with a STUDIO PATH
-// string: `sections[_key=="a1b2"].header.title`, or `hero.lead`, or
-// `sections[_key=="x"].steps[_key=="y"].bodyRich[_key=="b"].children[_key=="c"].text`.
-// To patch the document the mutation API wants that path as an ARRAY of
-// segments. It addresses an array member by key object, not by position:
+// string: `pageBuilder[_key=="a1b2"].heading`, or `heroHeadline`, or
+// `pageBuilder[_key=="x"].subheadRich[_key=="y"].children[_key=="z"].text`. To
+// patch the document the mutation API wants that path as an ARRAY of segments,
+// with array members addressed by key object:
 //
-//   ['sections', {_key: 'a1b2'}, 'header', 'title']
+//   ['pageBuilder', {_key: 'a1b2'}, 'heading']
 //
-// The Studio has a parser for this (`@sanity/util/paths`). It lives inside the
-// `sanity` package, and the in-canvas controls ship in the PREVIEW ISLAND, a
-// browser bundle that must not grow a Studio dependency. So: a small parser,
+// The Studio has a parser for this (`@sanity/util/paths`), but it lives inside
+// the `sanity` package, and the in-canvas overlay ships in the PREVIEW ISLAND -
+// a browser bundle that must not grow a Studio dependency. So: a small parser,
 // here, pure, and covered by src/lib/sanity-path.test.ts.
 //
-// The grammar is deliberately narrow. It reads exactly what the overlay hands
-// us: dotted property names, `[_key=="..."]` members, and numeric indices. It
-// returns an empty path for anything else. A shape we have never seen makes a
-// control DISAPPEAR. It never makes a control write to a guessed location.
+// The grammar is deliberately narrow. It handles exactly what the overlay hands
+// us - dotted property names, `[_key=="..."]` members, and numeric indices - and
+// returns an empty path for anything it does not recognise, so a shape we have
+// never seen makes a control DISAPPEAR rather than write to a guessed location.
 //
-// Ported from the presacademy repo, then cut down: this schema has ONE
-// page-builder array (`sections`), not two.
+// CANONICAL EVOLUTION, ON THE WAY IN (2026-08-28). presacademy's ancestor of
+// this file baked its own two page-builder array names into a module constant,
+// which is exactly what stopped it from being shared: this template calls its
+// array `pageBuilder`, presacademy calls its two `flexibleSections` and
+// `sections`. `readSectionPath` now TAKES the names, and the repo's own list
+// lives beside the rest of its vocabulary in src/lib/section-fields.ts. Same
+// move card 22 made on `redirects.ts`, for the same reason.
 // =============================================================================
 
 /** One step along a document path. */
@@ -31,7 +37,7 @@ const KEY_MEMBER = /^_key\s*==\s*"([^"]*)"$/;
 
 /**
  * Parse a studio path string into segments. Returns `[]` when the string is
- * empty, or when it holds anything this grammar does not cover.
+ * empty or contains anything this grammar does not cover.
  */
 export function parseSanityPath(path?: string | null): PathSegment[] {
   if (typeof path !== 'string' || path.trim() === '') return [];
@@ -48,7 +54,7 @@ export function parseSanityPath(path?: string | null): PathSegment[] {
       const close = source.indexOf(']', i);
       if (close < 0) return [];
       const inner = source.slice(i + 1, close).trim();
-      const keyed = KEY_MEMBER.exec(inner);
+      const keyed = inner.match(KEY_MEMBER);
       if (keyed) {
         out.push({ _key: keyed[1] });
       } else if (/^\d+$/.test(inner)) {
@@ -82,9 +88,9 @@ export function parentOf(segments: PathSegment[]): PathSegment[] {
 }
 
 /**
- * Walk a document snapshot to the value at `segments`. Returns undefined when
- * any step is missing. An array member is found by `_key`, never by position,
- * so a section that moved while a control was open still resolves to itself.
+ * Walk a document snapshot to the value at `segments`, or undefined when any
+ * step is missing. Array members are found by `_key`, never by position, so a
+ * section that moved while a control was open still resolves to itself.
  */
 export function valueAtPath(root: unknown, segments: PathSegment[]): unknown {
   let current: unknown = root;
@@ -109,49 +115,51 @@ export function valueAtPath(root: unknown, segments: PathSegment[]): unknown {
   return current;
 }
 
-/**
- * The page-builder array field in this schema. A section is an item in it. Both
- * the `page` document and the `hubPage` document name it the same way, so one
- * literal covers every surface the preview renders.
- */
-export const SECTION_ARRAY_FIELD = 'sections';
-
 /** What a path tells us about the section it points into. */
 export interface SectionPathInfo {
+  /** The array field the section lives in. */
+  array: string;
   /** The section item's `_key`. */
   key: string;
   /** Path to the section item itself. */
   itemPath: PathSegment[];
-  /** Everything below the item, e.g. `['header', 'title']`. */
+  /** Everything below the item, e.g. `['heading']`. */
   rest: PathSegment[];
 }
 
 /**
  * Read a path that points at a section item, or at anything inside one.
- * Returns null for a path that is not inside the page-builder array — a
- * document field like `hero.title`, or a node on some other document.
+ *
+ * `arrayFields` is the repo's own list of page-builder array names. Returns null
+ * for a path that is not inside one of them - a document field like
+ * `heroHeadline`, a menu item, or a node on some other document entirely.
  */
-export function readSectionPath(path?: string | null): SectionPathInfo | null {
+export function readSectionPath(
+  path: string | null | undefined,
+  arrayFields: readonly string[],
+): SectionPathInfo | null {
   const segments = parseSanityPath(path);
   if (segments.length < 2) return null;
   const [array, member, ...rest] = segments;
-  if (array !== SECTION_ARRAY_FIELD) return null;
+  if (typeof array !== 'string') return null;
+  if (!arrayFields.includes(array)) return null;
   if (typeof member !== 'object' || member === null || !('_key' in member)) return null;
-  return { key: member._key, itemPath: [SECTION_ARRAY_FIELD, { _key: member._key }], rest };
+  return { array, key: member._key, itemPath: [array, { _key: member._key }], rest };
 }
 
 /**
- * Find one section item in a document snapshot, by `_key`.
+ * Find one section item in a document snapshot, by array field and `_key`.
  *
  * Every in-canvas control starts here: the path names the section, and only the
- * document says what `_type` it is. That answer decides which control the
- * editor may have, so it is read once and shared.
+ * document says what `_type` it is. That answer decides which control the editor
+ * may have, so it is read once and shared.
  */
 export function sectionByKey(
   doc: Record<string, unknown> | null | undefined,
+  array: string,
   key: string,
 ): Record<string, unknown> | null {
-  const list = doc?.[SECTION_ARRAY_FIELD];
+  const list = doc?.[array];
   if (!Array.isArray(list)) return null;
   const found = list.find((item) => (item as { _key?: string } | null)?._key === key);
   return (found as Record<string, unknown> | undefined) ?? null;

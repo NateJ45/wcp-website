@@ -795,10 +795,20 @@ Stega: a heading arrives with an invisible payload, so every value is cleaned th
 `splitHeadingWords` in [`emphasis.ts`](../src/lib/emphasis.ts), which refuses to offer a
 word longer than the accent matcher accepts — a control must never promise what the
 renderer will not honour. The rich-twin serializer is
-[`emphasis-write.ts`](../src/lib/emphasis-write.ts): an allow-list HTML parser (so a Word
+[`inline-rich-write.ts`](../src/lib/inline-rich-write.ts): an allow-list HTML parser (so a Word
 paste keeps its bold and loses everything else) and a builder that keeps ONE BLOCK PER
 LINE, because `emphasisHtml` joins stored blocks with `<br />` and collapsing them would
 delete a line break the moment somebody opened the card.
+
+That file is **canonical** as of 2026-08-28 (it was `emphasis-write.ts` here until then;
+`ncs-astro-sanity-starter` owns it, PORTS.md cards 28 and 28b). Keeping the lines is a
+SEAM, not this repo's private behaviour: the shared writer defaults to one block, because
+a repo whose reader joins blocks with a space wants exactly that, and every call site in
+`src/components/preview/overlay/TextPopover.tsx` passes `{ multiline: true }` to ask for
+lines. [`inline-rich.ts`](../src/lib/inline-rich.ts) is the one-file adapter that gives
+this repo's reader (`emphasis.ts`) the four names the canonical writer imports. **Do not
+edit `inline-rich-write.ts` here** — improve it in the starter and pull it back, or
+`sync-check` reports drift.
 
 **A saved section now arrives dressed for the page.** `adaptBandToNeighbour` (same file)
 gives a preset inserted from the navigator the band of the section it lands under, so it

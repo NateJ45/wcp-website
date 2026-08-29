@@ -27,6 +27,7 @@ import { valueAtPath } from '@/lib/sanity-path';
 import { setAt, setInside, unsetAt, useDraftDocument } from './useDraftDocument.ts';
 import { usePopover } from './usePopover.ts';
 import { TOOL, bar, button, card, caption } from './styles.ts';
+import { TOOL_ACCENT, dialogReset } from './tool-theme.ts';
 
 interface Loaded {
   target: AccentTarget;
@@ -120,7 +121,7 @@ export default function HeadingAccentPicker(props: OverlayComponentProps): React
             ref={cardRef}
             aria-label="Choose a word to underline"
             tabIndex={-1}
-            style={card}
+            style={{ ...card, ...dialogReset }}
             onKeyDown={onKeyDown}
             onClick={(event) => event.stopPropagation()}
           >
@@ -135,9 +136,9 @@ export default function HeadingAccentPicker(props: OverlayComponentProps): React
                       ...button,
                       padding: '2px 6px',
                       font: `700 14px/1.4 ${TOOL.font}`,
-                      background: isAccentedWord(token, loaded.accent) ? TOOL.brand : TOOL.paper,
+                      background: isAccentedWord(token, loaded.accent) ? TOOL_ACCENT : TOOL.paper,
                       color: isAccentedWord(token, loaded.accent) ? TOOL.paper : TOOL.ink,
-                      borderColor: isAccentedWord(token, loaded.accent) ? TOOL.brand : TOOL.line,
+                      borderColor: isAccentedWord(token, loaded.accent) ? TOOL_ACCENT : TOOL.line,
                     }}
                     aria-pressed={isAccentedWord(token, loaded.accent)}
                     onClick={(event) => {

@@ -14,7 +14,7 @@
 //     italic, nothing else. The card holds a CONTENTEDITABLE with two buttons.
 //
 // WHERE THE INTERESTING LOGIC IS. Everything that decides what gets STORED lives
-// in src/lib/emphasis-write.ts and is unit-tested there: the allow-list HTML
+// in src/lib/inline-rich-write.ts and is unit-tested there: the allow-list HTML
 // parser (used on paste, so a paragraph pasted out of Word keeps its bold and
 // loses its fonts, colours and tables), the mirror that turns runs back into
 // markup, and the builder for the portable text the twin holds. The only thing
@@ -31,11 +31,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OverlayComponentProps } from '@sanity/visual-editing';
 import { RUN_BREAK, type InlineRun } from '@/lib/emphasis';
-import { htmlToRuns, normalizeRuns, runsToEmphasis, runsToHtml } from '@/lib/emphasis-write';
+import {
+  htmlToRuns,
+  normalizeRuns,
+  runsToHtml,
+  runsToInlineRich,
+  textToRuns,
+} from '@/lib/inline-rich-write';
 import { resolveTextTarget, type TextTarget } from '@/lib/section-fields';
 import { setAt, unsetAt, useDraftDocument } from './useDraftDocument.ts';
 import { usePopover } from './usePopover.ts';
 import { TOOL, bar, button, card, caption, field, primaryButton } from './styles.ts';
+import { TOOL_ACCENT, dialogReset } from './tool-theme.ts';
+
+/**
+ * This site's twins KEEP their lines. `emphasisHtml()` joins stored blocks with
+ * `<br />`, so a volunteer who typed two lines in the Studio form has two
+ * blocks, and collapsing them here would delete a line break the moment anybody
+ * opened this card. The canonical writer defaults to one block, because a repo
+ * whose reader joins blocks with a space wants exactly that; this is the seam
+ * that tells it otherwise. PORTS.md cards 28 and 28b.
+ */
+const MULTILINE = { multiline: true } as const;
 
 /** Tags whose boundary is a line break in a value that keeps its lines. */
 const BLOCKISH = new Set(['div', 'p', 'li', 'blockquote']);
@@ -136,7 +153,7 @@ export default function TextPopover(props: OverlayComponentProps): React.ReactNo
       void write(value.trim() === '' ? unsetAt(target.path) : setAt(target.path, value));
     } else if (boxRef.current) {
       const runs = domToRuns(boxRef.current);
-      const blocks = runsToEmphasis(runs);
+      const blocks = runsToInlineRich(runs);
       setTarget({ ...target, runs });
       void write(blocks.length ? setAt(target.path, blocks) : unsetAt(target.path));
     }
@@ -180,7 +197,7 @@ export default function TextPopover(props: OverlayComponentProps): React.ReactNo
             ref={cardRef}
             aria-label={`Edit ${target.label}`}
             tabIndex={-1}
-            style={{ ...card, width: '340px' }}
+            style={{ ...card, ...dialogReset, width: '340px' }}
             onKeyDown={onKeyDown}
             onClick={(event) => event.stopPropagation()}
             onBlur={(event) => {
@@ -261,14 +278,8 @@ export default function TextPopover(props: OverlayComponentProps): React.ReactNo
                   event.preventDefault();
                   const html = event.clipboardData.getData('text/html');
                   const runs = html
-                    ? htmlToRuns(html)
-                    : normalizeRuns([
-                        {
-                          text: event.clipboardData.getData('text/plain'),
-                          strong: false,
-                          em: false,
-                        },
-                      ]);
+                    ? htmlToRuns(html, MULTILINE)
+                    : textToRuns(event.clipboardData.getData('text/plain'), MULTILINE);
                   document.execCommand('insertHTML', false, runsToHtml(runs));
                 }}
               />
@@ -288,7 +299,11 @@ export default function TextPopover(props: OverlayComponentProps): React.ReactNo
               </span>
               <button
                 type="button"
-                style={primaryButton}
+                style={{
+                  ...primaryButton,
+                  background: TOOL_ACCENT,
+                  borderColor: TOOL_ACCENT,
+                }}
                 onClick={(event) => {
                   event.stopPropagation();
                   save();

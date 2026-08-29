@@ -46,6 +46,29 @@ and the one-time `seed-orderrank.mjs` drag-order seed.
 | `src/lib/page-doctrine.ts` `SECTION_DROP.home` `k20`      | News hidden "for now" (Nathan, 2026-07-19): the home teaser and the footer News link are off; `/news`, articles, RSS and sitemap stay live | Nathan's call. Restore: delete `'k20'` + uncomment the News line in `src/data/nav.ts`. Permanent: delete the section from `page-home` instead |
 | `TestimonialSection.astro` co-op-life tag step            | `patch-testimonial-redistribution.mjs` skipped its co-op-life variety step: **0 testimonials carry the "co-op" tag**                       | Tag quotes in the Studio, re-run the script's co-op-life step (or set the section's tag by hand)                                              |
 
+## Family-sync leftovers (2026-08-28, PORTS.md cards 28 + 28b)
+
+The in-canvas control layer was reconciled onto the starter's canonical copies
+that day. Two pieces were deliberately NOT adopted, and both are decisions
+rather than debt — re-read this before "finishing the job":
+
+- **The word picker is not extracted into `src/lib/heading-accent.ts`.** The
+  starter keeps `splitHeadingWords` / `isAccentedWord` / `HeadingToken` in a
+  file of that name. Here they live in [`emphasis.ts`](../src/lib/emphasis.ts)
+  beside `splitHeadingAccent`, which is a DIFFERENT function from the starter's
+  (it returns `HeadingAccentParts | null`, caps an accent at 24 characters, and
+  is rendered through by `SectionHeader.astro` and `CtaBanner.astro`). Splitting
+  the module to share about forty lines would touch public rendering code for no
+  behaviour gain, and this repo's version is the better one anyway: it refuses to
+  OFFER a word the matcher would then refuse to match. Left per-repo on purpose.
+- **`tool-theme.ts` carries two extras the canonical `styles.ts` does not know
+  about** — `TOOL_ACCENT` (the brand navy for a selected chip or row) and
+  `dialogReset` (this repo's cards are real `<dialog open>` elements, so they
+  reset the user-agent layout). Both are spread onto canonical styles by the card
+  components. They fold back into the library the day a second repo wants them,
+  not before; adding either to the shared `ToolTheme` today would force a copy
+  into every sibling repo for nobody's benefit.
+
 ## Waiting on a human
 
 - **Mint the Cloudflare analytics token, then round-trip "Site stats" (added
