@@ -301,7 +301,13 @@ export const publicStructure: StructureResolver = (S, context) =>
         title: 'Classes',
         icon: emoji('🎒'),
       }),
-      S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
+      orderableDocumentListDeskItem({
+        type: 'staff',
+        S,
+        context,
+        title: 'Staff',
+        icon: emoji('👩‍🏫'),
+      }),
       orderableDocumentListDeskItem({
         type: 'faqItem',
         S,

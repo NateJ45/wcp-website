@@ -1338,6 +1338,7 @@ export type Staff = {
   pullQuote?: string;
   bio?: BlockContent;
   order?: number;
+  orderRank?: string;
 };
 
 export type PresidentNote = {
@@ -2647,6 +2648,7 @@ export type ClassCardsSection = {
 export type TeacherSection = {
   _type: 'teacherSection';
   header?: SectionHeader;
+  source?: 'all' | 'classTeacher' | 'manual';
   staff?: Array<
     {
       _key: string;

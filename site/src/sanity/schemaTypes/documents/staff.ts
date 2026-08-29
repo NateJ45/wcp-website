@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 
 // =============================================================================
 // Staff member (teacher / administrator)
@@ -88,8 +89,13 @@ export const staff = defineType({
       initialValue: 0,
       hidden: true,
     }),
+    // Drag-to-reorder (2026-08-29): the order set in the Staff list is the
+    // order the automatic teacher walls show. Added when teacherSection gained
+    // its "all teachers" mode - without a rank the wall fell back to creation
+    // order and silently swapped the two cards.
+    orderRankField({ type: 'staff' }),
   ],
-  orderings: [{ title: 'Name', name: 'name', by: [{ field: 'name', direction: 'asc' }] }],
+  orderings: [orderRankOrdering],
   preview: {
     select: { name: 'name', honorific: 'honorific', role: 'role', media: 'photo' },
     prepare({ name, honorific, role, media }) {

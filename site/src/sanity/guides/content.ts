@@ -1902,6 +1902,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'To connect a teacher to a class, open the **class** and pick them in the **Teacher** field. That link is the only place you set it.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The teacher walls and the class cards update themselves.',
+        text: 'The "people your child will love" walls (Why WCP, Visit) show **every** teacher automatically, in the order of the Staff list — drag people up or down there to reorder the wall. Each class page’s "Meet the teacher" card follows the class’s **Teacher** field. So when someone joins or leaves: edit Staff, point the class at the right teacher, and every card is already correct. The one thing to reword by hand is a heading that names them, like "Meet Mrs. Erin".',
+      },
       { kind: 'seealso', items: ['Add or change a class', 'Photos and images'] },
     ],
   },

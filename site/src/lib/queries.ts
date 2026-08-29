@@ -86,7 +86,19 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       )
     },
     _type == "teacherSection" => {
-      "people": staff[]->{ name, honorific, role, email, photo, bio }
+      // "all" = the whole staff wall keeps itself current on a hire or a
+      // leave. "classTeacher" follows THIS page's class through the class doc
+      // (same longest-prefix "-"-sentinel slug rule as the automatic menu; ^
+      // climbs: section -> sections array -> page), so replacing a teacher on
+      // the class updates the card with no page edit. Two Pre-K classes share
+      // one page and one teacher; the bridge dedupes by _id.
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        source == "classTeacher" => *[_type == "class"
+            && string::startsWith("classes/" + slug.current + "-", ^.^.slug + "-")]
+          | order(orderRank) { "person": teacher->{ _id, name, honorific, role, email, photo, bio } }[defined(person)].person,
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
     },
     _type == "classCardsSection" => {
       // "all" derives the row from the Classes list itself (same drag order),
@@ -153,6 +165,12 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
         source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
         classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
       )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
     }
   }
 }`;
@@ -181,6 +199,12 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
         source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
         classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
       )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
     }
   }
 }`;
@@ -207,6 +231,12 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
       "classItems": select(
         source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
         classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
       )
     }
   }

@@ -27,7 +27,16 @@ interface Props {
 }
 const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
-const people = (section.people as Person[] | undefined) ?? [];
+const raw = (section.people as Person[] | undefined) ?? [];
+// The classTeacher source can hand the same person twice: Pre-K AM and PM are
+// two class docs sharing one page and one teacher. One card per human.
+const seen = new Set<string>();
+const people = raw.filter((p) => {
+  const key = (p as { _id?: string })._id ?? p.name ?? '';
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
 const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
 const cols = people.length <= 1 ? 'sm:grid-cols-1 max-w-md' : 'sm:grid-cols-2 max-w-3xl';
 ---
