@@ -53,6 +53,32 @@ jobs:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
           INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
 
+      # KEEP THE PREVIEW OUT OF SEARCH. The build produces the PRODUCTION
+      # robots.txt - `Allow: /`, plus a sitemap pointing at the live domain -
+      # which on a public workers.dev URL would offer search engines a second,
+      # complete copy of the site to index and rank against the real one.
+      # Overwriting it here rather than in src keeps production untouched:
+      # this step exists only in this workflow, on this branch.
+      #
+      # The X-Robots-Tag rule is the belt to that braces. robots.txt asks a
+      # crawler not to FETCH; the header tells anything that did fetch - via a
+      # shared link, a referrer, an already-queued URL - not to index. _headers
+      # is the adapter's own static-asset header file, appended to, not
+      # replaced, so its immutable Cache-Control for /_astro/* survives.
+      - name: Make the preview unindexable
+        run: |
+          {
+            echo 'User-agent: *'
+            echo 'Disallow: /'
+          } > dist/client/robots.txt
+          {
+            echo ''
+            echo '/*'
+            echo '  X-Robots-Tag: noindex, nofollow'
+          } >> dist/client/_headers
+          echo '--- staging robots.txt ---'
+          cat dist/client/robots.txt
+
       # The adapter-generated config, NOT the source wrangler.jsonc — a plain
       # `wrangler deploy` 404s every sub-route on this hybrid static+SSR build.
       # `--name` then points that config at the staging Worker.
