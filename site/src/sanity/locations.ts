@@ -93,6 +93,10 @@ const FIXED: Record<string, { title: string; href: string }> = {
   siteSettings: { title: 'Site Settings (footer, contact info)', href: '/preview' },
   navigation: { title: 'Menus (header & footer)', href: '/preview' },
   feeSchedule: { title: 'Tuition & Fees', href: '/preview/tuition' },
+  // Renders at the top of EVERY page while switched on; nothing references it,
+  // so the usage query would call it "not shown anywhere" (seen live
+  // 2026-08-29, on the doc of a banner showing on all 27 pages).
+  closureAlert: { title: 'Every page (while switched on)', href: '/preview' },
 };
 
 // Locations a document ALWAYS has, whatever references it. The tuition table
