@@ -5,14 +5,17 @@
    Mirrors TeacherCard's layout (photo/icon ring + name + contact) so the class
    page opens with the people who run the room: the teacher, then one parent rep
    per class. Each class elects ONE rep in the fall, so until then the card is a
-   designed placeholder ("To be announced") that reserves the seat. Reps live in
-   src/data/hub/org-holders.ts (`classReps`, code-owned so a name/email can be
-   filled in even while the Studio is unavailable); pass the `role` that matches
-   a classReps entry. Always renders — the empty seat is the point.
+   designed placeholder ("To be announced") that reserves the seat. Always
+   renders — the empty seat is the point.
+
+   The rep seat is DERIVED (src/lib/hub-org.ts, `classRepPerson`): the co-op has
+   ONE "Class Rep" role marked "one of these for every class", so a class the
+   Board adds gets a fillable rep card the same day. This card used to look the
+   class up in a committed list, which is exactly why a new class's card could
+   never be filled at all.
 
    WHO the rep is, and how to reach her, both come from the Studio (Family Hub →
-   "Who's who this year"), read per request behind the gate and merged over the
-   committed fallback by src/lib/hub-org.ts. Her email and phone are never typed
+   "Who's who this year"), read per request behind the gate. Her email and phone are never typed
    here: the role document LINKS to her Directory entry and the query resolves
    them from it, so they live in exactly one place and this public repo holds
    none of them. Contact links mirror TeacherCard's row ("Say hi" / "Call or
@@ -20,34 +23,34 @@
    to a card with the name and no links.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { classReps } from '@/data/hub/org-holders';
 import { colorStyles } from '@/lib/class-colors';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import { telHref, applyHolder, type Holder } from '@/lib/hub-org';
+import { telHref, classRepPerson, type Holder, type OrgClass, type OrgSeat } from '@/lib/hub-org';
 
 interface Props {
   /** The class's brand colour, from its document (e.g. 'orange'). */
   color?: string;
-  /** Role label to look up in `classReps`, e.g. 'Pre-K AM Rep'. */
-  role: string;
+  /** The class this rep looks after. */
+  cls: OrgClass;
   /** Subtitle under the name, e.g. 'Pre-K AM class rep'. */
   label: string;
-  /** Role holders from the page's single read, keyed by role label. */
+  /** The co-op's seats, from the page's single read. */
+  seats: OrgSeat[];
+  /** Role holders from the page's single read. */
   holders?: Map<string, Holder>;
 }
-const { color, role, label, holders } = Astro.props;
+const { color, cls, label, seats, holders } = Astro.props;
 
-const fallback = classReps.find((r) => r.role === role);
-const person = fallback ? applyHolder(fallback, holders) : undefined;
+const person = classRepPerson(seats, cls, holders);
 const cc = colorStyles(color);
-const named = Boolean(person?.name);
+const named = Boolean(person.name);
 
-const email = person?.email;
-const tel = telHref(person?.phone);
+const email = person.email;
+const tel = telHref(person.phone);
 // A headshot the Board uploaded to the role document. Sized through the Sanity
 // CDN, not astro:assets — this is an SSR page and the adapter cannot resize at
 // request time (it would serve the full-size upload into an 80px circle).
-const photoUrl = person?.sanityPhoto?.asset
+const photoUrl = person.sanityPhoto?.asset
   ? urlForImage(person.sanityPhoto as SanityImageSource)
       .width(160)
       .url()
@@ -61,7 +64,7 @@ const photoUrl = person?.sanityPhoto?.asset
     photoUrl ? (
       <img
         src={photoUrl}
-        alt={`${person!.name}, class rep`}
+        alt={`${person.name}, class rep`}
         width="80"
         height="80"
         loading="lazy"
@@ -80,7 +83,7 @@ const photoUrl = person?.sanityPhoto?.asset
     <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Class rep</p>
     {
       named ? (
-        <p class="font-display text-xl text-heading">{person!.name}</p>
+        <p class="font-display text-xl text-heading">{person.name}</p>
       ) : (
         <p class="font-display text-xl text-ink-muted">To be announced</p>
       )

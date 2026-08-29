@@ -252,7 +252,7 @@ Each page's live/private data reads from Sanity behind the gate:
 | Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                                                               |
 | Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                                                      |
 | Documents                     | `hubDocument` docs                                                                                                                                                |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                                                               |
+| Co-op Jobs                    | `coopRole` docs (the seats AND the chart's shape) + `roleHolder` docs (the people)                                                                                |
 | Classes                       | `class` docs (the whole page: facts, colour, icon, links, tuition button) + an optional `hubPage` naming them (the handbook) + `teacherNote` docs (welcome modal) |
 | Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                                                                |
 | Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                                                                   |
@@ -496,16 +496,17 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   welcome modal; the card shows a **Say hi** (email) and a **Call or text** (phone) link)
   next to one `ClassRepCard` **per class the page covers** (Twos + Threes, or Pre-K AM +
   PM). Each class elects ONE parent rep in the fall; until then the rep card is a designed
-  **"To be announced"** placeholder that reserves the seat. Rep names/emails/photos live in
-  `src/data/hub/org-holders.ts` (`classReps`, code-owned, so they can be filled in while
-  the Studio is quota-blocked); all four seats are named for 2026-27. Their **contact
-  details are not there** -- a volunteer's email and phone are PII and this repo is public.
+  **"To be announced"** placeholder that reserves the seat. The rep SEAT is derived — one
+  `coopRole` marked "one of these for every class", expanded per class by `classRepPerson()`
+  in `src/lib/hub-org.ts` — so a class the Board adds gets a fillable rep card with no code
+  change. Rep names and photos live only in the Studio (`roleHolder`). Their **contact
+  details are never committed** -- a volunteer's email and phone are PII and this repo is public.
   The card's "Say hi" / "Call or text" links come from the Directory instead, read per
-  request behind the gate: the page does ONE uncached read
-  (`DIRECTORY_REP_CONTACTS_QUERY`) for its two reps and passes the map down, joining on the
-  rep's full name, so the name in `org-holders.ts` must match the adult's name on their
-  Directory entry exactly. Shaping + the `tel:` formatting live in
-  `src/lib/hub-rep-contacts.ts` (pure, unit-tested). A rep who opted out of the Directory,
+  request behind the gate: the page does ONE uncached read (`ROLE_HOLDERS_QUERY`) for its
+  reps and passes the map down. Each rep's `roleHolder` links her Directory entry
+  (`contactFrom`) and the query resolves the adult whose name matches **Who holds it**, so
+  the details are typed once. Shaping + the `tel:` formatting live in
+  `src/lib/hub-org.ts` (pure, unit-tested). A rep who opted out of the Directory,
   or whose name doesn't match, simply renders without links. Below the row, a `ClassAskGuide` box (**"Not sure who to
   ask?"**) splits **teacher vs. class rep** questions — grounded in `coop-roles.ts` + the
   class handbooks (teacher = the child, curriculum, routines, attendance, health-in-class;
@@ -715,9 +716,11 @@ moved the four committed class icons into their `class` documents.
 3. Optional, from buttons on the class document: **Create its page** (the public detail page) and
    **Create its hub page** (the handbook, as a draft to fill in).
 4. Optional: a **Teacher's welcome note** and a **Curriculum guide** — both dropdowns now list the
-   live class pages, so the new class is there to pick. **Who's who this year** also gains a
-   “<Class name> Rep” seat per live class (`makeRoleSelectInput`), so the class-rep card on the
-   new page can hold a real person instead of “To be announced” for ever.
+   live class pages, so the new class is there to pick. The class also gets its own **rep seat**
+   on the org chart automatically (the ONE `perClass` Class Rep role — see "The org chart is
+   DERIVED" below), so its class-rep card can hold a real person the same day instead of
+   “To be announced” for ever: add a **Who's who this year** card, pick **Class Rep**, then pick
+   the class.
 
 The handbook body (and Getting Started) renders through `HubSectionedBody` → the shared
 `SectionRenderer`, i.e. the SAME page-builder sections the public site uses. Their marketing
@@ -886,7 +889,7 @@ island) — the single album read rides the CDN cache, below the cost of an extr
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Landing                                | Quick-link nav grids                                                                                                                                                                                                                                    | —                                                  |
 | Calendar (agenda + branded month grid) | Upcoming agenda (type-coloured) + full-year view: `HubCalendarGrid` month grid (desktop) / `HubCalendarSchedule` collapsible-month list (mobile); clicking an agenda card, grid day, or schedule row opens `HubEventDialog` (details + add-to-calendar) | `googleCalendarId` / feed in Hub settings          |
-| Co-op Jobs                             | Role descriptions + tiered org chart                                                                                                                                                                                                                    | `coopRole` docs (holders: `org-holders.ts`)        |
+| Co-op Jobs                             | Role descriptions + the derived org chart                                                                                                                                                                                                               | `coopRole` (seats) + `roleHolder` (people)         |
 | Documents                              | Document library + required-forms callout                                                                                                                                                                                                               | `hubDocument` docs                                 |
 | Tuition                                | Pay-card + fee-card layout, payment FAQ                                                                                                                                                                                                                 | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
 | Updates                                | Meeting-blog post list (minutes rows get a category pill)                                                                                                                                                                                               | `update` docs                                      |
@@ -1075,36 +1078,87 @@ tour closes. The greeting hero's "Take the tour" chip reopens it any time. The h
 storageState pre-seeds `wcp-tour-seen` so the other suites never fight the overlay;
 `tests/hub-tour.spec.ts` clears it deliberately.
 
-**Org chart holders:** WHO fills each role is Board-editable in the Studio — **Family Hub →
-"Who's who this year"** (`roleHolder` documents, one per seat, seeded by
-`scripts/seed-role-holders.mjs`). The post-election update needs no deploy.
+### The org chart is DERIVED — the seat model (2026-08-29)
 
-The chart is deliberately split:
+**The co-op's own structure was the last developer-only corner of the hub.** The chart's
+SHAPE — its tiers, its two cabinet branches, its icons and committee sizes — lived in
+`src/data/hub/org-holders.ts`, and the Studio's Role field was a fixed dropdown of fourteen
+names. A school that renamed a role ("Operations Lead"), added one ("Sustainability Chair"),
+or shrank its board could not do any of it. Now both halves are documents:
 
-|                                                | Owner                                | Why                                            |
-| ---------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
-| Tiers, branches, icons, committee labels/sizes | code (`src/data/hub/org-holders.ts`) | layout — brand-lock keeps it out of the Studio |
-| Names, photos, contact                         | Sanity (`roleHolder`)                | changes every spring                           |
+|                                                                                                 | Document                | Studio                                        |
+| ----------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
+| The SEATS — what each job is, where it sits, who it reports to, team size, stipend, description | `coopRole`              | **Co-op roles & org chart** (drag to reorder) |
+| The PEOPLE — who holds a seat this year, photo, contact                                         | `roleHolder`            | **Who's who this year (update each fall)**    |
+| The five group HEADINGS on the job list                                                         | `coopGuidance.sections` | **How the co-op works → Job-list headings**   |
 
-`src/lib/hub-org.ts` merges the two (pure, unit-tested). Rules worth knowing:
+**The shape is derived, not stored.** `src/lib/hub-org.ts` (pure, unit-tested — 33 cases)
+turns the two lists into a chart:
+
+- **`tier`** puts a seat in one of five sections: `board`, `staff`, `chairs`, `reps`,
+  `committee`. That list is the ONE thing still fixed in code, because it is the grammar the
+  drawing follows (a top row, a paid-staff row, columns, rep cards, committee pills). A
+  volunteer moves seats between the five and renames what each is CALLED; they do not invent a
+  sixth kind of box. That is the brand-lock rule.
+- **`reportsTo` is a reference to another seat**, and the COLUMNS fall out of it: a board seat
+  becomes a column the moment something reports to it. Adding an officer, removing one, or
+  moving a chair between two all work with no code. It replaced free text ("Reports to VP"),
+  which a chart cannot follow — the tag on the job list is derived from the reference now, so
+  it can never name a deleted role.
+- **Paid staff are on the chart but NOT in the job list** (`LISTED_TIERS` in
+  `coop-jobs.astro`): the page's claim is that every other role is a parent volunteer, so a
+  teacher does not belong among the jobs a family signs up for.
+- **Nothing is ever silently dropped.** A chair whose officer was deleted lands in a final
+  **"Other roles"** column, so a volunteer SEES that it needs re-pointing.
+
+**Class reps stay automatic.** There is ONE `coopRole` marked **`perClass`** ("One of these
+for every class"), and `buildOrgChart` expands it into one rep card per live class, wearing
+that class's own icon. A class the Board adds gets its rep card the same day, with no seat for
+anyone to remember to create. `classRepPerson()` is the same rule for the class page's
+`ClassRepCard` — which used to look the class up in a committed list, so a NEW class's rep card
+could never be filled at all (fixed here, with a regression test).
+
+**A rename never orphans a holder.** `roleHolder.seat` is a REFERENCE, so renaming "Publicity
+Chair" to "Communications Chair" carries her card, photo and email with it. `toHolderMap` files
+each holder under three keys — the seat id, `<seat id>:<class slug>` for a rep, and the legacy
+role LABEL — so a document written before the migration still resolves, and so the committed
+fallback (which has no Sanity ids) still joins by name.
+
+Other rules worth knowing:
 
 - **Sanity wins, including when it's empty.** Clearing a name really does vacate the seat, so
-  a volunteer who steps down disappears from the chart via the Studio. A role with no document
-  at all keeps the committed name, which is what makes `org-holders.ts` a working fallback if
-  Sanity is unreachable — the chart is never blank.
-- **A role label that matches nothing is ignored**, so a Studio typo cannot break the page.
-- **Two seats share the displayed label "Teacher"**, so they carry a `key` (`Teacher — Pre-K`,
-  `Teacher — Twos & Threes`) that the join uses instead.
+  a volunteer who steps down disappears from the chart via the Studio. An unreachable Sanity
+  falls back to `src/data/hub/org-holders.ts` for BOTH the seats and the names — without the
+  names, an outage would draw every seat as an open role, which reads as "the whole board
+  resigned". Never add a new seat to that file; add it in the Studio.
+- **A row with no name, no id, or an unknown section is dropped**, so a bad document cannot
+  break the page.
 - **Class reps link to a Directory entry** (`contactFrom`) rather than storing an email/phone,
   so the details live in exactly one place and none of them land in this public repo. The
   query resolves the adult whose name matches the holder. A family who opted **out** of the
   Directory resolves to nothing: the name shows, the contact links don't.
-- **The read carries PII once a rep is linked, so it is never cached.** Both class pages and
-  the org chart each do one uncached read.
+- **The holders read carries PII once a rep is linked, so it is never cached.** The seats read
+  is not PII but is uncached too (it rides alongside). The class list the rep seats expand over
+  is the hub's existing L1-only cached read — no new KV writes.
+
+**The one-shot migration** was `node scripts/patch-org-chart.mjs --apply` (run 2026-08-29,
+idempotent, dry-run by default): it turned every "Reports to" into a reference, created the
+three paid-staff seats the old chart carried in code, ticked `perClass` on Class Rep, pointed
+all 17 holders at their seats (the four reps at the ONE Class Rep seat plus their class), and
+seeded the five job-list headings. One deliberate visual change: Copy Room Helper was drawn as
+a chair CARD and also as a "Copy Room" pill; it is one seat now (a committee reporting to the
+Secretary) and draws as a single pill.
 
 Three seats are open for 2026-27 (Facilities Chair, Family Activities Chair, Copy Room
-Helper) and are seeded as named documents with no holder, so the vacancy is visible in the
+Helper) and exist as named documents with no holder, so the vacancy is visible in the
 Studio rather than just missing.
+
+**What a volunteer does, end to end:** rename a role → open it under **Co-op roles & org
+chart**, change **Role**, Publish. Add one → **＋**, name it, pick **Where it sits** and
+**Reports to**, Publish, drag to place. Remove one → delete it (and re-point anything that
+reported to it, or find it under "Other roles"). Reorder → drag the list. Mark a seat vacant →
+clear **Who holds it** on its "Who's who" card, or delete that card. All of it is written up in
+the in-Studio guide as "Change the co-op roles or the org chart".
 
 ---
 

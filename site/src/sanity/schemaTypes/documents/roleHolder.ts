@@ -1,52 +1,24 @@
 import { defineType, defineField } from 'sanity';
-import { makeRoleSelectInput } from '../../components/ClassSelectInput';
 
 // =============================================================================
 // roleHolder — WHO fills each co-op role this school year
 // =============================================================================
-// The org chart on the Family Hub's Co-op Jobs page, and the class-rep cards on
-// the class pages, are drawn from code (tiers, branches, icons, committee sizes
-// — that is layout, and the brand-lock rule keeps layout out of the Studio).
-// The PEOPLE are these documents, so the Board can do the post-election update
-// itself instead of asking a developer for a code change and a deploy.
+// The SEATS are `coopRole` documents (Studio → Co-op roles): what each job is,
+// where it sits on the chart, and who it reports to. These documents are the
+// PEOPLE, so the post-election update is a short list of names rather than a
+// change to the structure.
 //
-// One document per seat. `role` is the join key and must match a role label the
-// chart knows (src/data/hub/org-holders.ts lists them, and the field's
-// description spells them out) — anything else is simply ignored, so a typo
-// cannot break the page.
+// The seat is a REFERENCE, not a typed-in label. That is the whole point: rename
+// "Publicity Chair" to "Communications Chair" and the person holding it follows,
+// where the old text field would have quietly orphaned her.
 //
-// Leave `person` blank for a seat nobody has taken yet: the chart draws it as
-// an open role, which is the honest thing to show and is how a vacancy gets
+// Leave `person` blank for a seat nobody has taken yet: the chart draws it as an
+// open role, which is the honest thing to show and is how a vacancy gets
 // noticed. Deleting the document does the same thing.
-// =============================================================================
-
-// The roles the chart draws, in chart order. Keep in sync with
-// src/data/hub/org-holders.ts — the seed script (scripts/seed-role-holders.mjs)
-// creates one document per entry here.
 //
-// The CLASS REP seats below are the four classes the site shipped with. The
-// dropdown adds one "<Class name> Rep" per live class on top of this list (see
-// makeRoleSelectInput), so a class the Board adds can be given its rep the same
-// day instead of showing "To be announced" for ever.
-const ROLES = [
-  'President',
-  'Vice President',
-  'Treasurer',
-  'Secretary',
-  'Teacher — Pre-K',
-  'Teacher — Twos & Threes',
-  'Administrator',
-  'Publicity Chair',
-  'Enrichment Coordinator',
-  'Copy Room Helper',
-  'Facilities Chair',
-  'Family Activities Chair',
-  'Fundraising Chair',
-  'Twos Rep',
-  'Threes Rep',
-  'Pre-K AM Rep',
-  'Pre-K PM Rep',
-];
+// CLASS REPS: the Class Rep seat is one document marked "one of these for every
+// class", so pick that seat and then the class. A new class needs no new seat.
+// =============================================================================
 
 export const roleHolder = defineType({
   name: 'roleHolder',
@@ -59,14 +31,39 @@ export const roleHolder = defineType({
   ],
   fields: [
     defineField({
-      name: 'role',
+      name: 'seat',
       title: 'Role',
-      type: 'string',
+      type: 'reference',
       group: 'who',
+      to: [{ type: 'coopRole' }],
       description:
-        'Which seat on the org chart this is. Pick from the list — the chart matches on this exactly. Every class gets a "<Class name> Rep" seat automatically.',
-      components: { input: makeRoleSelectInput(ROLES) },
+        'Which co-op role this person holds. Every role in the Co-op roles list is here — add a role there and it appears in this list straight away.',
       validation: (R) => R.required().error('Pick which role this is.'),
+    }),
+    defineField({
+      name: 'forClass',
+      title: 'Which class',
+      type: 'reference',
+      group: 'who',
+      to: [{ type: 'class' }],
+      description:
+        'Only for the Class Rep role: which class this rep looks after. Every other role leaves this blank.',
+      // A `hidden` callback cannot follow a reference, so the field is always
+      // shown and the VALIDATION does the coaching instead: it reads the chosen
+      // seat and says, in words, whether this question applies. That keeps the
+      // rule in one place and needs no mirrored copy of the seat's flag.
+      validation: (R) =>
+        R.custom(async (value, ctx) => {
+          const ref = (ctx.document?.seat as { _ref?: string } | undefined)?._ref;
+          if (!ref) return true;
+          const perClass = await ctx
+            .getClient({ apiVersion: '2025-01-01' })
+            .fetch<boolean>('*[_id == $id][0].perClass == true', { id: ref });
+          if (perClass && !value) return 'Say which class this rep looks after.';
+          if (!perClass && value)
+            return 'This role is not a per-class one — leave the class blank.';
+          return true;
+        }),
     }),
     defineField({
       name: 'person',
@@ -110,13 +107,27 @@ export const roleHolder = defineType({
       group: 'who',
       description: 'Optional reminder for whoever updates this next year.',
     }),
+    // The role LABEL this document stored before the seats became documents.
+    // Hidden, never edited, and still READ: it is the second join key, so a
+    // holder the migration could not match (a draft, a hand-made document) keeps
+    // working from its label. See toHolderMap in src/lib/hub-org.ts.
+    defineField({ name: 'role', title: 'Role (old text)', type: 'string', hidden: true }),
   ],
-  orderings: [{ title: 'Role', name: 'role', by: [{ field: 'role', direction: 'asc' }] }],
+  orderings: [
+    { title: 'Who holds it', name: 'person', by: [{ field: 'person', direction: 'asc' }] },
+  ],
   preview: {
-    select: { role: 'role', person: 'person', media: 'photo' },
-    prepare({ role, person, media }) {
+    select: {
+      seat: 'seat.name',
+      legacy: 'role',
+      cls: 'forClass.name',
+      person: 'person',
+      media: 'photo',
+    },
+    prepare({ seat, legacy, cls, person, media }) {
+      const role = seat || legacy || 'Untitled role';
       return {
-        title: role || 'Untitled role',
+        title: cls ? `${cls} ${role}` : role,
         subtitle: person || 'Open role — nobody assigned yet',
         media,
       };

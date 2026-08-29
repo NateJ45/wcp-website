@@ -1,167 +1,217 @@
 // =============================================================================
-// Org chart holders — who fills each co-op role this school year
+// Org chart — the committed FALLBACK for the co-op's structure
 // =============================================================================
-// Powers the Co-op Jobs page's org chart (src/components/hub/OrgChart.astro),
-// carried over from the old site's chart.
+// The Co-op Jobs page's org chart (src/components/hub/OrgChart.astro) is
+// DERIVED from documents now: `coopRole` documents are the seats (name, icon,
+// section, who they report to, team size, stipend, description) and `roleHolder`
+// documents are the people. A volunteer renames a role, adds one, retires one,
+// or re-points a whole branch from the Studio, with no developer and no deploy.
 //
-// THIS IS NO LONGER WHERE NAMES ARE UPDATED. Who holds each seat is now
-// Board-editable in the Studio (Family Hub → "Who's who this year", the
-// `roleHolder` documents), merged over this list at request time by
-// src/lib/hub-org.ts. The names below are the FALLBACK that renders if Sanity
-// is unreachable, and a Studio document always wins — including an empty one,
-// so clearing a role there really does vacate the seat.
+// THIS FILE IS NO LONGER WHERE ANY OF THAT IS EDITED. It is the per-field
+// fallback that renders if Sanity is unreachable — the same role src/data/
+// classes.ts plays for the four classes the site shipped with. Sanity always
+// wins, INCLUDING an empty answer for a seat, so clearing a role in the Studio
+// really does vacate it.
 //
-// What this file still owns is the chart's SHAPE: the tiers, the two cabinet
-// branches, the icons, and the committee labels and sizes. That is layout, and
-// the brand-lock rule keeps layout out of the Studio. Role DESCRIPTIONS are
-// separate again and Board-editable (`coopRole` docs / coop-roles.ts).
-// Names render behind the gate only, like the old site. Photos live ONLY in
-// the Studio (each roleHolder's Photo field) — no committed headshots. A seat
-// with no Studio photo shows initials, which is the designed state.
+// Never add a new seat here. Add it in the Studio; this list stays a snapshot of
+// the structure the site shipped with, so the chart is never blank.
+//
+// The ids match the live `coopRole` document ids so a mixed state (seats from
+// code, people from Sanity) still joins. Names render behind the gate only, like
+// the old site. Photos live ONLY in the Studio — no committed headshots.
 // =============================================================================
 
-export interface OrgPerson {
-  /** Role label shown on the card, e.g. "President". */
-  role: string;
-  /**
-   * Join key for the Studio's `roleHolder` document, when the displayed label
-   * is ambiguous. Both teachers show as "Teacher" on the chart but need their
-   * own documents, so they carry a key; everything else joins on `role`.
-   */
-  key?: string;
-  /** Lucide icon for the role chip. */
-  icon: string;
-  /** Holder's name. Omit while the role is unfilled. */
-  name?: string;
-  /** Role mailbox (shown as a mail icon link). */
-  email?: string;
+import type { OrgSeat, Holder } from '@/lib/hub-org';
+
+/** A committed seat, plus whoever held it when this snapshot was taken. */
+export interface FallbackSeat extends OrgSeat {
+  /** The holder as of the last code change. The Studio overrides it. */
+  holder?: { person?: string; email?: string };
 }
 
-export interface OrgTeam {
-  /** Committee/team fed by a chair, e.g. "Publicity Assistants". */
-  label: string;
-  /** Member-count blurb, e.g. "4 members". */
-  size: string;
-}
-
-export interface ChairStack {
-  chair: OrgPerson;
-  teams?: OrgTeam[];
-}
-
-/** 2026-27 Executive Board. */
-export const president: OrgPerson = {
-  role: 'President',
-  icon: 'award',
-  name: 'Rachel Gumpert',
-  email: 'president@westchesterpreschool.org',
-};
-
-export const officers: OrgPerson[] = [
+export const orgSeats: FallbackSeat[] = [
+  // ── Executive Board ──────────────────────────────────────────────────────
   {
-    role: 'Vice President',
+    id: 'coop-0',
+    name: 'President',
+    tier: 'board',
+    icon: 'award',
+    stipend: '$450 stipend',
+    holder: { person: 'Rachel Gumpert', email: 'president@westchesterpreschool.org' },
+  },
+  {
+    id: 'coop-1',
+    name: 'Vice President',
+    tier: 'board',
     icon: 'shield-check',
-    name: 'Joy Rasfeld',
-    email: 'vicepresident@westchesterpreschool.org',
+    reportsTo: 'coop-0',
+    stipend: '$150 stipend',
+    holder: { person: 'Joy Rasfeld', email: 'vicepresident@westchesterpreschool.org' },
   },
   {
-    role: 'Treasurer',
+    id: 'coop-2',
+    name: 'Treasurer',
+    tier: 'board',
     icon: 'piggy-bank',
-    name: 'Kate Carnahan',
-    email: 'treasurer@westchesterpreschool.org',
+    reportsTo: 'coop-0',
+    stipend: '$150 stipend',
+    holder: { person: 'Kate Carnahan', email: 'treasurer@westchesterpreschool.org' },
   },
   {
-    role: 'Secretary',
+    id: 'coop-3',
+    name: 'Secretary',
+    tier: 'board',
     icon: 'notebook-pen',
-    name: 'Margot Hisle',
-    email: 'contact@westchesterpreschool.org',
+    reportsTo: 'coop-0',
+    stipend: '$150 stipend',
+    holder: { person: 'Margot Hisle', email: 'contact@westchesterpreschool.org' },
   },
-];
 
-/** Paid staff (the only non-volunteer roles). */
-export const paidStaff: OrgPerson[] = [
+  // ── Paid staff ── the only non-volunteer seats. They are on the chart but
+  // not in the co-op job list: they are not jobs a family signs up for.
   {
-    role: 'Teacher',
-    key: 'Teacher — Pre-K',
+    id: 'coop-staff-teacher-pre-k',
+    name: 'Teacher — Pre-K',
+    tier: 'staff',
     icon: 'book-open',
-    name: 'Mrs. Lisa Cortez',
-    email: 'lisa@westchesterpreschool.org',
+    holder: { person: 'Mrs. Lisa Cortez', email: 'lisa@westchesterpreschool.org' },
   },
   {
-    role: 'Teacher',
-    key: 'Teacher — Twos & Threes',
+    id: 'coop-staff-teacher-twos-threes',
+    name: 'Teacher — Twos & Threes',
+    tier: 'staff',
     icon: 'book-open',
-    name: 'Mrs. Erin Schmerr',
-    email: 'erin@westchesterpreschool.org',
+    holder: { person: 'Mrs. Erin Schmerr', email: 'erin@westchesterpreschool.org' },
   },
   {
-    role: 'Administrator',
+    id: 'coop-staff-administrator',
+    name: 'Administrator',
+    tier: 'staff',
     icon: 'building-2',
-    name: 'Mrs. Lexie Lenavitt',
-    email: 'admin@westchesterpreschool.org',
+    holder: { person: 'Mrs. Lexie Lenavitt', email: 'admin@westchesterpreschool.org' },
   },
-];
 
-/** The Secretary's cabinet (left branch of the old chart). */
-export const secretaryBranch: ChairStack[] = [
+  // ── Cabinet chairs ───────────────────────────────────────────────────────
   {
-    chair: {
-      role: 'Publicity Chair',
-      icon: 'megaphone',
-      name: 'Nathan Nixon',
-      email: 'publicity@westchesterpreschool.org',
-    },
-    teams: [{ label: 'Publicity Assistants', size: '4 members' }],
+    id: 'coop-4',
+    name: 'Facilities Chair',
+    tier: 'chairs',
+    icon: 'building-2',
+    reportsTo: 'coop-1',
   },
   {
-    chair: {
-      role: 'Enrichment Coordinator',
-      icon: 'sparkles',
-      name: 'Daniel Hagedorn',
-      email: 'coach@westchesterpreschool.org',
-    },
+    id: 'coop-5',
+    name: 'Family Activities Chair',
+    tier: 'chairs',
+    icon: 'party-popper',
+    reportsTo: 'coop-1',
   },
   {
-    chair: { role: 'Copy Room Helper', icon: 'file-text' },
-    teams: [{ label: 'Copy Room', size: '1-2 members' }],
+    id: 'coop-6',
+    name: 'Fundraising Chair',
+    tier: 'chairs',
+    icon: 'hand-heart',
+    reportsTo: 'coop-1',
+    holder: { person: 'Nicole Hagedorn', email: 'fundraising@westchesterpreschool.org' },
+  },
+  {
+    id: 'coop-7',
+    name: 'Publicity Chair',
+    tier: 'chairs',
+    icon: 'megaphone',
+    reportsTo: 'coop-3',
+    holder: { person: 'Nathan Nixon', email: 'publicity@westchesterpreschool.org' },
+  },
+  {
+    id: 'coop-8',
+    name: 'Enrichment Coordinator',
+    tier: 'chairs',
+    icon: 'sparkles',
+    reportsTo: 'coop-3',
+    holder: { person: 'Daniel Hagedorn', email: 'coach@westchesterpreschool.org' },
+  },
+
+  // ── Class reps ── ONE seat, expanded to one card per live class. This is
+  // what gives a class the Board adds a rep card on its page the same day.
+  {
+    id: 'coop-9',
+    name: 'Class Rep',
+    tier: 'reps',
+    icon: 'users',
+    reportsTo: 'coop-3',
+    team: 'One per class',
+    perClass: true,
+  },
+
+  // ── Committees ── drawn as pills under whichever seat they report to.
+  {
+    id: 'coop-10',
+    name: 'Teacher’s Aide',
+    tier: 'committee',
+    icon: 'graduation-cap',
+    reportsTo: 'coop-3',
+    team: '2–4 members',
+  },
+  {
+    id: 'coop-11',
+    name: 'Publicity Assistant',
+    tier: 'committee',
+    icon: 'camera',
+    reportsTo: 'coop-7',
+    team: '4 members',
+  },
+  {
+    id: 'coop-12',
+    name: 'Copy Room Helper',
+    tier: 'committee',
+    icon: 'file-text',
+    reportsTo: 'coop-3',
+    team: '1–2 members',
+  },
+  {
+    id: 'coop-13',
+    name: 'Playground Committee',
+    tier: 'committee',
+    icon: 'trees',
+    reportsTo: 'coop-4',
+    team: '3 members',
+  },
+  {
+    id: 'coop-14',
+    name: 'Laundry',
+    tier: 'committee',
+    icon: 'house',
+    reportsTo: 'coop-4',
+    team: '1–2 members',
+  },
+  {
+    id: 'coop-15',
+    name: 'Family Activities Committee',
+    tier: 'committee',
+    icon: 'gift',
+    reportsTo: 'coop-5',
+    team: '4–6 members',
+  },
+  {
+    id: 'coop-16',
+    name: 'Fundraising Committee',
+    tier: 'committee',
+    icon: 'coins',
+    reportsTo: 'coop-6',
+    team: '2 members',
   },
 ];
 
 /**
- * One rep per class (green tier). Names set each fall, from the Board's
- * enrollment list (the "CLASS REP" rows in its Job column). One rep per class,
- * so a rep who shares the job with a spouse is still listed as the single named
- * contact. No email: there is no class-rep role mailbox, and a volunteer's
- * personal address must never land in this (public) repo — families reach a rep
- * through the Directory. See the share-link/privacy rules in CLAUDE.md.
+ * The people from the snapshot above, in the shape the chart merges.
+ *
+ * Used ONLY when the Studio's "Who's who" read fails: without it an unreachable
+ * Sanity would draw every seat as an open role, which reads as "the whole board
+ * resigned" rather than "the CMS is down". Keyed by role LABEL, which is the
+ * fallback join (there are no Sanity ids in a code-only render).
  */
-export const classReps: OrgPerson[] = [
-  { role: 'Twos Rep', icon: 'blocks', name: 'Laura Gilbert' },
-  { role: 'Threes Rep', icon: 'sprout', name: 'Jordyn Frasier' },
-  { role: 'Pre-K AM Rep', icon: 'sun', name: 'Megan Waid' },
-  { role: 'Pre-K PM Rep', icon: 'moon', name: "Melissa O'Brien" },
-];
-
-/** The VP's cabinet (right branch of the old chart). */
-export const vpBranch: ChairStack[] = [
-  {
-    chair: { role: 'Facilities Chair', icon: 'building-2' },
-    teams: [
-      { label: 'Playground Committee', size: '3 members' },
-      { label: 'Laundry', size: '1-2 members' },
-    ],
-  },
-  {
-    chair: { role: 'Family Activities Chair', icon: 'party-popper' },
-    teams: [{ label: 'Activities Committee', size: '4-6 members' }],
-  },
-  {
-    chair: {
-      role: 'Fundraising Chair',
-      icon: 'hand-heart',
-      name: 'Nicole Hagedorn',
-      email: 'fundraising@westchesterpreschool.org',
-    },
-    teams: [{ label: 'Fundraising Committee', size: '2 members' }],
-  },
-];
+export const fallbackHolders: Map<string, Holder> = new Map(
+  orgSeats
+    .filter((s) => s.holder)
+    .map((s) => [s.name, { name: s.holder?.person, email: s.holder?.email }]),
+);

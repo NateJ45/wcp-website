@@ -115,6 +115,83 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // A teacher swap that nobody finished. The hub's teacher card follows the
+    // WELCOME NOTE, not the class's Teacher field, so after a swap the class
+    // page keeps showing the old teacher's letter, photo and email until
+    // somebody rewrites the note — and nothing said so. This check says so.
+    //
+    // The match is deliberately loose: the note is signed "Erin Schmerr" while
+    // Staff holds "Mrs. Erin Schmerr", so a shared word is enough. Only a note
+    // that names NOBODY from the teacher's name is reported, which is what
+    // makes a real swap stand out and a formatting difference stay quiet.
+    id: 'teacher-note-stale',
+    run: async (c) => {
+      // Two flat reads, matched in JS. A note is filed under a class page's
+      // ADDRESS or a class SLUG (see teacherNoteKeys in hub-classrooms.ts), so
+      // the pages that name each class come back too.
+      const snap = await c.fetch<{
+        classes: { id: string; name?: string; slug?: string; teacher?: string }[];
+        pages: { key?: string; classIds?: string[] }[];
+        notes: { key?: string; signName?: string }[];
+      }>(`{
+        "classes": *[_type == "class" && !(_id in path("drafts.**")) && defined(teacher)]{
+          "id": _id, name, "slug": slug.current, "teacher": teacher->name
+        },
+        "pages": *[_type == "hubPage" && !(_id in path("drafts.**")) && count(classes) > 0]{
+          "key": coalesce(hubKey, slug), "classIds": classes[]._ref
+        },
+        "notes": *[_type == "teacherNote" && !(_id in path("drafts.**")) && active == true]{
+          "key": class, signName
+        }
+      }`);
+      const rows = (snap?.classes ?? []).map((cls) => {
+        const keys = [
+          cls.slug,
+          ...(snap.pages ?? []).filter((p) => p.classIds?.includes(cls.id)).map((p) => p.key),
+        ].filter(Boolean);
+        return {
+          class: cls.name,
+          teacher: cls.teacher,
+          keys: (snap.notes ?? [])
+            .filter((n) => n.key && keys.includes(n.key))
+            .map((n) => n.signName)
+            .filter(Boolean) as string[],
+        };
+      });
+      // A word from the teacher's name, ignoring the titles a school writes.
+      const words = (name: string) =>
+        new Set(
+          name
+            .toLowerCase()
+            .replace(/\b(mr|mrs|ms|miss|dr)\.?\b/g, '')
+            .split(/[^a-z]+/)
+            .filter((w) => w.length > 2),
+        );
+      const stale = rows.filter((r) => {
+        if (!r.teacher || !r.keys?.length) return false;
+        const mine = words(r.teacher);
+        // Every active note for this class names somebody else entirely.
+        return r.keys.every((signed) => {
+          if (!signed) return false;
+          const theirs = words(signed);
+          return ![...mine].some((w) => theirs.has(w));
+        });
+      });
+      return stale.length
+        ? {
+            severity: 'warn',
+            label: `${stale.length} class${stale.length === 1 ? '' : 'es'} whose welcome note is signed by someone else`,
+            detail: `The Family Hub shows the teacher from the WELCOME NOTE, so ${stale
+              .map((r) => `${r.class} still shows ${r.keys?.[0]}`)
+              .slice(0, 4)
+              .join(
+                ', ',
+              )}. Open Teacher welcome notes, rewrite it for the new teacher, and give it a new version stamp.`,
+          }
+        : null;
+    },
+  },
+  {
     // "Waiting to publish" — the WordPress drafts-pile answer. Every BOARD
     // document with unpublished edits, by name, oldest first. Machine/inbox
     // types are excluded (they are never published by hand), everything else

@@ -37,17 +37,20 @@ import { teacherNoteKeys, type Classroom } from '@/lib/hub-classrooms';
 import { cn } from '@/lib/utils';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
-import type { Holder } from '@/lib/hub-org';
+import type { Holder, OrgSeat } from '@/lib/hub-org';
+import { orgSeats as seatsFallback } from '@/data/hub/org-holders';
 
 interface Props {
   room: Classroom;
   /** Role holders for the class-rep cards (one read, done by the route). */
   holders?: Map<string, Holder>;
+  /** The co-op's seats, for the rep cards (one read, done by the route). */
+  seats?: OrgSeat[];
   /** The `curriculumGuide` keys that have a PDF (a class slug, or the
       classroom address when one guide covers the whole room). */
   guides?: string[];
 }
-const { room, holders, guides = [] } = Astro.props;
+const { room, holders, seats = seatsFallback, guides = [] } = Astro.props;
 
 const page = room.page;
 const cc = colorStyles(room.color);
@@ -160,8 +163,9 @@ const programs = publicPages.map(([slug, c]) => ({
     room.classes.map((c) => (
       <ClassRepCard
         color={c.color}
-        role={`${c.name} Rep`}
+        cls={c}
         label={single ? 'Your class rep' : `${c.name} class rep`}
+        seats={seats}
         holders={holders}
       />
     ))

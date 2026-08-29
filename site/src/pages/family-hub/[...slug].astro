@@ -45,13 +45,22 @@ import {
   HUB_PAGE_BY_SLUG_QUERY,
   HUB_CLASSROOM_PAGE_QUERY,
   ROLE_HOLDERS_QUERY,
+  ORG_SEATS_QUERY,
 } from '@/lib/queries';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { isUsableHubSlug } from '@/lib/hub-pages';
 import { getHubClassData } from '@/lib/hub-classes';
 import { matchClassroom, teacherNoteKeys } from '@/lib/hub-classrooms';
-import { toHolderMap, type Holder, type RoleHolderRow } from '@/lib/hub-org';
+import {
+  toHolderMap,
+  toSeats,
+  type Holder,
+  type OrgSeat,
+  type OrgSeatRow,
+  type RoleHolderRow,
+} from '@/lib/hub-org';
+import { orgSeats as seatsFallback } from '@/data/hub/org-holders';
 
 interface HubPageDoc {
   title?: string;
@@ -83,22 +92,28 @@ if (match?.kind === 'redirect') return Astro.redirect(match.to, 301);
 
 let room = match?.kind === 'render' ? match.classroom : null;
 let repHolders = new Map<string, Holder>();
+// The co-op's seats, so the rep card knows which seat covers this class. The
+// Class Rep seat is ONE document marked "one per class", so a class the Board
+// adds needs no new seat — see classRepPerson in src/lib/hub-org.ts.
+let repSeats: OrgSeat[] = seatsFallback;
 
 if (room) {
   // Two reads: the classroom's own hubPage (heading, intro, handbook PDF,
   // sections) and who the class reps are. The rep read carries PII once a rep
   // links a Directory entry, so it passes NO cache — see the caching rules in
   // CLAUDE.md. They run together because the page cannot render without both.
-  const [page, holders] = await Promise.all([
+  const [page, holders, seatRows] = await Promise.all([
     sanityFetch<(HubPageDoc & { classSlugs?: string[] }) | null>(
       HUB_CLASSROOM_PAGE_QUERY,
       { key: room.key },
       { cache: BOARD_CONTENT_CACHE },
     ).catch(() => null),
     sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY).catch(() => [] as RoleHolderRow[]),
+    sanityFetch<OrgSeatRow[]>(ORG_SEATS_QUERY).catch(() => null),
   ]);
 
   repHolders = toHolderMap(holders ?? []);
+  if (seatRows?.length) repSeats = toSeats(seatRows);
   // The classroom carries the page's METADATA from the light query already;
   // this fills in the parts only the full read has (intro, handbook, sections).
   if (page) {
@@ -156,7 +171,7 @@ const updated = formatMonthYear(doc?._updatedAt);
     <div class="mx-auto max-w-6xl">
       {
         room ? (
-          <HubClassroomBody room={room} holders={repHolders} guides={guides} />
+          <HubClassroomBody room={room} holders={repHolders} seats={repSeats} guides={guides} />
         ) : (
           <>
             <HubPageHeader

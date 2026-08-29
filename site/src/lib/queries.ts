@@ -498,15 +498,39 @@ export const OPERATING_BUDGET_QUERY = `*[_type == "operatingBudget"][0]{
  */
 export const COOP_GUIDANCE_QUERY = `*[_type == "coopGuidance"][0]{
   principles[]{ icon, title, body },
+  sections[]{ key, label, blurb },
   teacherAsks,
   repAsks
 }`;
 
 /**
+ * The co-op's SEATS (Studio → Family Hub → Co-op roles) — the org chart's own
+ * shape, in drag order.
+ *
+ * This used to be a committed list (src/data/hub/org-holders.ts), which made
+ * the co-op's structure the last thing on the hub a volunteer could not change.
+ * The chart is derived from these rows now: `tier` says which part of the chart
+ * draws the seat, `reportsTo` draws the line to the seat above it, and
+ * `perClass` marks the Class Rep seat that expands to one card per live class.
+ * The rules are pure and unit-tested in src/lib/hub-org.ts.
+ *
+ * No PII — these are job definitions. The PEOPLE are ROLE_HOLDERS_QUERY.
+ */
+export const ORG_SEATS_QUERY = `*[_type == "coopRole"] | order(orderRank){
+  _id, name, tier, icon, team, stipend, body, perClass,
+  "reportsTo": reportsTo._ref
+}`;
+
+/**
  * WHO holds each co-op role this year (Studio → Family Hub → Who's who), for
- * the org chart and the class-rep cards. The chart's SHAPE stays in code
- * (src/data/hub/org-holders.ts); these documents supply only the people, so the
- * Board can do the post-election update without a deploy.
+ * the org chart and the class-rep cards. The SEATS are ORG_SEATS_QUERY; these
+ * documents supply only the people, so the Board can do the post-election
+ * update without a deploy.
+ *
+ * The join is `seat` (a reference), which survives renaming a role. `forClass`
+ * picks out WHICH class a rep looks after, because one Class Rep seat covers
+ * them all. `role` is the label these documents stored before the seats became
+ * documents, kept as a second join key so an unmigrated row still resolves.
  *
  * `contactFrom` resolves the linked Directory entry inline, so a class rep's
  * email and phone are typed once (in the Directory) and reused here. The
@@ -515,7 +539,9 @@ export const COOP_GUIDANCE_QUERY = `*[_type == "coopGuidance"][0]{
  *
  * CONTAINS PII once a rep is linked — never cache this result.
  */
-export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && defined(role)]{
+export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && (defined(seat) || defined(role))]{
+  "seat": seat._ref,
+  "forClass": forClass->slug.current,
   role,
   person,
   email,

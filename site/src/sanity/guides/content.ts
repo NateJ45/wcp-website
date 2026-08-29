@@ -1927,6 +1927,76 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'org-chart',
+    category: 'School info & money',
+    title: 'Change the co-op roles or the org chart',
+    icon: '🤝',
+    lead: 'Rename a job, add one, retire one, or change who reports to whom. The chart on the Co-op Jobs page redraws itself.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'This used to need a developer. It does not any more.',
+        text: 'The org chart is drawn from the **Co-op roles & org chart** list. Every box on it, every column, and every line between boxes comes from that list — so the shape of your co-op is yours to change, not something written into the website.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Co-op roles & org chart'],
+        link: { pane: 'coopRole', ws: 'family-hub' },
+      },
+      { kind: 'h', text: 'Rename a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the role and change **Role**.',
+          '`Publish`. The chart, the job list, and the person holding it all follow the new name.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Renaming never loses the person.',
+        text: 'Whoever holds the job is attached to the ROLE, not to its name. Rename "Publicity Chair" to "Communications Chair" and her card, photo and email move with it.',
+      },
+      { kind: 'h', text: 'Add a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Press **＋** and name it.',
+          'Pick **Where it sits**: Executive Board, Cabinet chair, Class representative, or Committee. (Paid staff is for the teachers and administrator — those show on the chart but not in the job list, because they are not jobs a family signs up for.)',
+          'Pick **Reports to** — the role above it. A Board role with people reporting to it gets its own column on the chart. A committee shows as a small tag under whoever it reports to.',
+          'Write **What they do** so it appears in the job list, and add **How many people** for a committee.',
+          '`Publish`, then drag it up or down the list to place it.',
+        ],
+      },
+      { kind: 'h', text: 'Retire a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Delete the role, or move it under a different **Reports to** if the work simply moved.',
+          'If anything still reported to it, point those at their new role — until you do, they gather in an "Other roles" column on the chart so nothing disappears quietly.',
+          'Delete the matching **Who’s who this year** card too, if the job is gone for good.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Class reps stay automatic.',
+        text: 'There is ONE "Class Rep" role, ticked **One of these for every class**. The chart draws a rep card for every class by itself, so adding a class needs no new role. Leave that tick alone.',
+      },
+      { kind: 'h', text: 'Rename the headings' },
+      {
+        kind: 'p',
+        text: 'The five headings on the Co-op Jobs page ("Executive Board", "Cabinet Chairs", and so on) live in **How the co-op works → Job-list headings**. Change the wording there if your school calls them something else. The five GROUPS themselves are fixed: they are the shapes the chart knows how to draw.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Update who holds each co-op job', 'Add or change a class'],
+      },
+    ],
+  },
+  {
     slug: 'whos-who',
     category: 'School info & money',
     title: 'Update who holds each co-op job',
@@ -1950,6 +2020,7 @@ export const guides: Guide[] = [
         items: [
           'Open **Family Hub → Who’s who this year**. There is one card per seat on the chart.',
           'Click the role that changed and type the new person’s name in **Who holds it**.',
+          'For a class rep, also pick **Which class** she looks after. There is ONE "Class Rep" role covering every class, so a class you add later needs no new role.',
           'Nobody has taken the job yet? Leave the name **empty**. The chart shows it as an open role, which is exactly how someone notices it needs filling.',
           '`Publish`. Give it a minute, then reload the Family Hub to see it.',
         ],
@@ -1974,12 +2045,9 @@ export const guides: Guide[] = [
       },
       {
         kind: 'callout',
-        tone: 'primary',
-        title: 'The roles are a fixed list.',
-        text:
-          'You pick a role from a dropdown rather than typing one, because the chart has to know where to put it. Need a seat that is not on the list, or one retired? That is a chart change — ask ' +
-          SITE.contactName +
-          '.',
+        tone: 'positive',
+        title: 'The roles are yours too.',
+        text: 'You pick a role from the list rather than typing one, because the chart has to know where to put it — but the LIST itself is now yours. Rename a role, add one, or retire one under **Co-op roles & org chart**. See "Change the co-op roles or the org chart".',
       },
       {
         kind: 'p',
@@ -1987,7 +2055,11 @@ export const guides: Guide[] = [
       },
       {
         kind: 'seealso',
-        items: ['Edit a Family Hub page', 'Add or edit a teacher', 'Photos and images'],
+        items: [
+          'Change the co-op roles or the org chart',
+          'Edit a Family Hub page',
+          'Add or edit a teacher',
+        ],
       },
     ],
   },

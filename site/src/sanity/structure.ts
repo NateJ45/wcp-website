@@ -456,17 +456,22 @@ export const hubStructure: StructureResolver = (S, context) =>
 
       S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
       S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
+      // This list IS the org chart: each role says where it sits and who it
+      // reports to, and the chart on the Co-op Jobs page draws itself from
+      // that. Drag to reorder. It used to be a job-description list only, with
+      // the chart's shape locked in code.
       orderableDocumentListDeskItem({
         type: 'coopRole',
         S,
         context,
-        title: 'Co-op Roles',
+        title: 'Co-op roles & org chart',
         icon: emoji('🤝'),
       }),
-      // Sits directly under Co-op Roles on purpose: that list is what each
-      // job IS, the guidance is the rules families live by, and roleHolder is
-      // who HOLDS each job this year. The pairing is the whole mental model,
-      // and roleHolder is the list that changes every spring.
+      // Sits directly under Co-op roles on purpose: that list is what each
+      // job IS and where it sits, the guidance is the rules families live by,
+      // and roleHolder is who HOLDS each job this year. The pairing is the
+      // whole mental model, and roleHolder is the list that changes every
+      // spring while the roles themselves rarely do.
       singleton(S, 'coopGuidance', 'How the co-op works', emoji('🧭')),
       S.documentTypeListItem('roleHolder')
         .title('Who’s who this year (update each fall)')

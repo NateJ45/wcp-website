@@ -1,16 +1,18 @@
 ---
 /* ============================================================================
-   OrgChart — how WCP's co-op runs, as a real chart (the old site's flow)
+   OrgChart — how WCP's co-op runs, DERIVED from the documents
    ============================================================================
-   Rebuilt from the old Squarespace chart: tiered person cards instead of a
-   file-tree. Executive Board (president over the three officers) → Paid
-   Staff → the two cabinet branches ("Reports to Secretary" / "Reports to
-   VP", each chair with the committees it leads) → every family, with a live
-   Directory count. WHO holds each role is Board-editable in the Studio
-   (Family Hub → "Who's who this year"), merged over the committed fallback in
-   src/data/hub/org-holders.ts by src/lib/hub-org.ts — so the post-election
-   update needs no deploy. This file and org-holders own only the chart's SHAPE.
-   Role descriptions stay in the section above the chart.
+   Executive Board (the top seat over the other officers) → Paid Staff → one
+   column per officer with somebody reporting to her (each chair with the
+   committees it leads, plus the class reps) → every family, with a live
+   Directory count.
+
+   NOTHING about this chart is hardcoded any more. The seats are `coopRole`
+   documents (Studio → Family Hub → Co-op roles) and the people are `roleHolder`
+   documents ("Who's who this year"); src/lib/hub-org.ts turns the two into the
+   shape below. A volunteer renames a role, adds one, retires one, or re-points a
+   branch, and the drawing follows. src/data/hub/org-holders.ts is the committed
+   fallback for an unreachable Sanity, nothing more.
 
    Tier colors follow the old chart's key — president orange, board navy,
    staff sky, chairs amber, class reps green — as avatar RINGS (decorative)
@@ -22,16 +24,23 @@ import OrgPersonCard from '@/components/hub/OrgPersonCard.astro';
 // at request time on the Cloudflare adapter (see HubRail's note).
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { sanityFetch } from '@/lib/sanity';
-import { DIRECTORY_FAMILY_COUNT_QUERY, ROLE_HOLDERS_QUERY } from '@/lib/queries';
-import { toHolderMap, applyHolder, applyHolders, type RoleHolderRow } from '@/lib/hub-org';
+import { DIRECTORY_FAMILY_COUNT_QUERY, ROLE_HOLDERS_QUERY, ORG_SEATS_QUERY } from '@/lib/queries';
 import {
-  president as presidentFallback,
-  officers as officersFallback,
-  paidStaff as paidStaffFallback,
-  secretaryBranch as secretaryBranchFallback,
-  vpBranch as vpBranchFallback,
-  classReps as classRepsFallback,
-} from '@/data/hub/org-holders';
+  toHolderMap,
+  toSeats,
+  buildOrgChart,
+  type OrgSeatRow,
+  type OrgClass,
+  type RoleHolderRow,
+} from '@/lib/hub-org';
+import { orgSeats as seatsFallback, fallbackHolders } from '@/data/hub/org-holders';
+import { getHubClasses } from '@/lib/hub-classes';
+
+interface Props {
+  /** Heading text for the sections, when the Board renamed them. */
+  labels?: Partial<Record<string, string>>;
+}
+const { labels = {} } = Astro.props;
 
 const TIER = {
   president: { ring: 'border-[#ff8c00]', role: 'text-orange-ink' },
@@ -41,150 +50,185 @@ const TIER = {
   rep: { ring: 'border-[#22c55e]', role: 'text-green-ink' },
 } as const;
 
-// The two reads are independent — start both, await after (2026-07 hub-speed
+// Three independent reads — start them together, await after (2026-07 hub-speed
 // pass). The holders read carries PII once a rep is linked to the Directory, so
-// it passes NO cache; the count is a scalar and could, but there is nothing to
-// gain caching one of a pair.
+// it passes NO cache; the seats and the count are not PII but there is nothing
+// to gain caching one of a set.
 const countPromise = sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY).catch(() => null);
 const holdersPromise = sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY).catch(() => null);
+const seatsPromise = sanityFetch<OrgSeatRow[]>(ORG_SEATS_QUERY).catch(() => null);
+// The live classes, so the ONE "Class Rep" seat draws one card per class. This
+// is the hub's single cached class read (L1 only — no new KV writes).
+const classesPromise = getHubClasses().catch(() => []);
 
 const familyCount = await countPromise;
 
-// WHO holds each seat comes from the Studio ("Who's who this year"); the tiers,
-// branches, icons and committee sizes below stay code-owned. An unreachable
-// Sanity leaves `holders` empty, and every seat falls back to the committed
-// names — the chart is never blank.
-const holders = toHolderMap(await holdersPromise);
-const president = applyHolder(presidentFallback, holders);
-const officers = applyHolders(officersFallback, holders);
-const paidStaff = applyHolders(paidStaffFallback, holders);
-const classReps = applyHolders(classRepsFallback, holders);
-const secretaryBranch = secretaryBranchFallback.map((s) => ({
-  ...s,
-  chair: applyHolder(s.chair, holders),
+// Sanity owns both halves. An empty or unreachable seats read falls back to the
+// committed snapshot, and an unreachable HOLDERS read falls back to the names in
+// that same snapshot — without that, a CMS outage would draw every seat as an
+// open role, which reads as "the whole board resigned".
+const seatRows = await seatsPromise;
+const seats = seatRows?.length ? toSeats(seatRows) : seatsFallback;
+const holderRows = await holdersPromise;
+const holders = holderRows ? toHolderMap(holderRows) : fallbackHolders;
+
+const classes: OrgClass[] = (await classesPromise).map((c) => ({
+  slug: c.slug,
+  name: c.name,
+  icon: c.icon,
 }));
-const vpBranch = vpBranchFallback.map((s) => ({ ...s, chair: applyHolder(s.chair, holders) }));
+
+const chart = buildOrgChart(seats, holders, classes);
+const label = (key: string, fallback: string) => labels[key]?.trim() || fallback;
+// The columns stack on phones and share the width evenly above lg. Two is the
+// shape the school has today; three or one both have to look deliberate.
+const columns = chart.branches.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2';
 ---
 
 <div class="org-chart text-center">
   {/* Color key — mirrors the old chart's legend (neutral labels, colored dots). */}
   <ul class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-semibold text-ink-muted">
     <li class="inline-flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full bg-[#ff8c00]" aria-hidden="true"></span>President
+      <span class="h-2.5 w-2.5 rounded-full bg-[#ff8c00]" aria-hidden="true"></span>{
+        chart.president?.role ?? 'Top of the chart'
+      }
     </li>
     <li class="inline-flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full bg-navy dark:bg-[#7dd3fc]" aria-hidden="true"
-      ></span>Executive Board
+      <span class="h-2.5 w-2.5 rounded-full bg-navy dark:bg-[#7dd3fc]" aria-hidden="true"></span>{
+        label('board', 'Executive Board')
+      }
     </li>
     <li class="inline-flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full bg-[#40aaed]" aria-hidden="true"></span>Paid Staff
+      <span class="h-2.5 w-2.5 rounded-full bg-[#40aaed]" aria-hidden="true"></span>{
+        label('staff', 'Paid Staff')
+      }
     </li>
     <li class="inline-flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full bg-[#ffa334]" aria-hidden="true"></span>Cabinet Chair
+      <span class="h-2.5 w-2.5 rounded-full bg-[#ffa334]" aria-hidden="true"></span>{
+        label('chairs', 'Cabinet Chair')
+      }
     </li>
     <li class="inline-flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]" aria-hidden="true"></span>Class Rep
+      <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]" aria-hidden="true"></span>{
+        label('reps', 'Class Rep')
+      }
     </li>
   </ul>
 
   {/* ── Executive Board ── */}
-  <div class="mt-6 rounded-[var(--radius)] border border-navy/25 p-4 sm:p-6 dark:border-white/20">
-    <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Executive Board</p>
-    <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-      Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and
-      oversee school operations.
-    </p>
-    <div class="mt-4 flex justify-center">
-      <OrgPersonCard person={president} large {...TIER.president} />
-    </div>
-    <div class="org-vline" aria-hidden="true"></div>
-    <div class="flex flex-wrap justify-center gap-3">
-      {officers.map((p) => <OrgPersonCard person={p} {...TIER.board} />)}
-    </div>
-  </div>
+  {
+    (chart.president || chart.officers.length > 0) && (
+      <div class="mt-6 rounded-[var(--radius)] border border-navy/25 p-4 sm:p-6 dark:border-white/20">
+        <p class="text-xs font-extrabold tracking-widest text-heading uppercase">
+          {label('board', 'Executive Board')}
+        </p>
+        <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+          Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances,
+          and oversee school operations.
+        </p>
+        {chart.president && (
+          <div class="mt-4 flex justify-center">
+            <OrgPersonCard person={chart.president} large {...TIER.president} />
+          </div>
+        )}
+        {chart.officers.length > 0 && (
+          <>
+            {chart.president && <div class="org-vline" aria-hidden="true" />}
+            <div class="flex flex-wrap justify-center gap-3">
+              {chart.officers.map((p) => (
+                <OrgPersonCard person={p} {...TIER.board} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
 
   {/* ── Paid Staff ── */}
-  <div class="org-vline" aria-hidden="true"></div>
-  <p class="text-xs font-extrabold tracking-widest text-sky-ink uppercase">Paid Staff</p>
-  <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-    The teachers and administrator are the school's only paid employees.
-  </p>
-  <div class="mt-4 flex flex-wrap justify-center gap-3">
-    {paidStaff.map((p) => <OrgPersonCard person={p} {...TIER.staff} />)}
-  </div>
-
-  {/* ── Cabinet branches ── */}
-  <div class="org-vline" aria-hidden="true"></div>
-  <p class="text-xs font-extrabold tracking-widest text-amber-ink uppercase">Cabinet</p>
-  <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-    Chair-level roles split between two Board officers; each chair leads a small team of co-op
-    members.
-  </p>
-  <div class="mt-4 grid gap-4 lg:grid-cols-2">
-    {/* Left: the Secretary's cabinet */}
-    <div class="rounded-[var(--radius)] border border-border p-4">
-      <p class="text-xs font-extrabold tracking-widest text-heading uppercase">
-        Reports to Secretary
-      </p>
-      <div class="mt-4 rounded-xl bg-grey/60 p-3">
-        <div class="grid grid-cols-1 justify-items-center gap-3 sm:grid-cols-2">
-          {classReps.map((p) => <OrgPersonCard person={p} {...TIER.rep} />)}
-        </div>
-        <div class="org-vline" aria-hidden="true"></div>
-        <p
-          class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface"
-        >
-          Teacher's Aides · 2-4 members
+  {
+    chart.staff.length > 0 && (
+      <>
+        <div class="org-vline" aria-hidden="true" />
+        <p class="text-xs font-extrabold tracking-widest text-sky-ink uppercase">
+          {label('staff', 'Paid Staff')}
         </p>
-      </div>
-      {
-        secretaryBranch.map((s) => (
-          <div class="mt-4 rounded-xl bg-grey/60 p-3">
-            <div class="flex justify-center">
-              <OrgPersonCard person={s.chair} {...TIER.chair} />
-            </div>
-            {s.teams && s.teams.length > 0 && (
-              <>
-                <div class="org-vline" aria-hidden="true" />
-                <div class="flex flex-wrap justify-center gap-2">
-                  {s.teams.map((t) => (
+        <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+          The teachers and administrator are the school's only paid employees.
+        </p>
+        <div class="mt-4 flex flex-wrap justify-center gap-3">
+          {chart.staff.map((p) => (
+            <OrgPersonCard person={p} {...TIER.staff} />
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  {/* ── The columns ── one per officer who has somebody reporting to her. */}
+  {
+    chart.branches.length > 0 && (
+      <>
+        <div class="org-vline" aria-hidden="true" />
+        <p class="text-xs font-extrabold tracking-widest text-amber-ink uppercase">Cabinet</p>
+        <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
+          Chair-level roles split between the Board officers; each chair leads a small team of co-op
+          members.
+        </p>
+        <div class:list={['mt-4 grid gap-4', columns]}>
+          {chart.branches.map((branch) => (
+            <div class="rounded-[var(--radius)] border border-border p-4">
+              <p class="text-xs font-extrabold tracking-widest text-heading uppercase">
+                {branch.title}
+              </p>
+
+              {/* Class reps, in their own box at the top of the column. */}
+              {branch.reps.length > 0 && (
+                <div class="mt-4 rounded-xl bg-grey/60 p-3">
+                  <div class="grid grid-cols-1 justify-items-center gap-3 sm:grid-cols-2">
+                    {branch.reps.map((p) => (
+                      <OrgPersonCard person={p} {...TIER.rep} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Committees reporting straight to the officer, no chair between. */}
+              {branch.teams.length > 0 && (
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                  {branch.teams.map((t) => (
                     <p class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface">
-                      {t.label} · {t.size}
+                      {t.size ? `${t.label} · ${t.size}` : t.label}
                     </p>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
-        ))
-      }
-    </div>
-    {/* Right: the VP's cabinet */}
-    <div class="rounded-[var(--radius)] border border-border p-4">
-      <p class="text-xs font-extrabold tracking-widest text-heading uppercase">Reports to VP</p>
-      {
-        vpBranch.map((s) => (
-          <div class="mt-4 rounded-xl bg-grey/60 p-3">
-            <div class="flex justify-center">
-              <OrgPersonCard person={s.chair} {...TIER.chair} />
-            </div>
-            {s.teams && s.teams.length > 0 && (
-              <>
-                <div class="org-vline" aria-hidden="true" />
-                <div class="flex flex-wrap justify-center gap-2">
-                  {s.teams.map((t) => (
-                    <p class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface">
-                      {t.label} · {t.size}
-                    </p>
-                  ))}
+              )}
+
+              {branch.chairs.map((s) => (
+                <div class="mt-4 rounded-xl bg-grey/60 p-3">
+                  <div class="flex justify-center">
+                    <OrgPersonCard person={s.chair} {...TIER.chair} />
+                  </div>
+                  {s.teams.length > 0 && (
+                    <>
+                      <div class="org-vline" aria-hidden="true" />
+                      <div class="flex flex-wrap justify-center gap-2">
+                        {s.teams.map((t) => (
+                          <p class="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink dark:bg-surface">
+                            {t.size ? `${t.label} · ${t.size}` : t.label}
+                          </p>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-              </>
-            )}
-          </div>
-        ))
-      }
-    </div>
-  </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
 
   {/* ── Everyone ── */}
   <div class="org-vline" aria-hidden="true"></div>

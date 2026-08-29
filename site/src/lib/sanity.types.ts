@@ -583,6 +583,20 @@ export type HoursLog = {
   submittedAt?: string;
 };
 
+export type CoopRoleReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'coopRole';
+};
+
+export type ClassReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'class';
+};
+
 export type DirectoryEntryReference = {
   _ref: string;
   _type: 'reference';
@@ -596,7 +610,8 @@ export type RoleHolder = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  role?: string;
+  seat?: CoopRoleReference;
+  forClass?: ClassReference;
   person?: string;
   photo?: {
     asset?: SanityImageAssetReference;
@@ -609,6 +624,7 @@ export type RoleHolder = {
   email?: string;
   contactFrom?: DirectoryEntryReference;
   note?: string;
+  role?: string;
 };
 
 export type DirectoryEntry = {
@@ -661,7 +677,6 @@ export type CoopRole = {
   _updatedAt: string;
   _rev: string;
   name?: string;
-  tier?: 'board' | 'chairs' | 'reps' | 'committee';
   icon?:
     | 'arrow-right'
     | 'award'
@@ -733,10 +748,13 @@ export type CoopRole = {
     | 'tent'
     | 'trees'
     | 'trending-down';
-  team?: string;
-  reportsTo?: string;
-  stipend?: string;
   body?: string;
+  stipend?: string;
+  tier?: 'board' | 'staff' | 'chairs' | 'reps' | 'committee';
+  reportsTo?: CoopRoleReference;
+  perClass?: boolean;
+  team?: string;
+  reportsToLabel?: string;
   order?: number;
   orderRank?: string;
 };
@@ -1781,13 +1799,6 @@ export type HubNavMenu = {
   }>;
 };
 
-export type ClassReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'class';
-};
-
 export type HubPage = {
   _id: string;
   _type: 'hubPage';
@@ -1979,6 +1990,13 @@ export type CoopGuidance = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  sections?: Array<{
+    key?: 'board' | 'staff' | 'chairs' | 'reps' | 'committee';
+    label?: string;
+    blurb?: string;
+    _type: 'orgSection';
+    _key: string;
+  }>;
   principles?: Array<{
     icon?:
       | 'arrow-right'
@@ -3328,6 +3346,8 @@ export type AllSanitySchemaTypes =
   | BoardMember
   | Program
   | HoursLog
+  | CoopRoleReference
+  | ClassReference
   | DirectoryEntryReference
   | RoleHolder
   | DirectoryEntry
@@ -3364,7 +3384,6 @@ export type AllSanitySchemaTypes =
   | HubTour
   | HubPageReference
   | HubNavMenu
-  | ClassReference
   | HubPage
   | SiteMicrocopy
   | CoopGuidance
