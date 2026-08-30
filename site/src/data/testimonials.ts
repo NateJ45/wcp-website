@@ -22,6 +22,8 @@ export interface Testimonial {
   tags?: TestimonialTag[];
   /** Surface on the home page's short testimonial row. */
   featured?: boolean;
+  /** Stars this review gave (1-5). Missing means five. */
+  rating?: number;
 }
 
 export const testimonials: Testimonial[] = [

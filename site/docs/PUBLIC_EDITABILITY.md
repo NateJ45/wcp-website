@@ -1,5 +1,10 @@
 # Public-site editability audit — the derive-everything gaps
 
+_**STATUS 2026-08-31: all four waves SHIPPED** (commits edf17d6, eb97977 + the
+W3/W4 batch). Deliberate keeps are noted below; geo/areaServed stay code, the
+tour-page slug in TourPill's script stays, magic doctrine keys stay but now warn
+loudly at build when their section vanishes. Kept as the record of what was found._
+
 _2026-08-31. Companion to [HUB_EDITABILITY.md](HUB_EDITABILITY.md): a three-way sweep of
 every public route, all 44 section renderers, and every shared component + `src/data`
 fallback file. The page-builder means most CONTENT is already Board-owned; what follows
@@ -103,3 +108,20 @@ address/phone/emails(general-admin-treasurer)/hours/license/closure/rating/socia
 show-switches; class times/ages/fees/pay links; school-year events; testimonials;
 footer sign-off; thank-you + 404 microcopy; announcement copy; hero/section content
 throughout the page builder.
+
+## Shipped resolutions (2026-08-31)
+
+- W1: Septembers/heritage derive (`septembers.ts`, tested); priceRange derives
+  from class docs; shortName/licenseAuthority/emailContact mapped; emailer
+  domains → `site.url`; dead teacher config removed; billed months + deposit
+  note are Fee-schedule fields threaded through the calculator's client math.
+- W2: venueNote/summerTourNote/secularLine in Site settings (Visit block,
+  contact section, footer); age-cutoff column label in the Fee schedule;
+  colophon derives its years; contact forms derive class options.
+- W3: `tour-cta.ts` + the stable `#tour-form` anchor SectionRenderer stamps on
+  the first form section (nine call sites collapsed); class-page accents and
+  class-card links derive from the class docs (longest-prefix, publicSlug);
+  doctrine keys warn at build when missing; nav.ts comment healed.
+- W4: TestimonialWall honors a per-review `rating` field (empty = five); the
+  rest of the label sweep stays code BY DECISION (news/RSS description trio
+  left as-is — three files, one sentence, zero risk).

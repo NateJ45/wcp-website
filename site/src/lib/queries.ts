@@ -79,10 +79,10 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "enrollmentCtaSection" => { "pageSlug": page->slug },
     _type == "testimonialSection" => {
       "items": select(
-        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role, photo },
-        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role, photo },
-        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role, photo },
-        source == "manual" => manualItems[]->{ quote, author, role, photo }
+        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role, rating, photo },
+        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role, rating, photo },
+        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role, rating, photo },
+        source == "manual" => manualItems[]->{ quote, author, role, rating, photo }
       )
     },
     _type == "teacherSection" => {
@@ -105,8 +105,14 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       // so a new class appears the moment it publishes; manual keeps the
       // hand-picked list (the Pre-K page shows only its own two classes).
       "classItems": select(
-        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
-        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
       ),
       // Same preview-fidelity rule as the calculator below: fees ride the
       // page query so a draft fee change previews on the cards too.
@@ -197,8 +203,14 @@ export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key
     },
     _type == "classCardsSection" => {
       "classItems": select(
-        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
-        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
       )
     },
     _type == "teacherSection" => {
@@ -232,8 +244,14 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
     },
     _type == "classCardsSection" => {
       "classItems": select(
-        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
-        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
       )
     },
     _type == "teacherSection" => {
@@ -266,8 +284,14 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
     },
     _type == "classCardsSection" => {
       "classItems": select(
-        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
-        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
       )
     },
     _type == "teacherSection" => {
@@ -300,8 +324,14 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
     },
     _type == "classCardsSection" => {
       "classItems": select(
-        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current },
-        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
       )
     },
     _type == "teacherSection" => {

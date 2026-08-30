@@ -29,13 +29,14 @@
    (same contract as Interlude and PhotoStrip).
    ============================================================================ */
 import Section from '@/components/Section.astro';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import SectionHeader from '@/components/SectionHeader.astro';
 import Button from '@/components/ui/Button.astro';
 import { photosFor } from '@/lib/photo-registry';
 import { imageUrl, imageSrcSet } from '@/lib/image';
 import { site } from '@/data/site';
 
-const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+// TOUR_HREF now comes from src/lib/tour-cta.ts (one home, stable anchor).
 const MAPS_HREF = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
   `${site.address.street} ${site.address.city} ${site.address.state} ${site.address.zip}`,
 )}`;

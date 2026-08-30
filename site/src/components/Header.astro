@@ -22,6 +22,7 @@
    would need to check its text doesn't sit under the overlay's ~150px band.)
    ============================================================================ */
 import { Image } from 'astro:assets';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import Icon from '@/components/Icon.astro';
 import NavList from '@/components/NavList.astro';
 import Button from '@/components/ui/Button.astro';
@@ -73,7 +74,7 @@ const phoneDigits = site.phone.replace(/[^\d]/g, '');
 // untouched Menus doc renders the header exactly as it always has. The three
 // renderings keep their OWN default wording (the mobile bar's one-word "Tour"
 // is a 320px fit, so a long custom label never lands there).
-const tourHref = headerCta.href ?? '/virtual-tour#sec-pp-tour-form';
+const tourHref = headerCta.href ?? TOUR_HREF;
 const tourLabel = headerCta.label ?? 'Schedule a Tour';
 const compactTourLabel = headerCta.label ?? 'Book a Tour';
 ---

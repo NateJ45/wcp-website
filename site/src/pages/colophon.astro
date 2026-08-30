@@ -12,7 +12,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
 const colophonSite = await getSiteSettings(siteFallback);
-const decades = Math.floor((new Date().getUTCFullYear() - colophonSite.founded) / 10);
+import { countWord } from '@/lib/hub-doc-categories';
+const decades = countWord(Math.floor((new Date().getUTCFullYear() - colophonSite.founded) / 10));
 import Seam from '@/components/Seam.astro';
 ---
 

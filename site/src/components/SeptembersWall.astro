@@ -19,6 +19,7 @@
    - Motion: none beyond the standard reveal; tilts are static transforms.
    ============================================================================ */
 import { photosFor } from '@/lib/photo-registry';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import { imageUrl } from '@/lib/image';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
@@ -31,7 +32,7 @@ import { fallYear } from '@/lib/septembers';
 const site = await getSiteSettings(siteFallback);
 const FOUNDED = site.founded;
 const THIS_FALL = fallYear((site as { yearStart?: string }).yearStart, new Date());
-const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+// TOUR_HREF now comes from src/lib/tour-cta.ts (one home, stable anchor).
 
 const photos = await photosFor('septembers-wall', 5);
 // A print lands after every ~11th year so five spread across the run. Keyed by

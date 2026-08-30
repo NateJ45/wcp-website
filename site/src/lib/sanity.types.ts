@@ -1398,6 +1398,7 @@ export type Testimonial = {
     _type: 'image';
   };
   tags?: Array<string>;
+  rating?: number;
   featured?: boolean;
   order?: number;
   orderRank?: string;

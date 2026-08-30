@@ -8,6 +8,7 @@
    keeps in-section links inside preview mode; `site` feeds the contact block.
    ============================================================================ */
 import type { SectionData } from './section-helpers';
+import { TOUR_FORM_ANCHOR } from '@/lib/tour-cta';
 import { effectiveBg, wantsSeam } from './section-helpers';
 import { sectionEditAttr, sectionFieldEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
 import { sectionCoach } from '@/lib/section-coach';
@@ -22,7 +23,7 @@ import SeptembersWall from '@/components/SeptembersWall.astro';
 import ChooserRows from '@/components/ChooserRows.astro';
 import VisitBlock from '@/components/VisitBlock.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import { applyDoctrine, CARDGRID_KEEP_CARDS } from '@/lib/page-doctrine';
+import { applyDoctrine, CARDGRID_KEEP_CARDS, warnMissingDoctrineKeys } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -114,6 +115,7 @@ let sections = rawSections.map((s) => deEmDashDeep(s));
 // applyDoctrine).
 if (pageSlug) {
   sections = applyDoctrine(sections, pageSlug);
+  warnMissingDoctrineKeys(pageSlug, sections ?? []);
 }
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces
@@ -354,13 +356,25 @@ const MAP: Record<string, any> = {
     // The grammar wrapper stays `display: contents` (a zero box, CSS hooks
     // only). The edit wrapper must be a REAL block box: the overlay outlines
     // the element's rect, and a `contents` element has no rect.
+    // STABLE TOUR ANCHOR (W3, 2026-08-31): the first form section on a page
+    // carries #tour-form regardless of its Sanity _key, so every tour CTA in
+    // code (src/lib/tour-cta.ts) survives a volunteer deleting and re-adding
+    // the form. Zero-height marker, not an id on the section itself, so the
+    // key-derived id keeps working for any old links.
+    const isFirstForm =
+      section._type === 'formSection' &&
+      sections.findIndex((x) => x?._type === 'formSection') === i;
     const grammarWrapped =
       rendered && grammarAttrs ? (
         <div class="contents" {...grammarAttrs}>
+          {isFirstForm && <span id={TOUR_FORM_ANCHOR} aria-hidden="true" />}
           {rendered}
         </div>
       ) : (
-        rendered
+        <>
+          {isFirstForm && rendered && <span id={TOUR_FORM_ANCHOR} aria-hidden="true" />}
+          {rendered}
+        </>
       );
     // -------------------------------------------------------------------
     // The band handle (2026-08-28, card 28) — PREVIEW ONLY, same editDoc gate

@@ -28,6 +28,7 @@ interface ClassItem {
   age?: string;
   studentFee?: string;
   slug?: string;
+  publicSlug?: string;
 }
 interface Props {
   section: SectionData;
@@ -44,9 +45,12 @@ const classes = (section.classItems as ClassItem[] | undefined) ?? [];
 const cols =
   classes.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
 
-// AM and PM Pre-K classes share the one /classes/pre-k page.
-const pageSlugFor = (slug?: string) =>
-  slug === 'pre-k-am' || slug === 'pre-k-pm' ? 'pre-k' : slug;
+// Each card links to the class's PUBLIC page, resolved by the query with the
+// same longest-prefix rule the hub menu uses (pre-k-am/pm share classes/pre-k)
+// — so a new class links right without this file learning its name. The old
+// hand-map is the fallback for rows the query could not resolve.
+const pageSlugFor = (c: { slug?: string; publicSlug?: string }) =>
+  c.publicSlug ?? `classes/${c.slug === 'pre-k-am' || c.slug === 'pre-k-pm' ? 'pre-k' : c.slug}`;
 
 // ---------------------------------------------------------------------------
 // The real cost of a year (2026-07-19)
@@ -120,7 +124,7 @@ function feesFor(c: ClassItem): string[] {
           schedule={[c.days, c.time].filter(Boolean).join(' · ')}
           age={c.age}
           features={feesFor(c)}
-          href={c.slug ? slugHref(`classes/${pageSlugFor(c.slug)}`, linkBase) : undefined}
+          href={c.slug ? slugHref(pageSlugFor(c), linkBase) : undefined}
           ctaLabel={`See the ${c.name} class`}
           availabilitySlug={c.slug}
         />

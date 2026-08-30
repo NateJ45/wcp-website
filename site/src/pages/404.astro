@@ -14,11 +14,12 @@
      - one warm line in the co-op voice + the old-site note for stale links.
    ============================================================================ */
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { TOUR_HREF } from '@/lib/tour-cta';
 
 const QUICK_LINKS = [
   { label: 'Tuition and fees', href: '/tuition' },
   { label: 'Our classes', href: '/classes/pre-k' },
-  { label: 'Schedule a tour', href: '/virtual-tour#sec-pp-tour-form' },
+  { label: 'Schedule a tour', href: TOUR_HREF },
   { label: 'Visit or contact us', href: '/virtual-tour' },
 ];
 

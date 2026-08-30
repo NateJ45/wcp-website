@@ -11,6 +11,7 @@
    Captions are photo-agnostic evergreens (the caption-mismatch rule).
    ============================================================================ */
 import { photosFor } from '@/lib/photo-registry';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import { imageUrl, imageSrcSet } from '@/lib/image';
 
 interface Props {
@@ -29,7 +30,7 @@ const site = await getSiteSettings(siteFallback);
 const THIS_FALL = fallYear((site as { yearStart?: string }).yearStart, new Date());
 const septembers = septembersOnWall(site.founded, THIS_FALL);
 const captions = [`Since ${site.founded}`, 'Every fall', 'Still going strong'];
-const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
+// TOUR_HREF now comes from src/lib/tour-cta.ts (one home, stable anchor).
 ---
 
 {
