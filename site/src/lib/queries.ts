@@ -217,7 +217,7 @@ export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key
 // An archived hub page drops out: a built-in page falls back to the content it
 // ships with, so the hub can never go blank.
 export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archived != true][0]{
-  heading, intro, _updatedAt,
+  _id, heading, intro, hiddenWidgets, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   sections[]{
     ...,
@@ -252,7 +252,7 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
  * shadow the real page. Only genuinely free-standing pages match.
  */
 export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && !defined(hubKey) && archived != true][0]{
-  title, heading, intro, navIcon, _updatedAt,
+  _id, title, heading, intro, navIcon, _updatedAt,
   sections[]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
