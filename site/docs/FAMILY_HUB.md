@@ -768,6 +768,25 @@ the refetched HTML holds only their fallback skeletons (island swap scripts neve
 DOMParser parse). The greeting and events tiles also adapt their grid spans to the widget
 switches so the bento never shows a hole.
 
+**Widgets are SELECTABLE in the preview (2026-08-30)**: every code-owned widget wraps
+itself in a `data-sanity` target via `hubEditAttr` (src/lib/hub-preview.ts) when
+`Astro.locals.hubPreview` is true (stamped by the middleware from the verified cookie —
+families never render the attribute). Clicking a widget in Presentation opens its OWNING
+document at the right field: teacher card → its `teacherNote`, class-rep card → its
+`roleHolder` (docId threads through `RoleHolderRow` → `Holder` → `OrgPerson`), class fact
+cards + album tiles → the `class` doc (docId threads `HUB_CLASSROOMS_QUERY` →
+`toHubClass` → `HubClass`/`ClassTile` — the mapper must keep new fields or they silently
+vanish), handbook chips → `hubPage.handbookFile` / `hubSettings.familyHandbook`,
+announcement + minutes rows → their `update` docs, store → `hubStore`, greeting stats →
+Site/Hub settings, social pills → the Site settings handles.
+
+**Preview cost control (2026-08-30, after a live Error 1102)**: a hub soft refresh
+renders ONLY `#main` (`hubSoftRefresh` in BaseLayout skips both rails, the seven-feed
+top bar, tab bar, search, and the spotlight modal — the reconcile discards them anyway),
+and `/preview/live`'s listen filter excludes family-generated machine docs (sign-ups,
+photo submissions, hours logs, form submissions, subscribers, `sanity.*`) so background
+family activity never triggers preview re-renders.
+
 **Widget switches (2026-08-30)**: `hubPage.hiddenWidgets` stores the OFF list (missing =
 all on, so no migration ever). The registry of switchable tiles per hubKey, the
 `hiddenWidgetSet`/`shows` rules, and a drift gate that proves the page honors every
