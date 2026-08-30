@@ -44,6 +44,7 @@ interface ClassRow {
   helperScheduleUrl?: string;
   photoAlbumUrl?: string;
   publicSlug?: string;
+  docId?: string;
 }
 
 interface ClassroomPageRow {
@@ -74,6 +75,7 @@ function toHubClass(row: ClassRow): HubClass | null {
   if (!slug) return null;
   const base = classBySlug[slug];
   return {
+    docId: row.docId || undefined,
     slug,
     name: row.name || base?.name || slug,
     icon: row.icon || base?.icon || DEFAULT_CLASS_ICON,
