@@ -22,7 +22,7 @@ export const TEACHER_NOTE_CARD_QUERY = `*[_type == "teacherNote" && class in $ke
 
 /** The whole letter, for the first-visit modal. */
 export const TEACHER_NOTE_LETTER_QUERY = `*[_type == "teacherNote" && class in $keys]{
-  "key": class, active, version, heading, dateLabel, salutation, body, signName,
+  "key": class, active, version, heading, dateLabel, salutation, body, signName, signoff,
   signRole, email, photo
 }`;
 

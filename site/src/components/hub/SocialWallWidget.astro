@@ -47,7 +47,14 @@ interface Tile {
   videoUrl: string;
 }
 
+// The VISIBLE handle derives from the same URL the link uses, so renaming the
+// account in Site settings updates the text too (it used to be typed twice).
+const handleFromUrl = (url: string | undefined, fallback: string) => {
+  const last = (url ?? '').split('?')[0].split('/').filter(Boolean).pop() ?? '';
+  return last && !last.includes('.') ? `@${last}` : fallback;
+};
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
+const igHandle = handleFromUrl(igProfile, '@westchesterpreschool');
 const fbProfile = site.social?.facebook || 'https://www.facebook.com/westchesterpreschool';
 
 let tiles: Tile[] = [];
@@ -165,7 +172,7 @@ const { heading, blurb } = Astro.props;
                 data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'instagram')}
               >
                 <Icon name="instagram" class="h-4 w-4" aria-hidden="true" />
-                @westchesterpreschool
+                {igHandle}
               </a>
               <a
                 href={fbProfile}
@@ -226,7 +233,7 @@ const { heading, blurb } = Astro.props;
                     <span class="wcp-wall-cap">{t.caption}</span>
                   ) : (
                     <span class="wcp-wall-cap wcp-wall-cap--stamp" aria-hidden="true">
-                      @westchesterpreschool
+                      {igHandle}
                     </span>
                   )}
                 </a>

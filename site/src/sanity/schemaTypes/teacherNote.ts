@@ -87,6 +87,12 @@ export const teacherNote = defineType({
       validation: (R) => R.required().error('Add the signer’s name.'),
     }),
     defineField({
+      name: 'signoff',
+      title: 'Sign-off',
+      type: 'string',
+      description: 'The line above the signature. Empty keeps “With warmth,”.',
+    }),
+    defineField({
       name: 'signRole',
       title: 'Signer role',
       type: 'string',

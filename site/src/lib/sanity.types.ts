@@ -326,6 +326,7 @@ export type TeacherNote = {
   salutation?: string;
   body?: BlockContent;
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   phone?: string;
@@ -1555,6 +1556,7 @@ export type PresidentNote = {
   salutation?: string;
   body?: BlockContent;
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   photo?: {

@@ -31,6 +31,7 @@ interface PresidentNote {
   salutation?: string;
   body?: PortableTextBlock[];
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   photo?: { asset?: unknown; alt?: string } | null;
@@ -39,7 +40,7 @@ interface PresidentNote {
 let note: PresidentNote | null = null;
 try {
   note = await sanityFetch<PresidentNote | null>(
-    `*[_type == "presidentNote"][0]{ active, version, heading, dateLabel, salutation, body, signName, signRole, email, photo }`,
+    `*[_type == "presidentNote"][0]{ active, version, heading, dateLabel, salutation, body, signName, signoff, signRole, email, photo }`,
   );
 } catch {
   note = null;
@@ -121,7 +122,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
                 <Fragment set:html={bodyHtml} />
               </Prose>
               <div class="mt-6 border-t border-border pt-4">
-                <p class="text-sm text-ink-muted">With warmth,</p>
+                <p class="text-sm text-ink-muted">{note?.signoff?.trim() || 'With warmth,'}</p>
                 {/* Handwritten-signature moment — Great Vibes runs small for its
                     em size, so the jump to text-4xl reads as normal sign-off
                     scale. -rotate-2 gives it the slight off-axis of a real pen

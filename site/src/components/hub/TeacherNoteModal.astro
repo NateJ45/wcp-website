@@ -39,6 +39,7 @@ interface TeacherNote {
   salutation?: string;
   body?: PortableTextBlock[];
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   photo?: { asset?: unknown; alt?: string } | null;
@@ -124,7 +125,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
                 <Fragment set:html={bodyHtml} />
               </Prose>
               <div class="mt-6 border-t border-border pt-4">
-                <p class="text-sm text-ink-muted">With warmth,</p>
+                <p class="text-sm text-ink-muted">{note?.signoff?.trim() || 'With warmth,'}</p>
                 {/* Handwritten-signature moment — see PresidentNoteModal. */}
                 <p class="w-fit -rotate-2 pt-1 pl-1 font-signature text-4xl text-heading">
                   {note!.signName}

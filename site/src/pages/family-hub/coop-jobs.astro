@@ -221,7 +221,10 @@ const intro =
           the teachers and administrator is a parent volunteer.
         </p>
         <HubCard class="mt-6">
-          <OrgChart labels={chartLabels} />
+          <OrgChart
+            labels={chartLabels}
+            blurbs={Object.fromEntries(ORG_TIERS.map((t) => [t, heading(t).blurb]))}
+          />
         </HubCard>
       </div>
 
@@ -235,7 +238,7 @@ const intro =
         </span>
         <p class="text-lg font-bold text-white">Questions about co-op jobs?</p>
         <p class="mt-2 max-w-xl leading-relaxed text-white/85">
-          The Secretary is the first stop for job questions, swaps, and clarifications — she’ll
+          The Secretary is the first stop for job questions, swaps, and clarifications — they’ll
           route it to the right chair or raise it to the Board.
         </p>
         <div class="mt-6 flex flex-wrap gap-3">

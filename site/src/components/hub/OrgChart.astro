@@ -39,8 +39,13 @@ import { getHubClasses } from '@/lib/hub-classes';
 interface Props {
   /** Heading text for the sections, when the Board renamed them. */
   labels?: Partial<Record<string, string>>;
+  /** Per-tier one-liners (Board-editable via the co-op guidance doc — the
+      same source the page's own tier headings use). Empty keeps the shipped
+      sentences. */
+  blurbs?: Partial<Record<string, string>>;
 }
-const { labels = {} } = Astro.props;
+const { labels = {}, blurbs = {} } = Astro.props;
+const blurb = (key: string, fallback: string) => blurbs[key]?.trim() || fallback;
 
 const TIER = {
   president: { ring: 'border-[#ff8c00]', role: 'text-orange-ink' },
@@ -123,8 +128,10 @@ const columns = chart.branches.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
           {label('board', 'Executive Board')}
         </p>
         <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-          Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances,
-          and oversee school operations.
+          {blurb(
+            'board',
+            'Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and oversee school operations.',
+          )}
         </p>
         {chart.president && (
           <div class="mt-4 flex justify-center">
@@ -154,7 +161,7 @@ const columns = chart.branches.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
           {label('staff', 'Paid Staff')}
         </p>
         <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-          The teachers and administrator are the school's only paid employees.
+          {blurb('staff', "The teachers and administrator are the school's only paid employees.")}
         </p>
         <div class="mt-4 flex flex-wrap justify-center gap-3">
           {chart.staff.map((p) => (
@@ -170,10 +177,14 @@ const columns = chart.branches.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
     chart.branches.length > 0 && (
       <>
         <div class="org-vline" aria-hidden="true" />
-        <p class="text-xs font-extrabold tracking-widest text-amber-ink uppercase">Cabinet</p>
+        <p class="text-xs font-extrabold tracking-widest text-amber-ink uppercase">
+          {label('chairs', 'Cabinet')}
+        </p>
         <p class="mx-auto mt-1 max-w-md text-xs text-ink-muted">
-          Chair-level roles split between the Board officers; each chair leads a small team of co-op
-          members.
+          {blurb(
+            'chairs',
+            'Chair-level roles split between the Board officers; each chair leads a small team of co-op members.',
+          )}
         </p>
         <div class:list={['mt-4 grid gap-4', columns]}>
           {chart.branches.map((branch) => (
