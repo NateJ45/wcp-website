@@ -3,8 +3,8 @@
 // =============================================================================
 // A school-run Google Apps Script (source committed at
 // scripts/apps-script/calendar-feed.gs) serves the Google Calendar as a JSON
-// array of { title, start, allDay, end?, location?, description? } covering a
-// rolling 12 months. Erin/admins edit the calendar in Google; the hub picks
+// array of { title, start, allDay, end?, location?, description?, created? }
+// covering a rolling 12 months. Erin/admins edit the calendar in Google; the hub picks
 // changes up automatically — no duplicate data entry in Sanity. Fetched
 // SERVER-SIDE behind the hub gate.
 //
@@ -35,6 +35,18 @@ export interface HubEvent {
   location?: string;
   /** Long text (Sanity events + the feed since 2026-07-17, plain-text capped). */
   description?: string;
+  /**
+   * When the event was PUT ON the calendar (ISO datetime), not when it happens.
+   * The what's-new bell announces an event added in the last two weeks.
+   *
+   * OPTIONAL, and it must stay optional: the committed Apps Script emits it
+   * (`created`, from CalendarEvent#getDateCreated) only since 2026-08-29, and
+   * the deployed copy carries it from the next redeploy (docs/PENDING.md). Until
+   * then every feed event simply has no `created` and the bell announces none of
+   * them. The Sanity fallback events never carry it — they announce themselves
+   * through their own `_createdAt`, read straight from the document.
+   */
+  created?: string;
 }
 
 /** Parse feed/Sanity start strings safely (see DATE HANDLING above). */

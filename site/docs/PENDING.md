@@ -365,15 +365,31 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
   2026-07-17 list in [SANITY.md](SANITY.md) / `deploy.yml` (drop the dead
   `classNote`, add `hubPage`, `teacherNote`, `presidentNote`, `signupSheet`,
   `signupEntry`).
-- **Re-paste the deployed calendar-feed script**: the checked-in
-  `scripts/apps-script/calendar-feed.gs` now filters prospective-family tour
-  bookings ("Tour with …" titles carry visitor and child names) out of the
-  feed (2026-08-08). The site filters them too (`isTourBooking` in
-  `src/lib/hub-calendar.ts`), so the hub already hides them — redeploying the
-  script keeps the names from leaving Google at all (Deploy → Manage
-  deployments → new version — same URL). Related but separate: the tour
-  bookings still sit on the PUBLIC school calendar (embed + ICS); moving them
-  to a private calendar is the real fix at the source.
+- **Re-paste the deployed calendar-feed script** — TWO changes are waiting on
+  it now.
+  1. (2026-08-08) It filters prospective-family tour bookings ("Tour with …"
+     titles carry visitor and child names) out of the feed. The site filters
+     them too (`isTourBooking` in `src/lib/hub-calendar.ts`), so the hub
+     already hides them; redeploying keeps the names from leaving Google at
+     all.
+  2. (2026-08-29) It emits a `created` timestamp per event
+     (`CalendarEvent#getDateCreated`). The Family Hub's what's-new bell reads
+     it to show "Added to the calendar: …" for an event put on the calendar in
+     the last 14 days. **Until the redeploy the field is simply absent and the
+     bell announces no Google-calendar events** — no error, no empty row. The
+     Sanity `event` documents already announce themselves, because their
+     `_createdAt` needs nothing from Google.
+
+  How: Apps Script → open the project → paste
+  `scripts/apps-script/calendar-feed.gs` over the file → Deploy → **Manage
+  deployments** → edit → New version. That keeps the same /exec URL, so
+  nothing in Sanity changes. Check it worked by opening the /exec URL: each
+  event should now carry a `"created"` field.
+
+  Related but separate: the tour bookings still sit on the PUBLIC school
+  calendar (embed + ICS); moving them to a private calendar is the real fix at
+  the source.
+
 - **Re-paste the deployed forms-inbox script**: the checked-in
   `scripts/apps-script/forms-inbox.gs` gained `hours`/`photo` tabs + the photo
   FYI email (2026-07-17); the DEPLOYED copy coerces those kinds into the

@@ -18,7 +18,11 @@
 
    The bell's data is fetched HERE once (cached, BOARD_CONTENT_CACHE tier) and
    passed to both HubBell instances so the two never double-fetch. Any failure
-   degrades to an empty bell, never a broken bar.
+   degrades to an empty bell, never a broken bar. Seven feeds reach it: updates,
+   spotlights, documents, note version bumps, new Board pages, events just added
+   to either calendar, and the fundraising milestone. Every Sanity feed rides the
+   ONE query below; the calendar and the fundraising sheet reuse the cached
+   getters this bar already calls. The merge rules are src/lib/hub-bell.ts.
 
    Menus are native <details> (keyboard + no-JS friendly); hub-menus.ts adds
    outside-click/Esc closing, hub-fresh.ts adds the unseen-count badge.
@@ -28,11 +32,26 @@ import ThemeToggle from '@/components/ThemeToggle.astro';
 import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { liveSpotlights, type Spotlight } from '@/lib/hub-spotlight';
-import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
-import { calendarFeedUrlFallback } from '@/data/hub/live-links';
+import {
+  getUpcomingEvents,
+  eventEndsAt,
+  fmtEventMonth,
+  fmtEventDay,
+  type HubEvent,
+} from '@/lib/hub-calendar';
+import {
+  isNewlyAdded,
+  fundraisingMilestone,
+  fundraisingMilestoneTitle,
+  mergeBellFeeds,
+  BELL_UPDATES_CAP,
+  type BellFeedItem,
+} from '@/lib/hub-bell';
+import { getFundraisers } from '@/lib/gsheets';
+import { calendarFeedUrlFallback, budgetSheetIdFallback } from '@/data/hub/live-links';
 import { payUrl } from '@/data/classes';
 import { getHubClassrooms } from '@/lib/hub-classes';
-import { classTiles } from '@/lib/hub-classrooms';
+import { classTiles, matchClassroom } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
 
@@ -62,6 +81,50 @@ interface Props {
 }
 const { title } = Astro.props;
 
+// The two Board-editable settings this bar needs: the calendar feed and the
+// treasurer's budget sheet. ONE read instead of two.
+interface HubBarSettings {
+  calendarFeedUrl?: string | null;
+  budgetSheetId?: string | null;
+}
+let settings: HubBarSettings | null = null;
+try {
+  settings = await sanityFetch<HubBarSettings | null>(
+    `*[_type == "hubSettings"][0]{ calendarFeedUrl, budgetSheetId }`,
+  );
+} catch {
+  settings = null;
+}
+
+// The classrooms, from ONE cached read the rail has already paid for. The quick
+// links below build their per-class URLs from it, and the bell turns a teacher
+// note's class key into the classroom page the letter actually opens on.
+const classrooms = await getHubClassrooms();
+
+// Upcoming events, for the "Next: ..." quick link AND the bell's calendar feed.
+// Cached (shared with the home widget), so this is a cache hit on every page
+// after the first; degrades to no events on any failure.
+let events: HubEvent[] = [];
+try {
+  events = await getUpcomingEvents(settings?.calendarFeedUrl || calendarFeedUrlFallback);
+} catch {
+  events = [];
+}
+const nextEvent: HubEvent | null = events[0] ?? null;
+
+// The year's fundraising totals, from the SAME cached gviz read the Fundraising
+// page and the home greeting use. No new external origin, no new KV key.
+let fundraisingRaised = 0;
+let fundraisingGoal = 0;
+try {
+  const fundraisers = await getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback);
+  fundraisingRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
+  fundraisingGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
+} catch {
+  fundraisingRaised = 0;
+  fundraisingGoal = 0;
+}
+
 // What's-new feed: recent updates (with the Board's highlight flag) + the
 // latest documents. Board highlights are fetched separately so an important
 // notice stays in the bell even after newer posts push it out of the recents.
@@ -76,14 +139,44 @@ interface DocRow {
   title?: string;
   publishedAt?: string;
 }
+/** A teacher note or the President's note whose version stamp changed. */
+interface NoteRow {
+  _type?: string;
+  /** teacherNote only: the class PAGE key the note is filed under. */
+  classKey?: string | null;
+  signName?: string;
+  version?: string;
+  publishedAt?: string;
+}
+/** A hub page the Board made themselves (slug, no hubKey). */
+interface PageRow {
+  title?: string;
+  slug?: string;
+  publishedAt?: string;
+}
+/** A Sanity `event` document, for the "just added" window. */
+interface EventRow {
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  allDay?: boolean;
+  createdAt?: string;
+}
 let bellItems: BellItem[] = [];
 let latestUpdate: { title: string; href: string } | null = null;
 try {
+  // ONE read for every Sanity-backed bell feed. The QUERY holds no date window
+  // and no threshold: the cache keeps the raw readings, and the rules below run
+  // per request, so a rule change is live on deploy (CLAUDE.md: cache the
+  // reading, never the copy you derived from it).
   const feed = await sanityFetch<{
     updates: UpdateRow[];
     highlights: UpdateRow[];
     documents: DocRow[];
     spotlights: (Spotlight & { publishedAt?: string })[];
+    notes: NoteRow[];
+    newPages: PageRow[];
+    newEvents: EventRow[];
   }>(
     `{
       "updates": *[_type == "update" && defined(publishedAt) && publishedAt < now()] | order(publishedAt desc)[0...6]{ title, "slug": slug.current, publishedAt, highlight, category },
@@ -91,11 +184,21 @@ try {
       "documents": *[_type == "hubDocument"] | order(_createdAt desc)[0...3]{ title, "publishedAt": _createdAt },
       "spotlights": *[_type == "hubSpotlight" && active == true] | order(orderRank){
         _id, heading, active, version, showFrom, showUntil, "publishedAt": coalesce(showFrom, _updatedAt)
+      },
+      "notes": *[_type in ["teacherNote", "presidentNote"] && defined(version) && version != ""] | order(_updatedAt desc)[0...4]{
+        _type, "classKey": class, signName, version, "publishedAt": _updatedAt
+      },
+      "newPages": *[_type == "hubPage" && defined(slug) && slug != "" && !defined(hubKey) && archived != true && (!defined(classes) || count(classes) == 0)] | order(_createdAt desc)[0...4]{
+        title, slug, "publishedAt": _createdAt
+      },
+      "newEvents": *[_type == "event"] | order(_createdAt desc)[0...6]{
+        title, startDate, endDate, allDay, "createdAt": _createdAt
       }
     }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
   );
+  const now = Date.now();
   const toItem = (u: UpdateRow): BellItem => ({
     title: u.title ?? 'Update',
     href: u.slug ? `/family-hub/updates/${u.slug}` : '/family-hub/updates',
@@ -103,39 +206,124 @@ try {
     highlight: u.highlight === true,
     meta: u.category === 'minutes' ? 'Meeting minutes' : 'Announcement',
   });
-  const seen = new Set<string>();
-  const merged: BellItem[] = [];
-  for (const u of [...(feed.highlights ?? []), ...(feed.updates ?? [])]) {
-    const item = toItem(u);
-    if (seen.has(item.href + item.title)) continue;
-    seen.add(item.href + item.title);
-    merged.push(item);
-  }
+  const updateRows = [...(feed.highlights ?? []), ...(feed.updates ?? [])].map(toItem);
+
   // Live spotlights join the bell (2026-08-29, Nathan): the pop-up greets a
   // family once, but the bell keeps a way BACK to it while it runs. The href
   // is a hash the spotlight script answers by opening the modal at that page,
   // seen or not. The raw list is cached; the time window filters per request.
-  for (const sp of liveSpotlights(feed.spotlights, Date.now())) {
-    merged.push({
-      title: sp.heading ?? 'Notice',
-      href: `#spotlight-${sp._id}`,
-      publishedAt: (sp as { publishedAt?: string }).publishedAt ?? '',
-      highlight: true,
-      meta: 'Spotlight',
-    });
-  }
-  for (const d of feed.documents ?? []) {
-    merged.push({
-      title: d.title ?? 'Document',
-      href: '/family-hub/documents',
-      publishedAt: d.publishedAt ?? '',
-      meta: 'Document',
-    });
-  }
-  // Highlights pin inside HubBell; the rest reads newest-first.
-  bellItems = merged
-    .sort((a, b) => Number(b.highlight ?? false) - Number(a.highlight ?? false))
-    .slice(0, 9);
+  const spotlightRows: BellFeedItem[] = liveSpotlights(feed.spotlights, now).map((sp) => ({
+    title: sp.heading ?? 'Notice',
+    href: `#spotlight-${sp._id}`,
+    publishedAt: (sp as { publishedAt?: string }).publishedAt ?? '',
+    highlight: true,
+    meta: 'Spotlight',
+  }));
+
+  const documentRows: BellFeedItem[] = (feed.documents ?? []).map((d) => ({
+    title: d.title ?? 'Document',
+    href: '/family-hub/documents',
+    publishedAt: d.publishedAt ?? '',
+    meta: 'Document',
+  }));
+
+  // A note the Board just re-stamped is news: a new version stamp is exactly
+  // what makes the letter pop up again for every family. A teacher note is
+  // filed under a class key, which matchClassroom turns into the CLASSROOM
+  // page the letter opens on — two classes that share one page then share one
+  // bell row instead of listing the same letter twice. The President's note
+  // lives on the hub home.
+  const noteRows: BellFeedItem[] = (feed.notes ?? []).map((n) => {
+    const president = n._type === 'presidentNote';
+    const who = n.signName?.trim() || (president ? 'the Board President' : 'your teacher');
+    const key = n.classKey?.trim();
+    const match = president ? null : matchClassroom(classrooms, key);
+    const href =
+      match?.kind === 'render'
+        ? match.classroom.route
+        : match?.kind === 'redirect'
+          ? match.to
+          : !president && key
+            ? `/family-hub/${key}`
+            : '/family-hub';
+    return {
+      title: `A note from ${who}`,
+      href,
+      publishedAt: n.publishedAt ?? '',
+      meta: 'A note',
+    };
+  });
+
+  // A page the Board built themselves. Pages that CARRY classes are classroom
+  // pages, and a classroom announces itself through its class, so they never
+  // arrive here twice.
+  const pageRows: BellFeedItem[] = (feed.newPages ?? [])
+    .filter((p) => p.slug)
+    .map((p) => ({
+      title: `New page: ${p.title ?? 'Family Hub page'}`,
+      href: `/family-hub/${p.slug}`,
+      publishedAt: p.publishedAt ?? '',
+      meta: 'New page',
+    }));
+
+  // Events just added, from BOTH calendars, in one feed so the pair share one
+  // cap. The Google feed comes first because it is the school's real calendar.
+  // A feed event without `created` announces nothing: the deployed Apps Script
+  // only carries that field after its next redeploy (docs/PENDING.md).
+  const calendarRows: BellFeedItem[] = [
+    ...events
+      .filter((e) => isNewlyAdded(e.created, now))
+      .map((e) => ({ title: e.title, createdAt: e.created! })),
+    ...(feed.newEvents ?? [])
+      .filter(
+        (e) =>
+          e.title &&
+          e.startDate &&
+          isNewlyAdded(e.createdAt, now) &&
+          eventEndsAt({
+            title: e.title,
+            start: e.startDate,
+            end: e.endDate,
+            allDay: e.allDay,
+          }) >= now,
+      )
+      .map((e) => ({ title: e.title!, createdAt: e.createdAt! })),
+  ].map((e) => ({
+    title: `Added to the calendar: ${e.title}`,
+    href: '/family-hub/calendar',
+    publishedAt: e.createdAt,
+    meta: 'Calendar',
+  }));
+
+  // The fundraising milestone. NO publishedAt on purpose: nothing anywhere
+  // records WHEN the campaign crossed 75%, so the row lists but never counts
+  // toward the unseen badge. An invented date would badge the bell for every
+  // family every time the cache refreshed.
+  const milestone = fundraisingMilestone(fundraisingRaised, fundraisingGoal);
+  const fundraisingRows: BellFeedItem[] = milestone
+    ? [
+        {
+          title: fundraisingMilestoneTitle(milestone),
+          href: '/family-hub/fundraising',
+          meta: 'Fundraising',
+        },
+      ]
+    : [];
+
+  // Seven feeds, nine rows: mergeBellFeeds caps each feed BEFORE the merge, so
+  // a busy feed cannot starve a quiet one. Spotlights and Board highlights pin
+  // to the top; everything else reads newest first. The cap and its reasoning
+  // live in src/lib/hub-bell.ts.
+  bellItems = mergeBellFeeds([
+    { items: updateRows, cap: BELL_UPDATES_CAP },
+    { items: spotlightRows, cap: spotlightRows.length },
+    { items: noteRows },
+    { items: calendarRows },
+    { items: pageRows },
+    { items: documentRows },
+    { items: fundraisingRows },
+  ]).map((item) => ({ ...item, publishedAt: item.publishedAt ?? '' }));
+
   // The single most recent announcement / meeting minute, for the quick link.
   const u0 = feed.updates?.[0];
   if (u0?.title) {
@@ -148,19 +336,6 @@ try {
   bellItems = []; // bell still renders; the panel shows its caught-up state
 }
 
-// Next upcoming event, for the quick link. Cached feed (shared with the home
-// widget), so this is a cache hit on every page after the first; degrades to no
-// event (the chip just points at the calendar) on any failure.
-let nextEvent: HubEvent | null = null;
-try {
-  const feedUrl =
-    (await sanityFetch<string | null>(`*[_type == "hubSettings"][0].calendarFeedUrl`)) ||
-    calendarFeedUrlFallback;
-  nextEvent = (await getUpcomingEvents(feedUrl))[0] ?? null;
-} catch {
-  nextEvent = null;
-}
-
 // Per-class helper-schedule + pay-tuition URLs, so the "Helper schedule" and
 // "Pay tuition" quick links personalize to the device's class(es)
 // (hub-quicklinks.ts, reading wcp-my-classes): one class → a direct link, two
@@ -170,7 +345,6 @@ const payMap: Record<string, string> = {};
 // The classes come from the `class` documents, in ONE read the rail has already
 // paid for (board-content cache, in-isolate) — so a class the Board adds gets
 // its quick links by itself, and the topbar costs no extra round-trip.
-const classrooms = await getHubClassrooms();
 for (const room of classrooms) {
   for (const c of room.classes) {
     if (c.helperScheduleUrl) helperMap[c.slug] = c.helperScheduleUrl;

@@ -12,12 +12,17 @@
  *       "end": "2026-08-10T23:30:00.000Z",     // optional, timed events only
  *       "allDay": false,
  *       "location": "...",                      // optional
- *       "description": "..." }, ... ]           // optional, plain text
+ *       "description": "...",                   // optional, plain text
+ *       "created": "2026-08-20T14:03:00.000Z" }, ... ]  // optional, see below
  *
  * covering roughly a rolling 12 months. Date-only strings MUST be the event's
  * EASTERN calendar day (the site anchors them to noon UTC before formatting).
  * `end` + `description` light up existing hub UI: the event dialog shows the
  * time range and details, and both prefill the "Add to my calendar" link.
+ * `created` is when the event was PUT ON the calendar, not when it happens:
+ * the hub's what's-new bell announces an event added in the last 14 days.
+ * The site treats it as optional, so a deployment older than 2026-08-29 just
+ * announces no events. Redeploy this script to switch that on.
  * NOTE: the calendar is public (embed + ICS), so event descriptions are
  * public content — never put private info in them.
  *
@@ -97,6 +102,16 @@ function eventToJson_(e) {
   if (loc) out.location = loc;
   var desc = cleanDescription_(e.getDescription());
   if (desc) out.description = desc;
+  // When the event was ADDED to the calendar. The hub's what's-new bell shows
+  // "Added to the calendar: ..." for the last 14 days. Guarded: a recurring
+  // event instance can refuse getDateCreated, and one bad event must not empty
+  // the whole feed. Without the field the site simply announces nothing.
+  try {
+    var made = e.getDateCreated();
+    if (made) out.created = made.toISOString();
+  } catch (err) {
+    // no created date for this event; the site handles the gap
+  }
   return out;
 }
 

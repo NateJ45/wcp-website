@@ -127,4 +127,50 @@ test.describe('Family Hub shell', () => {
     await topbar.locator('[data-hub-search-open]').click();
     await expect(page.locator('dialog[open], [role="dialog"]').first()).toBeVisible();
   });
+
+  // The bell reads SEVEN feeds (2026-08-29). This test is content-independent:
+  // it pins the panel's contract, not any one row. The per-feed rules live in
+  // src/lib/hub-bell.test.ts, where they can be tested against real data.
+  test('bell: nine rows at most, every row dated or honestly undated, no feed starves', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/family-hub/documents', { waitUntil: 'domcontentloaded' });
+    await settle(page);
+
+    const panel = page.locator('[data-hub-topbar] details[data-hub-bell] [data-bell-panel]');
+    const rows = panel.locator('li[data-published]');
+    const count = await rows.count();
+    expect(count).toBeLessThanOrEqual(9);
+
+    // Every row carries data-published, because hub-fresh.ts reads that
+    // attribute to badge the bell. An UNDATED row (the fundraising milestone,
+    // which has no crossing time anywhere) carries it empty on purpose: it
+    // lists, and it never counts toward the unseen badge. Anything else must
+    // be a date the browser can parse, or the badge silently under-counts.
+    const metas: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const row = rows.nth(i);
+      const published = await row.getAttribute('data-published');
+      expect(published, 'row is missing data-published').not.toBeNull();
+      if (published) {
+        expect(Number.isFinite(Date.parse(published)), `unparseable date "${published}"`).toBe(
+          true,
+        );
+      }
+      const meta = (await row.locator('[data-bell-meta]').getAttribute('data-bell-meta')) ?? '';
+      if (meta) metas.push(meta);
+    }
+
+    // The per-feed cap: no feed may take more than 4 rows (updates), and only
+    // announcements and meeting minutes may go past 2. Without this, three
+    // documents plus three announcements fill the panel and the note bump the
+    // Board made this morning never shows.
+    const wide = new Set(['Announcement', 'Meeting minutes', 'Spotlight']);
+    const tally = new Map<string, number>();
+    for (const meta of metas) tally.set(meta, (tally.get(meta) ?? 0) + 1);
+    for (const [meta, n] of tally) {
+      expect(n, `${meta} took ${n} rows`).toBeLessThanOrEqual(wide.has(meta) ? 4 : 2);
+    }
+  });
 });

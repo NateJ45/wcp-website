@@ -386,11 +386,36 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   usable with no JS — and `hub-menus.ts` adds outside-tap (pointerdown — iOS Safari
   doesn't synthesize document-level clicks on non-clickable targets) / Escape closing. `HubTable`'s
   sticky column headers offset by `lg:top-14` to slide under this bar.
-- **The bell** (`HubBell.astro`): server-renders the recent feed (updates + newest
-  documents, one `BOARD_CONTENT_CACHE`-tier query fetched once in `HubTopBar` and shared
-  by both bell instances). Updates with the Board's **`highlight`** checkbox pin to the
-  top with an amber "Important" pill until the Board unchecks them. `hub-fresh.ts` adds
-  the unseen-count badge and marks everything seen when a panel is opened.
+- **The bell** (`HubBell.astro`): server-renders the recent feed. **Seven feeds** reach
+  it, all assembled once in `HubTopBar` and shared by both bell instances:
+
+  | Feed              | Where it comes from                                                    | Row                                     |
+  | ----------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+  | Announcements     | `update` docs (+ the Board's `highlight` flag)                         | the post title → the post               |
+  | Spotlights        | live `hubSpotlight` docs                                               | the heading → re-opens the pop-up       |
+  | Documents         | newest `hubDocument` docs                                              | the title → Documents                   |
+  | Note bumps        | `teacherNote` / `presidentNote` with a version stamp, by `_updatedAt`  | "A note from ..." → the class page/home |
+  | New Board pages   | `hubPage` with a slug, no `hubKey`, not archived, carrying no classes  | "New page: ..." → the page              |
+  | Events just added | Google feed `created` + Sanity `event._createdAt`, both inside 14 days | "Added to the calendar: ..." → Calendar |
+  | Fundraising       | the cached gviz Fundraising tab, at 50% / 75% / 100% of the goal       | "Fundraising passed 75% ..." → the page |
+
+  Every Sanity feed rides ONE `BOARD_CONTENT_CACHE`-tier query; the calendar and the
+  fundraising sheet reuse the cached getters the bar already calls, so the bell adds no
+  external fetch and no KV key. The query holds no date window and no threshold — the
+  cache keeps the raw readings and the rules run per request (see CLAUDE.md, "cache the
+  reading, never the copy").
+  The rules are pure and unit-tested in [`src/lib/hub-bell.ts`](../src/lib/hub-bell.ts):
+  the 14-day window, the milestone thresholds, and the merge. **The merge caps each feed
+  (2 rows, updates 4) BEFORE it merges**, so a busy feed cannot starve a quiet one — three
+  documents uploaded in one evening must not hide this morning's note bump. Spotlights and
+  Board highlights pin to the top with an amber "Important" pill; the rest reads newest
+  first, and the panel holds 9 rows.
+  **The fundraising row carries NO date.** Nothing records when the campaign crossed 75%,
+  so the row lists but never counts toward the unseen badge — `hub-fresh.ts` skips a row
+  whose `data-published` will not parse, which is the honest behaviour.
+  `hub-fresh.ts` adds the unseen-count badge and marks everything seen when a panel is
+  opened.
+
 - **Persistent-shell view transitions**: the rail, both top bars, and the tab bar carry
   `view-transition-name`s (globals.css), so hub→hub navigations hold the shell still
   while only the content cross-fades — the app feel without client routing. Motion-only

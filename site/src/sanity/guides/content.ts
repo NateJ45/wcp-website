@@ -881,6 +881,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'For something every family must notice (a closure, a deadline), also turn on **Highlight in the bell menu** on that Update. It sits at the top of the hub’s bell menu with an "Important" tag until you turn it off — so do turn it off once it has run its course.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The bell watches more than Updates.',
+        text: 'Families see a row in the bell menu when any of these happen, so you never have to post an Update just to say it: a new **document**, a live **Spotlight pop-up**, a **teacher’s note or President’s note** given a new version stamp, a **new hub page** you build, an **event added to the calendar** in the last two weeks, and the **fundraising total** passing 50%, 75%, and the goal. The bell keeps room for each kind, so one busy week never hides the rest.',
+      },
       { kind: 'h', text: 'Sign-up sheets and RSVPs' },
       {
         kind: 'p',
