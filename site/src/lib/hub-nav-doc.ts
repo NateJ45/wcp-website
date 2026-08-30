@@ -185,3 +185,31 @@ export function resolveHubNav(doc?: HubNavDoc | null, classrooms: Classroom[] = 
   if (groups.length === 0) return hubNav.map((g) => withClassrooms(g, classrooms));
   return [homeGroup, ...groups];
 }
+
+// -----------------------------------------------------------------------------
+// Phone tab bar (W3.1, 2026-08-31)
+// -----------------------------------------------------------------------------
+/** The shipped middle three — Home and More are pinned in code. */
+export const TAB_BAR_DEFAULT: readonly string[] = [
+  '/family-hub/calendar',
+  '/family-hub/documents',
+  '/family-hub/updates',
+];
+
+/**
+ * The Board's picks for the phone bar's middle slots, resolved against the
+ * builtin links (label + icon come from the link, so a renamed menu label
+ * follows). Unknown or stale picks are skipped; empty/missing keeps the
+ * shipped three, and the result is capped at three so the bar's five-column
+ * grid (Home + 3 + More) always holds.
+ */
+export function resolveTabBar(stored: unknown): HubLink[] {
+  const picks =
+    Array.isArray(stored) && stored.length > 0
+      ? stored.filter((v): v is string => typeof v === 'string')
+      : [...TAB_BAR_DEFAULT];
+  return picks
+    .map((href) => BUILTIN_HUB_LINKS.find((l) => l.href === href))
+    .filter((l): l is HubLink => Boolean(l))
+    .slice(0, 3);
+}

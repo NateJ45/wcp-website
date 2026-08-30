@@ -38,6 +38,7 @@ const { classes } = Astro.props;
 interface TourDoc {
   enabled?: boolean;
   version?: string;
+  hiddenSteps?: string[];
   [key: string]: unknown;
 }
 let doc: TourDoc | null = null;
@@ -58,7 +59,7 @@ const t = (key: string, fallback: string): string => {
 
 // The six steps. `icon` is decorative. Steps 2 and 3 add fixed interactive or
 // responsive content below the Board-editable text (see the markup).
-const STEPS = [
+const ALL_STEPS = [
   {
     key: 'welcome',
     icon: 'sun',
@@ -143,6 +144,13 @@ const STEPS = [
     ),
   },
 ];
+
+// The Board can leave steps out (Studio → First-visit tour → "Steps to skip");
+// the welcome stays unless they really mean it. An unknown value is ignored.
+const hidden = new Set(
+  Array.isArray(doc?.hiddenSteps) ? doc.hiddenSteps.filter((v) => typeof v === 'string') : [],
+);
+const STEPS = ALL_STEPS.filter((st) => !hidden.has(st.key));
 ---
 
 <div

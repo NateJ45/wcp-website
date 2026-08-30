@@ -49,6 +49,8 @@ export interface HubClass {
   /** Board-editable Google links (never committed — see live-links.ts). */
   helperScheduleUrl?: string;
   photoAlbumUrl?: string;
+  /** Board-added rows on the class fact card, after the fixed four. */
+  extraFacts?: { label?: string; value?: string }[];
   /** The public program page for this class, e.g. "classes/pre-k". */
   publicSlug?: string;
 }

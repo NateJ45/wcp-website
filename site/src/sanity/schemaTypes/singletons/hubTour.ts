@@ -50,6 +50,27 @@ export const hubTour = defineType({
       description: 'Turn this off and the tour never opens. Families can still find everything.',
     }),
     defineField({
+      name: 'hiddenSteps',
+      title: 'Steps to skip',
+      type: 'array',
+      of: [{ type: 'string' }],
+      group: 'settings',
+      options: {
+        list: [
+          { title: 'Welcome', value: 'welcome' },
+          { title: 'Finding your way (menu)', value: 'navigate' },
+          { title: 'Tell us your class', value: 'classes' },
+          { title: 'Helper schedule', value: 'helper' },
+          { title: 'Updates', value: 'updates' },
+          { title: 'Money & tuition', value: 'money' },
+          { title: 'Search', value: 'search' },
+          { title: 'Where to get help', value: 'help' },
+        ],
+      },
+      description:
+        'Tick a step to leave it out of the first-visit tour. The welcome and wording of the rest stay as set below.',
+    }),
+    defineField({
       name: 'version',
       title: 'Show the tour again to everyone',
       type: 'string',

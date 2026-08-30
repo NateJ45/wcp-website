@@ -216,10 +216,17 @@ const programs = publicPages.map(([slug, c]) => ({
             </div>
             <dl class="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 text-sm">
               {[
-                { label: 'Days', value: c.days },
-                { label: 'Time', value: c.time },
+                { label: 'Days', value: c.days, accent: false },
+                { label: 'Time', value: c.time, accent: false },
                 { label: 'Monthly', value: c.monthly, accent: true },
-                { label: 'Student fee', value: c.studentFee },
+                { label: 'Student fee', value: c.studentFee, accent: false },
+                /* Board-added rows (class doc → "Extra fact rows") — a sibling
+                   discount, a lunch add-on — without a developer (W3.3). */
+                ...(c.extraFacts ?? []).map((x) => ({
+                  label: x.label,
+                  value: x.value,
+                  accent: false,
+                })),
               ]
                 .filter((f) => f.value)
                 .map((f) => (

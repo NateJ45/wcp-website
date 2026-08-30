@@ -1503,6 +1503,11 @@ export type Class = {
   studentFee?: string;
   payId?: string;
   studentFeePayId?: string;
+  extraFacts?: Array<{
+    label?: string;
+    value?: string;
+    _key: string;
+  }>;
   heroImage?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -1881,6 +1886,7 @@ export type HubTour = {
   _updatedAt: string;
   _rev: string;
   enabled?: boolean;
+  hiddenSteps?: Array<string>;
   version?: string;
   welcomeTitle?: string;
   welcomeBody?: string;
@@ -1906,6 +1912,7 @@ export type HubNavMenu = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  tabBar?: Array<string>;
   groups?: Array<{
     label?: string;
     accent?: 'sky' | 'amber' | 'green' | 'orange';

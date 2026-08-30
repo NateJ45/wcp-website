@@ -45,6 +45,7 @@ interface ClassRow {
   photoAlbumUrl?: string;
   publicSlug?: string;
   docId?: string;
+  extraFacts?: { label?: string; value?: string }[];
 }
 
 interface ClassroomPageRow {
@@ -93,6 +94,7 @@ function toHubClass(row: ClassRow): HubClass | null {
     helperScheduleUrl: row.helperScheduleUrl || helperScheduleFallback[slug] || undefined,
     photoAlbumUrl: row.photoAlbumUrl || photoAlbumFallback[slug] || undefined,
     publicSlug: row.publicSlug || undefined,
+    extraFacts: row.extraFacts?.filter((f) => f?.label && f?.value),
   };
 }
 

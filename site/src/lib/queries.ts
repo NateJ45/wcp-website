@@ -154,6 +154,7 @@ export const HUB_CLASSROOMS_QUERY = `{
     "docId": _id,
     "slug": slug.current, name, icon, color, days, time, age, monthly, annual,
     studentFee, payId, studentFeePayId, helperScheduleUrl, photoAlbumUrl,
+    extraFacts[]{ label, value },
     // The PUBLIC page for this class, so the hub can offer "See the full
     // program" without knowing the page list. Same longest-prefix rule the
     // Classes menu uses (NAVIGATION_QUERY above): the "-" sentinel lets
@@ -318,7 +319,7 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
  * fallback wording live in HubTourModal.astro.
  */
 export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
-  enabled, version,
+  enabled, version, hiddenSteps,
   welcomeTitle, welcomeBody, navigateTitle, navigateBody, classesTitle, classesBody,
   helperTitle, helperBody, updatesTitle, updatesBody, moneyTitle, moneyBody,
   searchTitle, searchBody, helpTitle, helpBody
@@ -337,6 +338,7 @@ export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
 export const HUB_SOCIAL_QUERY = `*[_type == "siteSettings"][0]{ facebook, instagram, showSocials }`;
 
 export const HUB_NAV_MENU_QUERY = `*[_type == "hubNavMenu"][0]{
+  tabBar,
   groups[]{
     label, accent, autoClasses,
     links[]{

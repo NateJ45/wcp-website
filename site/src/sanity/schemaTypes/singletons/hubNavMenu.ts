@@ -46,6 +46,18 @@ export const hubNavMenu = defineType({
   icon: () => '🧭',
   fields: [
     defineField({
+      name: 'tabBar',
+      title: 'Phone tab bar',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: BUILTIN_HUB_LINKS.map((l) => ({ title: l.label, value: l.href })),
+      },
+      validation: (R) => R.max(3).error('The phone bar fits three picks (plus Home and More).'),
+      description:
+        'The three destinations on the phone’s bottom bar, between the pinned Home tab and the More button. Empty keeps Calendar, Documents, and Updates.',
+    }),
+    defineField({
       name: 'groups',
       title: 'Menu sections',
       type: 'array',

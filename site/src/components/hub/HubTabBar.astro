@@ -2,10 +2,11 @@
 /* ============================================================================
    HubTabBar — phone-only bottom tab bar for the Family Hub (< md)
    ============================================================================
-   THE app-navigation pattern on phones: five fixed tabs — Home, Calendar,
-   Sign-ups, Updates, and More (opens the existing off-canvas drawer for
-   everything else via [data-hub-drawer-toggle]). Hidden ≥ md, where the top
-   bar's menu (md–lg) or the rail (lg+) take over.
+   THE app-navigation pattern on phones: Home (pinned), three Board-picked
+   destinations (Family Hub menu → "Phone tab bar"; Calendar, Documents and
+   Updates until the Board picks), and More (opens the existing off-canvas
+   drawer for everything else via [data-hub-drawer-toggle]). Hidden ≥ md,
+   where the top bar's menu (md–lg) or the rail (lg+) take over.
 
    THEME-STABLE NAVY ISLAND like the rail/top bar: identical in light and
    dark, so active/inactive tones are hardcoded (white active, white/65
@@ -14,13 +15,26 @@
    pads the content column bottom so nothing hides underneath.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { HUB_NAV_MENU_QUERY } from '@/lib/queries';
+import { resolveTabBar } from '@/lib/hub-nav-doc';
 
-const TABS = [
-  { label: 'Home', href: '/family-hub', icon: 'house' },
-  { label: 'Calendar', href: '/family-hub/calendar', icon: 'calendar-days' },
-  { label: 'Documents', href: '/family-hub/documents', icon: 'folder-open' },
-  { label: 'Updates', href: '/family-hub/updates', icon: 'newspaper' },
-];
+// The Board's picks for the middle slots (Family Hub menu → "Phone tab bar").
+// Same cached query the rail pays for, so this read is free; any failure or an
+// empty field keeps the shipped three.
+let stored: unknown;
+try {
+  stored = (
+    await sanityFetch<{ tabBar?: unknown } | null>(
+      HUB_NAV_MENU_QUERY,
+      {},
+      { cache: BOARD_CONTENT_CACHE },
+    )
+  )?.tabBar;
+} catch {
+  stored = undefined;
+}
+const TABS = [{ label: 'Home', href: '/family-hub', icon: 'house' }, ...resolveTabBar(stored)];
 
 // Active tab: exact match for Home, prefix match for the rest (so an update
 // detail page keeps the Updates tab lit).
@@ -34,7 +48,7 @@ const isActive = (href: string) =>
   data-hub-tabbar
   class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-navy pb-[env(safe-area-inset-bottom)] md:hidden"
 >
-  <ul class="grid grid-cols-5">
+  <ul class="grid" style={`grid-template-columns: repeat(${TABS.length + 1}, minmax(0, 1fr))`}>
     {
       TABS.map((tab) => (
         <li>

@@ -259,7 +259,11 @@ const firstDay = settings?.firstDay;
             data-morph-keep
           >
             <UpcomingEventsWidget server:defer heading={text('events').title}>
-              <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('events').title ?? 'Upcoming events'}
+                lines={6}
+              />
             </UpcomingEventsWidget>
           </div>
         )
@@ -381,7 +385,11 @@ const firstDay = settings?.firstDay;
             data-morph-keep
           >
             <FundraisingWidget server:defer heading={text('fundraising').title}>
-              <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('fundraising').title ?? 'Fundraising'}
+                lines={3}
+              />
             </FundraisingWidget>
           </div>
         )
@@ -414,7 +422,11 @@ const firstDay = settings?.firstDay;
             data-morph-keep
           >
             <BudgetSnapshotWidget server:defer heading={text('budget').title}>
-              <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('budget').title ?? 'Budget snapshot'}
+                lines={3}
+              />
             </BudgetSnapshotWidget>
           </div>
         )

@@ -213,6 +213,23 @@ export const classType = defineType({
       description:
         'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). This is the ONLY place it is set — the Tuition page’s student-fee button reads it from here. Classes sharing an amount AND this link are shown as one button. Changing this changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
+    defineField({
+      name: 'extraFacts',
+      title: 'Extra fact rows (optional)',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'label', title: 'Label', type: 'string' }),
+            defineField({ name: 'value', title: 'Value', type: 'string' }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'value' } },
+        }),
+      ],
+      description:
+        'Extra rows on the class fact card after Days/Time/Monthly/Student fee — e.g. a sibling discount or a lunch add-on. Label + value, shown in order.',
+    }),
 
     // DEAD (field audit 2026-08-23): the class page's hero and learning cards
     // come from its page-builder doc, not these fields. Hidden (heroImage
