@@ -201,8 +201,12 @@ const firstDay = settings?.firstDay;
         aria-hidden="true"
       >
       </div>
-      {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
-      <div class="relative lg:col-span-8">
+      {
+        /* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`.
+          Full-width when its row partner (Upcoming events) is switched off, so
+          the bento never opens with a hole beside the hero. */
+      }
+      <div class:list={['relative', shows(hidden, 'events') ? 'lg:col-span-8' : 'lg:col-span-12']}>
         <HubGreeting
           yearStart={settings?.yearStart}
           yearEnd={settings?.yearEnd}
@@ -230,8 +234,14 @@ const firstDay = settings?.firstDay;
       {
         shows(hidden, 'events') && (
           <div
-            class="lg:col-span-4 lg:row-span-2"
+            class:list={[
+              'lg:col-span-4',
+              // Double height only while the class tiles fill the row beside
+              // it — alone, the second row would be an 8-wide hole.
+              shows(hidden, 'classTiles') && 'lg:row-span-2',
+            ]}
             style="--reveal-delay: 60ms; --note-accent: var(--color-sky)"
+            data-morph-keep
           >
             <UpcomingEventsWidget server:defer>
               <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
@@ -353,6 +363,7 @@ const firstDay = settings?.firstDay;
           <div
             class="order-3 lg:order-none lg:col-span-4"
             style="--reveal-delay: 240ms; --note-accent: var(--color-green)"
+            data-morph-keep
           >
             <FundraisingWidget server:defer>
               <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
@@ -385,6 +396,7 @@ const firstDay = settings?.firstDay;
           <div
             class="order-4 lg:order-none lg:col-span-4"
             style="--reveal-delay: 420ms; --note-accent: var(--color-green)"
+            data-morph-keep
           >
             <BudgetSnapshotWidget server:defer>
               <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
@@ -539,19 +551,22 @@ const firstDay = settings?.firstDay;
     }
     {
       shows(hidden, 'store') && (
-        <StoreCard
-          server:defer
-          url={store?.storeUrl}
-          headline={store?.storeHeadline}
-          tagline={store?.storeTagline}
-          products={store?.storeProducts}
-        >
-          <div
-            slot="fallback"
-            class="mt-4 h-64 animate-pulse rounded-[var(--radius)] bg-navy/90"
-            aria-hidden="true"
-          />
-        </StoreCard>
+        /* data-morph-keep: a server island; see preview-morph.ts */
+        <div data-morph-keep>
+          <StoreCard
+            server:defer
+            url={store?.storeUrl}
+            headline={store?.storeHeadline}
+            tagline={store?.storeTagline}
+            products={store?.storeProducts}
+          >
+            <div
+              slot="fallback"
+              class="mt-4 h-64 animate-pulse rounded-[var(--radius)] bg-navy/90"
+              aria-hidden="true"
+            />
+          </StoreCard>
+        </div>
       )
     }
 

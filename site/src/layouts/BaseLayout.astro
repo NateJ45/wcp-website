@@ -400,9 +400,21 @@ const currentPath = Astro.url.pathname;
                 nothing when no spotlight is switched on and in its dates. */}
             <HubSpotlightModal />
             {/* Studio Presentation only (see the prop's note): click-to-edit +
-                live refresh over the REAL hub page. */}
+                live refresh over the REAL hub page. The style forces every
+                scroll-reveal to its end state — the soft refresh morphs #main
+                and the fresh nodes never meet the IntersectionObserver, so
+                without this the whole dashboard fades to the pre-reveal
+                opacity:0 after the first edit ("the widgets disappear",
+                2026-08-30). Same trick PreviewLayout documents for the public
+                preview. */}
             {hubPreviewDocId && (
-              <VisualEditingOverlay client:only="react" pageId={hubPreviewDocId} />
+              <>
+                <style
+                  is:inline
+                  set:html={`.js [data-reveal]{opacity:1 !important;transform:none !important;filter:none !important;animation:none !important}`}
+                />
+                <VisualEditingOverlay client:only="react" pageId={hubPreviewDocId} />
+              </>
             )}
           </div>
         </div>

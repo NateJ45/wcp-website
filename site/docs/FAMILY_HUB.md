@@ -757,6 +757,14 @@ still pins its 401 without the cookie). The pieces:
   get the move/duplicate/delete toolbar; built-in widgets render for real but carry no
   edit handles.
 
+**Preview-only rendering details (2026-08-30)**: BaseLayout forces every `[data-reveal]`
+to its end state while previewing (morphed-in nodes never meet the IntersectionObserver, so
+without this the dashboard faded out after the first edit), and the soft-refresh morph
+skips `data-morph-keep` subtrees — the four `server:defer` islands on Hub home — because
+the refetched HTML holds only their fallback skeletons (island swap scripts never run in a
+DOMParser parse). The greeting and events tiles also adapt their grid spans to the widget
+switches so the bento never shows a hole.
+
 **Widget switches (2026-08-30)**: `hubPage.hiddenWidgets` stores the OFF list (missing =
 all on, so no migration ever). The registry of switchable tiles per hubKey, the
 `hiddenWidgetSet`/`shows` rules, and a drift gate that proves the page honors every

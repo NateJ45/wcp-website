@@ -5,6 +5,7 @@ import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
 import { widgetOptionsFor } from '../../../lib/hub-widgets';
 import { HubWidgetToggles } from '../../components/HubWidgetToggles';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 // =============================================================================
 // hubPage — a Family Hub page, built from sections (GATED, editable)
@@ -175,6 +176,7 @@ export const hubPage = defineType({
       description:
         'The little picture at the top of the page, and beside its menu link if you add one (Family Hub menu).',
       options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
+      components: { input: IconPickerInput },
       initialValue: 'file-text',
     }),
 
@@ -215,7 +217,11 @@ export const hubPage = defineType({
       group: 'content',
       options: { accept: 'application/pdf' },
       description:
-        'The teacher’s own handbook, as a PDF. When set, a “Download the handbook (PDF)” button appears at the top of this class page. Class pages only.',
+        'The teacher’s own handbook, as a PDF. When set, a “Download the handbook (PDF)” button appears at the top of this class page.',
+      // Class pages only, and now the field agrees: it hides unless the doc
+      // names classes ("how come every page has this field", 2026-08-30).
+      hidden: ({ document }) =>
+        !((document as { classes?: unknown[] } | undefined)?.classes?.length ?? 0),
     }),
     defineField({
       name: 'sections',

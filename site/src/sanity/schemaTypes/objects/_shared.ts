@@ -1,4 +1,5 @@
 import { defineField } from 'sanity';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 // =============================================================================
 // Shared schema building blocks for the page builder
@@ -184,6 +185,8 @@ export function iconField(
     options: {
       list: ICON_OPTIONS,
     },
+    // Show the icons themselves, not just their names (2026-08-30).
+    components: { input: IconPickerInput },
   });
 }
 

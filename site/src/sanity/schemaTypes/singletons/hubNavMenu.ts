@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { ICON_NAMES } from '../objects/_shared';
+import { IconPickerInput } from '../../components/IconPickerInput';
 import { BUILTIN_HUB_LINKS } from '../../../lib/hub-nav-doc';
 
 // =============================================================================
@@ -210,6 +211,7 @@ export const hubNavMenu = defineType({
                       title: 'Icon',
                       type: 'string',
                       options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
+                      components: { input: IconPickerInput },
                       initialValue: 'external-link',
                     }),
                   ],
