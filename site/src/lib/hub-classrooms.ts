@@ -31,6 +31,8 @@ import { classColor, classLabel, toClassColor, type ClassColor } from '@/lib/cla
 
 /** One `class` document, as the hub reads it. */
 export interface HubClass {
+  /** The class document's Sanity _id — the preview's click-to-edit target. */
+  docId?: string;
   slug: string;
   name: string;
   /** Lucide icon for the class tile and the classroom header. */
@@ -262,6 +264,8 @@ export function teacherNoteKeys(room: Classroom): string[] {
  * my-classes picker, and the tour chips: every class, plus the page it links to.
  */
 export interface ClassTile {
+  /** The class doc's _id — the preview's click-to-edit target. */
+  docId?: string;
   slug: string;
   label: string;
   icon: string;
@@ -299,6 +303,7 @@ export function classTiles(classrooms: Classroom[]): ClassTile[] {
   for (const room of classrooms) {
     for (const cls of room.classes) {
       out.push({
+        docId: cls.docId,
         slug: cls.slug,
         label: cls.name || classLabel(cls.slug),
         icon: cls.icon,

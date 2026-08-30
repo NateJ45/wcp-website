@@ -151,6 +151,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 // tiles never pay for two handbooks' worth of content.
 export const HUB_CLASSROOMS_QUERY = `{
   "classes": *[_type == "class" && defined(slug.current)] | order(orderRank){
+    "docId": _id,
     "slug": slug.current, name, icon, color, days, time, age, monthly, annual,
     studentFee, payId, studentFeePayId, helperScheduleUrl, photoAlbumUrl,
     // The PUBLIC page for this class, so the hub can offer "See the full
@@ -546,6 +547,7 @@ export const ORG_SEATS_QUERY = `*[_type == "coopRole"] | order(orderRank){
  * CONTAINS PII once a rep is linked — never cache this result.
  */
 export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && (defined(seat) || defined(role))]{
+  _id,
   "seat": seat._ref,
   "forClass": forClass->slug.current,
   role,

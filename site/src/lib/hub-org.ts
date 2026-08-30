@@ -133,6 +133,8 @@ export function toSeats(rows?: OrgSeatRow[] | null): OrgSeat[] {
 
 /** One row of ROLE_HOLDERS_QUERY. */
 export interface RoleHolderRow {
+  /** The document's own _id — carried into Holder.docId for click-to-edit. */
+  _id?: string | null;
   /** The seat this person holds, by reference. */
   seat?: string | null;
   /** Which class, for a holder of the per-class rep seat. */
@@ -153,6 +155,8 @@ export interface RoleHolderRow {
 
 /** What the chart and the rep cards need for one seat. */
 export interface Holder {
+  /** The roleHolder document's _id — the preview's click-to-edit target. */
+  docId?: string;
   /** Display name. Undefined means the seat is open — render it as such. */
   name?: string;
   email?: string;
@@ -225,6 +229,7 @@ export function toHolderMap(rows?: RoleHolderRow[] | null): Map<string, Holder> 
 
     const { email, phone } = contactFor(row);
     const holder: Holder = {
+      docId: row._id?.trim() || undefined,
       name: row.person?.trim() || undefined,
       email,
       phone,
@@ -243,6 +248,9 @@ export function toHolderMap(rows?: RoleHolderRow[] | null): Map<string, Holder> 
 
 /** One card on the chart: a seat with whoever holds it merged in. */
 export interface OrgPerson {
+  /** The roleHolder document's _id, when a holder is merged in — the
+      preview's click-to-edit target. */
+  docId?: string;
   /** Role label shown on the card, e.g. "President". */
   role: string;
   /** Lucide icon for the role chip. */
@@ -305,6 +313,7 @@ function personFor(seat: OrgSeat, key: string, holders?: Map<string, Holder> | n
   // across a rename, and the label join is what the older documents have.
   const holder = holders?.get(key) ?? holders?.get(seat.name);
   return {
+    docId: holder?.docId,
     role: seat.name,
     icon: seat.icon,
     name: holder?.name,
@@ -432,6 +441,7 @@ export function classRepPerson(
   if (!seat) {
     const holder = holders?.get(label);
     return {
+      docId: holder?.docId,
       role: label,
       icon: cls.icon?.trim() || 'hand-heart',
       name: holder?.name,

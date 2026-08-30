@@ -45,7 +45,20 @@ import { env } from 'cloudflare:workers';
 import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
 
-const LISTEN_QUERY = '*[_id in [$pageId, $draftId] || !(_type in ["page"])]';
+// "Anything that could appear on this page" — the previewed doc itself, or any
+// shared/content doc. Excluded on purpose (2026-08-30): machine/inbox types
+// that FAMILIES generate at any hour (sign-ups, photo submissions, hours logs,
+// form submissions, subscribers) and the platform's own system docs. None of
+// them render on a preview page, but each one used to fire a change signal
+// that made every open preview re-render its whole page — on the hub, whose
+// real pages became the preview surface today, that meant full-dashboard SSRs
+// piling up until the Worker hit Error 1102 while an editor just sat idle.
+const LISTEN_QUERY = `*[_id in [$pageId, $draftId] || !(
+  _type in ["page", "legalPage",
+    "trashedItem", "submission", "testimonialSubmission", "subscriber",
+    "signupEntry", "photoSubmission", "hoursLog", "linkHealth"]
+  || _type match "sanity.*"
+)]`;
 
 export const GET: APIRoute = async ({ cookies, url, request }) => {
   // Same draft-mode gate as the preview pages themselves: only a browser that

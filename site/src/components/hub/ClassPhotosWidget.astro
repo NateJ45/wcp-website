@@ -13,6 +13,7 @@ import Icon from '@/components/Icon.astro';
 import { colorStyles } from '@/lib/class-colors';
 import { getHubClassrooms } from '@/lib/hub-classes';
 import { classTiles } from '@/lib/hub-classrooms';
+import { hubEditAttr } from '@/lib/hub-preview';
 
 // One tile per CLASS, from the `class` documents — a class the Board adds gets
 // its album tile with no code change. A class with no album link is skipped.
@@ -43,6 +44,7 @@ const empty = albums.length === 0;
           target="_blank"
           rel="noopener"
           data-class-album={a.slug}
+          data-sanity={hubEditAttr(Astro.locals, a.docId, 'class', 'photoAlbumUrl')}
           class="flex items-center gap-2.5 rounded-lg bg-grey p-2.5 no-underline transition-colors hover:bg-navy/10 dark:hover:bg-white/10"
         >
           <span

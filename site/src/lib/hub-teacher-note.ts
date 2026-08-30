@@ -17,7 +17,7 @@
 
 /** The fields the teacher CARD and the sign-off both need. */
 export const TEACHER_NOTE_CARD_QUERY = `*[_type == "teacherNote" && class in $keys]{
-  "key": class, signName, signRole, email, phone, photo
+  _id, "key": class, signName, signRole, email, phone, photo
 }`;
 
 /** The whole letter, for the first-visit modal. */

@@ -41,7 +41,7 @@ import {
   DIRECTORY_FAMILY_COUNT_QUERY,
 } from '@/lib/queries';
 import { getHubClassrooms } from '@/lib/hub-classes';
-import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
+import { hubDraftMode, readHubPageDoc, publishedId, hubEditAttr } from '@/lib/hub-preview';
 import { hiddenWidgetSet, shows } from '@/lib/hub-widgets';
 import { classTiles } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
@@ -504,7 +504,12 @@ const firstDay = settings?.firstDay;
     }
     {
       shows(hidden, 'handbook') && (
-        <section aria-labelledby="hub-handbook-heading" class="mt-4" data-reveal>
+        <section
+          aria-labelledby="hub-handbook-heading"
+          class="mt-4"
+          data-reveal
+          data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'familyHandbook')}
+        >
           <a
             href={familyHandbookUrl}
             target="_blank"

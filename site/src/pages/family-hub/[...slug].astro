@@ -175,7 +175,13 @@ const updated = formatMonthYear(doc?._updatedAt);
     <div class="mx-auto max-w-6xl">
       {
         room ? (
-          <HubClassroomBody room={room} holders={repHolders} seats={repSeats} guides={guides} />
+          <HubClassroomBody
+            room={room}
+            holders={repHolders}
+            seats={repSeats}
+            guides={guides}
+            pageDocId={draftMode ? classroomDocId : undefined}
+          />
         ) : (
           <>
             <HubPageHeader

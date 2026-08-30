@@ -20,6 +20,7 @@
    reduced-motion-safe.
    ============================================================================ */
 import { env } from 'cloudflare:workers';
+import { hubEditAttr } from '@/lib/hub-preview';
 import Icon from '@/components/Icon.astro';
 import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -155,6 +156,7 @@ if (tiles.length === 0) {
                 target="_blank"
                 rel="noopener"
                 class="inline-flex items-center gap-2 rounded-full border border-white/30 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'instagram')}
               >
                 <Icon name="instagram" class="h-4 w-4" aria-hidden="true" />
                 @westchesterpreschool
@@ -164,6 +166,7 @@ if (tiles.length === 0) {
                 target="_blank"
                 rel="noopener"
                 class="inline-flex items-center gap-2 rounded-full border border-white/30 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'facebook')}
               >
                 <Icon name="facebook" class="h-4 w-4" aria-hidden="true" />
                 Facebook

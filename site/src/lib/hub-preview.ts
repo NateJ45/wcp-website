@@ -22,6 +22,7 @@ import type { AstroCookies } from 'astro';
 import { isStudioPreview } from '@/lib/preview-auth';
 import { previewFetch } from '@/lib/cms-preview';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { docEditAttr } from '@/lib/preview-edit-attr';
 
 /** True when this request comes from the Studio's Presentation iframe. */
 export async function hubDraftMode(cookies: AstroCookies): Promise<boolean> {
@@ -47,3 +48,21 @@ export async function readHubPageDoc<T>(
  *  hands back the `drafts.` twin's. */
 export const publishedId = (id: string | undefined): string | undefined =>
   id?.replace(/^drafts\./, '');
+
+/**
+ * A widget's `data-sanity` value — but only in the Studio preview, and only
+ * when the owning document's id is actually known. Families always get
+ * undefined (the attribute is simply absent). Wrapping a widget in this is
+ * what makes it SELECTABLE in Presentation: a click outlines it and opens the
+ * named document at the named field, so an editor learns where each widget's
+ * content really lives instead of finding it unclickable.
+ */
+export function hubEditAttr(
+  locals: App.Locals,
+  id: string | null | undefined,
+  type: string,
+  path: string,
+): string | undefined {
+  if (!locals.hubPreview || !id) return undefined;
+  return docEditAttr(publishedId(id ?? undefined)!, type, path);
+}

@@ -24,6 +24,7 @@
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { colorStyles } from '@/lib/class-colors';
+import { hubEditAttr } from '@/lib/hub-preview';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { telHref, classRepPerson, type Holder, type OrgClass, type OrgSeat } from '@/lib/hub-org';
 
@@ -44,6 +45,8 @@ const { color, cls, label, seats, holders } = Astro.props;
 const person = classRepPerson(seats, cls, holders);
 const cc = colorStyles(color);
 const named = Boolean(person.name);
+// Studio preview only: the card opens the roleHolder doc that names this rep.
+const editAttr = hubEditAttr(Astro.locals, person.docId, 'roleHolder', 'person');
 
 const email = person.email;
 const tel = telHref(person.phone);
@@ -59,6 +62,7 @@ const photoUrl = person.sanityPhoto?.asset
 
 <div
   class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+  data-sanity={editAttr}
 >
   {
     photoUrl ? (

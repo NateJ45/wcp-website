@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import type { Holder, OrgSeat } from '@/lib/hub-org';
+import { hubEditAttr } from '@/lib/hub-preview';
 import { orgSeats as seatsFallback } from '@/data/hub/org-holders';
 
 interface Props {
@@ -49,8 +50,11 @@ interface Props {
   /** The `curriculumGuide` keys that have a PDF (a class slug, or the
       classroom address when one guide covers the whole room). */
   guides?: string[];
+  /** The classroom hubPage's _id — the handbook chip's click-to-edit target
+      in the Studio preview (undefined outside it, or when no page exists). */
+  pageDocId?: string;
 }
-const { room, holders, seats = seatsFallback, guides = [] } = Astro.props;
+const { room, holders, seats = seatsFallback, guides = [], pageDocId } = Astro.props;
 
 const page = room.page;
 const cc = colorStyles(room.color);
@@ -97,16 +101,18 @@ const programs = publicPages.map(([slug, c]) => ({
   <div slot="action" class="flex flex-wrap gap-2">
     {
       page?.handbookUrl && (
-        <Button
-          href={`${page.handbookUrl}?dl=`}
-          target="_blank"
-          rel="noopener"
-          variant="outline"
-          size="sm"
-        >
-          <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
-          Download the handbook (PDF)
-        </Button>
+        <span data-sanity={hubEditAttr(Astro.locals, pageDocId, 'hubPage', 'handbookFile')}>
+          <Button
+            href={`${page.handbookUrl}?dl=`}
+            target="_blank"
+            rel="noopener"
+            variant="outline"
+            size="sm"
+          >
+            <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+            Download the handbook (PDF)
+          </Button>
+        </span>
       )
     }
     {
@@ -180,8 +186,11 @@ const programs = publicPages.map(([slug, c]) => ({
   {
     room.classes.map((c) => {
       const s = colorStyles(c.color);
+      /* Studio preview only: the fact card opens ITS class document, where
+         every number on it (days, time, fees, links) is edited. */
+      const editAttr = hubEditAttr(Astro.locals, c.docId, 'class', 'days');
       return (
-        <HubCard class="flex flex-col">
+        <HubCard class="flex flex-col" data-sanity={editAttr}>
           <div class="flex-1">
             <div class="flex items-center gap-3">
               <span

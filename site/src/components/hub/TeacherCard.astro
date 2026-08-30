@@ -14,6 +14,7 @@ import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { colorStyles } from '@/lib/class-colors';
 import { TEACHER_NOTE_CARD_QUERY, pickNote, telHref as toTel } from '@/lib/hub-teacher-note';
 import { teacherPhoneFallback } from '@/data/hub/live-links';
+import { hubEditAttr } from '@/lib/hub-preview';
 
 interface Props {
   /** Note keys for this classroom, most specific first (teacherNoteKeys()). */
@@ -24,6 +25,7 @@ interface Props {
 const { keys, color } = Astro.props;
 
 interface TeacherDoc {
+  _id?: string;
   key?: string;
   signName?: string;
   signRole?: string;
@@ -58,11 +60,17 @@ const photoUrl = teacher?.photo?.asset
 // Studio value wins; fall back to the committed number until the field is set.
 const phone = teacher?.phone || keys.map((k) => teacherPhoneFallback[k]).find(Boolean);
 const telHref = toTel(phone);
+// Studio preview only: clicking this card opens the teacher's own note doc —
+// the same place the name, photo and contacts are edited.
+const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signName');
 ---
 
 {
   teacher?.signName && (
-    <div class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface">
+    <div
+      class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+      data-sanity={editAttr}
+    >
       {photoUrl ? (
         <img
           src={photoUrl}

@@ -78,6 +78,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect(`/family-hub/login?to=${to}`);
     }
 
+    // Widgets deep in the tree check this instead of re-verifying the cookie:
+    // each one wraps itself in a data-sanity target when true (hubEditAttr).
+    context.locals.hubPreview = studioPreview;
+
     if (studioPreview) {
       const response = await next();
       response.headers.set('Cache-Control', 'no-store');
