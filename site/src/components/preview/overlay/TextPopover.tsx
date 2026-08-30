@@ -143,8 +143,13 @@ export default function TextPopover(props: OverlayComponentProps): React.ReactNo
   }, [open, target]);
 
   // Selected, not merely on screen: `activated` in this host means "in the
-  // viewport", so an ungated control would appear on every line at once.
-  if (!focused || !target) return null;
+  // viewport", so an ungated control would appear on every line at once. But an
+  // OPEN card is the editor's, not the host's: the host clears `focused` on any
+  // blur and recomputes it on every `presentation/focus` the Studio sends back
+  // (see SectionStyleCard's note), so a card gated on `focused` alone vanishes
+  // the moment the cursor wanders. Once open, only our own gestures end it -
+  // Save, Escape, or focus leaving the card (which saves).
+  if (!target || (!focused && !open)) return null;
 
   const save = () => {
     if (target.kind === 'plain') {
