@@ -163,6 +163,24 @@ function init(): void {
     show(index + 1),
   );
 
+  // The bell links here (2026-08-29): a #spotlight-<id> hash opens the modal
+  // at that notice, SEEN OR NOT - the pop-up greets a family once, the bell is
+  // the way back while it runs. The hash is consumed (replaceState) so Back
+  // does not re-trigger it, and a hash for a spotlight that has since gone
+  // dark simply does nothing. Same-page bell clicks arrive as hashchange.
+  const openFromHash = (): boolean => {
+    const id = /^#spotlight-(.+)$/.exec(location.hash)?.[1];
+    if (!id) return false;
+    const at = pages(el).findIndex((pg) => pg.dataset.spotlightId === decodeURIComponent(id));
+    history.replaceState(null, '', location.pathname + location.search);
+    if (at < 0) return false;
+    if (isOpen()) show(at);
+    else open(at);
+    return true;
+  };
+  window.addEventListener('hashchange', openFromHash);
+  if (openFromHash()) return;
+
   if (otherPopupDue()) return;
   const at = firstUnseen(el);
   if (at < 0) return;

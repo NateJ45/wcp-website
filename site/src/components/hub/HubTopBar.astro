@@ -27,6 +27,7 @@ import Icon from '@/components/Icon.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import HubBell, { type BellItem } from '@/components/hub/HubBell.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { liveSpotlights, type Spotlight } from '@/lib/hub-spotlight';
 import { getUpcomingEvents, fmtEventMonth, fmtEventDay, type HubEvent } from '@/lib/hub-calendar';
 import { calendarFeedUrlFallback } from '@/data/hub/live-links';
 import { payUrl } from '@/data/classes';
@@ -82,11 +83,15 @@ try {
     updates: UpdateRow[];
     highlights: UpdateRow[];
     documents: DocRow[];
+    spotlights: (Spotlight & { publishedAt?: string })[];
   }>(
     `{
       "updates": *[_type == "update" && defined(publishedAt) && publishedAt < now()] | order(publishedAt desc)[0...6]{ title, "slug": slug.current, publishedAt, highlight, category },
       "highlights": *[_type == "update" && highlight == true && defined(publishedAt)] | order(publishedAt desc)[0...3]{ title, "slug": slug.current, publishedAt, highlight, category },
-      "documents": *[_type == "hubDocument"] | order(_createdAt desc)[0...3]{ title, "publishedAt": _createdAt }
+      "documents": *[_type == "hubDocument"] | order(_createdAt desc)[0...3]{ title, "publishedAt": _createdAt },
+      "spotlights": *[_type == "hubSpotlight" && active == true] | order(orderRank){
+        _id, heading, active, version, showFrom, showUntil, "publishedAt": coalesce(showFrom, _updatedAt)
+      }
     }`,
     {},
     { cache: BOARD_CONTENT_CACHE },
@@ -105,6 +110,19 @@ try {
     if (seen.has(item.href + item.title)) continue;
     seen.add(item.href + item.title);
     merged.push(item);
+  }
+  // Live spotlights join the bell (2026-08-29, Nathan): the pop-up greets a
+  // family once, but the bell keeps a way BACK to it while it runs. The href
+  // is a hash the spotlight script answers by opening the modal at that page,
+  // seen or not. The raw list is cached; the time window filters per request.
+  for (const sp of liveSpotlights(feed.spotlights, Date.now())) {
+    merged.push({
+      title: sp.heading ?? 'Notice',
+      href: `#spotlight-${sp._id}`,
+      publishedAt: (sp as { publishedAt?: string }).publishedAt ?? '',
+      highlight: true,
+      meta: 'Spotlight',
+    });
   }
   for (const d of feed.documents ?? []) {
     merged.push({
