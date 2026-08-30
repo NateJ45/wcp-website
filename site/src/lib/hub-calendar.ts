@@ -287,7 +287,12 @@ export function toEventDetail(e: HubEvent): EventDetail {
 async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
   try {
     const raw = await cached(
-      `calfeed:${feedUrl}`,
+      // v2 (2026-08-29): the envelope gained `created`. The caching rules
+      // (CLAUDE.md, "cache the RAW reading") require a key bump on any shape
+      // change - without it, envelopes cached before the Apps Script redeploy
+      // keep serving from L1/KV for up to the TTL and the bell's
+      // "Added to the calendar" rows never appear on some isolates.
+      `calfeed:v2:${feedUrl}`,
       43_200_000, // 12h fresh — the school calendar is set weeks ahead; ~2 KV writes/day
       async () => {
         const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
