@@ -22,6 +22,8 @@
 // tour/note chips, so the page stops being a page without it.
 // =============================================================================
 
+import { splitStega } from './preview-stega';
+
 export interface HubWidgetOption {
   /** Stable stored value — never rename one without a data migration. */
   value: string;
@@ -61,7 +63,15 @@ export function widgetOptionsFor(hubKey: string | undefined): HubWidgetOption[] 
  */
 export function hiddenWidgetSet(stored: unknown): Set<string> {
   if (!Array.isArray(stored)) return new Set();
-  return new Set(stored.filter((v): v is string => typeof v === 'string'));
+  return new Set(
+    stored
+      .filter((v): v is string => typeof v === 'string')
+      // Belt and braces against stega (the draft-aware preview read encodes
+      // invisible markers into strings, and an encoded 'weather' matches
+      // nothing): keep only the visible characters. The preview client also
+      // excludes this field at the source (cms-preview.ts NON_STEGA_FIELDS).
+      .map((v) => splitStega(v).cleaned),
+  );
 }
 
 export const shows = (hidden: Set<string>, widget: string): boolean => !hidden.has(widget);

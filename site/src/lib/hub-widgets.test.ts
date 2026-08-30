@@ -24,6 +24,11 @@ describe('hiddenWidgetSet / shows', () => {
     expect(shows(hidden, 'events')).toBe(true);
   });
 
+  it('strips stega markers, so a draft-read value still matches', () => {
+    const encoded = 'weather​‌‍﻿';
+    expect(shows(hiddenWidgetSet([encoded]), 'weather')).toBe(false);
+  });
+
   it('ignores non-string junk without throwing', () => {
     expect(shows(hiddenWidgetSet([1, null, 'store'] as unknown[]), 'store')).toBe(false);
     expect(shows(hiddenWidgetSet('store' as unknown), 'store')).toBe(true);
