@@ -645,7 +645,10 @@ exactly that one. Device-local, like the rest of the hub app layer.
 **No-JS = no pop-up**, deliberately. A spotlight points at content that already lives on a
 hub page; it is promotion, not the only path to any information.
 
-**The read rides `BOARD_CONTENT_CACHE`** (5 min fresh, L1-only, **zero KV writes**).
+**The read rides `BOARD_CONTENT_CACHE`** (5 min fresh, L1-only, **zero KV writes**;
+since 2026-08-30 a null/undefined reading — "no such document" — stays fresh for at most
+30s and never rides the stale window, so a just-created page stops 404ing in seconds
+instead of minutes; see `MISS_TTL_MS` in `src/lib/hub-cache.ts`).
 CLAUDE.md keeps COLLECTIONS live so lists feel fresh, but a spotlight is not a list: it is
 board-edited chrome that renders on EVERY hub page, which is exactly what that cache tier
 exists for (the topbar and the `hubPage` docs use it). An uncached read here would put a

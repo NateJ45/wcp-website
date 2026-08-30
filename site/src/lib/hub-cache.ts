@@ -56,6 +56,18 @@ interface Envelope {
 const store = new Map<string, Envelope>();
 const inflight = new Map<string, Promise<unknown>>();
 
+// NEGATIVE READINGS EXPIRE FAST (2026-08-30). The cache stores the raw
+// reading, and "this document does not exist" is a reading — which meant a
+// just-created board page kept 404ing for the whole fresh window, and a new
+// classroom page for up to ~5 minutes. A null/undefined value now stays fresh
+// for at most this long and never rides the stale-while-revalidate window, so
+// a page appears within ~30s of publishing while the quota cost stays
+// negligible (misses are rare, and the in-flight dedupe still holds).
+// Deliberately null/undefined ONLY: an empty ARRAY is usually a legitimate
+// long-lived answer (no events this week, no photos yet) and keeps full TTL.
+const MISS_TTL_MS = 30_000;
+const isMiss = (v: unknown): boolean => v === null || v === undefined;
+
 async function refresh<T>(
   key: string,
   horizonMs: number,
@@ -116,8 +128,9 @@ export async function cached<T>(
 
   if (hit) {
     const age = Date.now() - hit.at;
-    if (age < ttlMs) return hit.v as T;
-    if (age < horizon) {
+    const freshMs = isMiss(hit.v) ? Math.min(ttlMs, MISS_TTL_MS) : ttlMs;
+    if (age < freshMs) return hit.v as T;
+    if (!isMiss(hit.v) && age < horizon) {
       // Stale but servable: answer now, refresh behind the response.
       keepAlive(refresh(key, horizon, fn, useKv));
       return hit.v as T;
