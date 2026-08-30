@@ -3264,6 +3264,16 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] {
   align-items: center;
   gap: 0.5rem;
 }
+/* Follow WCP! — the label hides with every [data-rail-label]; the two brand
+   icons stack so they fit the icon-wide column. */
+html[data-rail-collapsed] .hub-rail-aside [data-rail-social] {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-social-icons] {
+  flex-direction: column;
+}
 html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
   flex: 0 0 auto;
 }

@@ -23,7 +23,7 @@ import { resolveHubNav, type HubNavDoc } from '@/lib/hub-nav-doc';
 import { getHubClassrooms } from '@/lib/hub-classes';
 import { classTiles } from '@/lib/hub-classrooms';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_NAV_MENU_QUERY } from '@/lib/queries';
+import { HUB_NAV_MENU_QUERY, HUB_SOCIAL_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
 // Pre-sized webp + plain <img> (not astro:assets): SSR pages can't resize at
 // request time on the Cloudflare adapter, so <Image> served the 4.1MB
@@ -74,6 +74,33 @@ const classJson = collapsible
       classTiles(classrooms).map((c) => ({ slug: c.slug, label: c.label, page: c.page })),
     )
   : null;
+
+// Follow WCP! — the same Site settings socials the public footer shows, so
+// the Board edits one place (Studio → Site settings → Facebook/Instagram,
+// with the same show-socials switch). Board-content cache: the drawer's
+// second render is free, and a failed read falls back to the committed links.
+interface SocialDoc {
+  facebook?: string;
+  instagram?: string;
+  showSocials?: boolean;
+}
+let socialDoc: SocialDoc | null = null;
+try {
+  socialDoc = await sanityFetch<SocialDoc | null>(
+    HUB_SOCIAL_QUERY,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
+  );
+} catch {
+  socialDoc = null;
+}
+const social = socialDoc ?? {
+  facebook: site.social.facebook,
+  instagram: site.social.instagram,
+  showSocials: site.show.socials,
+};
+// An unset switch means "show" — same reading as the footer's site.show.
+const showSocials = (social.showSocials ?? true) && Boolean(social.facebook || social.instagram);
 
 const homeLink = nav[0].links[0];
 const groups = nav.slice(1);
@@ -171,6 +198,45 @@ const groups = nav.slice(1);
       ))
     }
   </nav>
+
+  {
+    showSocials && (
+      <div
+        class="mt-3 flex items-center justify-between gap-1 border-t border-white/10 px-2 pt-3"
+        data-rail-social
+      >
+        <span class="text-sm font-semibold text-white/85" data-rail-label>
+          Follow WCP!
+        </span>
+        <div class="flex items-center gap-1" data-rail-social-icons>
+          {social.facebook && (
+            <a
+              href={social.facebook}
+              target="_blank"
+              rel="noopener"
+              aria-label={`${site.name} on Facebook`}
+              title="WCP on Facebook"
+              class="rail-icon-btn"
+            >
+              <Icon name="facebook" class="h-4 w-4" />
+            </a>
+          )}
+          {social.instagram && (
+            <a
+              href={social.instagram}
+              target="_blank"
+              rel="noopener"
+              aria-label={`${site.name} on Instagram`}
+              title="WCP on Instagram"
+              class="rail-icon-btn"
+            >
+              <Icon name="instagram" class="h-4 w-4" />
+            </a>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   <div
     class="mt-3 flex items-center justify-between gap-1 border-t border-white/10 pt-3"

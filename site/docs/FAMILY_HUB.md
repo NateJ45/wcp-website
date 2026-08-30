@@ -66,7 +66,10 @@ draws the hub's persistent chrome:
   classroom page — see "Class pages are DERIVED" below), News & Events,
   Resources (Getting Started, Become a Super Helper), Money, Community (Directory, Co-op
   Jobs, Celebrations, the external Store link), each group with its own accent color — the active page highlighted, a
-  light/dark `ThemeToggle`, and Sign out. The rail collapses to an icon rail
+  light/dark `ThemeToggle`, and Sign out. Above Sign out sits a **Follow WCP!** row —
+  Facebook/Instagram icons reading the SAME Site settings links (and show-socials switch)
+  as the public footer, over the Board-content cache, so the Board edits them in one place
+  (Studio → Public website → Site settings). The rail collapses to an icon rail
   (`hub-rail.ts` persists the choice in localStorage; BaseLayout sets the attribute early
   so there's no flash).
 - **Mobile (< `lg`):** a navy top strip (`HubTopBar.astro`: menu button, page title,
@@ -389,16 +392,16 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **The bell** (`HubBell.astro`): server-renders the recent feed. **Eight feeds** reach
   it, all assembled once in `HubTopBar` and shared by both bell instances:
 
-  | Feed              | Where it comes from                                                    | Row                                     |
-  | ----------------- | ---------------------------------------------------------------------- | --------------------------------------- |
-  | Announcements     | `update` docs (+ the Board's `highlight` flag)                         | the post title → the post               |
-  | Spotlights        | live `hubSpotlight` docs                                               | the heading → re-opens the pop-up       |
-  | Documents         | newest `hubDocument` docs                                              | the title → Documents                   |
-  | Note bumps        | `teacherNote` / `presidentNote` with a version stamp, by `_updatedAt`  | "A note from ..." → the class page/home |
-  | New Board pages   | `hubPage` with a slug, no `hubKey`, not archived, carrying no classes  | "New page: ..." → the page              |
-  | Events just added | Google feed `created` + Sanity `event._createdAt`, both inside 14 days | "Added to the calendar: ..." → Calendar |
-  | Events rescheduled | Google feed `updated` inside 14 days on an event whose add is older | "Updated on the calendar: ..." → Calendar |
-  | Fundraising       | the cached gviz Fundraising tab, at 50% / 75% / 100% of the goal       | "Fundraising passed 75% ..." → the page |
+  | Feed               | Where it comes from                                                    | Row                                       |
+  | ------------------ | ---------------------------------------------------------------------- | ----------------------------------------- |
+  | Announcements      | `update` docs (+ the Board's `highlight` flag)                         | the post title → the post                 |
+  | Spotlights         | live `hubSpotlight` docs                                               | the heading → re-opens the pop-up         |
+  | Documents          | newest `hubDocument` docs                                              | the title → Documents                     |
+  | Note bumps         | `teacherNote` / `presidentNote` with a version stamp, by `_updatedAt`  | "A note from ..." → the class page/home   |
+  | New Board pages    | `hubPage` with a slug, no `hubKey`, not archived, carrying no classes  | "New page: ..." → the page                |
+  | Events just added  | Google feed `created` + Sanity `event._createdAt`, both inside 14 days | "Added to the calendar: ..." → Calendar   |
+  | Events rescheduled | Google feed `updated` inside 14 days on an event whose add is older    | "Updated on the calendar: ..." → Calendar |
+  | Fundraising        | the cached gviz Fundraising tab, at 50% / 75% / 100% of the goal       | "Fundraising passed 75% ..." → the page   |
 
   Every Sanity feed rides ONE `BOARD_CONTENT_CACHE`-tier query; the calendar and the
   fundraising sheet reuse the cached getters the bar already calls, so the bell adds no

@@ -329,6 +329,12 @@ export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
  * resolver (src/lib/hub-nav-doc.ts) drops anything that dereferences to
  * nothing and falls back to the committed menu when the doc yields nothing.
  */
+// The rail's Follow WCP! block. Same Site settings doc the public footer
+// reads, cut down to the three PII-free fields the rail needs so it can ride
+// the Board-content cache (the full SITE_SETTINGS_QUERY carries contact info
+// that has no business in a shared module cache).
+export const HUB_SOCIAL_QUERY = `*[_type == "siteSettings"][0]{ facebook, instagram, showSocials }`;
+
 export const HUB_NAV_MENU_QUERY = `*[_type == "hubNavMenu"][0]{
   groups[]{
     label, accent, autoClasses,
