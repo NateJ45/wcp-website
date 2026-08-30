@@ -167,6 +167,9 @@ interface SiteSettingsDoc {
   facebook?: string;
   instagram?: string;
   openingHours?: { days?: string[]; opens?: string; closes?: string }[];
+  shortName?: string;
+  emailContact?: string;
+  licenseAuthority?: string;
   googleRating?: string;
   googleReviews?: number;
   googleUrl?: string;
@@ -211,6 +214,8 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
   return {
     ...f,
     name: doc.name ?? f.name,
+    // Was queried but never mapped (silent-edit bug, PUBLIC_EDITABILITY W1.4).
+    shortName: doc.shortName ?? f.shortName,
     founded: doc.founded ?? f.founded,
     tagline: doc.tagline ?? f.tagline,
     url: doc.url ?? f.url,
@@ -231,9 +236,11 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
       ...f.email,
       general: doc.emailGeneral ?? f.email.general,
       admin: doc.emailAdmin ?? f.email.admin,
+      contact: doc.emailContact ?? f.email.contact,
       treasurer: doc.emailTreasurer ?? f.email.treasurer,
     },
     license: doc.license ?? f.license,
+    licenseAuthority: doc.licenseAuthority ?? f.licenseAuthority,
     calendar: doc.closureStatement ?? f.calendar,
     social: {
       ...f.social,

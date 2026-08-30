@@ -15,6 +15,7 @@
    stays visible copy only. Don't add it back.
    ============================================================================ */
 import { site as siteFallback } from '@/data/site';
+import { cmsFetch } from '@/lib/cms';
 import { getSiteSettings } from '@/lib/cms';
 
 const site = await getSiteSettings(siteFallback);
@@ -22,6 +23,26 @@ const site = await getSiteSettings(siteFallback);
 // The same Google Maps search URL the Contact page renders ("Open in Google
 // Maps", ContactDetailsSection.astro), so the JSON-LD and the visible site
 // agree on the destination.
+// The price range Google indexes DERIVES from the class docs' monthly fees
+// (min-max), so a tuition change updates search the same build it updates the
+// tuition page. The committed site.priceRange is only the read-failed fallback.
+let priceRange: string = site.priceRange;
+try {
+  const monthlies = await cmsFetch<(string | null)[]>(
+    `*[_type == "class" && defined(monthly)].monthly`,
+    {},
+    [],
+  );
+  const nums = (monthlies ?? [])
+    .map((m) => Number(String(m ?? '').replace(/[^0-9.]/g, '')))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (nums.length > 0) {
+    priceRange = `$${Math.min(...nums)}-$${Math.max(...nums)} /month`;
+  }
+} catch {
+  /* fallback stands */
+}
+
 const mapQuery = encodeURIComponent(
   `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.zip}`,
 );
@@ -35,9 +56,10 @@ const jsonLd = {
   telephone: site.phone,
   email: site.email.general,
   foundingDate: String(site.founded),
-  // priceRange/hours/geo/areaServed live in src/data/site.ts (see the
-  // comments there for what each mirrors and what to keep in sync).
-  priceRange: site.priceRange,
+  // hours come from Site settings; geo/areaServed stay code by decision (the
+  // building rarely moves — PUBLIC_EDITABILITY.md W1.3); priceRange derives
+  // from the class docs above.
+  priceRange,
   address: {
     '@type': 'PostalAddress',
     streetAddress: site.address.street,

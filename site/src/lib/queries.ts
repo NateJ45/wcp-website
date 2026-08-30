@@ -110,7 +110,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
       ),
       // Same preview-fidelity rule as the calculator below: fees ride the
       // page query so a draft fee change previews on the cards too.
-      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote }
     },
     _type == "faqSection" => {
       "items": select(
@@ -123,7 +123,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     },
     _type == "tuitionTableSection" => {
       "classItems": *[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee },
-      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote }
     },
     // Expanded HERE, not fetched by the component (2026-08-29). The calculator
     // used to run its own cmsFetch, which reads the PUBLISHED perspective no
@@ -135,7 +135,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     // renderers that do not come through this query (the hub body).
     _type == "tuitionCalculatorSection" => {
       "calcClasses": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
-      "calcFees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+      "calcFees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote }
     }
   }
 }`;
@@ -437,7 +437,7 @@ export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | ord
 export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
 export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, showPhone, showEmail, showSocials, logoOverride, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailContact, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, licenseAuthority, googleRating, googleReviews, googleUrl, license, showPhone, showEmail, showSocials, logoOverride, openingHours[]{ days, opens, closes } }`;
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
@@ -608,10 +608,10 @@ export const COOP_HOURS_FOR_FAMILY_QUERY = `*[_type == "hoursLog" && lower(famil
 // Tuition calculator: class prices + the one-time enrollment fees.
 export const TUITION_CALC_QUERY = `{
   "classes": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
-  "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+  "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote }
 }`;
 
-export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
+export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote }`;
 
 // Everything the printable enrollment packet assembles: school facts + key
 // dates, the classes with ages/schedule/tuition, the fee schedule, and the

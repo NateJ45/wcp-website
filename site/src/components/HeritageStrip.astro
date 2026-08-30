@@ -18,7 +18,17 @@ interface Props {
 }
 const { slot } = Astro.props;
 const photos = await photosFor(slot, 3);
-const captions = ['Since 1969', 'Every fall', 'Still going strong'];
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings } from '@/lib/cms';
+import { countWordTitle, fallYear, septembersOnWall } from '@/lib/septembers';
+
+// Derived heritage math (2026-08-31): the headline count and both years come
+// from Site settings (founded + the yearly school-year dates), so this moment
+// never quietly claims last year's number.
+const site = await getSiteSettings(siteFallback);
+const THIS_FALL = fallYear((site as { yearStart?: string }).yearStart, new Date());
+const septembers = septembersOnWall(site.founded, THIS_FALL);
+const captions = [`Since ${site.founded}`, 'Every fall', 'Still going strong'];
 const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
 ---
 
@@ -31,11 +41,11 @@ const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
           class="max-w-[16ch] text-[clamp(2.4rem,6vw+0.5rem,4.5rem)] text-balance"
           data-reveal
         >
-          Fifty-five Septembers.
+          {countWordTitle(septembers)} Septembers.
         </h2>
         <p class="mt-4 max-w-xl text-lg leading-relaxed" data-reveal>
-          Families have been taping their kids' years to these walls since 1969. There is room on
-          the page for yours.
+          Families have been taping their kids' years to these walls since {site.founded}. There is
+          room on the page for yours.
         </p>
         <ul class="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4" role="list">
           {photos.map((p, i) => (
@@ -79,7 +89,7 @@ const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
                 </svg>
               </span>
               <span class="block pt-2 pb-1 text-center font-display text-base text-navy">
-                2026: your kid here?{' '}
+                {THIS_FALL}: your kid here?{' '}
                 <span class="text-[#a85300] underline underline-offset-2">Come see a morning</span>
               </span>
             </a>

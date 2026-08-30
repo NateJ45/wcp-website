@@ -21,7 +21,7 @@ import {
   type SectionData,
   headerLeadHtml,
 } from './section-helpers';
-import { SCHOOL_YEAR_MONTHS, formatMoney, parseMoney } from '@/lib/tuition';
+import { DEPOSIT_NOTE_FALLBACK, formatMoney, parseMoney, schoolYearMonths } from '@/lib/tuition';
 
 interface CalcClass {
   name?: string;
@@ -32,7 +32,12 @@ interface CalcClass {
 }
 interface CalcData {
   classes: CalcClass[];
-  fees?: { registrationFee?: string; participationFee?: string } | null;
+  fees?: {
+    registrationFee?: string;
+    participationFee?: string;
+    schoolYearMonths?: number;
+    depositNote?: string;
+  } | null;
 }
 
 const { section } = Astro.props as { section: SectionData };
@@ -58,6 +63,8 @@ const money = parseMoney;
 const fmt = formatMoney;
 
 const classes = (data.classes ?? []).filter((c) => c.name && money(c.monthly) > 0);
+const months = schoolYearMonths(data.fees?.schoolYearMonths);
+const depositNote = data.fees?.depositNote?.trim() || DEPOSIT_NOTE_FALLBACK;
 const reg = money(data.fees?.registrationFee);
 const participation = money(data.fees?.participationFee);
 const oneTime = reg + participation;
@@ -85,6 +92,7 @@ const oneTime = reg + participation;
       <div
         class="mx-auto mt-8 max-w-3xl"
         data-tuition-calc
+        data-calc-months={months}
         data-onetime={oneTime}
         data-reg={reg}
         data-participation={participation}
@@ -128,7 +136,7 @@ const oneTime = reg + participation;
                 </dd>
               </div>
               <div class="flex items-end justify-between gap-4">
-                <dt class="text-ink-muted">Tuition, {SCHOOL_YEAR_MONTHS} months</dt>
+                <dt class="text-ink-muted">Tuition, {months} months</dt>
                 <dd class="font-semibold text-heading" data-calc-tuition>
                   {fmt(0)}
                 </dd>
@@ -163,8 +171,8 @@ const oneTime = reg + participation;
                       the participation deposit comes back. Publishing only the
                       gross figure overstates the real cost of the year. */}
                   <dt class="text-ink-muted">
-                    Less your deposit, returned
-                    <span class="block text-xs">when your co-op hours are done</span>
+                    Less your deposit,
+                    <span class="block text-xs">{depositNote}</span>
                   </dt>
                   <dd class="font-semibold text-green-ink" data-calc-refund>
                     {fmt(0)}

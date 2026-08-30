@@ -15,12 +15,16 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { site } from '@/data/site';
 import { env } from 'cloudflare:workers';
 import { sanityFetch } from '@/lib/sanity';
 import { NEWSLETTER_LATEST_QUERY, NEWSLETTER_BY_SLUG_QUERY } from '@/lib/queries';
 import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
 
-const SITE = 'https://www.westchesterpreschool.org';
+// ONE copy of the domain: the shared site identity (Sanity-backed elsewhere;
+// this is the same fallback every page uses). The literal that lived here
+// would have survived the DNS cutover pointing at the old host.
+const SITE = site.url;
 
 interface IssueDoc {
   title?: string;

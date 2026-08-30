@@ -22,6 +22,9 @@ onPageLoad(() => {
   const root = document.querySelector<HTMLElement>('[data-tuition-calc]');
   if (!root) return;
 
+  // Billed months ride the markup (Fee schedule override; 9 is the shipped
+  // year) so the client math always agrees with the server-rendered rows.
+  const months = Number(root.dataset.calcMonths) || 9;
   const boxes = Array.from(root.querySelectorAll<HTMLInputElement>('[data-calc-class]'));
   const registration = Number(root.dataset.reg ?? '0');
   const deposit = Number(root.dataset.participation ?? '0');
@@ -52,13 +55,16 @@ onPageLoad(() => {
       studentFee += Number(box.dataset.studentfee ?? '0');
     }
 
-    const cost = yearCost({
-      monthly,
-      studentFee,
-      // Nothing ticked means nothing owed, including the one-time fees.
-      registration: any ? registration : 0,
-      deposit: any ? deposit : 0,
-    });
+    const cost = yearCost(
+      {
+        monthly,
+        studentFee,
+        // Nothing ticked means nothing owed, including the one-time fees.
+        registration: any ? registration : 0,
+        deposit: any ? deposit : 0,
+      },
+      months,
+    );
 
     set(outMonthly, monthly);
     set(outTuition, cost.tuition);

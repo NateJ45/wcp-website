@@ -20,9 +20,17 @@
    ============================================================================ */
 import { photosFor } from '@/lib/photo-registry';
 import { imageUrl } from '@/lib/image';
+import { site as siteFallback } from '@/data/site';
+import { getSiteSettings } from '@/lib/cms';
+import { fallYear } from '@/lib/septembers';
 
-const FOUNDED = 1969;
-const THIS_FALL = 2026;
+// Derived, not hand-typed (2026-08-31): the founding year is Site settings'
+// `founded`, and THIS fall comes from the Board's yearly school-year dates
+// (yearStart) with a build-date heuristic behind it - so the wall grows a new
+// tab every year without a code edit.
+const site = await getSiteSettings(siteFallback);
+const FOUNDED = site.founded;
+const THIS_FALL = fallYear((site as { yearStart?: string }).yearStart, new Date());
 const TOUR_HREF = '/virtual-tour#sec-pp-tour-form';
 
 const photos = await photosFor('septembers-wall', 5);
@@ -45,7 +53,7 @@ const TILTS = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1'];
       class="max-w-[18ch] text-[clamp(2.2rem,5vw+0.5rem,3.8rem)] text-balance"
       data-reveal
     >
-      Every September since 1969.
+      Every September since {FOUNDED}.
     </h2>
     <p class="mt-4 max-w-xl text-lg leading-relaxed" data-reveal>
       Decades of first days of school in the same warm rooms. Scroll through them; the last frame is
@@ -58,7 +66,7 @@ const TILTS = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1'];
     class="wcp-sept-rail pb-[var(--wcp-space-xl)]"
     tabindex="0"
     role="region"
-    aria-label="A timeline of every school year since 1969"
+    aria-label={`A timeline of every school year since ${FOUNDED}`}
     data-reveal
   >
     <ul class="flex items-center gap-3 px-[max(1.25rem,calc((100vw-72rem)/2))]" role="list">
@@ -121,7 +129,9 @@ const TILTS = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1'];
             </svg>
           </span>
           <span class="block pt-2 pb-1 text-center font-display text-base text-navy">
-            September 2026: <span class="text-[#a85300] underline underline-offset-2">yours?</span>
+            September {THIS_FALL}: <span class="text-[#a85300] underline underline-offset-2"
+              >yours?</span
+            >
           </span>
         </a>
       </li>

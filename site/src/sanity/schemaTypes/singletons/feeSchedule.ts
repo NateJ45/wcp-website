@@ -161,6 +161,23 @@ export const feeSchedule = defineType({
 
     // How payments work
     defineField({
+      name: 'schoolYearMonths',
+      title: 'Billed months per school year',
+      type: 'number',
+      group: 'payment',
+      description:
+        'How many monthly payments a school year has (drives every annual total the site computes). Empty keeps 9 (September–May).',
+      validation: (R) => R.min(1).max(12).error('Between 1 and 12.'),
+    }),
+    defineField({
+      name: 'depositNote',
+      title: 'Deposit note',
+      type: 'string',
+      group: 'payment',
+      description:
+        'The phrase after the deposit amount on the public class cards and calculator, e.g. "returned after your co-op hours". Update it if the refund policy changes.',
+    }),
+    defineField({
       name: 'paymentTerms',
       title: 'How payments work (FAQ)',
       type: 'array',

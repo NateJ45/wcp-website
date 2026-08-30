@@ -12,7 +12,7 @@ import {
 } from './section-helpers';
 import { cmsFetch } from '@/lib/cms';
 import { FEE_SCHEDULE_QUERY } from '@/lib/queries';
-import { annualTuition, formatMoney } from '@/lib/tuition';
+import { DEPOSIT_NOTE_FALLBACK, annualTuition, formatMoney, schoolYearMonths } from '@/lib/tuition';
 
 interface FeeSchedule {
   registrationFee?: string;
@@ -73,17 +73,22 @@ const fees = showFees
   : {};
 const registration = fees?.registrationFee;
 const deposit = fees?.participationFee;
+// Board overrides (Fee schedule): billed months drive the annual figure, and
+// the deposit phrase follows the refund policy instead of being frozen here.
+const months = schoolYearMonths((fees as { schoolYearMonths?: number })?.schoolYearMonths);
+const depositNote =
+  (fees as { depositNote?: string })?.depositNote?.trim() || DEPOSIT_NOTE_FALLBACK;
 
 function feesFor(c: ClassItem): string[] {
   if (!showFees) return c.studentFee ? [`Student fee ${c.studentFee}`] : [];
-  const annual = annualTuition(c.monthly);
+  const annual = annualTuition(c.monthly, months);
   return [
     annual > 0 ? `${formatMoney(annual)} for the school year` : '',
     c.studentFee ? `Student fee ${c.studentFee}` : '',
     registration ? `Registration ${registration}` : '',
     // Worth saying plainly: this one comes back, which makes the upfront number
     // read very differently to a family doing the maths.
-    deposit ? `Deposit ${deposit}, returned after your co-op hours` : '',
+    deposit ? `Deposit ${deposit}, ${depositNote}` : '',
   ].filter(Boolean);
 }
 ---

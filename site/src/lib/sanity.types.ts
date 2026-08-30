@@ -2367,6 +2367,8 @@ export type FeeSchedule = {
     payId?: string;
     _key: string;
   }>;
+  schoolYearMonths?: number;
+  depositNote?: string;
   paymentTerms?: Array<{
     icon?:
       | 'arrow-right'

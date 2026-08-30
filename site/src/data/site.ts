@@ -72,10 +72,8 @@ export const site = {
     treasurer: 'treasurer@westchesterpreschool.org', // donations / tax questions
   },
 
-  teachers: {
-    lisa: 'lisa@westchesterpreschool.org', // Mrs. Lisa Cortez, Pre-K
-    erin: 'erin@westchesterpreschool.org', // Mrs. Erin Schmerr, Threes/Twos
-  },
+  // (The per-teacher emails that lived here were dead config with zero
+  // consumers — teacher contact info lives on the staff / teacherNote docs.)
 
   // Ohio license. Regulated by ODJFS (Ohio Dept. of Job & Family Services)
   // under Day Care Licensing Code 5101:2-12. Secular, non-discriminatory.
