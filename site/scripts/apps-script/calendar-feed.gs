@@ -13,7 +13,7 @@
  *       "allDay": false,
  *       "location": "...",                      // optional
  *       "description": "...",                   // optional, plain text
- *       "created": "2026-08-20T14:03:00.000Z" }, ... ]  // optional, see below
+ *       "created": "...", "updated": "...", "id": "...", "recurring": true }, ... ]  // all four optional, see below
  *
  * covering roughly a rolling 12 months. Date-only strings MUST be the event's
  * EASTERN calendar day (the site anchors them to noon UTC before formatting).
@@ -111,6 +111,28 @@ function eventToJson_(e) {
     if (made) out.created = made.toISOString();
   } catch (err) {
     // no created date for this event; the site handles the gap
+  }
+  // When the event last CHANGED - the bell announces a reschedule the same way
+  // it announces an addition ("Updated on the calendar: ..."). Same guard.
+  try {
+    var touched = e.getLastUpdated();
+    if (touched) out.updated = touched.toISOString();
+  } catch (err2) {
+    // no updated date; the site handles the gap
+  }
+  // A stable id, for dedupe and any later per-event feature. Same guard.
+  try {
+    var eid = e.getId();
+    if (eid) out.id = String(eid);
+  } catch (err3) {
+    // no id; the site handles the gap
+  }
+  // Marks a weekly/monthly series, so the site never announces a series
+  // instance-by-instance. Same guard.
+  try {
+    if (e.isRecurringEvent()) out.recurring = true;
+  } catch (err4) {
+    // unknown; treated as not recurring
   }
   return out;
 }

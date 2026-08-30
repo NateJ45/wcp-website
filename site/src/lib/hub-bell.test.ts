@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   isNewlyAdded,
+  calendarBellRows,
   fundraisingMilestone,
   fundraisingMilestoneTitle,
   mergeBellFeeds,
@@ -38,6 +39,48 @@ describe('isNewlyAdded', () => {
   it('takes a different window', () => {
     expect(isNewlyAdded(daysAgo(5), NOW, 3)).toBe(false);
     expect(isNewlyAdded(daysAgo(2), NOW, 3)).toBe(true);
+  });
+});
+
+describe('calendarBellRows', () => {
+  const ev = (over: Partial<Parameters<typeof calendarBellRows>[0][number]>) => ({
+    title: 'Winter Party',
+    ...over,
+  });
+
+  it('announces a recently added event as added', () => {
+    const rows = calendarBellRows([ev({ created: daysAgo(2) })], NOW);
+    expect(rows).toEqual([{ title: 'Winter Party', at: daysAgo(2), changed: false }]);
+  });
+
+  it('announces a recent edit of an older event as changed', () => {
+    const rows = calendarBellRows([ev({ created: daysAgo(60), updated: daysAgo(1) })], NOW);
+    expect(rows).toEqual([{ title: 'Winter Party', at: daysAgo(1), changed: true }]);
+  });
+
+  it('never announces the same event as both: the add wins', () => {
+    const rows = calendarBellRows([ev({ created: daysAgo(3), updated: daysAgo(1) })], NOW);
+    expect(rows).toEqual([{ title: 'Winter Party', at: daysAgo(3), changed: false }]);
+  });
+
+  it('says nothing about an old, untouched event', () => {
+    expect(calendarBellRows([ev({ created: daysAgo(60), updated: daysAgo(60) })], NOW)).toEqual([]);
+  });
+
+  it('never announces a recurring-series instance, added or edited', () => {
+    expect(
+      calendarBellRows(
+        [
+          ev({ recurring: true, created: daysAgo(1) }),
+          ev({ recurring: true, created: daysAgo(60), updated: daysAgo(1) }),
+        ],
+        NOW,
+      ),
+    ).toEqual([]);
+  });
+
+  it('handles events from a feed that predates the fields', () => {
+    expect(calendarBellRows([ev({})], NOW)).toEqual([]);
   });
 });
 

@@ -46,6 +46,7 @@ import {
   mergeBellFeeds,
   BELL_UPDATES_CAP,
   type BellFeedItem,
+  calendarBellRows,
 } from '@/lib/hub-bell';
 import { getFundraisers } from '@/lib/gsheets';
 import { calendarFeedUrlFallback, budgetSheetIdFallback } from '@/data/hub/live-links';
@@ -270,10 +271,13 @@ try {
   // cap. The Google feed comes first because it is the school's real calendar.
   // A feed event without `created` announces nothing: the deployed Apps Script
   // only carries that field after its next redeploy (docs/PENDING.md).
+  // Added vs updated vs recurring rules live in calendarBellRows (hub-bell.ts).
   const calendarRows: BellFeedItem[] = [
-    ...events
-      .filter((e) => isNewlyAdded(e.created, now))
-      .map((e) => ({ title: e.title, createdAt: e.created! })),
+    ...calendarBellRows(events, now).map((r) => ({
+      title: r.title,
+      createdAt: r.at,
+      changed: r.changed,
+    })),
     ...(feed.newEvents ?? [])
       .filter(
         (e) =>
@@ -289,7 +293,7 @@ try {
       )
       .map((e) => ({ title: e.title!, createdAt: e.createdAt! })),
   ].map((e) => ({
-    title: `Added to the calendar: ${e.title}`,
+    title: `${'changed' in e && e.changed ? 'Updated on' : 'Added to'} the calendar: ${e.title}`,
     href: '/family-hub/calendar',
     publishedAt: e.createdAt,
     meta: 'Calendar',

@@ -386,7 +386,7 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   usable with no JS — and `hub-menus.ts` adds outside-tap (pointerdown — iOS Safari
   doesn't synthesize document-level clicks on non-clickable targets) / Escape closing. `HubTable`'s
   sticky column headers offset by `lg:top-14` to slide under this bar.
-- **The bell** (`HubBell.astro`): server-renders the recent feed. **Seven feeds** reach
+- **The bell** (`HubBell.astro`): server-renders the recent feed. **Eight feeds** reach
   it, all assembled once in `HubTopBar` and shared by both bell instances:
 
   | Feed              | Where it comes from                                                    | Row                                     |
@@ -397,6 +397,7 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   | Note bumps        | `teacherNote` / `presidentNote` with a version stamp, by `_updatedAt`  | "A note from ..." → the class page/home |
   | New Board pages   | `hubPage` with a slug, no `hubKey`, not archived, carrying no classes  | "New page: ..." → the page              |
   | Events just added | Google feed `created` + Sanity `event._createdAt`, both inside 14 days | "Added to the calendar: ..." → Calendar |
+  | Events rescheduled | Google feed `updated` inside 14 days on an event whose add is older | "Updated on the calendar: ..." → Calendar |
   | Fundraising       | the cached gviz Fundraising tab, at 50% / 75% / 100% of the goal       | "Fundraising passed 75% ..." → the page |
 
   Every Sanity feed rides ONE `BOARD_CONTENT_CACHE`-tier query; the calendar and the
@@ -405,7 +406,7 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   cache keeps the raw readings and the rules run per request (see CLAUDE.md, "cache the
   reading, never the copy").
   The rules are pure and unit-tested in [`src/lib/hub-bell.ts`](../src/lib/hub-bell.ts):
-  the 14-day window, the milestone thresholds, and the merge. **The merge caps each feed
+  the 14-day window, the milestone thresholds, the calendar added/updated/recurring rules (`calendarBellRows` - a recurring series never announces, an add and an edit never both announce), and the merge. **The merge caps each feed
   (2 rows, updates 4) BEFORE it merges**, so a busy feed cannot starve a quiet one — three
   documents uploaded in one evening must not hide this morning's note bump. Spotlights and
   Board highlights pin to the top with an amber "Important" pill; the rest reads newest
