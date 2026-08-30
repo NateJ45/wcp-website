@@ -1,139 +1,33 @@
 ---
 /* ============================================================================
-   Hub preview route — draft-aware Family Hub pages (Studio Presentation only)
+   Hub preview route — now a redirect to the REAL hub page (2026-08-30)
    ============================================================================
-   Lets the Board click-to-edit hub pages the same way as public pages. Renders
-   the EDITABLE surface of a hubPage (heading, intro, sections through the same
-   HubSectionedBody treatment the live hub uses) — not the code-owned chrome
-   (rail, topbar, per-page widgets), which is not editable anyway.
+   The hub preview used to render a stub here: heading, intro and sections on a
+   bare canvas, with locked-area placeholders where the widgets live. Editors
+   read that as "the preview shows text that doesn't exist on the actual hub".
+   Since 2026-08-30 the real /family-hub/* routes ARE the preview — they accept
+   the same Studio-issued cookie (src/middleware.ts), read their hubPage draft-
+   aware, and mount the click-to-edit overlay — so this route only forwards old
+   bookmarks and the navigator's history there.
 
-   GATED, unlike the public preview route: hub content is families-only, so
-   this page renders NOTHING without the Studio-issued preview cookie (set by
-   /api/draft-mode/enable after validating Sanity's one-time secret — only the
-   Presentation iframe can obtain it). A visitor who finds this URL gets 401.
-   tests/hub-gate.spec.ts pins that behavior.
+   STILL GATED exactly as before: without the fingerprint-verified preview
+   cookie this returns 401, never a redirect into the hub (the login bounce
+   there would leak that the address exists — and hub-gate.spec.ts pins the
+   401). The cookie's VALUE is verified against the server-side fingerprint — a
+   cookie merely NAMED right is a forgery (see src/lib/preview-auth.ts).
    ============================================================================ */
 export const prerender = false;
 
 import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
-import PreviewLayout from '@/layouts/PreviewLayout.astro';
-import Section from '@/components/Section.astro';
-import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
-import { previewFetch } from '@/lib/cms-preview';
 import { isStudioPreview } from '@/lib/preview-auth';
-import { HUB_PAGE_PREVIEW_QUERY } from '@/lib/queries';
 
-// The preview cookie is the gate: no cookie, no hub content — not even the
-// published version (the public preview's "published to anyone" behavior is
-// fine for public pages, and exactly wrong here). The cookie's VALUE is
-// verified against the server-side fingerprint — a cookie merely NAMED right
-// is a forgery and gets the same 401 (see src/lib/preview-auth.ts).
 const draftMode = await isStudioPreview(Astro.cookies.get(perspectiveCookieName)?.value);
 if (!draftMode) {
   return new Response('Hub previews are only available inside the Studio.', { status: 401 });
 }
 
-// Never let a browser cache a preview page (2026-08-28) — the same rule as the
-// public preview routes, and it matters twice here: this response carries
-// family-only content, and a cached copy would outlive the cookie that gates
-// it. The header goes AFTER the gate, so a 401 is never given one.
-Astro.response.headers.set('Cache-Control', 'no-store');
-
 const key = (Astro.params.key as string | undefined) || 'home';
-
-interface HubPageDoc {
-  _id: string;
-  title?: string;
-  heading?: string;
-  intro?: string;
-  /** Set on a CLASSROOM page — the classes it is the class page for. */
-  classSlugs?: string[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sections?: any[];
-}
-
-// draftMode is always true past the gate above, so the fetch is draft-aware
-// with stega on (click-to-edit).
-const page = await previewFetch<HubPageDoc | null>(true, HUB_PAGE_PREVIEW_QUERY, { key });
-
-if (!page) {
-  return new Response(`No hub page found for "${key}"`, { status: 404 });
-}
-const title = page.heading || page.title || key;
-// The doc id the overlay, the instant-text path and /preview/live all key on.
-// The draft perspective returns the `drafts.` twin's id, so strip the prefix:
-// the listen filter must match BOTH twins, and the stega payload in the page
-// names the published id. Same treatment as the public preview route.
-const pageId = page._id.replace(/^drafts\./, '');
-
-// The code-owned part of each built-in page, in one sentence — shown as a
-// LOCKED placeholder so an editor knows why that content is not here and why
-// clicking it in the real hub would not edit anything. Squarespace marks its
-// locked areas the same way. Board-created pages (a slug, no hubKey) have no
-// built-in part, so no placeholder.
-const BUILTIN_WIDGETS: Record<string, string> = {
-  home: 'The dashboard around this content (the greeting, weather, school-year progress, and the live widgets) is built into the site.',
-  calendar:
-    'The live event list, the month grid, and the subscribe buttons come from the school Google Calendar.',
-  'coop-jobs': 'The live job assignments and the family hours lookup come from the helper sheet.',
-  documents: 'The document library itself is edited under Documents & forms, not on this page.',
-  tuition: 'The class cards, fee amounts, and PayPal buttons come from Classes and Tuition & Fees.',
-  fundraising:
-    'The campaign progress bars and the year-at-a-glance table come from Campaigns and the treasurer sheet.',
-  health: 'The per-child health details are private family data and only show on the real page.',
-  directory: 'The family map and list are private family data and only show on the real page.',
-};
-// A CLASSROOM page says so for itself: the doc names its classes, so the note
-// is derived instead of listed here (which is what made a class the Board added
-// preview as though it had no built-in part at all).
-const CLASSROOM_NOTE =
-  'The class facts at the top of this page — the teacher, the reps, the times, the pay button, the helper sheet and the photo album — come from the Classes entries.';
-const builtinNote = page.classSlugs?.length ? CLASSROOM_NOTE : BUILTIN_WIDGETS[key];
-
-// Navigation between hub pages lives in the Studio's navigator side panel
-// (src/sanity/components/PreviewNavigator.tsx), not in the page itself.
+// 302, not 301: the mapping is ours to change and a cached permanent redirect
+// in the Studio's browser would outlive it.
+return Astro.redirect(key === 'home' ? '/family-hub' : `/family-hub/${key}`, 302);
 ---
-
-<PreviewLayout title={`${title} — Hub preview`} draftMode={draftMode} pageId={pageId} chrome="bare">
-  <Section bg="grey" labelledby="hub-preview-title">
-    {/* Set expectations: this is the editable surface, not the full hub UI. */}
-    <p
-      class="mb-6 rounded-[var(--radius)] border border-sky/40 bg-sky/10 px-4 py-3 text-sm text-ink"
-    >
-      <strong>Family Hub page preview.</strong> Pick a page in the list on the left, then click any text
-      here to edit it. This shows the parts you can edit — the heading, intro, and sections. The hub's
-      menu, top bar, and built-in widgets are not shown (they are not editable).
-    </p>
-    <h1 id="hub-preview-title" class="font-display text-4xl text-heading">{title}</h1>
-    {page.intro && <p class="mt-3 max-w-2xl text-lg text-ink-muted">{page.intro}</p>}
-    {
-      builtinNote && (
-        /* The locked-area marker: where the built-in widget sits on the real
-           page. Deliberately dashed + muted so it reads as a placeholder, not
-           content — and it says WHERE the real thing is edited (if anywhere). */
-        <p class="mt-8 flex items-start gap-2 rounded-[var(--radius)] border border-dashed border-border bg-white/60 px-4 py-3 text-sm text-ink-muted">
-          <span aria-hidden="true">🔒</span>
-          <span>
-            <strong class="text-ink">Built into the site:</strong> {builtinNote}
-          </span>
-        </p>
-      )
-    }
-    {
-      page.sections?.length ? (
-        <HubSectionedBody
-          sections={page.sections}
-          label="Page sections"
-          class="mt-8"
-          editDoc={{ id: pageId, type: 'hubPage' }}
-        />
-      ) : (
-        <p class="mt-8 rounded-[var(--radius)] border border-dashed border-border bg-white px-6 py-8 text-center text-ink-muted">
-          This page has no sections yet. Use <strong>＋ Add item</strong> under{' '}
-          <strong>Sections</strong> in the editor to add content below the page's built-in part
-          (which shows on the real hub page, not here).
-        </p>
-      )
-    }
-  </Section>
-</PreviewLayout>

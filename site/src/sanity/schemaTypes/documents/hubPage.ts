@@ -3,6 +3,8 @@ import { HUB_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 import { ICON_NAMES } from '../objects/_shared';
 import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
+import { widgetOptionsFor } from '../../../lib/hub-widgets';
+import { HubWidgetToggles } from '../../components/HubWidgetToggles';
 
 // =============================================================================
 // hubPage — a Family Hub page, built from sections (GATED, editable)
@@ -225,6 +227,23 @@ export const hubPage = defineType({
       // hub-safe palette (see sections/index.ts).
       options: sectionInsertMenu(HUB_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
+    }),
+
+    defineField({
+      name: 'hiddenWidgets',
+      title: 'Widgets',
+      type: 'array',
+      of: [{ type: 'string' }],
+      group: 'content',
+      description:
+        'Switch the built-in widgets on this page on or off. Everything is on until you switch it off.',
+      // Stores the OFF list (empty/missing = all on) so old docs and future
+      // widgets need no migration; the input shows on/off switches instead.
+      // Only pages with registered widgets show the field at all — the
+      // registry is src/lib/hub-widgets.ts, shared with the page render.
+      components: { input: HubWidgetToggles },
+      hidden: ({ document }) =>
+        widgetOptionsFor((document as { hubKey?: string } | undefined)?.hubKey).length === 0,
     }),
 
     // Keep the page a DRAFT and it publishes itself at this time (within the

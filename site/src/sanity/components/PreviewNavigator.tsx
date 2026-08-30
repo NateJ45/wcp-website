@@ -303,7 +303,7 @@ function buildRows(kind: 'public' | 'hub', data: Data): NavRow[] {
       id,
       type: 'hubPage',
       label,
-      href: `/preview/family-hub/${key}`,
+      href: key === 'home' ? '/family-hub' : `/family-hub/${key}`,
       liveHref: published ? `/family-hub/${key === 'home' ? '' : key}` : undefined,
       hasDraft: draft,
       hasPublished: published,
@@ -543,9 +543,7 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
           await client.create({ ...copy, _id: `drafts.${id}`, _type: row.type });
 
           const href =
-            row.type === 'page'
-              ? pageHref(String(copy.slug))
-              : `/preview/family-hub/${String(copy.slug)}`;
+            row.type === 'page' ? pageHref(String(copy.slug)) : `/family-hub/${String(copy.slug)}`;
           go(href, row.type, id);
           refetch();
           toast.push({

@@ -802,8 +802,8 @@ export const guides: Guide[] = [
         items: [
           'The **page list** on the left flips between hub pages, like a site builder. An amber dot means unpublished edits; a hollow dot means never published.',
           'The `⋯` on a page gives you **Duplicate** (a full copy, as a draft) and **Archive** (takes the page off the hub and keeps it in an **Archived** group at the bottom, ready to **Restore**). Archiving a page that came with the site puts back the wording the site ships with.',
-          'The preview shows the parts you can edit: the heading, the intro, and the sections.',
-          'Where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
+          'The preview is the **real hub page** — the menu, the widgets, everything a family sees — with your editable heading, intro, and sections in place. Click your text to edit it; the built-in widgets are shown but not clickable.',
+          'On **Hub home**, a **Widgets** list of on/off switches lets you hide any dashboard tile (weather, store, photos, and so on). The preview updates before you even publish.',
         ],
       },
       { kind: 'h', text: 'What you can change, and what stays put' },

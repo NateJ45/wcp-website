@@ -90,6 +90,11 @@ describe('route order', () => {
   it('lists the exact routes this preview surface has', () => {
     expect(routes).toEqual([
       '/preview',
+      // The hub previews AT its real routes since 2026-08-30; the old
+      // /preview/family-hub stub redirects there but still resolves so the
+      // pre-redirect flash names the right document.
+      '/family-hub',
+      '/family-hub/:key',
       '/preview/family-hub/:key',
       '/preview/news/:slug',
       '/preview/:parent/:slug',

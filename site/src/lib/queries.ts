@@ -181,7 +181,7 @@ export const HUB_CLASSROOMS_QUERY = `{
  * added. The projection mirrors HUB_PAGE_QUERY so the same sections render.
  */
 export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key) && archived != true][0]{
-  title, heading, intro, navIcon, _updatedAt,
+  _id, title, heading, intro, navIcon, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   "classSlugs": classes[]->slug.current,
   sections[]{

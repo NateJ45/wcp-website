@@ -17,6 +17,7 @@ import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
 import HubSearch from '@/components/hub/HubSearch.astro';
 import HubSpotlightModal from '@/components/hub/HubSpotlightModal.astro';
+import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import AnnouncementBars from '@/components/AnnouncementBars.astro';
 import AnnouncementModal from '@/components/AnnouncementModal.astro';
@@ -55,6 +56,14 @@ interface Props {
   /** Current page title, shown in the mobile HubTopBar when chrome='hub'. */
   hubTitle?: string;
   /**
+   * Studio Presentation preview (2026-08-30): the PUBLISHED id of the hubPage
+   * doc this hub page renders. Only ever set behind the verified preview
+   * cookie (src/lib/hub-preview.ts). Mounts the same click-to-edit overlay
+   * PreviewLayout uses — OUTSIDE #main, because the overlay's soft refresh
+   * morphs #main and must not morph itself away.
+   */
+  hubPreviewDocId?: string;
+  /**
    * Emit <meta name="robots" content="noindex"> — for public utility pages
    * (/search) that crawlers can reach but should never rank. The preview
    * surfaces carry their own tag (PreviewLayout) and the gated hub is covered
@@ -85,6 +94,7 @@ const {
   ogType = 'website',
   chrome = 'site',
   hubTitle = 'Family Hub',
+  hubPreviewDocId,
   noindex = false,
   nofollow = false,
   rssFeed,
@@ -389,6 +399,11 @@ const currentPath = Astro.url.pathname;
                 President's note, which is the hub home only. It renders
                 nothing when no spotlight is switched on and in its dates. */}
             <HubSpotlightModal />
+            {/* Studio Presentation only (see the prop's note): click-to-edit +
+                live refresh over the REAL hub page. */}
+            {hubPreviewDocId && (
+              <VisualEditingOverlay client:only="react" pageId={hubPreviewDocId} />
+            )}
           </div>
         </div>
       ) : chrome === 'bare' ? (

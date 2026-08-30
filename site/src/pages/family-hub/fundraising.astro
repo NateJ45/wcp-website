@@ -26,6 +26,7 @@ import BudgetTable from '@/components/hub/BudgetTable.astro';
 import BudgetSnapshotPanel from '@/components/hub/BudgetSnapshotPanel.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { getFundraisers, type Fundraiser, type FundraiserStatus } from '@/lib/gsheets';
 import { getStoreProfit } from '@/lib/fourthwall';
 import {
@@ -44,11 +45,17 @@ interface Campaign {
   linkUrl?: string;
 }
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
 
 // The three Sanity reads are independent — run them concurrently (they were
 // sequential once, ~0.2s each; part of the 2026-07 hub-speed pass). Each keeps
@@ -57,11 +64,7 @@ const [campaignsResult, docResult, settingsResult] = await Promise.allSettled([
   sanityFetch<Campaign[]>(
     `*[_type == "campaign" && active == true] | order(_createdAt desc){ title, summary, goalAmount, raisedAmount, deadline, linkLabel, linkUrl }`,
   ),
-  sanityFetch<HubPageDoc | null>(
-    HUB_PAGE_QUERY,
-    { key: 'fundraising' },
-    { cache: BOARD_CONTENT_CACHE },
-  ),
+  readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, { key: 'fundraising' }),
   sanityFetch<{
     budgetSheetId?: string | null;
     pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
@@ -143,7 +146,12 @@ const fmtDeadline = (iso: string) =>
   });
 ---
 
-<HubShell title={title} bare pageTitle="Budget & Fundraising — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Budget & Fundraising — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="party-popper" />

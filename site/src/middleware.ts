@@ -28,6 +28,8 @@ import { HUB_SESSION_KEY, isFamilyAuthed } from './lib/hub-auth';
 //     shipped with a `HUB_OPEN = true` preview switch that was never flipped
 //     back, which left the family directory, the children's photo wall and the
 //     health page open to the internet (found and closed 2026-07-19).
+//     (The Studio-preview cookie accepted below is NOT such a flag: it is a
+//     server-verified credential that fails closed, same as the session.)
 // =============================================================================
 
 const HUB_PREFIX = '/family-hub';
@@ -49,12 +51,37 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const { env } = await import('cloudflare:workers');
     const stored = await context.session?.get(HUB_SESSION_KEY);
 
-    if (!(await isFamilyAuthed(stored, env.FAMILY_HUB_PASSWORD))) {
+    // A SECOND CREDENTIAL, not a bypass flag (2026-08-30): the Studio's
+    // Presentation iframe loads the real hub pages as its preview, and the
+    // browser it runs in carries the preview cookie /api/draft-mode/enable
+    // set after validating Sanity's one-time secret. The cookie's VALUE is a
+    // fingerprint of the server-side Sanity token, verified exactly the way
+    // the family session is — a cookie merely NAMED right is a forgery, and a
+    // missing server secret fails closed (src/lib/preview-auth.ts). This is
+    // the same credential the old /preview/family-hub stub trusted with hub
+    // content since 2026-08-24; only the address changed. Checked even for a
+    // family-authed visitor, because the pages render DRAFT content whenever
+    // the cookie verifies and that response must never be cached anywhere.
+    let studioPreview = false;
+    const { perspectiveCookieName } = await import('@sanity/preview-url-secret/constants');
+    const previewCookie = context.cookies.get(perspectiveCookieName)?.value;
+    if (previewCookie) {
+      const { isStudioPreview } = await import('./lib/preview-auth');
+      studioPreview = await isStudioPreview(previewCookie);
+    }
+
+    if (!studioPreview && !(await isFamilyAuthed(stored, env.FAMILY_HUB_PASSWORD))) {
       // An island fetch can't follow a login redirect — just refuse it.
       if (isServerIsland) return new Response('Unauthorized', { status: 401 });
       // Remember where they were headed so we can return them after sign-in.
       const to = encodeURIComponent(context.url.pathname);
       return context.redirect(`/family-hub/login?to=${to}`);
+    }
+
+    if (studioPreview) {
+      const response = await next();
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
     }
   }
 

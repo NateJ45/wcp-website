@@ -25,14 +25,21 @@ import { getHubClassrooms } from '@/lib/hub-classes';
 import { classLookup } from '@/lib/hub-classrooms';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
 
 // The preschool. Coordinates come from site.geo (the one place they live) so
 // the map pin, the JSON-LD, and the hub's weather lookups can never disagree.
@@ -62,11 +69,9 @@ interface DirEntry {
 }
 // Independent of the entries read — start now, await later (2026-07 hub-speed
 // pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(
-  HUB_PAGE_QUERY,
-  { key: 'directory' },
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
+const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'directory',
+}).catch(() => null);
 
 let entries: DirEntry[] = [];
 try {
@@ -178,7 +183,12 @@ const intro =
   'Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom.';
 ---
 
-<HubShell title={title} bare pageTitle="Family Directory — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Family Directory — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="contact" />

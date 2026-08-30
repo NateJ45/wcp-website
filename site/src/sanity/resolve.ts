@@ -32,8 +32,15 @@ export const resolve: PresentationPluginOptions['resolve'] = {
     // `post` genuinely IS a slug type, so it keeps `.current` — the difference
     // is real, and section-fields-style drift gates pin it in resolve.test.ts.
     { route: '/preview', filter: '_type == "page" && slug == "home"' },
-    // Hub pages (built-in by hubKey, board-created by slug) — before the
-    // generic :slug route so "family-hub" never matches as a page slug.
+    // Hub pages (built-in by hubKey, board-created by slug). Since 2026-08-30
+    // Presentation loads the REAL hub routes (the old /preview/family-hub stub
+    // now redirects there), so the live paths resolve too. Both stay listed:
+    // the stub's flash still reports its own URL before the redirect lands.
+    { route: '/family-hub', filter: '_type == "hubPage" && hubKey == "home"' },
+    {
+      route: '/family-hub/:key',
+      filter: '_type == "hubPage" && (hubKey == $key || slug == $key)',
+    },
     {
       route: '/preview/family-hub/:key',
       filter: '_type == "hubPage" && (hubKey == $key || slug == $key)',

@@ -185,7 +185,7 @@ const closureAlert = alertDoc?.active && alertDoc.message ? alertDoc : null;
       // a NEW TAB so the preview surface is never hijacked. Route map:
       //   /               -> /preview
       //   /news/<slug>    -> /preview/news/<slug>       (post preview route)
-      //   /family-hub/... -> /preview/family-hub/...    (hub preview route)
+      //   /family-hub/... -> /family-hub/...            (previews at its real route)
       //   /<page slug>    -> /preview/<page slug>       (multi-segment slugs ok)
       document.addEventListener(
         'click',
@@ -220,6 +220,10 @@ const closureAlert = alertDoc?.active && alertDoc.message ? alertDoc : null;
           const first = path === '/' ? '' : path.split('/')[1];
           // Already in preview, an API/Studio path, or a same-page hash: default.
           if (path.startsWith('/preview') || first === 'api' || first === 'studio') return;
+          // The hub previews AT its real routes since 2026-08-30 (the pages
+          // accept the Studio cookie and go draft-aware themselves), so a hub
+          // link navigates straight there — no /preview remap.
+          if (first === 'family-hub') return;
           if (path === window.location.pathname && url.hash) return;
           // A real file (pdf, image, ics...) has no preview: new tab when
           // standalone, suppressed when embedded (edit gesture).

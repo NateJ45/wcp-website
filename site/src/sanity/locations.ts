@@ -76,7 +76,8 @@ function hrefFor(row: Row): string | null {
   }
   if (row._type === 'hubPage') {
     const key = row.hubKey || (typeof row.slug === 'string' ? row.slug : undefined);
-    return key ? `/preview/family-hub/${key}` : null;
+    // The REAL hub route is the preview surface since 2026-08-30.
+    return key ? (key === 'home' ? '/family-hub' : `/family-hub/${key}`) : null;
   }
   if (row._type === 'post') {
     const slug = typeof row.slug === 'object' ? row.slug?.current : row.slug;

@@ -737,21 +737,35 @@ the build-time "pull" sections can't run behind the gate). The page's **fixed wi
 class facts) stays locked in code and the editable sections wrap around it. If no `hubPage`
 doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
 
-Edit them in **Studio → Family Hub → Hub pages**. Since 2026-08-24 hub pages also get the
-**Presentation click-to-edit preview**: opening a hubPage doc shows its editable surface
-(heading/intro/sections through `HubSectionedBody`) at `/preview/family-hub/<hubKey-or-slug>`.
-That route gates ITSELF on the Studio-issued preview cookie (`/api/draft-mode/enable`
-validates Sanity's one-time secret) and answers 401 without it — it sits outside
-`/family-hub`, so the middleware does not cover it, and gated content must never render on
-an open preview route (`tests/hub-gate.spec.ts` pins the 401). The code-owned chrome and
-fixed widgets deliberately don't render in the preview — since 2026-08-24 a dashed 🔒
-"Built into the site" placeholder marks each built-in page's fixed part instead
-(`BUILTIN_WIDGETS` map in the preview route), so an editor knows why that content is not
-there and where it is really managed. The preview also passes `editDoc` into
-`HubSectionedBody`, which puts a `data-sanity` target on every `.hub-doc-block` so the
-overlay shows section-level move/duplicate/delete/insert controls (see
-`src/lib/preview-edit-attr.ts`; the live hub pages never pass `editDoc`). Seed a page's
-starting content with `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
+Edit them in **Studio → Family Hub → Hub pages**. Since 2026-08-30 **the real
+`/family-hub/*` routes ARE the Presentation preview** (the 2026-08-24 stub at
+`/preview/family-hub/<key>` is now a cookie-gated 302 to the real page; `tests/hub-gate.spec.ts`
+still pins its 401 without the cookie). The pieces:
+
+- `src/lib/hub-preview.ts` — `hubDraftMode()` verifies the Studio-issued preview cookie
+  (fingerprint of the server Sanity token, `src/lib/preview-auth.ts`, fails closed) and
+  `readHubPageDoc()` swaps the page's hubPage read to the draft perspective with stega on.
+  A draft read NEVER touches the board-content cache (it would show unpublished words to
+  families for the TTL).
+- `src/middleware.ts` accepts that cookie as a second verified credential for
+  `/family-hub/*` and stamps `Cache-Control: no-store` on every preview response. It is a
+  credential, not a bypass flag — see the incident note at the top of that file.
+- Every hub route computes `draftMode`, reads via `readHubPageDoc`, and hands HubShell a
+  `previewDocId` (the published doc id) → BaseLayout mounts `VisualEditingOverlay` OUTSIDE
+  `#main` (the soft refresh morphs `#main` and must not morph the overlay away).
+- Board pages (and Hub home's welcome sections) pass `editDoc` in draft mode, so sections
+  get the move/duplicate/delete toolbar; built-in widgets render for real but carry no
+  edit handles.
+
+**Widget switches (2026-08-30)**: `hubPage.hiddenWidgets` stores the OFF list (missing =
+all on, so no migration ever). The registry of switchable tiles per hubKey, the
+`hiddenWidgetSet`/`shows` rules, and a drift gate that proves the page honors every
+registered value live in `src/lib/hub-widgets.ts` (+ `.test.ts`); the Studio input is
+`src/sanity/components/HubWidgetToggles.tsx` (on/off switches; the field hides on pages
+with no registered widgets). Today only **Hub home** registers tiles — add a page's
+widgets to `HUB_WIDGETS_BY_KEY` and gate its markup with `shows()` to grow it. Seed a
+page's starting content with `node scripts/migrate-hub-pages.mjs` (idempotent,
+`hubPage-<key>` ids).
 
 **All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —
 new-family onboarding), Calendar, Co-op Jobs, Documents, Tuition, Updates, Fundraising,

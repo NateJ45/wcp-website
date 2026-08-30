@@ -18,20 +18,23 @@ import Button from '@/components/ui/Button.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
 let doc: HubPageDoc | null = null;
 try {
-  doc = await sanityFetch<HubPageDoc | null>(
-    HUB_PAGE_QUERY,
-    { key: 'health' },
-    { cache: BOARD_CONTENT_CACHE },
-  );
+  doc = await readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, { key: 'health' });
 } catch {
   doc = null;
 }
@@ -88,7 +91,12 @@ const keepHome = [
 ];
 ---
 
-<HubShell title={title} bare pageTitle="Health & Safety — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Health & Safety — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="heart-pulse" />

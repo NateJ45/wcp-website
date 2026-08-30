@@ -26,13 +26,19 @@ interface Props {
   description?: string;
   /** Suppress the navy title band; the page owns its header (HubPageHeader). */
   bare?: boolean;
+  /** Studio Presentation preview (2026-08-30): the PUBLISHED id of the hubPage
+      doc this page renders. Set only when the request carries the verified
+      preview cookie (src/lib/hub-preview.ts) — mounts the click-to-edit
+      overlay + live refresh. Families never get this. */
+  previewDocId?: string;
 }
-const { title, intro, pageTitle, description, bare = false } = Astro.props;
+const { title, intro, pageTitle, description, bare = false, previewDocId } = Astro.props;
 ---
 
 <BaseLayout
   chrome="hub"
   hubTitle={title}
+  hubPreviewDocId={previewDocId}
   title={pageTitle ?? `${title} — WCP Family Hub`}
   description={description ?? 'The West Chester Preschool Family Hub for enrolled families.'}
 >

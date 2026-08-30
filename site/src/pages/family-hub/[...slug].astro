@@ -51,6 +51,7 @@ import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { isUsableHubSlug } from '@/lib/hub-pages';
 import { getHubClassData } from '@/lib/hub-classes';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { matchClassroom, teacherNoteKeys } from '@/lib/hub-classrooms';
 import {
   toHolderMap,
@@ -63,6 +64,7 @@ import {
 import { orgSeats as seatsFallback } from '@/data/hub/org-holders';
 
 interface HubPageDoc {
+  _id?: string;
   title?: string;
   heading?: string;
   intro?: string;
@@ -77,6 +79,11 @@ interface HubPageDoc {
 // pages are deliberately one level deep: a rest parameter is how Astro spells
 // "catch-all", not an invitation to nest, and a hub with folders is a hub
 // nobody can find their way around.
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage reads draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
+
 const raw = Astro.params.slug ?? '';
 const slug = Array.isArray(raw) ? raw.join('/') : raw;
 
@@ -91,6 +98,7 @@ const match = matchClassroom(classrooms, slug);
 if (match?.kind === 'redirect') return Astro.redirect(match.to, 301);
 
 let room = match?.kind === 'render' ? match.classroom : null;
+let classroomDocId: string | undefined;
 let repHolders = new Map<string, Holder>();
 // The co-op's seats, so the rep card knows which seat covers this class. The
 // Class Rep seat is ONE document marked "one per class", so a class the Board
@@ -103,15 +111,14 @@ if (room) {
   // links a Directory entry, so it passes NO cache — see the caching rules in
   // CLAUDE.md. They run together because the page cannot render without both.
   const [page, holders, seatRows] = await Promise.all([
-    sanityFetch<(HubPageDoc & { classSlugs?: string[] }) | null>(
-      HUB_CLASSROOM_PAGE_QUERY,
-      { key: room.key },
-      { cache: BOARD_CONTENT_CACHE },
-    ).catch(() => null),
+    readHubPageDoc<HubPageDoc & { classSlugs?: string[] }>(draftMode, HUB_CLASSROOM_PAGE_QUERY, {
+      key: room.key,
+    }).catch(() => null),
     sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY).catch(() => [] as RoleHolderRow[]),
     sanityFetch<OrgSeatRow[]>(ORG_SEATS_QUERY).catch(() => null),
   ]);
 
+  classroomDocId = publishedId(page?._id);
   repHolders = toHolderMap(holders ?? []);
   if (seatRows?.length) repSeats = toSeats(seatRows);
   // The classroom carries the page's METADATA from the light query already;
@@ -138,11 +145,7 @@ if (room) {
 let doc: HubPageDoc | null = null;
 if (!room && isUsableHubSlug(slug)) {
   try {
-    doc = await sanityFetch<HubPageDoc | null>(
-      HUB_PAGE_BY_SLUG_QUERY,
-      { slug },
-      { cache: BOARD_CONTENT_CACHE },
-    );
+    doc = await readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_BY_SLUG_QUERY, { slug });
   } catch {
     doc = null;
   }
@@ -166,6 +169,7 @@ const updated = formatMonthYear(doc?._updatedAt);
   bare
   current={`/family-hub/${slug}`}
   pageTitle={`${title} — WCP Family Hub`}
+  previewDocId={draftMode ? (classroomDocId ?? publishedId(doc?._id)) : undefined}
 >
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
@@ -190,6 +194,9 @@ const updated = formatMonthYear(doc?._updatedAt);
               label={`${title} sections`}
               class="mt-8"
               emptyTitle="This page is being written."
+              editDoc={
+                draftMode && doc?._id ? { id: publishedId(doc._id)!, type: 'hubPage' } : undefined
+              }
             />
           </>
         )

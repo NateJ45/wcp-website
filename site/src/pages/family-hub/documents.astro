@@ -21,14 +21,21 @@ import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { documentGroups as fallbackGroups, driveFolderUrl } from '@/data/hub/documents';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
 
 const GROUP_META: Record<string, { label: string; action: string; intro?: string }> = {
   required: {
@@ -53,11 +60,9 @@ interface HubDocDoc {
 }
 // Independent of the document-list read — start now, await later (2026-07
 // hub-speed pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(
-  HUB_PAGE_QUERY,
-  { key: 'documents' },
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
+const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'documents',
+}).catch(() => null);
 
 // The built-in fallback now ships with empty hrefs (share links were redacted
 // from src/data/hub/documents.ts — public repo). Drop any doc without a link so
@@ -122,7 +127,12 @@ const intro =
   'Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to.';
 ---
 
-<HubShell title={title} bare pageTitle="Documents — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Documents — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="folder-open">
