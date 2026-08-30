@@ -15,6 +15,7 @@
 export const prerender = false;
 
 import HubHint from '@/components/hub/HubHint.astro';
+import { WEATHER_CLOSURE_QUERY } from '@/lib/queries';
 import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
@@ -58,6 +59,12 @@ interface HubPageDoc {
 // verified preview cookie makes the hubPage read draft-aware (stega on) and
 // mounts the click-to-edit overlay via previewDocId. Families: unchanged.
 const draftMode = await hubDraftMode(Astro.cookies);
+
+// The closure rule is Site settings' "Weather-closure statement" (one source
+// with the health page and the public site). Fallback = the shipped sentence.
+const closureStatement =
+  (await readHubPageDoc<string>(draftMode, WEATHER_CLOSURE_QUERY, {}).catch(() => null))?.trim() ||
+  'WCP follows Lakota Local Schools. If Lakota closes, WCP closes.';
 
 // Independent of the settings→feed chain below — start it now, await later
 // (2026-07 hub-speed pass).
@@ -297,8 +304,8 @@ const icalUrl = calId
           <Icon name="snowflake" class="h-5 w-5" />
         </span>
         <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
-          <strong class="font-bold text-heading">Weather closures:</strong> WCP follows
-          <span class="font-semibold"> Lakota Local Schools</span>. If Lakota closes, WCP closes.
+          <strong class="font-bold text-heading">Weather closures:</strong>
+          {closureStatement}
           Watch your email and our Facebook page for school-specific updates.
         </p>
       </HubCard>

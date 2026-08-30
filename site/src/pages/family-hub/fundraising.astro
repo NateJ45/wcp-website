@@ -12,6 +12,8 @@
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
+import { isStoreSalesRow } from '@/lib/store-sales';
+import { STORE_FACTS_QUERY } from '@/lib/queries';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
@@ -95,8 +97,15 @@ const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
 // show twice; if Fourthwall is unreachable, keep whatever the sheet has as the
 // fallback.
 const storeProfit = await getStoreProfit();
-const storeSinceLabel = 'since May 1, 2026';
-const isStoreRow = (f: Fundraiser) => /\b(shirt|store)\s+sales\b/i.test(f.name);
+// Store facts are Board data (Merch store card): the sheet row name, the
+// fallback goal, and the since-label that used to be a frozen code date.
+const storeFacts = await readHubPageDoc<{
+  salesRowName?: string;
+  salesGoal?: number;
+  openedLabel?: string;
+}>(draftMode, STORE_FACTS_QUERY, {}).catch(() => null);
+const isStoreRow = (f: Fundraiser) => isStoreSalesRow(f.name, storeFacts?.salesRowName);
+const storeSinceLabel = storeFacts?.openedLabel?.trim() || 'since May 1, 2026';
 const shownFundraisers = storeProfit ? fundraisers.filter((f) => !isStoreRow(f)) : fundraisers;
 const hasYearData = shownFundraisers.length > 0 || Boolean(storeProfit);
 
@@ -107,7 +116,8 @@ const hasYearData = shownFundraisers.length > 0 || Boolean(storeProfit);
 // card below still breaks out the store's own share.
 const storeNet = storeProfit?.netProfit ?? 0;
 const storeGoal = storeProfit
-  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) || storeSalesGoalFallback
+  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) ||
+    (storeFacts?.salesGoal ?? storeSalesGoalFallback)
   : 0;
 const totalGoal = shownFundraisers.reduce((s, f) => s + f.goal, 0) + storeGoal;
 const totalRaised = shownFundraisers.reduce((s, f) => s + f.raised, 0) + storeNet;

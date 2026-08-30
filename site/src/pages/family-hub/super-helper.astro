@@ -17,11 +17,11 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
 import { hubDraftMode, readHubPageDoc, hubEditAttr } from '@/lib/hub-preview';
 import { mergeSuperHelper, type SuperHelperDoc } from '@/lib/hub-super-helper';
-import { HUB_SETTINGS_HOME_QUERY } from '@/lib/queries';
-
-const ADMIN = 'admin@westchesterpreschool.org';
+import { HUB_SETTINGS_HOME_QUERY, HUB_PAGE_QUERY, ADMIN_EMAIL_QUERY } from '@/lib/queries';
+import { publishedId } from '@/lib/hub-preview';
 
 // P2 (2026-08-31): the program's NAME, pitch and requirement list are Board
 // data (Hub settings -> Super Helper program), shared with the hub-home band -
@@ -29,6 +29,12 @@ const ADMIN = 'admin@westchesterpreschool.org';
 // code-owned: they are procedure, not identity. Draft-aware in the Studio
 // preview like every hub read.
 const draftMode = await hubDraftMode(Astro.cookies);
+// The Administrator's address is Site settings' emailAdmin (Board-editable);
+// the committed site.ts value is the fallback, never a page-local constant.
+const ADMIN =
+  (await readHubPageDoc<string>(draftMode, ADMIN_EMAIL_QUERY, {}).catch(() => null))?.trim() ||
+  site.email.admin;
+
 const hubSettingsDoc = await readHubPageDoc<{ superHelper?: SuperHelperDoc }>(
   draftMode,
   HUB_SETTINGS_HOME_QUERY,
@@ -36,6 +42,22 @@ const hubSettingsDoc = await readHubPageDoc<{ superHelper?: SuperHelperDoc }>(
 );
 const program = mergeSuperHelper(hubSettingsDoc?.superHelper);
 const CHIPS = ['sky', 'orange', 'green'];
+
+// W1.1 (2026-08-31): the PROCEDURE - course names, fees, sheriff offices,
+// renewal rules - is the fastest-staling content on the hub, so it is now this
+// page's own hubPage document (hubKey "super-helper"; seed the shipped steps
+// with `node scripts/seed-super-helper-page.mjs --apply`). When the doc has
+// sections they REPLACE the committed procedure below wholesale; the committed
+// version stays as the never-blank fallback. The program header + "What it
+// takes" grid stay DERIVED from Hub settings (P2) either way.
+interface HubPageDoc {
+  _id?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections?: any[];
+}
+const pageDoc = await readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'super-helper',
+}).catch(() => null);
 
 // Minimal portable-text builder for the prose sections (unique keys per run).
 let _k = 0;
@@ -50,7 +72,7 @@ const pt = (text: string) => [
   },
 ];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sections: any[] = [
+const headSections: any[] = [
   {
     _type: 'proseSection',
     _key: 'sh-intro',
@@ -93,6 +115,11 @@ const sections: any[] = [
         '',
     })),
   },
+];
+// The PROCEDURE - replaced wholesale by the page's own document once seeded
+// (see the note above pageDoc). Committed fallback, never blank.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const procedureSections: any[] = [
   {
     _type: 'stepListSection',
     _key: 'sh-online',
@@ -234,6 +261,7 @@ const sections: any[] = [
   bare
   current="/family-hub/super-helper"
   pageTitle={`Become a ${program.name} — WCP Family Hub`}
+  previewDocId={draftMode ? publishedId(pageDoc?._id) : undefined}
 >
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
@@ -270,7 +298,17 @@ const sections: any[] = [
         </HubPageHeader>
       </div>
 
-      <HubSectionedBody sections={sections} label="Super Helper steps" class="mt-8" />
+      <HubSectionedBody
+        sections={[
+          ...headSections,
+          ...(pageDoc?.sections?.length ? pageDoc.sections : procedureSections),
+        ]}
+        label="Super Helper steps"
+        class="mt-8"
+        editDoc={draftMode && pageDoc?._id
+          ? { id: publishedId(pageDoc._id)!, type: 'hubPage' }
+          : undefined}
+      />
     </div>
   </Section>
 </HubShell>

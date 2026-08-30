@@ -48,6 +48,14 @@ export const hubSettings = defineType({
         'The current Family Handbook. Upload the new one each year and every hub link to it updates by itself (the topbar button and the hub home card).',
     }),
     defineField({
+      name: 'familyHandbookCover',
+      title: 'Family Handbook cover image',
+      type: 'image',
+      group: 'year',
+      description:
+        'The cover art on the hub-home handbook card. Upload the new cover each year with the PDF; empty keeps the shipped cover.',
+    }),
+    defineField({
       name: 'coopHoursGoal',
       title: 'Co-op hours per family (per year)',
       type: 'number',

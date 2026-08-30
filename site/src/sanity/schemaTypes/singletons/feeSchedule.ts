@@ -43,6 +43,27 @@ export const feeSchedule = defineType({
         'The payment link from the PayPal "registration fee" button — in PayPal, open the button and Copy link (it starts with paypal.com/ncp/payment/). Paste the whole link. Older buttons used a short code instead; a code still works until that button is replaced. Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
+      name: 'registrationTitle',
+      title: 'Registration fee — name',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Renames the first fee card. Empty keeps “Registration Fee”.',
+    }),
+    defineField({
+      name: 'registrationWhen',
+      title: 'Registration fee — due',
+      type: 'string',
+      group: 'enrollment',
+      description: 'The little line beside the amount, e.g. “due at enrollment”.',
+    }),
+    defineField({
+      name: 'registrationAction',
+      title: 'Registration fee — button label',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Empty keeps “Pay Registration Fee”.',
+    }),
+    defineField({
       name: 'participationFee',
       title: 'Participation deposit',
       type: 'string',
@@ -65,6 +86,28 @@ export const feeSchedule = defineType({
       group: 'enrollment',
       description:
         'The payment link from the PayPal "participation deposit" button (Copy link in PayPal; older buttons used a short code, which still works). Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
+    }),
+    defineField({
+      name: 'participationTitle',
+      title: 'Participation fee — name',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Renames the second fee card. Empty keeps “Participation Fee”.',
+    }),
+    defineField({
+      name: 'participationWhen',
+      title: 'Participation fee — due',
+      type: 'string',
+      group: 'enrollment',
+      description:
+        'e.g. “due at May Gathering” — update when the deadline or the event’s name changes.',
+    }),
+    defineField({
+      name: 'participationAction',
+      title: 'Participation fee — button label',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Empty keeps “Pay Deposit”.',
     }),
     defineField({
       name: 'annualAdjustmentNote',

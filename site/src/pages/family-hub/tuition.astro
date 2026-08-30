@@ -45,9 +45,15 @@ interface FeeSchedule {
   registrationFee?: string;
   registrationNote?: string;
   registrationPayId?: string;
+  registrationTitle?: string;
+  registrationWhen?: string;
+  registrationAction?: string;
   participationFee?: string;
   participationNote?: string;
   participationPayId?: string;
+  participationTitle?: string;
+  participationWhen?: string;
+  participationAction?: string;
   studentFeeBands?: { label?: string; amount?: string; payId?: string }[];
   paymentTerms?: { icon?: string; question?: string; answer?: string }[];
 }
@@ -138,15 +144,24 @@ const fee: FeeSchedule | null = await feePromise;
 // band — see src/lib/student-fees.ts.
 const derivedBands = deriveStudentFeeBands(classRows);
 const studentFees = derivedBands.length > 0 ? derivedBands : studentFeesFallback;
+// Every visible word on the two cards is overridable (W1.3, 2026-08-31) - a
+// board that renames the May Gathering or moves a deadline edits the sentence
+// beside the amount, not just the amount.
 const enrollmentFees = [
   {
     ...enrollmentFeesFallback[0],
+    title: fee?.registrationTitle ?? enrollmentFeesFallback[0].title,
+    when: fee?.registrationWhen ?? enrollmentFeesFallback[0].when,
+    action: fee?.registrationAction ?? enrollmentFeesFallback[0].action,
     amount: fee?.registrationFee ?? enrollmentFeesFallback[0].amount,
     body: fee?.registrationNote ?? enrollmentFeesFallback[0].body,
     payId: fee?.registrationPayId ?? enrollmentFeesFallback[0].payId,
   },
   {
     ...enrollmentFeesFallback[1],
+    title: fee?.participationTitle ?? enrollmentFeesFallback[1].title,
+    when: fee?.participationWhen ?? enrollmentFeesFallback[1].when,
+    action: fee?.participationAction ?? enrollmentFeesFallback[1].action,
     amount: fee?.participationFee ?? enrollmentFeesFallback[1].amount,
     body: fee?.participationNote ?? enrollmentFeesFallback[1].body,
     payId: fee?.participationPayId ?? enrollmentFeesFallback[1].payId,

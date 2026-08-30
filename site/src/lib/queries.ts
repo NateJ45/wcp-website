@@ -441,7 +441,20 @@ export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
 // Each product's picture prefers the uploaded photo; the legacy hotlinked
 // URL is the fallback for anything unconverted (field audit 2026-08-23).
-export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, "image": coalesce(photo.asset->url, image) } }`;
+// The store FACTS the fundraising surfaces need (sheet row name, goal, since-
+// label) - tiny and PII-free, rides the board-content cache.
+export const STORE_FACTS_QUERY = `*[_type == "hubStore"][0]{ salesRowName, salesGoal, openedLabel }`;
+
+// Site settings' weather-closure statement (already a Board field on the
+// PUBLIC side) - the hub's calendar + health pages read it too (W1.4), so the
+// district the school follows is stated in ONE place.
+// The Administrator's address (Site settings), for hub surfaces that offer a
+// mailto - the committed site.ts value is the fallback.
+export const ADMIN_EMAIL_QUERY = `*[_type == "siteSettings"][0].emailAdmin`;
+
+export const WEATHER_CLOSURE_QUERY = `*[_type == "siteSettings"][0].closureStatement`;
+
+export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, shippingLine, featuredCollection, storeProducts[]{ title, price, url, "image": coalesce(photo.asset->url, image) } }`;
 
 /**
  * The handful of strings on code-owned utility pages (thank-you, 404, the
@@ -466,6 +479,7 @@ export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "hubSettings"][0].familyHan
 
 /** The hub home's numbers from Hub settings (family-count override). */
 export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount, welcomeLine,
+  "handbookCoverUrl": familyHandbookCover.asset->url,
   superHelper{ name, blurb, footnote, requirements[]{ icon, title, detail, url } } }`;
 
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
@@ -620,7 +634,9 @@ export const ENROLLMENT_PACKET_QUERY = `{
  *  ids, student-fee bands, and the payment FAQ. Falls back to hardcoded values. */
 export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
   registrationFee, registrationNote, registrationPayId,
+  registrationTitle, registrationWhen, registrationAction,
   participationFee, participationNote, participationPayId,
+  participationTitle, participationWhen, participationAction,
   studentFeeBands[]{ label, amount, payId },
   paymentTerms[]{ icon, question, answer }
 }`;

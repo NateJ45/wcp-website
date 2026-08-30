@@ -10,6 +10,12 @@
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
+import {
+  categoryFor,
+  countWord,
+  orderedCategories,
+  titleizeCategory,
+} from '@/lib/hub-doc-categories';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
@@ -37,18 +43,11 @@ interface HubPageDoc {
 // mounts the click-to-edit overlay via previewDocId. Families: unchanged.
 const draftMode = await hubDraftMode(Astro.cookies);
 
-const GROUP_META: Record<string, { label: string; action: string; intro?: string }> = {
-  required: {
-    label: 'Required Forms',
-    action: 'Open form',
-    intro:
-      'Ohio state licensing requires these four on file before your child’s first day. New families, start here.',
-  },
-  handbook: { label: 'Handbooks & Policies', action: 'Open document' },
-  orient: { label: 'Orientation Materials', action: 'View' },
-  minutes: { label: 'Meeting Minutes', action: 'Open document' },
-};
-const GROUP_ORDER = ['required', 'handbook', 'orient', 'minutes'];
+// Labels + order come from the shared registry (src/lib/hub-doc-categories.ts,
+// the same list the Studio dropdown shows), and the required-forms intro
+// derives its COUNT instead of hardcoding "four" (W1.5, 2026-08-31).
+const requiredIntro = (n: number) =>
+  `Ohio state licensing requires ${n > 0 ? `these ${countWord(n)}` : 'certain forms'} on file before your child’s first day. New families, start here.`;
 
 interface HubDocDoc {
   title: string;
@@ -82,11 +81,18 @@ try {
   );
   const usable = docs.filter((d) => d.href);
   if (usable.length > 0) {
-    documentGroups = GROUP_ORDER.filter((k) => usable.some((d) => d.category === k)).map((k) => ({
+    // Registry order first, then any category the registry has never heard of
+    // (titleized from the raw value) — a document filed somewhere new is shown,
+    // never dropped.
+    const present = usable.map((d) => d.category ?? '');
+    documentGroups = orderedCategories(present).map((k) => ({
       key: k,
-      label: GROUP_META[k]?.label ?? k,
-      action: GROUP_META[k]?.action ?? 'Open',
-      intro: GROUP_META[k]?.intro,
+      label: categoryFor(k)?.groupLabel ?? titleizeCategory(k),
+      action: categoryFor(k)?.action ?? 'Open',
+      intro:
+        k === 'required'
+          ? requiredIntro(usable.filter((d) => d.category === 'required').length)
+          : undefined,
       docs: usable
         .filter((d) => d.category === k)
         .map((d) => ({
@@ -171,9 +177,9 @@ const intro =
                   <Icon name="file-check" class="h-5 w-5" />
                 </span>
                 <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
-                  <strong class="font-bold text-heading">New families:</strong> the four Required
-                  Forms below must be on file before your child’s first day — Ohio state licensing
-                  requires them.
+                  <strong class="font-bold text-heading">New families:</strong> the{' '}
+                  {countWord(activeGroup.docs.length)} Required Forms below must be on file before
+                  your child’s first day — Ohio state licensing requires them.
                 </p>
               </HubCard>
             )}

@@ -92,12 +92,15 @@ interface SettingsDoc {
 interface HubSettingsDoc {
   familyCount?: number;
   welcomeLine?: string;
+  handbookCoverUrl?: string;
   superHelper?: SuperHelperDoc;
 }
 interface HubStoreDoc {
   storeUrl?: string;
   storeHeadline?: string;
   storeTagline?: string;
+  shippingLine?: string;
+  featuredCollection?: string;
   storeProducts?: { title?: string; price?: string; url?: string; image?: string }[];
 }
 
@@ -530,8 +533,14 @@ const firstDay = settings?.firstDay;
               icon="book-open"
               colorStyle="color: var(--note-accent, var(--color-sky))"
             />
+            {/* Board upload wins (sized via the Sanity CDN); committed art is
+                the fallback so the card never loses its face. */}
             <img
-              src={handbookCover.src}
+              src={
+                hubSettings?.handbookCoverUrl
+                  ? `${hubSettings.handbookCoverUrl}?w=256&fit=max&auto=format`
+                  : handbookCover.src
+              }
               width={handbookCover.width}
               height={handbookCover.height}
               alt={`Family Handbook ${yearLabel} cover`}
@@ -573,6 +582,8 @@ const firstDay = settings?.firstDay;
             url={store?.storeUrl}
             headline={store?.storeHeadline}
             tagline={store?.storeTagline}
+            shippingLine={store?.shippingLine}
+            featuredCollection={store?.featuredCollection}
             products={store?.storeProducts}
           >
             <div

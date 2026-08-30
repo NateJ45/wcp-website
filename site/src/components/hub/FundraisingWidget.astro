@@ -6,6 +6,9 @@
    unreachable, then to the designed empty state — never a broken card.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import { isStoreSalesRow } from '@/lib/store-sales';
+import { STORE_FACTS_QUERY } from '@/lib/queries';
+import { readHubPageDoc, hubDraftMode } from '@/lib/hub-preview';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubRing from '@/components/hub/HubRing.astro';
 import HubStat from '@/components/hub/HubStat.astro';
@@ -43,13 +46,20 @@ const fundraisers: Fundraiser[] = await getFundraisers(sheetId);
 // live total is available, drop any hand-kept shirt/store-sales sheet row so it
 // isn't double-counted; the store has no goal, so it lifts raised only.
 const storeProfit = await getStoreProfit();
-const isStoreRow = (f: Fundraiser) => /\b(shirt|store)\s+sales\b/i.test(f.name);
+// The row NAME is Board data (Merch store card) - see src/lib/store-sales.ts.
+const storeFacts = await readHubPageDoc<{ salesRowName?: string; salesGoal?: number }>(
+  await hubDraftMode(Astro.cookies),
+  STORE_FACTS_QUERY,
+  {},
+).catch(() => null);
+const isStoreRow = (f: Fundraiser) => isStoreSalesRow(f.name, storeFacts?.salesRowName);
 const shown = storeProfit ? fundraisers.filter((f) => !isStoreRow(f)) : fundraisers;
 const storeNet = storeProfit?.netProfit ?? 0;
 // Keep the replaced row's goal (the budget's merch line) in the total so the
 // year goal doesn't drop — same rule as the Fundraising page.
 const storeGoal = storeProfit
-  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) || storeSalesGoalFallback
+  ? fundraisers.filter(isStoreRow).reduce((s, f) => s + f.goal, 0) ||
+    (storeFacts?.salesGoal ?? storeSalesGoalFallback)
   : 0;
 const totalGoal = shown.reduce((s, f) => s + f.goal, 0) + storeGoal;
 const totalRaised = shown.reduce((s, f) => s + f.raised, 0) + storeNet;

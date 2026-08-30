@@ -365,7 +365,7 @@ export type HubDocument = {
   _updatedAt: string;
   _rev: string;
   title?: string;
-  category?: 'required' | 'handbook' | 'orient' | 'minutes';
+  category?: 'required' | 'handbook' | 'orient' | 'minutes' | 'other';
   description?: string;
   icon?:
     | 'arrow-right'
@@ -1689,6 +1689,13 @@ export type HubSettings = {
     media?: unknown;
     _type: 'file';
   };
+  familyHandbookCover?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: 'image';
+  };
   coopHoursGoal?: number;
   familyCount?: number;
   pastFundraisingTotals?: Array<{
@@ -1793,6 +1800,11 @@ export type HubStore = {
   storeUrl?: string;
   storeHeadline?: string;
   storeTagline?: string;
+  shippingLine?: string;
+  featuredCollection?: string;
+  salesRowName?: string;
+  salesGoal?: number;
+  openedLabel?: string;
   storeProducts?: Array<{
     title?: string;
     price?: string;
@@ -2022,6 +2034,8 @@ export type HubPage = {
     | 'fundraising'
     | 'health'
     | 'directory'
+    | 'getting-started'
+    | 'super-helper'
     | 'twos-threes'
     | 'pre-k';
   slug?: string;
@@ -2328,9 +2342,15 @@ export type FeeSchedule = {
   registrationFee?: string;
   registrationNote?: string;
   registrationPayId?: string;
+  registrationTitle?: string;
+  registrationWhen?: string;
+  registrationAction?: string;
   participationFee?: string;
   participationNote?: string;
   participationPayId?: string;
+  participationTitle?: string;
+  participationWhen?: string;
+  participationAction?: string;
   annualAdjustmentNote?: string;
   studentFeeBands?: Array<{
     label?: string;

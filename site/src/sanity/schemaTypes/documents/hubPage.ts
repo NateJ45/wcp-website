@@ -58,6 +58,8 @@ export const hubPage = defineType({
           { title: 'Fundraising', value: 'fundraising' },
           { title: 'Health', value: 'health' },
           { title: 'Directory', value: 'directory' },
+          { title: 'Getting Started', value: 'getting-started' },
+          { title: 'Become a Super Helper', value: 'super-helper' },
           // One entry per PAGE (both class pairs share one page each; the
           // per-class keys were merged away 2026-08-24).
           { title: 'Twos & Threes classroom', value: 'twos-threes' },
