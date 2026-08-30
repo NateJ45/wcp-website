@@ -116,6 +116,74 @@ function normalizeHeadingLevels(blocks: PortableTextBlock[]): PortableTextBlock[
   });
 }
 
+// -----------------------------------------------------------------------------
+// Internal links — reference-based, never rot (2026-08-31)
+// -----------------------------------------------------------------------------
+// The `internalLink` annotation stores a REFERENCE to a page/post/hubPage; the
+// href resolves here against a small cached map of every published route, so a
+// renamed page keeps every letter/FAQ/section that linked to it working. The
+// map is primed once per request by BaseLayout (`ensureInternalRouteMap`) —
+// renderers stay synchronous. Unresolvable targets (unpublished, archived,
+// map not primed) render as plain text: a dead link is worse than no link.
+interface RouteRow {
+  _id: string;
+  _type: string;
+  pageSlug?: string;
+  postSlug?: string;
+  hubKey?: string;
+  hubSlug?: string;
+  archived?: boolean;
+}
+const ROUTES_QUERY = `*[_type in ["page", "post", "hubPage"] && !(_id in path("drafts.**"))]{
+  _id, _type, archived, "pageSlug": slug, "postSlug": slug.current, hubKey, "hubSlug": slug
+}`;
+
+function routeFor(r: RouteRow): string | null {
+  if (r.archived) return null;
+  if (r._type === 'page')
+    return r.pageSlug ? (r.pageSlug === 'home' ? '/' : `/${r.pageSlug}`) : null;
+  if (r._type === 'post') return r.postSlug ? `/news/${r.postSlug}` : null;
+  if (r._type === 'hubPage') {
+    if (r.hubKey) return r.hubKey === 'home' ? '/family-hub' : `/family-hub/${r.hubKey}`;
+    return typeof r.hubSlug === 'string' && r.hubSlug ? `/family-hub/${r.hubSlug}` : null;
+  }
+  return null;
+}
+
+let routeCache: { at: number; map: Map<string, string> } | null = null;
+
+/** Prime (or refresh) the id → route map. Called once per page render from
+ *  BaseLayout; ~5-min memo so hub SSR bursts share one read. Failure leaves
+ *  whatever map exists (possibly empty) — links degrade to plain text. */
+export async function ensureInternalRouteMap(): Promise<void> {
+  if (routeCache && Date.now() - routeCache.at < 300_000) return;
+  let rows: RouteRow[] = [];
+  try {
+    // Worker/SSR path (authed, board-content style read)…
+    const { sanityFetch } = await import('@/lib/sanity');
+    rows = (await sanityFetch<RouteRow[]>(ROUTES_QUERY)) ?? [];
+  } catch {
+    try {
+      // …and the prerender/build path (the CDN client).
+      const { cmsFetch } = await import('@/lib/cms');
+      rows = (await cmsFetch<RouteRow[]>(ROUTES_QUERY, {}, [])) ?? [];
+    } catch {
+      rows = [];
+    }
+  }
+  if (rows.length === 0 && routeCache) return; // keep the old map over nothing
+  const map = new Map<string, string>();
+  for (const r of rows) {
+    const href = routeFor(r);
+    if (href) map.set(r._id, href);
+  }
+  routeCache = { at: Date.now(), map };
+}
+
+/** The resolved route for a referenced doc id, if the map knows it. */
+export const internalHref = (id: string | undefined): string | undefined =>
+  id ? routeCache?.map.get(id) : undefined;
+
 function linkMark(linkBase: string): Partial<PortableTextHtmlComponents>['marks'] {
   return {
     link: ({ children, value }) => {
@@ -124,6 +192,14 @@ function linkMark(linkBase: string): Partial<PortableTextHtmlComponents>['marks'
       const external = /^https?:\/\//.test(href);
       const rel = external ? ' target="_blank" rel="noopener"' : '';
       return `<a href="${escapeAttr(href)}"${rel}>${children}</a>`;
+    },
+    internalLink: ({ children, value }) => {
+      const ref = (value as { reference?: { _ref?: string } } | undefined)?.reference?._ref;
+      const target = internalHref(ref);
+      // Unpublished/archived/unknown target: the words render, the link does
+      // not — a dead href would be worse.
+      if (!target) return String(children);
+      return `<a href="${escapeAttr(withBase(target, linkBase))}">${children}</a>`;
     },
   };
 }

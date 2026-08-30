@@ -1,0 +1,61 @@
+# =============================================================================
+# Nightly Sanity dataset backup (2026-08-31, back-ported from presacademy)
+# =============================================================================
+# Exports the production dataset (documents + assets) every night and keeps
+# each export as a workflow artifact for 30 days. The dataset is the school's
+# institutional memory — directory, letters, budgets, a decade of pages — and
+# this is the "someone deleted the wrong thing last Tuesday" insurance the
+# Studio's trash can cannot provide once Delete-forever has run.
+#
+# Restore: download the artifact, then
+#   npx sanity dataset import production.tar.gz production --replace
+# (from site/, logged in — see docs/SANITY.md).
+#
+# Needs the SANITY_BACKUP_TOKEN repo secret (a read token; the deploy token
+# works too). Skips with a notice when the secret is absent, so the workflow
+# is safe to merge before the secret exists.
+# =============================================================================
+name: Backup
+
+on:
+  schedule:
+    - cron: '17 7 * * *' # nightly, 07:17 UTC (overnight US Eastern)
+  workflow_dispatch: {}
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install
+        working-directory: site
+        run: npm ci
+
+      - name: Export dataset
+        working-directory: site
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_BACKUP_TOKEN }}
+        run: |
+          if [ -z "$SANITY_AUTH_TOKEN" ]; then
+            echo "::notice::SANITY_BACKUP_TOKEN is not set — skipping the export. Add the repo secret to enable nightly backups."
+            exit 0
+          fi
+          npx sanity dataset export production backup.tar.gz --overwrite
+          ls -lh backup.tar.gz
+
+      - name: Keep the export
+        if: ${{ hashFiles('site/backup.tar.gz') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-production-${{ github.run_id }}
+          path: site/backup.tar.gz
+          retention-days: 30
+          if-no-files-found: error

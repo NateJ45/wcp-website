@@ -46,6 +46,12 @@ const RESERVED_PAGE_SLUGS: readonly string[] = [
 // =============================================================================
 export const page = defineType({
   name: 'page',
+  // Studio search matches the words on the page, not just its internal title.
+  __experimental_search: [
+    { path: 'title', weight: 5 },
+    { path: 'hero.heading', weight: 4 },
+    { path: 'seo.description', weight: 2 },
+  ],
   title: 'Page',
   type: 'document',
   icon: () => '📄',

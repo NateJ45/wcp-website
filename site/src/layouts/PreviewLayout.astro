@@ -20,6 +20,7 @@ import Footer from '@/components/Footer.astro';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
 import { docEditAttr } from '@/lib/preview-edit-attr';
+import { ensureInternalRouteMap } from '@/lib/portable-text';
 import { previewFetch } from '@/lib/cms-preview';
 import { CLOSURE_ALERT_QUERY } from '@/lib/queries';
 import type { ClosureAlert } from '@/lib/cms';
@@ -58,6 +59,7 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
 // The response is still a valid page, just a chrome-less one. Nobody looks at
 // it: this header is only ever sent by the refetch in the overlay, never by a
 // navigation. Preview-only either way — the static build never reaches here.
+await ensureInternalRouteMap();
 const softRefresh = Astro.request.headers.get('x-preview-soft-refresh') === '1';
 const showChrome = chrome === 'public' && !softRefresh;
 

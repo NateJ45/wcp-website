@@ -18,6 +18,7 @@ import HubTabBar from '@/components/hub/HubTabBar.astro';
 import HubSearch from '@/components/hub/HubSearch.astro';
 import HubSpotlightModal from '@/components/hub/HubSpotlightModal.astro';
 import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
+import { ensureInternalRouteMap } from '@/lib/portable-text';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import AnnouncementBars from '@/components/AnnouncementBars.astro';
 import AnnouncementModal from '@/components/AnnouncementModal.astro';
@@ -112,6 +113,10 @@ const {
   nofollow = false,
   rssFeed,
 } = Astro.props;
+
+// Prime the internal-link route map (reference-based links in rich text —
+// src/lib/portable-text.ts). Once per render, ~5-min memo, degrades silently.
+await ensureInternalRouteMap();
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
 // Every page gets a share card: the page's own og image (a post's cover, a

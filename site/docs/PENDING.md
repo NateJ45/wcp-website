@@ -358,6 +358,9 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for.
+- **Add the `SANITY_BACKUP_TOKEN` repo secret** (GitHub → Settings → Secrets →
+  Actions; any Sanity read token works) so the new nightly dataset-backup
+  workflow (`backup.yml`) starts exporting. Until then it skips with a notice.
 - **Board sets the co-op hours goal** (Studio → Family Hub workspace → Hub
   settings, since 2026-08-23) — until then `/family-hub/hours` shows its
   designed empty state.

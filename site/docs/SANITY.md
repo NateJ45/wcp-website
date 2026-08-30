@@ -476,3 +476,13 @@ finishes.
   `npx sanity dev` (separate port).
 - The website reading content does **not** depend on CORS or the Studio deploy — that path
   uses the token server-side and already works (the Updates page is live-wired as the proof).
+
+## Nightly backups (2026-08-31)
+
+`.github/workflows/backup.yml` exports the production dataset (documents +
+assets) every night at 07:17 UTC and keeps each export as a 30-day workflow
+artifact — the insurance the Studio trash cannot provide once Delete-forever
+runs. It needs the `SANITY_BACKUP_TOKEN` repo secret (any read token); until
+that secret exists the job skips with a notice. Restore:
+`npx sanity dataset import <artifact>.tar.gz production --replace` from
+`site/`, logged in.

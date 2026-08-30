@@ -21,6 +21,13 @@ import { IconPickerInput } from '../../components/IconPickerInput';
 // =============================================================================
 export const hubPage = defineType({
   name: 'hubPage',
+  // Studio search finds these pages by what families see (heading/intro), not
+  // just the internal name.
+  __experimental_search: [
+    { path: 'title', weight: 5 },
+    { path: 'heading', weight: 4 },
+    { path: 'intro', weight: 2 },
+  ],
   title: 'Family Hub page',
   type: 'document',
   icon: () => '🔒',
@@ -47,6 +54,22 @@ export const hubPage = defineType({
       group: 'settings',
       description:
         'Only for the pages that came with the site. Pick the one this content belongs to, and set it once — do not change it later. Making a BRAND-NEW page instead? Leave this empty and fill in the web address below.',
+      validation: (R) =>
+        R.custom(async (value, context) => {
+          // "Set it once — do not change it later" is now ENFORCED, not just
+          // described: once a published version has a hubKey, changing it
+          // blocks publish (the built-in routes key on it; a changed key
+          // orphans the page's content). Clearing back to the published value
+          // always passes.
+          const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
+          if (!id) return true;
+          const client = context.getClient({ apiVersion: '2025-01-01' });
+          const published = await client.fetch<string | null>(`*[_id == $id][0].hubKey`, { id });
+          if (published && value !== published) {
+            return `This page is published as “${published}”. The hub key is set once — to move content, make a new page instead.`;
+          }
+          return true;
+        }),
       options: {
         list: [
           { title: 'Hub home', value: 'home' },

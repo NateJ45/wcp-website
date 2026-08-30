@@ -34,6 +34,8 @@ import { PAGE_BUILDER_TYPES } from './src/sanity/pageBuilderConfig';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
+import { HUB_TEMPLATES } from './src/sanity/hubTemplates';
+import { resolveBadges } from './src/sanity/badges';
 import { publicStructure, hubStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
 import { wcpStudioTheme } from './src/sanity/theme';
@@ -219,7 +221,12 @@ function workspace(opts: {
       types: schemaTypes,
       // Pre-filled "＋ New" starting points: announcement bars/popups and the
       // page layout templates (the blank "Page" option stays available too).
-      templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES, ...PAGE_TEMPLATES],
+      templates: (prev) => [
+        ...prev,
+        ...ANNOUNCEMENT_TEMPLATES,
+        ...PAGE_TEMPLATES,
+        ...HUB_TEMPLATES,
+      ],
     },
     document: {
       // Action wiring, in priority order:
@@ -245,6 +252,9 @@ function workspace(opts: {
       // cookie, which is all the gated hub preview asks for, so a hub link
       // would hand family content to whoever holds it. The reasoning lives in
       // src/sanity/urls.ts — read it before adding hubPage there.
+      // Status chips on lists/headers — expired spotlights, past events,
+      // self-publishing drafts, pinned updates (src/sanity/badges.ts).
+      badges: resolveBadges,
       actions: (prev, { schemaType }) => {
         const base = SLUG_REDIRECT_TYPES.has(schemaType)
           ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
