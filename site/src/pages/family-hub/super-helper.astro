@@ -17,8 +17,25 @@ import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/Icon.astro';
+import { hubDraftMode, readHubPageDoc, hubEditAttr } from '@/lib/hub-preview';
+import { mergeSuperHelper, type SuperHelperDoc } from '@/lib/hub-super-helper';
+import { HUB_SETTINGS_HOME_QUERY } from '@/lib/queries';
 
 const ADMIN = 'admin@westchesterpreschool.org';
+
+// P2 (2026-08-31): the program's NAME, pitch and requirement list are Board
+// data (Hub settings -> Super Helper program), shared with the hub-home band -
+// one edit renames/reworks both. The deep step-by-step sections below stay
+// code-owned: they are procedure, not identity. Draft-aware in the Studio
+// preview like every hub read.
+const draftMode = await hubDraftMode(Astro.cookies);
+const hubSettingsDoc = await readHubPageDoc<{ superHelper?: SuperHelperDoc }>(
+  draftMode,
+  HUB_SETTINGS_HOME_QUERY,
+  {},
+);
+const program = mergeSuperHelper(hubSettingsDoc?.superHelper);
+const CHIPS = ['sky', 'orange', 'green'];
 
 // Minimal portable-text builder for the prose sections (unique keys per run).
 let _k = 0;
@@ -55,29 +72,26 @@ const sections: any[] = [
       lead: 'Three things, plus your Employee Medical Statement and background check.',
       align: 'center',
     },
-    cards: [
-      {
-        _key: 'sh-w1',
-        icon: 'monitor',
-        chip: 'sky',
-        title: 'Online training',
-        body: 'About 8 hours: Child Care Orientation and Child Abuse recognition, done online through your OCCRRA account.',
-      },
-      {
-        _key: 'sh-w2',
-        icon: 'heart-pulse',
-        chip: 'orange',
-        title: 'CPR & First Aid',
-        body: 'In-person Adult and Pediatric CPR and First Aid, certified by the State of Ohio.',
-      },
-      {
-        _key: 'sh-w3',
-        icon: 'graduation-cap',
-        chip: 'green',
-        title: 'Proof of education',
-        body: 'An official transcript or diploma showing you finished high school or college.',
-      },
-    ],
+    // Derived from the Board's requirement list. The three shipped steps keep
+    // their richer committed bodies (matched by title); a Board-written step
+    // shows its one-liner.
+    cards: program.requirements.map((req, i) => ({
+      _key: `sh-w${i + 1}`,
+      icon: req.icon,
+      chip: CHIPS[i % CHIPS.length],
+      title: req.title,
+      body:
+        {
+          'Online training':
+            'About 8 hours: Child Care Orientation and Child Abuse recognition, done online through your OCCRRA account.',
+          'CPR & First Aid':
+            'In-person Adult and Pediatric CPR and First Aid, certified by the State of Ohio.',
+          'Proof of education':
+            'An official transcript or diploma showing you finished high school or college.',
+        }[req.title] ??
+        req.detail ??
+        '',
+    })),
   },
   {
     _type: 'stepListSection',
@@ -216,42 +230,45 @@ const sections: any[] = [
 ---
 
 <HubShell
-  title="Become a Super Helper"
+  title={`Become a ${program.name}`}
   bare
   current="/family-hub/super-helper"
-  pageTitle="Become a Super Helper — WCP Family Hub"
+  pageTitle={`Become a ${program.name} — WCP Family Hub`}
 >
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
-      <HubPageHeader
-        title="Become a Super Helper"
-        subtitle="Get certified to volunteer in the classroom. Here is every step, start to finish."
-        icon="star"
-        iconChip="bg-amber/25 text-orange-ink"
-      >
-        <div slot="action" class="flex flex-wrap gap-2">
-          <Button
-            href="/super-helper-certification.pdf"
-            target="_blank"
-            rel="noopener"
-            variant="outline"
-            size="sm"
-          >
-            <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
-            Super Helper steps (PDF)
-          </Button>
-          <Button
-            href="/background-check-renewal.pdf"
-            target="_blank"
-            rel="noopener"
-            variant="outline"
-            size="sm"
-          >
-            <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
-            Background check (PDF)
-          </Button>
-        </div>
-      </HubPageHeader>
+      {/* The header wrap is the click-to-edit target for the whole program. */}
+      <div data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'superHelper')}>
+        <HubPageHeader
+          title={`Become a ${program.name}`}
+          subtitle="Get certified to volunteer in the classroom. Here is every step, start to finish."
+          icon="star"
+          iconChip="bg-amber/25 text-orange-ink"
+        >
+          <div slot="action" class="flex flex-wrap gap-2">
+            <Button
+              href="/super-helper-certification.pdf"
+              target="_blank"
+              rel="noopener"
+              variant="outline"
+              size="sm"
+            >
+              <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+              Super Helper steps (PDF)
+            </Button>
+            <Button
+              href="/background-check-renewal.pdf"
+              target="_blank"
+              rel="noopener"
+              variant="outline"
+              size="sm"
+            >
+              <Icon name="file-text" class="h-4 w-4" aria-hidden="true" />
+              Background check (PDF)
+            </Button>
+          </div>
+        </HubPageHeader>
+      </div>
 
       <HubSectionedBody sections={sections} label="Super Helper steps" class="mt-8" />
     </div>

@@ -103,6 +103,12 @@ if (tiles.length === 0) {
       videoUrl: '',
     }));
 }
+interface Props {
+  /** Board wording override (hubPage.widgetText). Undefined = shipped copy. */
+  heading?: string;
+  blurb?: string;
+}
+const { heading, blurb } = Astro.props;
 ---
 
 {
@@ -145,7 +151,7 @@ if (tiles.length === 0) {
                   id="hub-social-heading"
                   class="mt-1.5 font-display text-2xl leading-tight text-white sm:text-3xl"
                 >
-                  Life inside WCP
+                  {heading ?? 'Life inside WCP'}
                 </h2>
               </div>
             </div>
@@ -175,8 +181,8 @@ if (tiles.length === 0) {
           </div>
 
           <p class="mt-2 max-w-lg text-sm text-white/80">
-            Classroom moments, school events, and the everyday joy of being part of a co-op
-            community.
+            {blurb ??
+              'Classroom moments, school events, and the everyday joy of being part of a co-op community.'}
           </p>
 
           <ul class="wcp-wall-grid" data-wall>

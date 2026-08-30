@@ -5,6 +5,7 @@ import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
 import { widgetOptionsFor } from '../../../lib/hub-widgets';
 import { HubWidgetToggles } from '../../components/HubWidgetToggles';
+import { HubWidgetTextInput } from '../../components/HubWidgetTextInput';
 import { IconPickerInput } from '../../components/IconPickerInput';
 
 // =============================================================================
@@ -250,6 +251,29 @@ export const hubPage = defineType({
       components: { input: HubWidgetToggles },
       hidden: ({ document }) =>
         widgetOptionsFor((document as { hubKey?: string } | undefined)?.hubKey).length === 0,
+    }),
+    defineField({
+      name: 'widgetText',
+      title: 'Widget wording',
+      type: 'array',
+      group: 'content',
+      description:
+        'Rewrite a widget’s title or one-liner. Empty boxes keep the wording the site shipped with.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'widget', title: 'Widget', type: 'string' }),
+            defineField({ name: 'title', title: 'Title', type: 'string' }),
+            defineField({ name: 'blurb', title: 'One-liner', type: 'string' }),
+          ],
+        }),
+      ],
+      components: { input: HubWidgetTextInput },
+      hidden: ({ document }) =>
+        widgetOptionsFor((document as { hubKey?: string } | undefined)?.hubKey).filter(
+          (o) => o.text,
+        ).length === 0,
     }),
 
     // Keep the page a DRAFT and it publishes itself at this time (within the

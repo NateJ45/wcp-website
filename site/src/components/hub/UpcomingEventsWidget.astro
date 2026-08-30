@@ -57,11 +57,17 @@ const foldedCount = Math.max(0, events.length - MOBILE_CAP);
 // scan would run before this island streams in). "<" escaped so a title can
 // never break out of the script context.
 const detailsJson = JSON.stringify(events.map(toEventDetail)).replace(/</g, '\\u003c');
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="calendar-days"
-  title="Upcoming Events"
+  title={heading ?? 'Upcoming Events'}
   seeAllHref="/family-hub/calendar"
   empty={events.length === 0}
   emptyText="Upcoming events will list here once they're added."

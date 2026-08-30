@@ -19,11 +19,17 @@ import { hubEditAttr } from '@/lib/hub-preview';
 // its album tile with no code change. A class with no album link is skipped.
 const albums = classTiles(await getHubClassrooms()).filter((c) => c.photoAlbumUrl);
 const empty = albums.length === 0;
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="camera"
-  title="Class Photos"
+  title={heading ?? 'Class Photos'}
   empty={empty}
   emptyText="Class photos will appear here once the photo gallery is set up."
 >

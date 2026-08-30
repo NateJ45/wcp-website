@@ -33,11 +33,17 @@ try {
 }
 
 const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="newspaper"
-  title="Announcements"
+  title={heading ?? 'Announcements'}
   seeAllHref="/family-hub/updates"
   postit
   empty={updates.length === 0}

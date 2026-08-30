@@ -36,11 +36,17 @@ const money = (n: number) => `$${Math.round(Math.abs(n)).toLocaleString('en-US')
 const net = snap ? snap.revenueActual - snap.expensesActual : 0;
 
 const health = snap ? budgetHealth(snap.cash) : null;
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="piggy-bank"
-  title="Budget Snapshot"
+  title={heading ?? 'Budget Snapshot'}
   seeAllHref="/family-hub/documents"
   seeAllLabel="Full reports"
   empty={!snap}

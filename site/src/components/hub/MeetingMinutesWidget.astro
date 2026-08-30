@@ -54,11 +54,17 @@ if (minutes.length === 0) {
     minutes = [];
   }
 }
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="file-text"
-  title="Meeting Minutes"
+  title={heading ?? 'Meeting Minutes'}
   seeAllHref="/family-hub/updates"
   postit
   empty={minutes.length === 0}

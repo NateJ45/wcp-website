@@ -787,6 +787,19 @@ and `/preview/live`'s listen filter excludes family-generated machine docs (sign
 photo submissions, hours logs, form submissions, subscribers, `sanity.*`) so background
 family activity never triggers preview re-renders.
 
+**Editable widget wording (P1–P4, 2026-08-31)**: `hubPage.widgetText` stores per-widget
+title/blurb overrides (empty = shipped copy; `widgetTextFor` in `src/lib/hub-widgets.ts`
+strips stega from the KEY only — titles keep it for click-to-edit; Studio input
+`HubWidgetTextInput`, rows limited to registry entries with a `text` capability). The
+greeting's welcome line is `hubSettings.welcomeLine`; the handbook card derives its year
+from `siteSettings.schoolYearLabel`. The **Super Helper program** is ONE source
+(`hubSettings.superHelper`, merge rules + committed fallback in
+`src/lib/hub-super-helper.ts` / `src/data/hub/super-helper.ts`) feeding both the hub-home
+band and `/family-hub/super-helper`'s header + "What it takes" cards; a Board-written
+requirements list replaces the shipped one wholesale, and a requirement may carry a link.
+The home page's settings/store reads are draft-aware in preview, so all of this shows
+pre-publish.
+
 **Widget switches (2026-08-30)**: `hubPage.hiddenWidgets` stores the OFF list (missing =
 all on, so no migration ever). The registry of switchable tiles per hubKey, the
 `hiddenWidgetSet`/`shows` rules, and a drift gate that proves the page honors every

@@ -218,7 +218,7 @@ export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key
 // An archived hub page drops out: a built-in page falls back to the content it
 // ships with, so the hub can never go blank.
 export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archived != true][0]{
-  _id, heading, intro, hiddenWidgets, _updatedAt,
+  _id, heading, intro, hiddenWidgets, widgetText, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   sections[]{
     ...,
@@ -465,7 +465,8 @@ export const HUB_DELIGHTS_QUERY = `*[_type == "hubDelights"][0]{
 export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "hubSettings"][0].familyHandbook.asset->url`;
 
 /** The hub home's numbers from Hub settings (family-count override). */
-export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount }`;
+export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount, welcomeLine,
+  superHelper{ name, blurb, footnote, requirements[]{ icon, title, detail, url } } }`;
 
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
 export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`;

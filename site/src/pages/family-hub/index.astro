@@ -42,7 +42,8 @@ import {
 } from '@/lib/queries';
 import { getHubClassrooms } from '@/lib/hub-classes';
 import { hubDraftMode, readHubPageDoc, publishedId, hubEditAttr } from '@/lib/hub-preview';
-import { hiddenWidgetSet, shows } from '@/lib/hub-widgets';
+import { hiddenWidgetSet, shows, widgetTextFor } from '@/lib/hub-widgets';
+import { mergeSuperHelper, type SuperHelperDoc } from '@/lib/hub-super-helper';
 import { classTiles } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
@@ -77,17 +78,21 @@ interface HubPageDoc {
   heading?: string;
   intro?: string;
   hiddenWidgets?: string[];
+  widgetText?: { widget?: string; title?: string; blurb?: string }[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
 interface SettingsDoc {
   tagline?: string;
+  schoolYearLabel?: string;
   yearStart?: string;
   yearEnd?: string;
   firstDay?: string;
 }
 interface HubSettingsDoc {
   familyCount?: number;
+  welcomeLine?: string;
+  superHelper?: SuperHelperDoc;
 }
 interface HubStoreDoc {
   storeUrl?: string;
@@ -109,9 +114,9 @@ const draftMode = await hubDraftMode(Astro.cookies);
 const [docResult, settingsResult, hubSettingsResult, storeResult, familyCountResult] =
   await Promise.allSettled([
     readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, { key: 'home' }),
-    sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-    sanityFetch<HubSettingsDoc | null>(HUB_SETTINGS_HOME_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-    sanityFetch<HubStoreDoc | null>(HUB_STORE_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+    readHubPageDoc<SettingsDoc>(draftMode, SITE_SETTINGS_QUERY, {}),
+    readHubPageDoc<HubSettingsDoc>(draftMode, HUB_SETTINGS_HOME_QUERY, {}),
+    readHubPageDoc<HubStoreDoc>(draftMode, HUB_STORE_QUERY, {}),
     // The count is a scalar over directory docs (no PII in the result), so it
     // rides the same cache — a new opt-in showing a few minutes late is fine.
     sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
@@ -127,6 +132,12 @@ const title = doc?.heading || 'Family Hub';
 // Drafts count in preview, so flipping a switch shows in Presentation before
 // Publish. The registry + rules live in src/lib/hub-widgets.ts.
 const hidden = hiddenWidgetSet(doc?.hiddenWidgets);
+// P3 wording overrides (Hub home -> Widget wording). Empty = shipped copy.
+const text = (w: string) => widgetTextFor(doc?.widgetText, w);
+// P2: the Super Helper program, Board-edited in one place for band + page.
+const superHelper = mergeSuperHelper(hubSettings?.superHelper);
+// P1: year-facts derive from Site settings so nothing goes stale in September.
+const yearLabel = settings?.schoolYearLabel?.trim() || '2026/2027';
 const familyCount = hubSettings?.familyCount ?? liveFamilyCount;
 
 const firstDay = settings?.firstDay;
@@ -212,6 +223,7 @@ const firstDay = settings?.firstDay;
           yearEnd={settings?.yearEnd}
           firstDay={firstDay}
           familyCount={familyCount}
+          welcomeLine={hubSettings?.welcomeLine}
         />
       </div>
 
@@ -243,7 +255,7 @@ const firstDay = settings?.firstDay;
             style="--reveal-delay: 60ms; --note-accent: var(--color-sky)"
             data-morph-keep
           >
-            <UpcomingEventsWidget server:defer>
+            <UpcomingEventsWidget server:defer heading={text('events').title}>
               <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
             </UpcomingEventsWidget>
           </div>
@@ -336,7 +348,7 @@ const firstDay = settings?.firstDay;
       {
         shows(hidden, 'weather') && (
           <div class="lg:col-span-12" style="--reveal-delay: 150ms">
-            <WeatherWeekWidget />
+            <WeatherWeekWidget heading={text('weather').title} blurb={text('weather').blurb} />
           </div>
         )
       }
@@ -354,7 +366,7 @@ const firstDay = settings?.firstDay;
             class="order-1 lg:order-none lg:col-span-8"
             style="--reveal-delay: 180ms; --note-accent: var(--color-orange)"
           >
-            <AnnouncementsWidget />
+            <AnnouncementsWidget heading={text('announcements').title} />
           </div>
         )
       }
@@ -365,7 +377,7 @@ const firstDay = settings?.firstDay;
             style="--reveal-delay: 240ms; --note-accent: var(--color-green)"
             data-morph-keep
           >
-            <FundraisingWidget server:defer>
+            <FundraisingWidget server:defer heading={text('fundraising').title}>
               <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
             </FundraisingWidget>
           </div>
@@ -377,7 +389,7 @@ const firstDay = settings?.firstDay;
             class="order-2 lg:order-none lg:col-span-4"
             style="--reveal-delay: 300ms; --note-accent: var(--color-amber)"
           >
-            <MeetingMinutesWidget />
+            <MeetingMinutesWidget heading={text('minutes').title} />
           </div>
         )
       }
@@ -387,7 +399,7 @@ const firstDay = settings?.firstDay;
             class="order-5 lg:order-none lg:col-span-4"
             style="--reveal-delay: 360ms; --note-accent: var(--color-sky)"
           >
-            <ClassPhotosWidget />
+            <ClassPhotosWidget heading={text('photos').title} />
           </div>
         )
       }
@@ -398,7 +410,7 @@ const firstDay = settings?.firstDay;
             style="--reveal-delay: 420ms; --note-accent: var(--color-green)"
             data-morph-keep
           >
-            <BudgetSnapshotWidget server:defer>
+            <BudgetSnapshotWidget server:defer heading={text('budget').title}>
               <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
             </BudgetSnapshotWidget>
           </div>
@@ -407,17 +419,22 @@ const firstDay = settings?.firstDay;
     </div>
 
     {
-      /* Become a Super Helper — the school's top volunteer ask, so this banner
-        previews the certification path itself: the three requirements from
-        /family-hub/super-helper as mini-cards, plus the one-time reassurance
-        and a renewal pointer. The pill is the ONE link; its after:inset-0
-        overlay stretches the click target across the whole card while the
-        accessible link name stays short. Keep the copy in step with the
-        super-helper page when its requirements change. */
+      /* The Super Helper band — the school's top volunteer ask. Everything it
+        says is the PROGRAM's data (Hub settings → Super Helper program, one
+        source shared with /family-hub/super-helper's header; committed
+        fallback in src/data/hub/super-helper.ts), so a future board renames a
+        step once and both surfaces follow. The pill is the ONE link; its
+        after:inset-0 overlay stretches the click target across the card —
+        unless a step carries its own link, which sits above the overlay. */
     }
     {
       shows(hidden, 'superHelper') && (
-        <section aria-labelledby="hub-super-heading" class="mt-4" data-reveal>
+        <section
+          aria-labelledby="hub-super-heading"
+          class="mt-4"
+          data-reveal
+          data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'superHelper')}
+        >
           <div
             class="wcp-lift hub-note group relative isolate overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 dark:bg-amber/10"
             style="--note-accent: var(--color-amber)"
@@ -432,12 +449,9 @@ const firstDay = settings?.firstDay;
               </span>
               <div class="min-w-0 flex-1">
                 <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
-                  Become a Super Helper
+                  Become a {superHelper.name}
                 </h2>
-                <p class="mt-1 text-ink">
-                  Certified parents can be counted in the classroom and help lead the day. It is a
-                  one-time certification, and it takes three things.
-                </p>
+                <p class="mt-1 text-ink">{superHelper.blurb}</p>
               </div>
               <a
                 href="/family-hub/super-helper"
@@ -452,46 +466,42 @@ const firstDay = settings?.firstDay;
               </a>
             </div>
             <ol class="mt-5 grid gap-3 sm:grid-cols-3">
-              <li class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5">
-                <span
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/25 text-sky-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name="monitor" class="h-5 w-5" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block font-bold text-heading">Online training</span>
-                  <span class="block text-sm text-ink">About 8 hours, free, from home.</span>
-                </span>
-              </li>
-              <li class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5">
-                <span
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange/20 text-orange-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name="heart-pulse" class="h-5 w-5" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block font-bold text-heading">CPR & First Aid</span>
-                  <span class="block text-sm text-ink">One in-person class near you.</span>
-                </span>
-              </li>
-              <li class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5">
-                <span
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green/20 text-green-ink"
-                  aria-hidden="true"
-                >
-                  <Icon name="graduation-cap" class="h-5 w-5" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block font-bold text-heading">Proof of education</span>
-                  <span class="block text-sm text-ink">Send a transcript or diploma.</span>
-                </span>
-              </li>
+              {superHelper.requirements.map((req, i) => {
+                /* The shipped palette cycles so a fourth requirement still
+                   gets a sensible chip color. */
+                const chips = [
+                  'bg-sky/25 text-sky-ink',
+                  'bg-orange/20 text-orange-ink',
+                  'bg-green/20 text-green-ink',
+                ];
+                return (
+                  <li class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5">
+                    <span
+                      class={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${chips[i % chips.length]}`}
+                      aria-hidden="true"
+                    >
+                      <Icon name={req.icon} class="h-5 w-5" />
+                    </span>
+                    <span class="min-w-0">
+                      {req.url ? (
+                        <a
+                          href={req.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="relative z-10 block font-bold text-heading underline decoration-amber decoration-2 underline-offset-2"
+                        >
+                          {req.title}
+                        </a>
+                      ) : (
+                        <span class="block font-bold text-heading">{req.title}</span>
+                      )}
+                      {req.detail && <span class="block text-sm text-ink">{req.detail}</span>}
+                    </span>
+                  </li>
+                );
+              })}
             </ol>
-            <p class="mt-4 text-sm text-ink-muted">
-              Already a Super Helper? The background check renewal steps live on the same page.
-            </p>
+            <p class="mt-4 text-sm text-ink-muted">{superHelper.footnote}</p>
           </div>
         </section>
       )
@@ -524,16 +534,16 @@ const firstDay = settings?.firstDay;
               src={handbookCover.src}
               width={handbookCover.width}
               height={handbookCover.height}
-              alt="Family Handbook 2026/2027 cover"
+              alt={`Family Handbook ${yearLabel} cover`}
               class="h-32 w-auto shrink-0 rounded-lg border border-border shadow-md transition-transform duration-300 group-hover:-rotate-1 motion-reduce:group-hover:rotate-0"
             />
             <div class="min-w-0 flex-1">
               <h2 id="hub-handbook-heading" class="font-display text-2xl text-heading">
-                Family Handbook
+                {text('handbook').title ?? 'Family Handbook'}
               </h2>
               <p class="mt-1 text-ink">
-                Everything about the 2026/2027 year in one place: our policies, the daily rhythm,
-                co-op duties, and who to call.
+                {text('handbook').blurb ??
+                  `Everything about the ${yearLabel} year in one place: our policies, the daily rhythm, co-op duties, and who to call.`}
               </p>
             </div>
             <span class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white">
@@ -580,7 +590,11 @@ const firstDay = settings?.firstDay;
         WCP." section, so the dashboard closes on a warm, human note. Inline
         (not an island): its one album read rides the authenticated CDN cache. */
     }
-    {shows(hidden, 'social') && <SocialWallWidget />}
+    {
+      shows(hidden, 'social') && (
+        <SocialWallWidget heading={text('social').title} blurb={text('social').blurb} />
+      )
+    }
 
     {/* A tiny giggle for anyone who scrolled all the way down. */}
     <HubGiggle />

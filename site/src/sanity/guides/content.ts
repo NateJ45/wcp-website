@@ -803,7 +803,7 @@ export const guides: Guide[] = [
           'The **page list** on the left flips between hub pages, like a site builder. An amber dot means unpublished edits; a hollow dot means never published.',
           'The `⋯` on a page gives you **Duplicate** (a full copy, as a draft) and **Archive** (takes the page off the hub and keeps it in an **Archived** group at the bottom, ready to **Restore**). Archiving a page that came with the site puts back the wording the site ships with.',
           'The preview is the **real hub page** — the menu, the widgets, everything a family sees — with your editable heading, intro, and sections in place. Click your text to edit it; the built-in widgets are shown but not clickable.',
-          'On **Hub home**, a **Widgets** list of on/off switches lets you hide any dashboard tile (weather, store, photos, and so on). The preview updates before you even publish.',
+          'On **Hub home**, a **Widgets** list of on/off switches lets you hide any dashboard tile (weather, store, photos, and so on), and **Widget wording** below it lets you rewrite a tile’s title or one-liner — empty boxes keep the standard words. The preview updates before you even publish.',
         ],
       },
       { kind: 'h', text: 'What you can change, and what stays put' },
@@ -2223,6 +2223,8 @@ export const guides: Guide[] = [
         kind: 'bullets',
         items: [
           'The Family Handbook PDF, the co-op hours goal, the family-count override, and the past fundraising totals.',
+          'The **Hub welcome line** — the sentence under the big greeting on the hub home. Change it for the season ("Welcome back!", "Happy graduation week!"); empty means the standard line.',
+          'The **Super Helper program** (its own tab): the program’s name, its pitch, the requirement cards, and the footnote. Written once, shown in two places — the big band on the hub home and the top of the Become a Super Helper page. A step can carry a link (the training site, the CPR class finder).',
           'The Google connections: the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**. These rarely change; update them only when the sheet or feed is replaced.',
         ],
       },

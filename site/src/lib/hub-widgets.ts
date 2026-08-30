@@ -29,6 +29,9 @@ export interface HubWidgetOption {
   value: string;
   /** The Board-facing switch label. */
   title: string;
+  /** Which wording the Board can override (P3, 2026-08-31). Absent = none:
+      the widget's words are derived or structural, not decorative. */
+  text?: { title?: boolean; blurb?: boolean };
 }
 
 /** Keyed by the hubPage doc's `hubKey`. Only pages listed here show the
@@ -36,18 +39,21 @@ export interface HubWidgetOption {
  *  dashboard lives. Add a page's tiles here when it grows options. */
 export const HUB_WIDGETS_BY_KEY: Record<string, HubWidgetOption[]> = {
   home: [
-    { value: 'events', title: 'Upcoming events' },
+    { value: 'events', title: 'Upcoming events', text: { title: true } },
     { value: 'classTiles', title: 'Class helper-schedule tiles' },
-    { value: 'weather', title: 'Weather for the week' },
-    { value: 'announcements', title: 'Announcements' },
-    { value: 'fundraising', title: 'Fundraising progress' },
-    { value: 'minutes', title: 'Meeting minutes' },
-    { value: 'photos', title: 'Class photos' },
-    { value: 'budget', title: 'Budget snapshot' },
+    { value: 'weather', title: 'Weather for the week', text: { title: true, blurb: true } },
+    { value: 'announcements', title: 'Announcements', text: { title: true } },
+    { value: 'fundraising', title: 'Fundraising progress', text: { title: true } },
+    { value: 'minutes', title: 'Meeting minutes', text: { title: true } },
+    { value: 'photos', title: 'Class photos', text: { title: true } },
+    { value: 'budget', title: 'Budget snapshot', text: { title: true } },
+    // The Super Helper band's words are the PROGRAM's words (Hub settings →
+    // Super Helper, one source for the band and its page), not an override.
     { value: 'superHelper', title: 'Become a Super Helper band' },
-    { value: 'handbook', title: 'Family handbook card' },
+    { value: 'handbook', title: 'Family handbook card', text: { title: true, blurb: true } },
+    // The store's words already live on its own Studio fields (hubStore).
     { value: 'store', title: 'School store' },
-    { value: 'social', title: 'Community bulletin board' },
+    { value: 'social', title: 'Community bulletin board', text: { title: true, blurb: true } },
   ],
 };
 
@@ -75,3 +81,32 @@ export function hiddenWidgetSet(stored: unknown): Set<string> {
 }
 
 export const shows = (hidden: Set<string>, widget: string): boolean => !hidden.has(widget);
+
+// -----------------------------------------------------------------------------
+// Per-widget wording overrides (P3)
+// -----------------------------------------------------------------------------
+/** One stored override row: hubPage.widgetText[]. */
+export interface HubWidgetText {
+  widget?: string;
+  title?: string;
+  blurb?: string;
+}
+
+/**
+ * The Board's wording for one widget, stega-safe on the KEY only: `widget` is
+ * an enum joined against the registry (so it is stripped), while `title` and
+ * `blurb` are DISPLAY text and keep their markers — that is what makes the
+ * overridden words click-to-edit in the preview. Empty strings read as "not
+ * overridden" so clearing a box restores the shipped copy.
+ */
+export function widgetTextFor(stored: unknown, widget: string): { title?: string; blurb?: string } {
+  if (!Array.isArray(stored)) return {};
+  const row = (stored as HubWidgetText[]).find(
+    (r) => r && typeof r.widget === 'string' && splitStega(r.widget).cleaned === widget,
+  );
+  if (!row) return {};
+  return {
+    title: typeof row.title === 'string' && row.title.trim() !== '' ? row.title : undefined,
+    blurb: typeof row.blurb === 'string' && row.blurb.trim() !== '' ? row.blurb : undefined,
+  };
+}

@@ -76,11 +76,17 @@ const campaignPct =
   campaign?.goalAmount && campaign.goalAmount > 0
     ? Math.min(100, Math.round(((campaign.raisedAmount ?? 0) / campaign.goalAmount) * 100))
     : 0;
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="party-popper"
-  title="Fundraising"
+  title={heading ?? 'Fundraising'}
   seeAllHref="/family-hub/fundraising"
   empty={fundraisers.length === 0 && !campaign}
   emptyText="Current campaigns and totals will show here once one is active."

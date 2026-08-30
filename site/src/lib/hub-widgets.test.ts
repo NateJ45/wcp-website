@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { HUB_WIDGETS_BY_KEY, hiddenWidgetSet, shows, widgetOptionsFor } from './hub-widgets';
+import {
+  HUB_WIDGETS_BY_KEY,
+  hiddenWidgetSet,
+  shows,
+  widgetOptionsFor,
+  widgetTextFor,
+} from './hub-widgets';
+import { mergeSuperHelper } from './hub-super-helper';
+import { superHelperFallback } from '../data/hub/super-helper';
 
 describe('widgetOptionsFor', () => {
   it('hands the home page its switches and unknown pages none', () => {
@@ -48,4 +56,49 @@ describe('the home page honors every registered switch', () => {
       expect(source).toContain(`shows(hidden, '${opt.value}')`);
     });
   }
+});
+
+describe('widgetTextFor', () => {
+  it('missing storage overrides nothing', () => {
+    expect(widgetTextFor(undefined, 'weather')).toEqual({});
+    expect(widgetTextFor([], 'weather')).toEqual({});
+  });
+
+  it('returns the row for the widget, empty boxes reading as unset', () => {
+    const stored = [{ widget: 'weather', title: 'The week', blurb: '  ' }];
+    expect(widgetTextFor(stored, 'weather')).toEqual({ title: 'The week', blurb: undefined });
+    expect(widgetTextFor(stored, 'events')).toEqual({});
+  });
+
+  it('matches a stega-encoded widget key', () => {
+    const stored = [{ widget: 'weather​‌‍﻿', title: 'The week' }];
+    expect(widgetTextFor(stored, 'weather').title).toBe('The week');
+  });
+});
+
+describe('mergeSuperHelper', () => {
+  it('an untouched dataset renders the shipped program exactly', () => {
+    expect(mergeSuperHelper(undefined)).toEqual(superHelperFallback);
+    expect(mergeSuperHelper({})).toEqual(superHelperFallback);
+  });
+
+  it('a rename keeps the shipped requirements', () => {
+    const out = mergeSuperHelper({ name: 'Classroom Champion' });
+    expect(out.name).toBe('Classroom Champion');
+    expect(out.requirements).toEqual(superHelperFallback.requirements);
+  });
+
+  it('a written list REPLACES the shipped one wholesale', () => {
+    const out = mergeSuperHelper({
+      requirements: [{ title: 'One step', detail: 'Easy.', icon: 'star' }],
+    });
+    expect(out.requirements).toEqual([
+      { icon: 'star', title: 'One step', detail: 'Easy.', url: undefined },
+    ]);
+  });
+
+  it('rows without a title are dropped; all-empty falls back', () => {
+    const out = mergeSuperHelper({ requirements: [{ detail: 'no name' }, {}] });
+    expect(out.requirements).toEqual(superHelperFallback.requirements);
+  });
 });

@@ -1683,6 +1683,7 @@ export type HubSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  welcomeLine?: string;
   familyHandbook?: {
     asset?: SanityFileAssetReference;
     media?: unknown;
@@ -1695,6 +1696,88 @@ export type HubSettings = {
     amount?: number;
     _key: string;
   }>;
+  superHelper?: {
+    name?: string;
+    blurb?: string;
+    requirements?: Array<{
+      icon?:
+        | 'arrow-right'
+        | 'award'
+        | 'baby'
+        | 'scale'
+        | 'bell'
+        | 'building-2'
+        | 'blocks'
+        | 'cake'
+        | 'calculator'
+        | 'calendar-days'
+        | 'camera'
+        | 'hand-heart'
+        | 'banknote'
+        | 'file-check'
+        | 'check'
+        | 'clipboard-list'
+        | 'clock'
+        | 'coins'
+        | 'contact'
+        | 'file-text'
+        | 'circle-dollar-sign'
+        | 'dumbbell'
+        | 'egg'
+        | 'mail'
+        | 'eye'
+        | 'file-pen'
+        | 'flower'
+        | 'folder'
+        | 'gift'
+        | 'graduation-cap'
+        | 'hand'
+        | 'heart-handshake'
+        | 'heart'
+        | 'heart-pulse'
+        | 'house'
+        | 'info'
+        | 'languages'
+        | 'leaf'
+        | 'list'
+        | 'lock'
+        | 'map-pin'
+        | 'megaphone'
+        | 'microscope'
+        | 'moon'
+        | 'newspaper'
+        | 'notebook-pen'
+        | 'book-open'
+        | 'door-open'
+        | 'folder-open'
+        | 'palette'
+        | 'send'
+        | 'party-popper'
+        | 'pencil'
+        | 'users'
+        | 'phone'
+        | 'image'
+        | 'piggy-bank'
+        | 'puzzle'
+        | 'school'
+        | 'shield-check'
+        | 'shopping-bag'
+        | 'snowflake'
+        | 'sparkles'
+        | 'message-circle'
+        | 'sprout'
+        | 'star'
+        | 'sun'
+        | 'tent'
+        | 'trees'
+        | 'trending-down';
+      title?: string;
+      detail?: string;
+      url?: string;
+      _key: string;
+    }>;
+    footnote?: string;
+  };
   budgetSheetId?: string;
   calendarFeedUrl?: string;
   googleCalendarId?: string;
@@ -2086,6 +2169,12 @@ export type HubPage = {
       } & FormSection)
   >;
   hiddenWidgets?: Array<string>;
+  widgetText?: Array<{
+    widget?: string;
+    title?: string;
+    blurb?: string;
+    _key: string;
+  }>;
   publishAt?: string;
 };
 
