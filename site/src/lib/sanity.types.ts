@@ -2085,6 +2085,7 @@ export type HubPage = {
         _key: string;
       } & FormSection)
   >;
+  hiddenWidgets?: Array<string>;
   publishAt?: string;
 };
 
