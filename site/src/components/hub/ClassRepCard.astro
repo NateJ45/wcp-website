@@ -23,6 +23,7 @@
    to a card with the name and no links.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
 import { colorStyles } from '@/lib/class-colors';
 import { hubEditAttr } from '@/lib/hub-preview';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
@@ -84,7 +85,9 @@ const photoUrl = person.sanityPhoto?.asset
     )
   }
   <div class="min-w-0">
-    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Class rep</p>
+    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+      {CONTACT_LABELS.classRep}
+    </p>
     {
       named ? (
         <p class="font-display text-xl text-heading">{person.name}</p>
@@ -102,7 +105,7 @@ const photoUrl = person.sanityPhoto?.asset
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
-              Say hi
+              {CONTACT_LABELS.email}
             </a>
           )}
           {tel && (
@@ -111,7 +114,7 @@ const photoUrl = person.sanityPhoto?.asset
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="phone" class="h-3.5 w-3.5" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
         </div>

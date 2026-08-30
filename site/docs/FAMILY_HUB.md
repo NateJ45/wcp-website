@@ -787,6 +787,14 @@ and `/preview/live`'s listen filter excludes family-generated machine docs (sign
 photo submissions, hours logs, form submissions, subscribers, `sanity.*`) so background
 family activity never triggers preview re-renders.
 
+**Editability program (2026-08-31)**: see [HUB_EDITABILITY.md](HUB_EDITABILITY.md) for
+the audit + what shipped in its four waves — the Super Helper procedure page
+(`seed-super-helper-page.mjs`), store facts on the Merch store card, fully-overridable fee
+cards, the single-sourced closure statement, the documents category registry
+(`src/lib/hub-doc-categories.ts`), the Board-picked phone tab bar (`resolveTabBar`),
+skippable tour steps, class extra fact rows, note sign-offs, and the shared contact
+microcopy (`src/data/hub/microcopy.ts`).
+
 **Editable widget wording (P1–P4, 2026-08-31)**: `hubPage.widgetText` stores per-widget
 title/blurb overrides (empty = shipped copy; `widgetTextFor` in `src/lib/hub-widgets.ts`
 strips stega from the KEY only — titles keep it for click-to-edit; Studio input

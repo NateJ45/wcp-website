@@ -1,5 +1,9 @@
 # Hub editability audit — what still needs the derive-everything treatment
 
+_**STATUS 2026-08-31: all four waves SHIPPED** (commits 16738d1, 8c30ed7, 1732d78 +
+the Wave-4 label consolidation). Remaining deliberate non-adoptions are noted per item
+below; everything else in this file is done. Kept as the record of what was found._
+
 _2026-08-31. A three-way sweep of every `/family-hub` route, every hub component, and
 every `src/data/hub` fallback file, looking for content a future board would need a
 developer to change. Verdict first: the architecture is holding — nearly every FACT
@@ -76,7 +80,7 @@ bite. This file is the registry; strike items as they ship._
   the four-row SHAPE is not — no way to add a sibling discount row. Same family:
   `/supplies/supply-list.pdf` assumes one shared supply list forever.
 
-## Wave 4 — the label sweep (mostly DON'T)
+## Wave 4 — the label sweep (mostly DON'T) — DECIDED AS WRITTEN
 
 Dozens of button labels, empty states, and micro-headings are code-only ("Say hi",
 "Call or text", "Your teacher" ×3, "View album", search hints, "Giggle of the day").
@@ -92,3 +96,21 @@ still code); empty states that name vendors/roles ("the treasurer's tracking she
 Budget table numbers, coop roles/stipends, org holders, giggles, fun days, nav menu,
 handbook link, calendar/budget connections, past totals, teacher phones, store
 catalog, tour + hint wording, spotlights: all Sanity-first with documented fallbacks.
+
+## Shipped resolutions (2026-08-31)
+
+- W1.1 Super Helper procedure → `hubPage-super-helper` (seeded; code fallback).
+- W1.2 store facts → Merch store card fields; shared row matcher `store-sales.ts`.
+- W1.3 fee cards fully overridable. W1.4 closure via Site settings (both pages).
+- W1.5 `hub-doc-categories.ts` registry; unknown categories render; counts derive.
+- W1.6 `payUrl()` already accepts full links — schema note stands; no code change.
+- W1.7 handbook cover uploadable. Tour version + solstice dates: accepted as-is.
+- W2 all shipped (org-chart blurbs ride co-op guidance; sign-off fields; handle
+  derives; pronoun + surname fixed).
+- W3.1 tab bar picks (menu doc), W3.2 tour steps skippable, W3.3 class extra
+  fact rows, W3.4 skeletons follow renames. Deliberately NOT done: editable
+  tour selectors (silent-break risk documented in HubTourModal), per-class
+  supply-list paths, new update/celebration categories (schema-driven enough).
+- W4: `data/hub/microcopy.ts` holds the shared contact labels (still code, one
+  edit); photos blurb vendor-neutral; `HubEmptyState` provenance sentences and
+  the remaining button labels stay code BY DECISION.

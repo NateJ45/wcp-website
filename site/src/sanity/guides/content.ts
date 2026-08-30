@@ -2225,7 +2225,9 @@ export const guides: Guide[] = [
           'The Family Handbook PDF, the co-op hours goal, the family-count override, and the past fundraising totals.',
           'The **Hub welcome line** — the sentence under the big greeting on the hub home. Change it for the season ("Welcome back!", "Happy graduation week!"); empty means the standard line.',
           'The **Super Helper program** (its own tab): the program’s name, its pitch, the requirement cards, and the footnote. Written once, shown in two places — the big band on the hub home and the top of the Become a Super Helper page. A step can carry a link (the training site, the CPR class finder).',
+          'The **Family Handbook cover image** — upload the new cover art with the yearly PDF and the hub-home card follows.',
           'The Google connections: the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**. These rarely change; update them only when the sheet or feed is replaced.',
+          'On the **Family Hub menu**: the **Phone tab bar** picks which three destinations sit on the phone’s bottom bar. On **First-visit tour**: “Steps to skip” trims the tour. On the **Merch store card**: the shipping-perk line, the treasurer-sheet row name for store sales, and the “selling since” label. On **Tuition & Fees**: every word on the two enrollment-fee cards. The weather-closure statement lives in **Site settings** and shows on the hub’s Calendar and Health pages too.',
         ],
       },
       {

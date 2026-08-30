@@ -11,6 +11,7 @@
    has no name.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { colorStyles } from '@/lib/class-colors';
@@ -82,7 +83,9 @@ const telHref = toTel(phone);
           </span>
         )}
         <div class="text-left">
-          <p class="text-xs font-semibold tracking-wide text-white/70 uppercase">Your teacher</p>
+          <p class="text-xs font-semibold tracking-wide text-white/70 uppercase">
+            {CONTACT_LABELS.yourTeacher}
+          </p>
           <p class="font-display text-xl text-white">{teacher.signName}</p>
           {teacher.signRole && <p class="text-sm text-white/70">{teacher.signRole}</p>}
         </div>
@@ -96,7 +99,7 @@ const telHref = toTel(phone);
               class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
               <Icon name="mail" class="h-4 w-4" aria-hidden="true" />
-              Email
+              {CONTACT_LABELS.email}
             </a>
           )}
           {telHref && (
@@ -105,7 +108,7 @@ const telHref = toTel(phone);
               class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
               <Icon name="phone" class="h-4 w-4" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
         </div>

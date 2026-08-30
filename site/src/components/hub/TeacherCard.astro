@@ -9,6 +9,7 @@
    the note has no headshot the card shows a class-colored icon instead.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { colorStyles } from '@/lib/class-colors';
@@ -89,7 +90,9 @@ const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signNam
         </span>
       )}
       <div class="min-w-0">
-        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Your teacher</p>
+        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          {CONTACT_LABELS.yourTeacher}
+        </p>
         <p class="font-display text-xl text-heading">{teacher.signName}</p>
         {teacher.signRole && <p class="text-sm text-ink-muted">{teacher.signRole}</p>}
         <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -99,7 +102,7 @@ const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signNam
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
-              Say hi
+              {CONTACT_LABELS.email}
             </a>
           )}
           {telHref && (
@@ -108,7 +111,7 @@ const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signNam
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="phone" class="h-3.5 w-3.5" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
           {/* Reopen pill for the teacher's welcome letter (note-modal.ts
@@ -121,7 +124,7 @@ const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signNam
             class="inline-flex cursor-pointer items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
           >
             <Icon name="newspaper" class="h-3.5 w-3.5" aria-hidden="true" />
-            Welcome letter
+            {CONTACT_LABELS.welcomeLetter}
           </button>
         </div>
       </div>
