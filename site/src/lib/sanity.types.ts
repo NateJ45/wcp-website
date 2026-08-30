@@ -2367,6 +2367,7 @@ export type FeeSchedule = {
     payId?: string;
     _key: string;
   }>;
+  ageCutoffLabel?: string;
   schoolYearMonths?: number;
   depositNote?: string;
   paymentTerms?: Array<{
@@ -2478,6 +2479,7 @@ export type SiteSettings = {
   state?: string;
   zip?: string;
   parkingNote?: string;
+  venueNote?: string;
   schoolYearLabel?: string;
   enrolling?: boolean;
   enrollmentMode?: 'open' | 'waitlist' | 'closed';
@@ -2489,6 +2491,7 @@ export type SiteSettings = {
     _key: string;
   }>;
   closureStatement?: string;
+  summerTourNote?: string;
   yearStart?: string;
   yearEnd?: string;
   firstDay?: string;
@@ -2500,6 +2503,7 @@ export type SiteSettings = {
   googleReviews?: number;
   googleUrl?: string;
   license?: string;
+  secularLine?: string;
   licenseAuthority?: string;
 };
 

@@ -162,6 +162,9 @@ interface SiteSettingsDoc {
   state?: string;
   zip?: string;
   parkingNote?: string;
+  venueNote?: string;
+  summerTourNote?: string;
+  secularLine?: string;
   schoolYearLabel?: string;
   closureStatement?: string;
   facebook?: string;
@@ -202,6 +205,9 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     email: { general: string; admin: string; contact: string; treasurer: string };
     teachers: { lisa: string; erin: string };
     license: string;
+    venueNote: string;
+    summerTourNote: string;
+    secularLine: string;
     licenseAuthority: string;
     calendar: string;
     social: { facebook: string; instagram: string };
@@ -232,6 +238,9 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     // (Was queried but never mapped — the field silently did nothing until
     // 2026-08-23, see docs/FIELD_AUDIT.md.)
     parkingNote: doc.parkingNote,
+    venueNote: doc.venueNote ?? f.venueNote,
+    summerTourNote: doc.summerTourNote ?? f.summerTourNote,
+    secularLine: doc.secularLine ?? f.secularLine,
     email: {
       ...f.email,
       general: doc.emailGeneral ?? f.email.general,

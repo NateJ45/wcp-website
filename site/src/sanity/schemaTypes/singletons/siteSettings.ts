@@ -167,6 +167,14 @@ export const siteSettings = defineType({
       group: 'location',
       description: 'e.g. the Door 5 parking directions.',
     }),
+    defineField({
+      name: 'venueNote',
+      title: 'Building note',
+      type: 'string',
+      group: 'location',
+      description:
+        'Whose building the school is inside, shown with the address, e.g. "Inside Crestview Presbyterian Church". Update if the school ever moves or the venue renames.',
+    }),
 
     // School year
     defineField({
@@ -286,6 +294,14 @@ export const siteSettings = defineType({
       group: 'year',
       description: 'e.g. "WCP follows Lakota Local Schools for weather closures."',
     }),
+    defineField({
+      name: 'summerTourNote',
+      title: 'Summer tour note',
+      type: 'string',
+      group: 'year',
+      description:
+        'The line about off-season visits on the public Visit block, e.g. "Tours by appointment June to August."',
+    }),
     // The hub-only fields (family handbook, co-op hours goal, family count,
     // past fundraising totals, budget sheet code, calendar feed, Google
     // Calendar code, directory-map toggle) moved to the `hubSettings`
@@ -386,6 +402,15 @@ export const siteSettings = defineType({
       type: 'string',
       group: 'legal',
       description: 'e.g. "Licensed under Ohio Day Care Licensing Code 5101:2-12".',
+    }),
+    defineField({
+      name: 'secularLine',
+      title: 'Secular / non-discrimination statement',
+      type: 'text',
+      rows: 2,
+      group: 'legal',
+      description:
+        'The one-sentence statement shown on the Visit block and in the footer’s legal line. Empty keeps the shipped wording.',
     }),
     // DEAD (field audit 2026-08-23): no renderer reads it. Hidden.
     defineField({

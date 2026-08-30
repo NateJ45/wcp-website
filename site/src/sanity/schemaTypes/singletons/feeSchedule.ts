@@ -161,6 +161,14 @@ export const feeSchedule = defineType({
 
     // How payments work
     defineField({
+      name: 'ageCutoffLabel',
+      title: 'Age-cutoff column label',
+      type: 'string',
+      group: 'payment',
+      description:
+        'The tuition table’s age column header, e.g. "Age by Sept 30". Update if the enrollment cutoff date changes.',
+    }),
+    defineField({
       name: 'schoolYearMonths',
       title: 'Billed months per school year',
       type: 'number',

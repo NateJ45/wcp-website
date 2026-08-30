@@ -71,11 +71,11 @@ const [photo] = await photosFor('home-visit', 1);
             `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.zip}`
           }
         </strong>
-        {', inside Crestview Presbyterian Church.'}
+        {site.venueNote ? `, ${site.venueNote.replace(/^Inside /, 'inside ')}.` : '.'}
       </p>
       <p class="mt-4 text-lg leading-relaxed">
-        <strong>WCP is not a religious school.</strong> We are a secular, non-discriminatory cooperative
-        preschool. We rent the space and have no religious affiliation.
+        <strong>WCP is not a religious school.</strong>
+        {site.secularLine}
       </p>
       <ul class="mt-6 space-y-2 border-l-4 border-sky pl-5 text-lg" role="list">
         <li>
@@ -84,7 +84,7 @@ const [photo] = await photosFor('home-visit', 1);
             {site.phone}
           </a>
         </li>
-        <li>{site.calendar} Tours by appointment June to August.</li>
+        <li>{site.calendar} {site.summerTourNote}</li>
       </ul>
       <div class="mt-8 flex flex-wrap gap-4">
         <Button href={TOUR_HREF} variant="accent" size="lg"> Schedule a Tour </Button>

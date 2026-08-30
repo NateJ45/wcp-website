@@ -29,14 +29,18 @@ const { section, linkBase = '' } = Astro.props;
 const titleId = titleIdFor(section);
 const classes = (section.classItems as ClassItem[] | undefined) ?? [];
 const fees =
-  (section.fees as { registrationFee?: string; participationFee?: string } | undefined) ?? {};
+  (section.fees as
+    { registrationFee?: string; participationFee?: string; ageCutoffLabel?: string } | undefined) ??
+  {};
 const callout = section.callout as { tone?: 'sky' | 'warm'; body?: never } | undefined;
 
 const columns = [
   'Class',
   'Days',
   'Time',
-  'Age by Sept 30',
+  // The cutoff DATE changes over the years — the label is the Board's
+  // (Fee schedule → "Age-cutoff column label"); the shipped one is the default.
+  fees.ageCutoffLabel?.trim() || 'Age by Sept 30',
   'Monthly',
   'Annual',
   'Reg. fee',
