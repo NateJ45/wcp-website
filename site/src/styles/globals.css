@@ -2396,6 +2396,48 @@ body.wcp-hub-paper .wcp-photo-print > * {
   }
 }
 
+/* -- Scroll-drift photos: the frame holds, the photo breathes inside it.
+   (2026-08-31, from the scroll-site study — the one idea from that world that
+   fits the paper doctrine.) The IMAGE inside a .wcp-scroll-drift frame
+   overscans slightly and drifts upward as its frame crosses the viewport, so
+   the page feels alive on scroll while nothing changes position or layout.
+   Transform-only (compositor cheap); the frame's own overflow-hidden clips
+   the overscan. Same gates as the crayon spine above: scroll-driven CSS only,
+   so Safari/Firefox and reduced-motion visitors get today's exact still photo
+   (the overscan scale lives INSIDE the gate, so the fallback is scale 1).
+   Rules: the class goes on the overflow-hidden FRAME, never on a node that
+   carries data-reveal or a resting tilt (reveal animates transform and would
+   cancel it — the ChooserRows lesson), and never on an img that has its own
+   hover transform (the gallery's hover-zoom imgs keep their move). ------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper .wcp-scroll-drift img {
+      animation: wcp-photo-drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}
+@keyframes wcp-photo-drift {
+  from {
+    transform: scale(1.12) translateY(3.5%);
+  }
+  to {
+    transform: scale(1.12) translateY(-3.5%);
+  }
+}
+
+/* -- The arch window: a photo matted behind an arched cut, the storybook
+   doorway. Sits INSIDE a .wcp-photo-print mat (the white paper stays a
+   rectangle — a real matted arch print), so it composes with the print frame
+   rather than replacing it. Static shape, no motion, both themes. Applied to
+   the teacher portraits (a named person framed in a doorway reads as "come
+   meet them"); use sparingly elsewhere — every photo arched reads as a
+   template, one arched portrait row reads as a choice. ------------------- */
+.wcp-site-paper .wcp-arch img {
+  border-radius: 50% 50% 10px 10px / 42% 42% 10px 10px;
+}
+
 /* -- Schedule timelines ------------------------------------------------------
    This was `columns: 2` on wide screens, to stop a 7-step single column leaving
    ~55% of a 1440 band empty. It cost more than it bought: CSS multi-column

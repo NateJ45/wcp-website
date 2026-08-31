@@ -45,7 +45,11 @@ const { photo, sanityImage, name, role, email, class: className } = Astro.props;
   )}
   data-reveal
 >
-  <div class="wcp-photo-print aspect-[4/3] overflow-hidden" style="--print-tilt: 0deg">
+  {
+    /* wcp-arch: the portrait sits behind an arched cut in the white mat — the
+      storybook doorway (globals.css). Static shape, no motion implications. */
+  }
+  <div class="wcp-photo-print wcp-arch aspect-[4/3] overflow-hidden" style="--print-tilt: 0deg">
     {
       sanityImage ? (
         <SanityImage
