@@ -141,23 +141,64 @@ const ALWAYS: Record<string, { title: string; href: string }[]> = {
   newsletterIssue: [
     { title: 'Newsletter archive (lists every published issue)', href: '/newsletter/archive' },
   ],
+  campaign: [
+    {
+      title: 'Hub Fundraising page (while the campaign is active)',
+      href: '/family-hub/fundraising',
+    },
+  ],
   // The public Events page is a CODE route (src/pages/events.astro), not a
   // page doc, so it has no /preview twin — the live route is the target.
   event: [{ title: 'Events page (while the date is upcoming)', href: '/events' }],
 };
 
-// One query, three arms. `direct` catches a page holding the reference itself
+// Self-filling sections, by the COLLECTION type they render. A Teachers
+// section set to "All teachers" shows every staff member with no reference
+// for `references()` to see — the page-side twin of the hub list pages in
+// ALWAYS (same miss, found 2026-08-31; presacademy's resolver got this arm
+// on 2026-08-29 and WCP had not). Each value is the GROQ predicate that says
+// "this section is showing the collection": sections with a manual-pick mode
+// exclude it (a manual pick IS a reference, so the `direct` arm already sees
+// it); always-auto sections match on type alone. Keep in sync with
+// SELF_FILLING_SECTIONS in pageBuilderConfig.ts when a section gains or
+// loses an auto mode.
+const AUTO_SECTIONS: Record<string, string> = {
+  staff: `(_type == "teacherSection" && coalesce(source, "all") != "manual")`,
+  class: `(_type == "classCardsSection" && coalesce(source, "all") != "manual")`,
+  testimonial: `(_type == "testimonialSection" && coalesce(source, "featured") != "manual")`,
+  faqItem: `(_type == "faqSection" && coalesce(source, "category") != "inline")`,
+  event: `_type == "upcomingEventsSection"`,
+  campaign: `_type == "campaignSection"`,
+  schoolYearEvent: `_type == "schoolYearSection"`,
+  boardMember: `_type == "boardMembersSection"`,
+  program: `_type == "programCardsSection"`,
+  jobPosting: `_type == "jobsSection"`,
+  resource: `_type == "downloadsSection"`,
+  partner: `(_type == "logoStripSection" && coalesce(source, "partners") == "partners")`,
+  credential: `(_type == "logoStripSection" && source == "credentials")`,
+};
+
+// One query, four arms. `direct` catches a page holding the reference itself
 // (a Teachers section, a class-cards pick). `viaClass` catches the indirect
 // path: pages render a teacher through class->teacher, and prices through the
 // class doc, so a page referencing the CLASS is showing this document too.
-// `ownPage` catches a class's own detail page, which references NOTHING about
-// its class - the link is the slug convention classes/<slug>, matched on the
-// same longest-prefix-with-"-"-sentinel rule the automatic menu uses (Pre-K
-// AM and PM share classes/pre-k, which no exact match can see).
-const USAGE_QUERY = `{
+// `viaAuto` catches the self-filling sections above. `ownPage` catches a
+// class's own detail page, which references NOTHING about its class - the
+// link is the slug convention classes/<slug>, matched on the same
+// longest-prefix-with-"-"-sentinel rule the automatic menu uses (Pre-K AM
+// and PM share classes/pre-k, which no exact match can see).
+//
+// Built per TYPE (the auto predicate differs), never from user input.
+const usageQuery = (type: string) => `{
   "direct": *[_type in ["page", "hubPage", "post"] && !(_id in path("drafts.**")) && references($id)] ${ROW},
   "viaClass": *[_type in ["page", "hubPage"] && !(_id in path("drafts.**"))
     && references(*[_type == "class" && references($id)]._id)] ${ROW},
+  "viaAuto": ${
+    AUTO_SECTIONS[type]
+      ? `*[_type in ["page", "hubPage"] && !(_id in path("drafts.**")) && archived != true
+    && count(sections[${AUTO_SECTIONS[type]}]) > 0] ${ROW}`
+      : '[]'
+  },
   "ownPage": *[_type == "class" && _id == $id][0]{
     "p": *[_type == "page" && !(_id in path("drafts.**")) && archived != true
       && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
@@ -184,7 +225,17 @@ export const locations: DocumentLocationResolver = ({ id, type }, { documentStor
             tone: 'caution' as const,
           };
         }
-        return { locations: [{ title: row?.t || 'Preview', href }] };
+        return {
+          locations: [
+            { title: row?.t || 'Preview', href },
+            // A post also lives on the News index (and its feed pages) by
+            // construction — the same no-reference listing as the hub pages
+            // in ALWAYS. The index is a code route, so the live URL.
+            ...(type === 'post'
+              ? [{ title: 'News page (every post is listed)', href: '/news' }]
+              : []),
+          ],
+        };
       },
     );
   }
@@ -193,8 +244,13 @@ export const locations: DocumentLocationResolver = ({ id, type }, { documentStor
   // and anything added later — the query does not care about the type.
   const always = ALWAYS[type] ?? [];
 
-  return mapState<{ direct?: Row[]; viaClass?: Row[]; ownPage?: Row | null } | null>(
-    documentStore.listenQuery(USAGE_QUERY, { id: publishedId }, { perspective: 'published' }),
+  return mapState<{
+    direct?: Row[];
+    viaClass?: Row[];
+    viaAuto?: Row[];
+    ownPage?: Row | null;
+  } | null>(
+    documentStore.listenQuery(usageQuery(type), { id: publishedId }, { perspective: 'published' }),
     (result) => {
       const seen = new Set<string>();
       const rows: { title: string; href: string }[] = [];
@@ -204,6 +260,7 @@ export const locations: DocumentLocationResolver = ({ id, type }, { documentStor
         ...always,
         ...(result?.direct ?? []),
         ...(result?.viaClass ?? []),
+        ...(result?.viaAuto ?? []),
       ]) {
         // `always` rows are already {title, href}; queried rows carry a type.
         const href = 'href' in row ? row.href : hrefFor(row as Row);
