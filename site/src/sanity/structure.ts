@@ -110,9 +110,11 @@ function yearScopedList(
 // The "Help & Guide" center — a folder of read-only walkthrough panes, built
 // from the guides data. Volunteers cannot edit or delete it. Grouped under
 // titled dividers by guide.category (~40 guides in one flat run was
-// overwhelming to scan). Both workspaces get EVERY guide, but the group order
-// is per-workspace (GUIDE_CATEGORY_ORDER): each side leads with its own work.
-// The GuideCategory union type stops a new guide from missing its group.
+// overwhelming to scan). Each workspace lists only ITS guides (per-guide `ws`
+// tag; untagged = both sides), in per-workspace group order
+// (GUIDE_CATEGORY_ORDER): each side leads with its own work, and a category
+// with no guides on a side does not render there. The GuideCategory union
+// type stops a new guide from missing its group.
 function howThisWorks(S: StructureBuilder, kind: 'public' | 'hub') {
   const guideItem = (g: (typeof guides)[number]) =>
     S.listItem()
@@ -134,10 +136,10 @@ function howThisWorks(S: StructureBuilder, kind: 'public' | 'hub') {
         .id('help-and-guide-list')
         .title('Help & Guide')
         .items(
-          GUIDE_CATEGORY_ORDER[kind].flatMap((category) => [
-            S.divider().title(category),
-            ...guides.filter((g) => g.category === category).map(guideItem),
-          ]),
+          GUIDE_CATEGORY_ORDER[kind].flatMap((category) => {
+            const mine = guides.filter((g) => g.category === category && (!g.ws || g.ws === kind));
+            return mine.length === 0 ? [] : [S.divider().title(category), ...mine.map(guideItem)];
+          }),
         ),
     );
 }

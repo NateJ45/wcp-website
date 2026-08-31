@@ -255,9 +255,20 @@ export function WelcomePane() {
         <Stack space={3}>
           <ToolHeading>👋 Welcome to the West Chester Preschool control room</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
-            This is where you edit the website. Nothing goes live until you click{' '}
-            <strong>Publish</strong>, so click around and explore. New here? Open{' '}
-            <strong>Help &amp; Guide</strong> in the left menu for step-by-step walkthroughs.
+            {isHubWorkspace ? (
+              <>
+                This is where you edit the <strong>Family Hub</strong> — the private area behind the
+                family password: updates, sign-ups, the directory, celebrations.
+              </>
+            ) : (
+              <>
+                This is where you edit the <strong>public website</strong> — what visiting parents
+                and the whole world see: pages, news, events, tuition.
+              </>
+            )}{' '}
+            Nothing goes live until you click <strong>Publish</strong>, so click around and explore.
+            New here? Open <strong>Help &amp; Guide</strong> in the left menu for step-by-step
+            walkthroughs.
           </Text>
           <Text size={1} muted style={{ lineHeight: 1.5 }}>
             You are in the <strong>{workspaceTitle}</strong> view. Looking for the{' '}
