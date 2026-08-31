@@ -33,6 +33,80 @@ const emoji =
   () =>
     glyph;
 
+// =============================================================================
+// Year-scoped lists (2026-08-31) — the decade-proofing for accumulating types
+// =============================================================================
+// Updates, events, celebrations, sign-up sheets, news, newsletters and the
+// hours ledger grow forever. A flat list means year-three volunteers scroll
+// past a hundred dead rows to find this week's — so each of those types opens
+// as "This school year" (the default view) plus one pane per past year, with
+// an Everything list at the bottom for searching across time. Nothing moves
+// or archives; this is presentation only. School years run Aug 1 – Jul 31 and
+// are named by their fall ("2026–27").
+const FIRST_CONTENT_YEAR = 2025; // the site's first posts (Sep 2025)
+
+const currentFallYear = (): number => {
+  const d = new Date();
+  return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; // Aug+ = this fall
+};
+const yearLabel = (y: number): string => `${y}–${String((y + 1) % 100).padStart(2, '0')}`;
+
+function yearScopedList(
+  S: StructureBuilder,
+  opts: {
+    type: string;
+    title: string;
+    icon: ComponentType;
+    /** The doc's own date field; undated docs fall back to _createdAt. */
+    dateField: string;
+    direction?: 'asc' | 'desc';
+  },
+) {
+  const { type, title, icon, dateField, direction = 'desc' } = opts;
+  const fall = currentFallYear();
+  const filter = `_type == $type && coalesce(${dateField}, _createdAt) >= $from && coalesce(${dateField}, _createdAt) < $to`;
+
+  const yearPane = (y: number, paneTitle: string) =>
+    S.listItem()
+      .id(`year-${y}`)
+      .title(paneTitle)
+      .icon(icon)
+      .child(
+        S.documentList()
+          .id(`year-${y}`)
+          .title(paneTitle)
+          .schemaType(type)
+          .filter(filter)
+          .params({ type, from: `${y}-08-01`, to: `${y + 1}-08-01` })
+          .defaultOrdering([{ field: dateField, direction }]),
+      );
+
+  const past: ReturnType<typeof yearPane>[] = [];
+  for (let y = fall - 1; y >= FIRST_CONTENT_YEAR; y--) past.push(yearPane(y, yearLabel(y)));
+
+  // .id(type) keeps the pane's address identical to the old flat list, so
+  // every guide link and bookmark still lands here.
+  return S.listItem()
+    .id(type)
+    .title(title)
+    .icon(icon)
+    .child(
+      S.list()
+        .id(type)
+        .title(title)
+        .items([
+          yearPane(fall, `This school year (${yearLabel(fall)})`),
+          ...(past.length > 0 ? [S.divider().title('Past years'), ...past] : []),
+          S.divider(),
+          S.listItem()
+            .id('everything')
+            .title('Everything (all years)')
+            .icon(emoji('🗂️'))
+            .child(S.documentTypeList(type).title(title)),
+        ]),
+    );
+}
+
 // The "Help & Guide" center — a folder of read-only walkthrough panes, built
 // from the guides data. Volunteers cannot edit or delete it. Grouped under
 // titled dividers by guide.category (~40 guides in one flat run was
@@ -283,11 +357,25 @@ export const publicStructure: StructureResolver = (S, context) =>
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
       S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
-      S.documentTypeListItem('post').title('News').icon(emoji('📰')),
-      S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
-      S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
+      yearScopedList(S, {
+        type: 'post',
+        title: 'News',
+        icon: emoji('📰'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'newsletterIssue',
+        title: 'Newsletter issues',
+        icon: emoji('🗞️'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'event',
+        title: 'Events',
+        icon: emoji('📅'),
+        dateField: 'startDate',
+      }),
       pagesGroup(S),
-      savedSectionsGroup(S),
 
       // ── School info ── the school facts that change a few times a year.
       S.divider().title('School info'),
@@ -393,6 +481,9 @@ export const publicStructure: StructureResolver = (S, context) =>
       // ── Site setup ── set-up-once surfaces, out of the everyday eye-line.
       S.divider().title('Site setup'),
 
+      // Saved section presets live with setup: reached rarely, kept forever.
+      savedSectionsGroup(S),
+
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
       // The thank-you page, "page not found", and footer sign-off wording.
@@ -435,11 +526,37 @@ export const hubStructure: StructureResolver = (S, context) =>
       // update, celebrate a family, open a sign-up, share a document.
       S.divider().title('Everyday edits'),
 
+      // Sequenced by real-world cadence: the alert stays first (a snow day
+      // must be findable in a panic), then the weekly rhythm (updates,
+      // sign-ups, documents), then money, then the occasional pieces.
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
+      yearScopedList(S, {
+        type: 'update',
+        title: 'Updates',
+        icon: emoji('📣'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'signupSheet',
+        title: 'Sign-ups & RSVPs (create sheets)',
+        icon: emoji('📝'),
+        dateField: 'eventDate',
+        direction: 'asc',
+      }),
+      orderableDocumentListDeskItem({
+        type: 'hubDocument',
+        S,
+        context,
+        title: 'Documents & Forms',
+        icon: emoji('📄'),
+      }),
       moneyGroup(S),
-      S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
-      S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
-      singleton(S, 'presidentNote', "President's note", emoji('💌')),
+      yearScopedList(S, {
+        type: 'celebration',
+        title: 'Celebrations',
+        icon: emoji('🎉'),
+        dateField: 'date',
+      }),
       // The collection sibling of the President's note: several pop-ups a
       // year, each greeting families once on any hub page. Drag to set which
       // one wins when more than one is on.
@@ -450,16 +567,7 @@ export const hubStructure: StructureResolver = (S, context) =>
         title: 'Spotlight pop-ups',
         icon: emoji('🔦'),
       }),
-      S.documentTypeListItem('signupSheet')
-        .title('Sign-ups & RSVPs (create sheets)')
-        .icon(emoji('📝')),
-      orderableDocumentListDeskItem({
-        type: 'hubDocument',
-        S,
-        context,
-        title: 'Documents & Forms',
-        icon: emoji('📄'),
-      }),
+      singleton(S, 'presidentNote', "President's note", emoji('💌')),
 
       // ── Families & co-op ── who the families are and how the co-op runs.
       S.divider().title('Families & co-op'),
@@ -486,7 +594,12 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('roleHolder')
         .title('Who’s who this year (update each fall)')
         .icon(emoji('🪪')),
-      S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
+      yearScopedList(S, {
+        type: 'hoursLog',
+        title: 'Co-op hours (ledger)',
+        icon: emoji('⏱️'),
+        dateField: 'date',
+      }),
 
       // ── Hub pages & look ── the hub's own pages, menu, and app chrome.
       S.divider().title('Hub pages & look'),
@@ -497,15 +610,29 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('hubPage')
         .title('Hub pages (edit content, or add a page)')
         .icon(emoji('🧱')),
-      // The rail menu, right under the pages it arranges (the public
-      // header/footer equivalent lives in the Public website workspace as
-      // "Menus").
-      singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
-      singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
-      singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
-      singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
-      // The store card at the bottom of the hub home (link, headline, tiles).
-      singleton(S, 'hubStore', 'Merch store card', emoji('🛍️')),
+      // The menu + app-chrome singletons, folded into ONE folder (2026-08-31)
+      // so the rail stays scannable: five rows became one. Each pane keeps
+      // its own id, so old guide links still resolve.
+      S.listItem()
+        .id('hub-look')
+        .title('Hub look & feel')
+        .icon(emoji('🎨'))
+        .child(
+          S.list()
+            .id('hub-look')
+            .title('Hub look & feel')
+            .items([
+              // The rail menu, right beside the pages it arranges (the public
+              // header/footer equivalent lives in the Public website workspace
+              // as "Menus").
+              singleton(S, 'hubNavMenu', 'Family Hub menu (rail & phone bar)', emoji('🧭')),
+              singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
+              singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
+              singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
+              // The store card at the bottom of the hub home.
+              singleton(S, 'hubStore', 'Merch store card', emoji('🛍️')),
+            ]),
+        ),
 
       // ── Printables ── the two PDF sources: edits here regenerate the
       // branded PDFs on the next deploy (the publish webhook fires one).
