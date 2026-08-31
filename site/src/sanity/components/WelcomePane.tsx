@@ -59,44 +59,57 @@ const TYPE_LABELS: Record<string, string> = {
   partner: 'Partner / sponsor',
   credential: 'Accreditation',
   campaign: 'Fundraising campaign',
+  celebration: 'Celebration',
+  hubSpotlight: 'Spotlight pop-up',
+  operatingBudget: 'Operating budget',
   jobPosting: 'Job posting',
   resource: 'Download / resource',
   photoAlbum: 'Photo album',
 };
 
-// Everything a human edits (machine-made inbox types are left out on purpose).
-const RECENT_TYPES = [
-  'page',
-  'post',
-  'newsletterIssue',
-  'event',
-  'legalPage',
-  'class',
-  'staff',
-  'faqItem',
-  'testimonial',
-  'siteSettings',
-  'navigation',
-  'feeSchedule',
-  'schoolYearEvent',
-  'closureAlert',
-  'hubPage',
-  'update',
-  'hubDocument',
-  'teacherNote',
-  'presidentNote',
-  'directoryEntry',
-  'signupSheet',
-  'coopRole',
-  'program',
-  'boardMember',
-  'partner',
-  'credential',
-  'campaign',
-  'jobPosting',
-  'resource',
-  'photoAlbum',
-];
+// Everything a human edits (machine-made inbox types are left out on purpose),
+// split by WORKSPACE so the hub Welcome resumes hub work and the public
+// Welcome resumes public work — a "Recently edited" full of the other side's
+// pages reads as a bug (Nathan spotted exactly that, 2026-08-30). The types
+// both sides edit (money, the alert, classes) appear in both lists, matching
+// the shared rows in structure.ts.
+const SHARED_RECENT_TYPES = ['closureAlert', 'feeSchedule', 'operatingBudget', 'class', 'campaign'];
+const RECENT_TYPES: Record<'public' | 'hub', string[]> = {
+  public: [
+    ...SHARED_RECENT_TYPES,
+    'page',
+    'post',
+    'newsletterIssue',
+    'event',
+    'legalPage',
+    'staff',
+    'faqItem',
+    'testimonial',
+    'siteSettings',
+    'navigation',
+    'schoolYearEvent',
+    'program',
+    'boardMember',
+    'partner',
+    'credential',
+    'jobPosting',
+    'resource',
+    'photoAlbum',
+  ],
+  hub: [
+    ...SHARED_RECENT_TYPES,
+    'hubPage',
+    'update',
+    'hubDocument',
+    'teacherNote',
+    'presidentNote',
+    'directoryEntry',
+    'signupSheet',
+    'coopRole',
+    'celebration',
+    'hubSpotlight',
+  ],
+};
 
 const RECENT_QUERY = `*[
   _type in $types && !(_id in path("drafts.**"))
@@ -221,13 +234,13 @@ export function WelcomePane() {
   useEffect(() => {
     let alive = true;
     client
-      .fetch<RecentDoc[]>(RECENT_QUERY, { types: RECENT_TYPES })
+      .fetch<RecentDoc[]>(RECENT_QUERY, { types: RECENT_TYPES[isHubWorkspace ? 'hub' : 'public'] })
       .then((docs) => alive && setRecent(docs))
       .catch(() => alive && setRecent([]));
     return () => {
       alive = false;
     };
-  }, [client]);
+  }, [client, isHubWorkspace]);
 
   return (
     <Box padding={4}>
