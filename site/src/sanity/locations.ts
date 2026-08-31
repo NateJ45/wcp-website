@@ -104,11 +104,46 @@ const FIXED: Record<string, { title: string; href: string }> = {
 // and calculator list EVERY class through a wildcard query, not a reference, so
 // `references()` never sees them — yet every class appears on /tuition by
 // construction. Without this a brand-new class reads "not shown on any page",
-// which is wrong: it is already in the table. A staff member has no such
+// which is wrong: it is already in the table. The same is true of every hub
+// LIST page: Documents, Updates, Celebrations, Sign-ups, the org chart and the
+// directory each render their whole collection through a wildcard query, so
+// a published hubDocument read "not shown on any page" while sitting on
+// /family-hub/documents (found live 2026-08-31). A staff member has no such
 // guaranteed home (they appear only where a page picks them), so staff is not
-// listed here.
+// listed here. Conditional listings say their condition in the title.
 const ALWAYS: Record<string, { title: string; href: string }[]> = {
   class: [{ title: 'Tuition & Fees (the table lists every class)', href: '/preview/tuition' }],
+  hubDocument: [
+    { title: 'Hub Documents page (lists every published document)', href: '/family-hub/documents' },
+  ],
+  update: [
+    { title: 'Hub Updates page (lists every published update)', href: '/family-hub/updates' },
+  ],
+  celebration: [
+    { title: 'Hub Celebrations page (newest first)', href: '/family-hub/celebrations' },
+  ],
+  signupSheet: [
+    { title: 'Hub Sign-ups page (while "Open for responses" is on)', href: '/family-hub/sign-ups' },
+  ],
+  coopRole: [
+    { title: 'Co-op Jobs page (the org chart draws every role)', href: '/family-hub/coop-jobs' },
+  ],
+  roleHolder: [
+    { title: 'Co-op Jobs page (holders show on their seats)', href: '/family-hub/coop-jobs' },
+  ],
+  directoryEntry: [
+    {
+      title: 'Family Directory page (while "Show in directory" is on)',
+      href: '/family-hub/directory',
+    },
+  ],
+  hubSpotlight: [{ title: 'Every hub page (a pop-up, while switched on)', href: '/family-hub' }],
+  newsletterIssue: [
+    { title: 'Newsletter archive (lists every published issue)', href: '/newsletter/archive' },
+  ],
+  // The public Events page is a CODE route (src/pages/events.astro), not a
+  // page doc, so it has no /preview twin — the live route is the target.
+  event: [{ title: 'Events page (while the date is upcoming)', href: '/events' }],
 };
 
 // One query, three arms. `direct` catches a page holding the reference itself

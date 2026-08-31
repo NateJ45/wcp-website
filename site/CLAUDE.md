@@ -109,7 +109,7 @@ src/
     pageBuilderConfig.ts     # this repo's page shape (builder arrays, hero, self-filling sections, code-owned paths) — feeds the PORTABLE src/lib/page-checks.ts and the two page-only actions
     structure.ts             # the Studio left-nav a volunteer sees
     resolve.ts               # Presentation Tool: URL → document filters (see resolve.test.ts, a drift gate)
-    locations.ts             # the "Used on" panel — queries REAL usage (refs + the class hop), never a hardcoded page list
+    locations.ts             # the "Used on" panel — queries REAL usage (refs + the class hop) + an ALWAYS list for derived LIST pages (hub Documents/Updates/etc. render whole collections with no reference to see)
     guides/content.ts        # in-Studio "Help & Guide" volunteer walkthroughs (plain-language)
   lib/
     cms.ts / sanity.ts / cms-preview.ts   # the three Sanity read clients (build / gated / preview)
