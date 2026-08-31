@@ -13,11 +13,14 @@
 import { photosFor } from '@/lib/photo-registry';
 import { TOUR_HREF } from '@/lib/tour-cta';
 import { imageUrl, imageSrcSet } from '@/lib/image';
+import Seam from '@/components/Seam.astro';
 
 interface Props {
   slot: string;
+  /** Carry the sweep at the top (SectionRenderer's seam chain decides). */
+  seam?: boolean;
 }
-const { slot } = Astro.props;
+const { slot, seam = false } = Astro.props;
 const photos = await photosFor(slot, 3);
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
@@ -35,7 +38,11 @@ const captions = [`Since ${site.founded}`, 'Every fall', 'Still going strong'];
 
 {
   photos.length > 0 && (
-    <section class="wcp-section bg-cream" aria-labelledby="heritage-title">
+    <section
+      class:list={['wcp-section bg-cream', seam && 'relative -mt-px']}
+      aria-labelledby="heritage-title"
+    >
+      {seam && <Seam color="cream" />}
       <div class="wcp-container py-[var(--wcp-space-2xl)]">
         <h2
           id="heritage-title"

@@ -161,7 +161,10 @@ const momentBg = (m: PhotoMoment): string =>
 // Seed with the hero boundary (the sweep divider lands under every hero, like
 // the old site), then a leading moment's colour when one renders first.
 let prevBg: string | null = afterHero ? 'hero' : null;
-for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
+for (const m of momentsAfter.get(-1) ?? []) {
+  m.seam = wantsSeam(momentBg(m), prevBg);
+  prevBg = momentBg(m);
+}
 // Band-color adjacency (Nathan 2026-07-19): a navy band never follows a navy
 // band (the drench hero counts as navy). When two navys would touch, the
 // non-closer of the pair flips — the closing CTA keeps its identity, everything
@@ -223,6 +226,7 @@ for (const [i, section] of sections.entries()) {
   prevBg = bg;
   // A moment after this section becomes the band the NEXT section sits under.
   for (const m of momentsAfter.get(i) ?? []) {
+    m.seam = wantsSeam(momentBg(m), prevBg);
     prevBg = momentBg(m);
     prevDoodled = prevBg === 'cream';
   }
@@ -280,15 +284,15 @@ const MAP: Record<string, any> = {
     ) : m.kind === 'tuition-opener' ? (
       <TuitionOpener />
     ) : m.kind === 'heritage' ? (
-      <HeritageStrip slot={m.slot} />
+      <HeritageStrip slot={m.slot} seam={m.seam} />
     ) : m.kind === 'chooser' ? (
       <ChooserRows />
     ) : m.kind === 'septembers' ? (
-      <SeptembersWall />
+      <SeptembersWall seam={m.seam} />
     ) : m.kind === 'visit' ? (
       <VisitBlock />
     ) : (
-      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} seam={m.seam} />
     ),
   )
 }
@@ -427,15 +431,15 @@ const MAP: Record<string, any> = {
           ) : m.kind === 'tuition-opener' ? (
             <TuitionOpener />
           ) : m.kind === 'heritage' ? (
-            <HeritageStrip slot={m.slot} />
+            <HeritageStrip slot={m.slot} seam={m.seam} />
           ) : m.kind === 'chooser' ? (
             <ChooserRows />
           ) : m.kind === 'septembers' ? (
-            <SeptembersWall />
+            <SeptembersWall seam={m.seam} />
           ) : m.kind === 'visit' ? (
             <VisitBlock />
           ) : (
-            <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+            <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} seam={m.seam} />
           ),
         )}
       </>

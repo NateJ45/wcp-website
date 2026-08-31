@@ -24,6 +24,12 @@ import { imageUrl } from '@/lib/image';
 import { site as siteFallback } from '@/data/site';
 import { getSiteSettings } from '@/lib/cms';
 import { fallYear } from '@/lib/septembers';
+import Seam from '@/components/Seam.astro';
+
+interface Props {
+  /** Carry the sweep at the top (SectionRenderer's seam chain decides). */
+  seam?: boolean;
+}
 
 // Derived, not hand-typed (2026-08-31): the founding year is Site settings'
 // `founded`, and THIS fall comes from the Board's yearly school-year dates
@@ -47,7 +53,11 @@ for (let y = FOUNDED; y < THIS_FALL; y++) years.push(y);
 const TILTS = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1'];
 ---
 
-<section class="wcp-section bg-cream" aria-labelledby="septembers-title">
+<section
+  class:list={['wcp-section bg-cream', Astro.props.seam && 'relative -mt-px']}
+  aria-labelledby="septembers-title"
+>
+  {Astro.props.seam && <Seam color="cream" />}
   <div class="wcp-container pt-[var(--wcp-space-2xl)] pb-10">
     <h2
       id="septembers-title"
