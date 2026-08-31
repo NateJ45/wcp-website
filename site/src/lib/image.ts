@@ -27,6 +27,30 @@ export interface SanityImageValue {
   [key: string]: unknown;
 }
 
+/**
+ * The intrinsic size a Sanity asset ref bakes into its id
+ * ("image-<hash>-844x1267-jpg"), or null when the shape is unrecognized.
+ * Lets a component pick a frame that MATCHES the photo's orientation instead
+ * of forcing every photo through one aspect — a portrait headshot in a 4/3
+ * landscape slot loses half its height to object-cover (it cut a teacher's
+ * face off at the eyes, found live 2026-09-01).
+ */
+export function imageDimensions(
+  source: SanityImageSource | SanityImageValue | undefined | null,
+): { width: number; height: number } | null {
+  const asset =
+    source && typeof source === 'object' ? (source as SanityImageValue).asset : undefined;
+  const ref =
+    typeof source === 'string'
+      ? source
+      : asset && typeof asset === 'object'
+        ? ((asset as { _ref?: string; _id?: string })._ref ??
+          (asset as { _ref?: string; _id?: string })._id)
+        : undefined;
+  const m = typeof ref === 'string' ? ref.match(/-(\d+)x(\d+)-/) : null;
+  return m ? { width: Number(m[1]), height: Number(m[2]) } : null;
+}
+
 /** A URL builder for a Sanity image (chain .width(), .height(), etc.). */
 export function urlForImage(source: SanityImageSource) {
   return builder.image(source).auto('format').fit('max');
