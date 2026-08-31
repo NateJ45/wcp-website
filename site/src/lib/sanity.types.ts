@@ -2329,7 +2329,7 @@ export type InstagramSection = {
   _type: 'instagramSection';
   header?: SectionHeader;
   fallbackAlbum?: PhotoAlbumReference;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2337,7 +2337,7 @@ export type AlbumSection = {
   _type: 'albumSection';
   header?: SectionHeader;
   album?: PhotoAlbumReference;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2360,7 +2360,7 @@ export type DownloadsSection = {
   _type: 'downloadsSection';
   header?: SectionHeader;
   category?: 'all' | 'handbook' | 'calendar' | 'forms' | 'other';
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2368,14 +2368,14 @@ export type JobsSection = {
   _type: 'jobsSection';
   header?: SectionHeader;
   emptyMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type CampaignSection = {
   _type: 'campaignSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2383,21 +2383,21 @@ export type LogoStripSection = {
   _type: 'logoStripSection';
   header?: SectionHeader;
   source?: 'partners' | 'credentials';
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type BoardMembersSection = {
   _type: 'boardMembersSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type ProgramCardsSection = {
   _type: 'programCardsSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2406,7 +2406,7 @@ export type ContactDetailsSection = {
   reachHeading?: string;
   visitHeading?: string;
   showParking?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2423,7 +2423,7 @@ export type ReviewFormSection = {
   _type: 'reviewFormSection';
   header?: SectionHeader;
   buttonLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2433,7 +2433,7 @@ export type NewsletterSignupSection = {
   askName?: boolean;
   buttonLabel?: string;
   successMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2451,7 +2451,7 @@ export type FormSection = {
   showPhone?: boolean;
   buttonLabel?: string;
   successMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2460,7 +2460,7 @@ export type UpcomingEventsSection = {
   header?: SectionHeader;
   limit?: 3 | 4 | 6;
   linkLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2469,7 +2469,7 @@ export type LatestPostsSection = {
   header?: SectionHeader;
   limit?: 2 | 3 | 4;
   linkLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2488,7 +2488,7 @@ export type SplitMediaSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2508,7 +2508,7 @@ export type StoryTimelineSection = {
     _key: string;
   }>;
   footnote?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2520,7 +2520,7 @@ export type GallerySection = {
       _key: string;
     } & FigureImage
   >;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2529,7 +2529,7 @@ export type CountdownSection = {
   header?: SectionHeader;
   targetDate?: string;
   completedMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2537,7 +2537,7 @@ export type MapSection = {
   _type: 'mapSection';
   header?: SectionHeader;
   address?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2547,7 +2547,7 @@ export type VideoSection = {
   videoUrl?: string;
   thumbnail?: FigureImage;
   caption?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2555,7 +2555,7 @@ export type PullQuoteSection = {
   _type: 'pullQuoteSection';
   quote?: string;
   attribution?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2639,7 +2639,7 @@ export type QuickFactsSection = {
     _type: 'fact';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2652,7 +2652,7 @@ export type AccordionSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2665,7 +2665,7 @@ export type TabsSection = {
     _type: 'tab';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2681,7 +2681,7 @@ export type CompareSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2697,7 +2697,7 @@ export type StepListSection = {
     _key: string;
   }>;
   footnote?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2714,7 +2714,7 @@ export type ScheduleSection = {
     _type: 'entry';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2723,7 +2723,7 @@ export type EnrollmentCtaSection = {
   linkType?: 'page' | 'url';
   page?: PageReference;
   url?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2731,7 +2731,7 @@ export type TuitionCalculatorSection = {
   _type: 'tuitionCalculatorSection';
   header?: SectionHeader;
   note?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2740,14 +2740,14 @@ export type TuitionTableSection = {
   header?: SectionHeader;
   caption?: string;
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type SchoolYearSection = {
   _type: 'schoolYearSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2762,7 +2762,7 @@ export type FaqSection = {
     _type: 'qa';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2775,7 +2775,7 @@ export type ClassCardsSection = {
       _key: string;
     } & ClassReference
   >;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2789,7 +2789,7 @@ export type TeacherSection = {
     } & StaffReference
   >;
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2813,7 +2813,7 @@ export type TestimonialSection = {
   >;
   layout?: 'grid' | 'wall';
   confetti?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2857,7 +2857,7 @@ export type CardGridSection = {
   columns?: 2 | 3 | 4;
   layout?: 'card' | 'compactIcon';
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2867,7 +2867,7 @@ export type ProseSection = {
   body?: RichProse;
   callout?: Callout;
   narrow?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 

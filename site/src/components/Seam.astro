@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 interface Props {
   /** The band's own background color (the scallop fills with this). */
-  color?: 'white' | 'grey' | 'cream' | 'navy' | 'amber' | 'sky';
+  color?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy' | 'amber';
   /** Kept for call-site compatibility; every variant renders the one
       Squarespace-style sweep since 2026-07-19 (Nathan's call). */
   variant?: 'cloud' | 'trim';
@@ -32,9 +32,13 @@ const fill: Record<string, string> = {
   white: '#ffffff',
   grey: 'var(--color-grey)',
   cream: 'var(--color-cream)',
+  sunshine: 'var(--color-sunshine)',
+  // 'sky' the BAND fills with the soft tint (Section maps sky → bg-sky-soft);
+  // the bright --color-sky remains available to legacy callers via 'skyBright'.
+  sky: 'var(--color-sky-soft)',
+  skyBright: 'var(--color-sky)',
   navy: 'var(--color-navy)',
   amber: 'var(--color-amber)',
-  sky: 'var(--color-sky)',
 };
 // The trace line: orange everywhere except ON amber, where orange-on-amber
 // disappears — the amber drench band gets a navy trace instead (decorative).

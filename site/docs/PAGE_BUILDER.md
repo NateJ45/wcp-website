@@ -196,7 +196,7 @@ this repo with "Secrets: write" and "Actions: write" permissions.
 
 Shared building blocks live in
 [`src/sanity/schemaTypes/objects/_shared.ts`](../src/sanity/schemaTypes/objects/_shared.ts):
-`bandFields()` (background `white|grey|cream|navy` + compact only — the divider/"seam"
+`bandFields()` (background `white|grey|cream|sunshine|sky|navy` + compact only — the divider/"seam"
 between bands is placed automatically by the renderer from adjacent band colours, not a
 volunteer toggle, since 2026-07-17), `iconField()` (a **validated dropdown** of allowed
 icon names, so a typo can never break the build), required `alt` on every image, and

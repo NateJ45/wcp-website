@@ -256,7 +256,7 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
-          '**The band colour.** Every band has a small `🎨` button in its top right corner. Click it and a short list opens: White, Light grey, Warm cream, Navy. Click one and the band changes colour under your hand. (A call-to-action banner offers its own two, Navy and Warm cream.)',
+          '**The band colour.** Every band has a small `🎨` button in its top right corner. Click it and a short list opens: White, Light grey, Warm cream, Sunshine, Sky, Navy. Click one and the band changes colour under your hand. (A call-to-action banner offers its own two, Navy and Warm cream.)',
           '**The underlined word in a heading.** Click a heading, then `Underline a word`, then click the word. See "Make words bold or stand out".',
           '**The words themselves.** Click an intro line or a card line, then `✎ Edit here`, and type in the small card that opens. Enter saves, Esc cancels.',
         ],

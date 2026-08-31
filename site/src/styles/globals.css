@@ -211,6 +211,9 @@
   --color-amber: #ffa334; /* Amber. Stars, Twos class color. */
   --color-green: #22c55e; /* Green. Threes class color (decorative). */
   --color-grey: #eff0f1; /* Light grey. Alternating section backgrounds. */
+  --color-sunshine: #ffe2a9; /* Saturated warm band (2026-09-01 bold pass).
+     Deeper than cream — a real marigold field, Aardvark volume. Body ink on
+     it measures comfortably past AA (dark navy-grey text on #ffe2a9). */
 
   /* ---- INK tier: any TEXT or interactive label (WCAG AA verified) ----
      Contrast ratios measured against white (#fff) and grey (#EFF0F1):
@@ -1331,6 +1334,8 @@ li:nth-child(4n + 4) > .hub-note {
 }
 .wcp-site-paper section.bg-grey,
 .wcp-site-paper section.bg-cream,
+.wcp-site-paper section.bg-sunshine,
+.wcp-site-paper section.bg-sky-soft,
 .wcp-site-paper section.bg-navy {
   position: relative;
   isolation: isolate;
@@ -1338,6 +1343,8 @@ li:nth-child(4n + 4) > .hub-note {
 }
 .wcp-site-paper section.bg-grey::before,
 .wcp-site-paper section.bg-cream::before,
+.wcp-site-paper section.bg-sunshine::before,
+.wcp-site-paper section.bg-sky-soft::before,
 .wcp-site-paper section.bg-navy::before {
   content: '';
   position: absolute;
@@ -1374,8 +1381,12 @@ li:nth-child(4n + 4) > .hub-note {
 .wcp-site-paper section.bg-grey::before {
   background-image: var(--wcp-grain);
 }
-.wcp-site-paper section.bg-cream::before {
+.wcp-site-paper section.bg-cream::before,
+.wcp-site-paper section.bg-sunshine::before {
   background-image: var(--wcp-grain), var(--wcp-doodles);
+}
+.wcp-site-paper section.bg-sky-soft::before {
+  background-image: var(--wcp-grain);
 }
 .wcp-site-paper section.bg-navy::before {
   background-image: var(--wcp-doodles-dark);
@@ -1401,7 +1412,8 @@ li:nth-child(4n + 4) > .hub-note {
       rgba(1, 32, 58, 0.5)
     );
 }
-.dark .wcp-site-paper section.bg-cream {
+.dark .wcp-site-paper section.bg-cream,
+.dark .wcp-site-paper section.bg-sunshine {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
@@ -2471,19 +2483,23 @@ body.wcp-hub-paper .wcp-photo-print > * {
    text contrast (content sits above on its own layer). color-mix keeps the
    step relative to the cream token, so dark mode derives its own quiet
    version. Public layer only; the hub keeps its flat canvas. ------------- */
-/* isolation makes the section its own stacking context, so the z:-1 layer
-   sits behind ALL band content (positioned or not — the Septembers rail's
-   plain year tabs included) yet can never dive under the page background. */
-.wcp-site-paper .wcp-section.bg-cream {
-  position: relative;
-  isolation: isolate;
-}
-.wcp-site-paper .wcp-section.bg-cream::before {
+/* On ::after, NOT ::before — the texture layer (grain/doodles, further up)
+   already owns section::before, and a second higher-specificity ::before
+   silently clobbered the cream doodles for a day (2026-09-01). The bands'
+   position/isolation come from the texture rules; the strata layer shares
+   the z:-1 slot behind all band content (positioned or not — the Septembers
+   rail's plain year tabs included). Applied to every TINTED band, each
+   mixing toward its own hue family. */
+.wcp-site-paper section.bg-cream::after,
+.wcp-site-paper section.bg-sunshine::after,
+.wcp-site-paper section.bg-sky-soft::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+}
+.wcp-site-paper section.bg-cream::after {
   background:
     radial-gradient(
       120% 42% at 16% 109%,
@@ -2495,6 +2511,40 @@ body.wcp-hub-paper .wcp-photo-print > * {
       color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
       transparent 100%
     );
+}
+.wcp-site-paper section.bg-sunshine::after {
+  background:
+    radial-gradient(
+      120% 42% at 20% 109%,
+      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 32% at 80% 112%,
+      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper section.bg-sky-soft::after {
+  background:
+    radial-gradient(
+      115% 40% at 18% 109%,
+      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 30% at 84% 112%,
+      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
+      transparent 100%
+    );
+}
+
+/* Seam variety (2026-09-01 bold pass): alternate sections mirror their sweep
+   horizontally, so the one divider language stops reading as one repeated
+   stamp. Tailwind v4's translate/scale are independent CSS properties, so
+   this composes with the seam's own -translate-y-full. */
+.wcp-site-paper section:nth-of-type(even) > .wcp-seam {
+  scale: -1 1;
 }
 
 /* -- The arch window: a photo matted behind an arched cut, the storybook
@@ -3278,6 +3328,9 @@ li:nth-child(3n + 3) .wcp-testi {
                                 composite light enough that muted meta text dropped
                                 under AA — keep the fill dark, lean on the border) */
   --color-cream: #241a12; /* dark warm-tint surface (was the pale orange tint) */
+  --color-sunshine: #2e2310; /* dark sunshine band — one warm step above cream's
+                                dark twin, so the two warm bands still read as
+                                different surfaces in dark mode */
   --color-sky-soft: #10222c; /* dark soft-sky tint */
 
   /* Shadcn-style semantic aliases (not consumed by hand-authored components

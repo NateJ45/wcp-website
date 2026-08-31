@@ -107,6 +107,22 @@ export const BAND_OPTIONS: readonly BandChoice[] = [
     dotDark: '#241a12',
   },
   {
+    value: 'sunshine',
+    title: 'Sunshine (bold warm)',
+    hint: 'The loudest warm band.',
+    className: 'bg-sunshine',
+    dot: '#ffe2a9',
+    dotDark: '#2e2310',
+  },
+  {
+    value: 'sky',
+    title: 'Sky (soft blue)',
+    hint: 'A cool, calm field.',
+    className: 'bg-sky-soft',
+    dot: '#eaf6fd',
+    dotDark: '#10222c',
+  },
+  {
     value: 'navy',
     title: 'Navy (dark band)',
     hint: 'White text on deep navy.',
