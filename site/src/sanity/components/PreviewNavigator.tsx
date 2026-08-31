@@ -137,12 +137,32 @@ interface PresetDoc {
   section?: unknown;
 }
 
+/** One News post row (public list only), newest first. */
+interface PostRow {
+  id: string;
+  label: string;
+  href: string;
+  liveHref?: string;
+  hasDraft: boolean;
+  hasPublished: boolean;
+}
+
+/** A raw post document, as the post-list query returns it. */
+interface PostDoc {
+  _id: string;
+  title?: string;
+  slug?: string;
+  publishedAt?: string;
+}
+
 interface Data {
   docs: DocRow[];
   /** PUBLIC only. null when no Menus document exists yet. */
   nav: NavState | null;
   /** PUBLIC only. The saved sections, by name. */
   presets: PresetRow[];
+  /** PUBLIC only. News posts, newest first. */
+  posts: PostRow[];
 }
 
 const APIV = '2025-01-01';
@@ -150,6 +170,10 @@ const ARCHIVED_GROUP = 'Archived';
 
 /** Past this many saved sections the list stops being scannable — say so. */
 const PRESET_SOFT_CAP = 30;
+
+/** The News group shows only the latest few; the full archive lives in the
+    Structure tool's News list. */
+const POSTS_SHOWN = 12;
 
 // "home" lives at the preview root; everything else under its slug.
 const pageHref = (slug: string) => (slug === 'home' ? '/preview' : `/preview/${slug}`);
@@ -209,6 +233,30 @@ function buildPresets(docs: PresetDoc[]): PresetRow[] {
   return rows;
 }
 
+/**
+ * Collapse the post documents into rows, newest first, capped at POSTS_SHOWN.
+ *
+ * Same twin-collapsing rule as the page list, so a draft edit shows the amber
+ * dot and a never-published draft shows the hollow one.
+ */
+function buildPosts(docs: PostDoc[]): PostRow[] {
+  const rows: (PostRow & { at: string })[] = [];
+  for (const [id, { doc, draft, published }] of collapse(docs)) {
+    if (!doc.slug) continue;
+    rows.push({
+      id,
+      label: doc.title || doc.slug,
+      href: `/preview/news/${doc.slug}`,
+      liveHref: published ? `/news/${doc.slug}` : undefined,
+      hasDraft: draft,
+      hasPublished: published,
+      at: doc.publishedAt ?? '',
+    });
+  }
+  rows.sort((a, b) => b.at.localeCompare(a.at));
+  return rows.slice(0, POSTS_SHOWN).map(({ at: _at, ...row }) => row);
+}
+
 async function fetchData(
   client: ReturnType<typeof useClient>,
   kind: 'public' | 'hub',
@@ -216,7 +264,7 @@ async function fetchData(
   // Raw perspective on purpose: we need BOTH the draft and published twins
   // to compute each row's status dot.
   if (kind === 'public') {
-    const [docs, navDocs, presetDocs] = await Promise.all([
+    const [docs, navDocs, presetDocs, postDocs] = await Promise.all([
       client.fetch<DocRow[]>('*[_type == "page" && defined(slug)]{ _id, title, slug, archived }'),
       // The RAW mainNav (page references, not resolved slugs): the drag has to
       // write this array back, and a reference matches a row by document id.
@@ -226,14 +274,24 @@ async function fetchData(
       // The whole `section` value, because adding one to a page is a plain
       // copy of it — there is nothing to resolve.
       client.fetch<PresetDoc[]>('*[_type == "sectionPreset"]{ _id, title, sectionType, section }'),
+      // News posts, so an article can be previewed and edited from this panel
+      // the same way a page can. Newest first; buildPosts caps the list.
+      client.fetch<PostDoc[]>(
+        '*[_type == "post" && defined(slug.current)]{ _id, title, "slug": slug.current, publishedAt }',
+      ),
     ]);
-    return { docs, nav: pickNav(navDocs), presets: buildPresets(presetDocs) };
+    return {
+      docs,
+      nav: pickNav(navDocs),
+      presets: buildPresets(presetDocs),
+      posts: buildPosts(postDocs),
+    };
   }
 
   const docs = await client.fetch<DocRow[]>(
     '*[_type == "hubPage" && (defined(hubKey) || defined(slug))]{ _id, title, heading, hubKey, slug, archived }',
   );
-  return { docs, nav: null, presets: [] };
+  return { docs, nav: null, presets: [], posts: [] };
 }
 
 /** Group titles, in display order, for one flavor. */
@@ -358,7 +416,7 @@ const SHORTCUTS: Record<'public' | 'hub', { type: string; label: string }[]> = {
 
 /** The status dot: amber = live page with unpublished edits; hollow = never
     published. Published-and-clean rows render nothing. */
-function StatusDot({ row }: { row: NavRow }) {
+function StatusDot({ row }: { row: Pick<NavRow, 'hasDraft' | 'hasPublished'> }) {
   if (!row.hasDraft) return null;
   const unpublished = !row.hasPublished;
   return (
@@ -395,7 +453,7 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     const refetch = useCallback(() => {
       fetchData(client, kind)
         .then(setData)
-        .catch(() => setData({ docs: [], nav: null, presets: [] }));
+        .catch(() => setData({ docs: [], nav: null, presets: [], posts: [] }));
     }, [client]);
 
     useEffect(() => {
@@ -403,7 +461,8 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
       // Live refresh: any page/menu mutation (rename, publish, new page) →
       // refetch after a short settle. visibility:'query' waits until the
       // change is queryable, so the refetch actually sees it.
-      const types = kind === 'public' ? ['page', 'navigation', 'sectionPreset'] : ['hubPage'];
+      const types =
+        kind === 'public' ? ['page', 'navigation', 'sectionPreset', 'post'] : ['hubPage'];
       let timer: ReturnType<typeof setTimeout> | undefined;
       const sub = client
         .listen('*[_type in $types]', { types }, { visibility: 'query', events: ['mutation'] })
@@ -615,6 +674,10 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
     // that can say "add this to the page you are looking at".
     const [presetsOpen, setPresetsOpen] = useState(false);
 
+    // News posts (public list only) — same idea, collapsed by default so the
+    // page list stays the point of the panel.
+    const [postsOpen, setPostsOpen] = useState(false);
+
     // Which page the preview is showing, as a row. `pending` wins so a click
     // and an immediate "Add" land on the same page. An exact href match first;
     // the endsWith fallback is the same one the row highlight uses.
@@ -740,7 +803,12 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
           });
           return;
         }
-        setData({ docs: data.docs, presets: data.presets, nav: { id: nav.id, items } }); // optimistic
+        setData({
+          docs: data.docs,
+          presets: data.presets,
+          posts: data.posts,
+          nav: { id: nav.id, items },
+        }); // optimistic
         try {
           await client.patch(nav.id).set({ mainNav: items }).commit();
           refetch();
@@ -1014,6 +1082,85 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
               disabled={creating}
               onClick={() => void createPage()}
             />
+
+            {/* News posts — preview and edit an article from the same panel as
+                the pages. Closed by default; the latest few only. */}
+            {kind === 'public' && (
+              <Stack space={2}>
+                <Button
+                  mode="bleed"
+                  padding={2}
+                  justify="flex-start"
+                  onClick={() => setPostsOpen((v) => !v)}
+                  text={`${postsOpen ? '▾' : '▸'} News posts${
+                    data?.posts.length ? ` (latest ${data.posts.length})` : ''
+                  }`}
+                  aria-expanded={postsOpen}
+                  title="The latest News posts, ready to preview and edit here."
+                />
+                {postsOpen && (
+                  <Stack space={1}>
+                    {!data || data.posts.length === 0 ? (
+                      <Text size={1} muted>
+                        No posts yet. The News list in the Studio is where one starts.
+                      </Text>
+                    ) : (
+                      <>
+                        {data.posts.map((p) => {
+                          const active = pending
+                            ? pending.href === p.href
+                            : current === p.href || current.endsWith(p.href);
+                          return (
+                            <Flex key={p.id} align="center" gap={1}>
+                              <Card
+                                as="button"
+                                flex={1}
+                                padding={2}
+                                radius={2}
+                                tone={active ? 'primary' : 'default'}
+                                pressed={active}
+                                style={{ cursor: 'pointer', textAlign: 'left', minWidth: 0 }}
+                                onClick={() => go(p.href, 'post', p.id)}
+                              >
+                                <Flex align="center" gap={2}>
+                                  <Text
+                                    size={1}
+                                    weight={active ? 'semibold' : 'regular'}
+                                    textOverflow="ellipsis"
+                                    style={{ flex: 1, minWidth: 0 }}
+                                  >
+                                    {p.label}
+                                  </Text>
+                                  <StatusDot row={p} />
+                                </Flex>
+                              </Card>
+                              {p.liveHref && (
+                                <Button
+                                  as="a"
+                                  href={p.liveHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  mode="bleed"
+                                  padding={2}
+                                  icon={LaunchIcon}
+                                  title={`Open the live post (${p.liveHref})`}
+                                  aria-label={`Open the live post ${p.label}`}
+                                />
+                              )}
+                            </Flex>
+                          );
+                        })}
+                        {data.posts.length >= POSTS_SHOWN && (
+                          <Text size={1} muted>
+                            The full archive lives in the News list.
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            )}
 
             {/* Saved sections — closed by default, so the page list stays the
                 thing this panel is about. */}

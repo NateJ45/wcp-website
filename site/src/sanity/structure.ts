@@ -572,7 +572,47 @@ export const hubStructure: StructureResolver = (S, context) =>
       // ── Families & co-op ── who the families are and how the co-op runs.
       S.divider().title('Families & co-op'),
 
-      S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
+      // Grouped by class, because that is how a class rep thinks ("my Twos
+      // families"). The panes DERIVE from the live class documents — a new
+      // class gets its pane with no code change — and a family whose children
+      // span classes shows up under each of them. "All families" keeps the
+      // full flat list. A directory child's class is stored as the class SLUG
+      // (see directoryEntry's ClassPickInput).
+      S.listItem()
+        .id('directoryEntry')
+        .title('Family Directory')
+        .icon(emoji('👪'))
+        .child(async () => {
+          const client = context.getClient({ apiVersion: '2025-01-01' });
+          const classes = await client.fetch<{ slug?: string; name?: string }[]>(
+            `*[_type == "class" && !(_id in path("drafts.**")) && defined(slug)] | order(name asc){ slug, name }`,
+          );
+          return S.list()
+            .id('directoryEntry')
+            .title('Family Directory')
+            .items([
+              S.listItem()
+                .id('directory-all')
+                .title('All families')
+                .icon(emoji('👪'))
+                .child(S.documentTypeList('directoryEntry').title('All families')),
+              S.divider().title('By class'),
+              ...classes.map((c) =>
+                S.listItem()
+                  .id(`directory-class-${c.slug}`)
+                  .title(c.name ?? c.slug ?? '')
+                  .icon(emoji('🎒'))
+                  .child(
+                    S.documentList()
+                      .id(`directory-class-${c.slug}`)
+                      .title(c.name ?? c.slug ?? '')
+                      .schemaType('directoryEntry')
+                      .filter('_type == "directoryEntry" && $slug in children[].class')
+                      .params({ slug: c.slug }),
+                  ),
+              ),
+            ]);
+        }),
       S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
       // This list IS the org chart: each role says where it sits and who it
       // reports to, and the chart on the Co-op Jobs page draws itself from
@@ -654,7 +694,50 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.divider().title('Inboxes'),
 
       S.documentTypeListItem('signupEntry').title('Sign-up responses (inbox)').icon(emoji('🙋')),
-      S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
+      // The moderation queue leads: "Waiting for review" is the pane a board
+      // member actually works, and in a flat list it sank under months of
+      // approved history. Approved and Everything sit behind it.
+      S.listItem()
+        .id('photoSubmission')
+        .title('Family photos (review)')
+        .icon(emoji('📷'))
+        .child(
+          S.list()
+            .id('photoSubmission')
+            .title('Family photos')
+            .items([
+              S.listItem()
+                .id('photos-pending')
+                .title('Waiting for review')
+                .icon(emoji('🕒'))
+                .child(
+                  S.documentList()
+                    .id('photos-pending')
+                    .title('Waiting for review')
+                    .schemaType('photoSubmission')
+                    .filter('_type == "photoSubmission" && approved != true')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+              S.listItem()
+                .id('photos-approved')
+                .title('Approved (on the photo wall)')
+                .icon(emoji('✅'))
+                .child(
+                  S.documentList()
+                    .id('photos-approved')
+                    .title('Approved')
+                    .schemaType('photoSubmission')
+                    .filter('_type == "photoSubmission" && approved == true')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+              S.divider(),
+              S.listItem()
+                .id('photos-all')
+                .title('Everything')
+                .icon(emoji('🗂️'))
+                .child(S.documentTypeList('photoSubmission').title('Family photos')),
+            ]),
+        ),
       // Written by the weekly link-health workflow; a report, not a form.
       singleton(S, 'linkHealth', 'Link health (weekly check)', emoji('🩺')),
 

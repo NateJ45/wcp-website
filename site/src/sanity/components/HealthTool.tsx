@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useClient } from 'sanity';
-import { Badge, Box, Button, Card, Flex, Heading, Spinner, Stack, Text } from '@sanity/ui';
+import { Badge, Box, Button, Card, Flex, Spinner, Stack, Text } from '@sanity/ui';
 import { computeReminders, type UpcomingItem } from '../../lib/reminders';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // HealthTool — a plain-language "what needs attention?" check (Everything ws)
@@ -335,9 +336,7 @@ export function HealthTool() {
     <Box padding={4}>
       <Stack space={5} style={{ maxWidth: 640, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            🩺 Site checkup
-          </Heading>
+          <ToolHeading>🩺 Site checkup</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             A quick look for things worth fixing: a banner left on, old messages, pages gone stale,
             and gaps in your classes — plus what's coming up in the next two weeks. Nothing is

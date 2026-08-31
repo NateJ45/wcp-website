@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { useClient, useWorkspace } from 'sanity';
 import { IntentLink, useRouter } from 'sanity/router';
-import { Badge, Box, Card, Flex, Heading, Spinner, Stack, Text } from '@sanity/ui';
+import { Badge, Box, Card, Flex, Spinner, Stack, Text } from '@sanity/ui';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // SetupWizard — the "new school year, roll the site over" checklist (Everything)
@@ -364,9 +365,7 @@ export function SetupWizard() {
       `}</style>
       <Stack space={5} style={{ maxWidth: 680, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            🍂 Start-of-year setup
-          </Heading>
+          <ToolHeading>🍂 Start-of-year setup</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             The once-a-year rollover, in order. Each card jumps you to the right place to update it.
             Nothing changes here — you edit and publish as usual. Work top to bottom.

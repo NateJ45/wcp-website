@@ -276,7 +276,9 @@ instead of per-event RSVP because calendar events live in Google, not Sanity, an
 no stable identity to hang responses on). Families respond on the page; each response
 posts to `/family-hub/api/signup` (inside the hub prefix, so the middleware gate covers
 it), which validates open/slot/capacity server-side, stores a `signupEntry` doc (the
-count source and the board's Studio inbox), and forwards a row + FYI email through the
+count source and the board's Studio inbox — since 2026-08-30 each sheet also has a
+**Responses** document tab listing its own entries, newest first, via
+`sanity-plugin-documents-pane` in `sanity.config.ts`), and forwards a row + FYI email through the
 Google forms inbox when configured (see [FORMS.md](FORMS.md)). Forms work without JS
 (native POST → redirect with `?thanks=1`); `src/scripts/hub-signup.ts` upgrades them to
 background submits. Two clearly-titled example sheets are seeded by
@@ -307,7 +309,9 @@ A page-wide line totals the whole school's logged hours.
 photo (with an optional caption) through the form; the browser **never writes to
 Sanity directly** — it posts to `/family-hub/api/photo-submit`, which holds the server
 token, and the upload lands as a `photoSubmission` with `approved: false`. Only after a
-board member reviews it in the Studio (**Inboxes → Family photos (review)**) and flips
+board member reviews it in the Studio (**Inboxes → Family photos (review)**, which opens
+on a **Waiting for review** pane — `approved != true` — with Approved and Everything
+behind it) and flips
 **Approved** (then Publishes) does it show in the gallery. These are photos of children,
 so they are **gated and moderated by design and never appear on the public site**.
 
@@ -684,7 +688,11 @@ The **Directory** reads opted-in `directoryEntry` docs (PII, gated), sorted
 alphabetically by `familyName` (the surname). Every family is **fully editable in Studio →
 Family Hub → Directory**: family name, each parent (name + their own email + phone), each
 child (name + class), a family photo, the home address, the map pin, notes, and a "Show in
-directory" toggle. Adding a new family = create a `directoryEntry` and turn on "Show in
+directory" toggle. In the Studio the Family Directory list opens as **All families**
+plus one pane **per class** (2026-08-30, `structure.ts`: the panes derive from the live
+`class` docs, filter `$slug in children[].class` on the stored class slug — a family
+spanning classes shows under each, and a new class gets its pane for free). Adding a new
+family = create a `directoryEntry` and turn on "Show in
 directory". The **Map** is a Board on/off switch — **Hub settings → Google connections → "Show
 the family directory map"** (`showDirectoryMap`, **off by default**). When off, the page shows
 just the List (no Map tab, and Leaflet never loads); when on, a **List / Map toggle** appears and

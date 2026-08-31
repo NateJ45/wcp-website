@@ -147,7 +147,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Two workspaces, one website' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Public website** (what everyone sees). Click the workspace name in the top-left corner to switch to **Family Hub** (the private, families-only area; it has a little lock on its icon). Both edit the same website. The split just keeps each job’s menu short and obvious. If you cannot find something, you are probably in the other workspace.',
+        text: 'The Studio opens in **Public website** (what everyone sees). Click the workspace name in the top-left corner to switch to **Family Hub** (the private, families-only area; it has a little lock on its icon). Both edit the same website. The split just keeps each job’s menu short and obvious. The Family Hub side wears **warm orange** colours and the Public side stays **blue**, so one glance at the screen tells you which door you are in. If you cannot find something, you are probably in the other workspace.',
       },
       { kind: 'h', text: 'The left menu, band by band' },
       {
@@ -273,6 +273,7 @@ export const guides: Guide[] = [
           'The `⋯` button on a page gives you **Duplicate** and **Archive** (see below).',
           'The `⋮⋮` grip lets you drag a page into the menu, out of it, or up and down inside it (see below).',
           '`＋ New page` at the bottom starts a fresh page right here.',
+          '**News posts** under the page list opens the latest articles, so you can preview and edit a post the same way as a page.',
           'The **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
         ],
       },
@@ -901,7 +902,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Families respond on the hub page; every response lands in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
+        text: 'Families respond on the hub page. To see who signed up, open the sheet and click its **Responses** tab (next to the pencil at the top) — every response for that sheet is right there, newest first. The full inbox across all sheets still lives in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
       },
       {
         kind: 'callout',
@@ -2663,6 +2664,10 @@ export const guides: Guide[] = [
         items: ['Family Hub', 'Directory', 'pick a family (or ＋ new)'],
         link: { pane: 'directoryEntry', ws: 'family-hub' },
       },
+      {
+        kind: 'p',
+        text: 'The Directory opens as **All families** plus one list **per class** — handy when you are a class rep looking for "my Twos families". A family with children in two classes shows under both. A new class gets its own list automatically.',
+      },
       { kind: 'h', text: 'What you can fill in' },
       {
         kind: 'bullets',
@@ -2679,7 +2684,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Directory** and click the `＋` (new) button.',
+          'Open **Directory → All families** and click the `＋` (new) button.',
           'Type the surname in **Family name**, then add the parents, the children, and any photo or notes.',
           'If you add a **home address**, save it, then ask ' +
             SITE.contactName +
@@ -2819,7 +2824,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Family photos (review)** — new ones show an hourglass (⏳).',
+          'Open **Family photos (review)** — it opens on **Waiting for review**, so new photos are always on top. (**Approved** and **Everything** sit behind it.)',
           'Click a photo to see it full size.',
           'If it’s good to share, turn on **Approved** and `Publish`. It then appears in the hub gallery for families.',
           'If you don’t want it, just **delete** it.',

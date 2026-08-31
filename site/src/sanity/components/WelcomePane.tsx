@@ -1,7 +1,8 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { useClient, useWorkspace } from 'sanity';
 import { IntentLink, useRouter } from 'sanity/router';
-import { Box, Card, Stack, Text, Heading, Flex, Spinner } from '@sanity/ui';
+import { Box, Card, Stack, Text, Flex, Spinner } from '@sanity/ui';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // WelcomePane — the Studio landing screen, in the Family Hub's card language
@@ -238,9 +239,7 @@ export function WelcomePane() {
       `}</style>
       <Stack space={5} style={{ maxWidth: 680, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            👋 Welcome to the West Chester Preschool control room
-          </Heading>
+          <ToolHeading>👋 Welcome to the West Chester Preschool control room</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             This is where you edit the website. Nothing goes live until you click{' '}
             <strong>Publish</strong>, so click around and explore. New here? Open{' '}

@@ -38,7 +38,7 @@ import { HUB_TEMPLATES } from './src/sanity/hubTemplates';
 import { resolveBadges } from './src/sanity/badges';
 import { publicStructure, hubStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
-import { wcpStudioTheme } from './src/sanity/theme';
+import { wcpStudioTheme, wcpHubStudioTheme } from './src/sanity/theme';
 import { projectId, dataset } from './src/sanity/env';
 
 // =============================================================================
@@ -129,6 +129,23 @@ const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => 
   if (USED_ON_TYPES.includes(schemaType)) {
     return S.document().views([S.view.form(), usedOnView(S)]);
   }
+  // A sign-up sheet answers "who's coming?" on the sheet itself: a Responses
+  // tab listing every signupEntry that references it, newest first. Before
+  // this the sheet and its responses lived in two unrelated lists.
+  if (schemaType === 'signupSheet') {
+    return S.document().views([
+      S.view.form(),
+      S.view
+        .component(DocumentsPane)
+        .options({
+          query: `*[_type == "signupEntry" && sheet._ref == $id] | order(_createdAt desc)`,
+          params: { id: `_id` },
+          options: { perspective: 'previewDrafts' },
+        })
+        .title('Responses')
+        .icon(() => '🙋'),
+    ]);
+  }
   return S.document().views([S.view.form()]);
 };
 
@@ -158,6 +175,10 @@ function workspace(opts: {
   /** Which page list the Presentation navigator (the Squarespace-style side
       panel) shows: public `page` docs or hub `hubPage` docs. */
   navigatorKind?: 'public' | 'hub';
+  /** Workspace chrome theme; defaults to the navy/blue brand theme. The hub
+      workspace passes the WARM twin so the two doors look different at a
+      glance (see src/sanity/theme.ts). */
+  theme?: typeof wcpStudioTheme;
   extraPlugins?: PluginOptions[];
   /** Extra Studio tools (navbar entries), e.g. the CSV export tool. */
   extraTools?: Tool[];
@@ -172,7 +193,7 @@ function workspace(opts: {
     icon: opts.icon ?? WcpWorkspaceIcon,
     projectId,
     dataset,
-    theme: wcpStudioTheme,
+    theme: opts.theme ?? wcpStudioTheme,
     releases: { enabled: false },
     // Sanity's own scheduled publishing is a paid (Growth) feature. We keep it
     // OFF so the board never builds a habit around a "Schedule" button that
@@ -399,6 +420,7 @@ export default defineConfig([
     subtitle: 'Behind the family password',
     structure: hubStructure,
     icon: WcpHubWorkspaceIcon,
+    theme: wcpHubStudioTheme,
     previewInitial: '/preview/family-hub/home',
     navigatorKind: 'hub',
     // Clean up sits on the hub side: its biggest bulk-deletes are past RSVPs
