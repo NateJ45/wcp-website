@@ -1368,13 +1368,9 @@ li:nth-child(4n + 4) > .hub-note {
    double size. Layer order matters: first listed paints on TOP, so each
    stack reads grain → doodles → strata, and the strata arcs can never blank
    the icons out again (they did, as a separate ::after painting over this
-   layer — that block is gone). background-size is per-layer: grain keeps its
-   intrinsic tile, doodles double to 680px, gradients fill the band. */
+   layer — that block is gone). background-size is per-layer stays at its intrinsic tile size (Nathan tried 2x and reverted). */
 .wcp-site-paper section.bg-grey::before {
   background-image: var(--wcp-grain), var(--wcp-doodles);
-  background-size:
-    auto,
-    680px 680px;
 }
 .wcp-site-paper section.bg-cream::before {
   background-image:
@@ -1389,11 +1385,6 @@ li:nth-child(4n + 4) > .hub-note {
       color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
       transparent 100%
     );
-  background-size:
-    auto,
-    680px 680px,
-    auto,
-    auto;
 }
 .wcp-site-paper section.bg-sunshine::before {
   background-image:
@@ -1408,11 +1399,6 @@ li:nth-child(4n + 4) > .hub-note {
       color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
       transparent 100%
     );
-  background-size:
-    auto,
-    680px 680px,
-    auto,
-    auto;
 }
 .wcp-site-paper section.bg-sky-soft::before {
   background-image:
@@ -1427,15 +1413,9 @@ li:nth-child(4n + 4) > .hub-note {
       color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
       transparent 100%
     );
-  background-size:
-    auto,
-    680px 680px,
-    auto,
-    auto;
 }
 .wcp-site-paper section.bg-navy::before {
   background-image: var(--wcp-doodles-dark);
-  background-size: 680px 680px;
 }
 
 /* Hero drench (2026-07-17, Nathan: "all heroes ... deep navy bg and the low
@@ -1448,9 +1428,6 @@ li:nth-child(4n + 4) > .hub-note {
    header (which replaced HeroFramed's old lg-only masthead hack). */
 .wcp-hero-drench {
   background-color: var(--color-navy);
-  background-size:
-    680px 680px,
-    auto;
   background-image:
     var(--wcp-doodles-dark),
     linear-gradient(
@@ -1466,9 +1443,6 @@ li:nth-child(4n + 4) > .hub-note {
 .dark .wcp-site-paper section.bg-sunshine::before,
 .dark .wcp-site-paper section.bg-sky-soft::before {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
-  background-size:
-    auto,
-    680px 680px;
 }
 
 /* ============================================================================
