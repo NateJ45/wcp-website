@@ -40,10 +40,17 @@ const longFootnote = (footnote?.trim().length ?? 0) > 70;
      real use of the .wcp-annotation register (it writes itself in on
      scroll-driven browsers; see globals). Decorative, so aria-hidden. */
 }
-<p class="mx-auto mb-1 max-w-2xl" aria-hidden="true">
+<p class="mx-auto mb-1 max-w-2xl overflow-x-clip" aria-hidden="true">
   <span class="wcp-annotation inline-block -rotate-6">start here!</span>
 </p>
-<ol class={cn('relative mx-auto max-w-2xl', className)}>
+{
+  /* overflow-x-clip (CI catch 2026-09-01): the settle reveal holds each li at
+     a slight rotation until it scrolls into view, and a rotated full-width
+     box EXTENDS the scrollable area — /enroll measured 324px in a 320px
+     viewport. Clip sideways only; the tape chips overhang vertically and
+     are untouched. */
+}
+<ol class={cn('relative mx-auto max-w-2xl overflow-x-clip', className)}>
   {
     steps.map((s, i) => (
       <li

@@ -1462,7 +1462,12 @@ li:nth-child(4n + 4) > .hub-note {
   font-weight: 400;
 }
 .wcp-annotation {
-  color: var(--color-amber);
+  /* orange-INK, not bright amber (CI catch 2026-09-01): the note is real
+     visible text and aria-hidden does not exempt it from WCAG contrast —
+     #ffa334 on white measured 1.99:1 and failed axe + the Lighthouse gate.
+     The ink token holds AA-large on every light band and flips to the bright
+     tier on dark pages, like every other ink. */
+  color: var(--color-orange-ink);
   font-size: 1.55rem;
   line-height: 1.1;
 }
