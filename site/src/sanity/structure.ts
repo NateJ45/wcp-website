@@ -584,8 +584,11 @@ export const hubStructure: StructureResolver = (S, context) =>
         .icon(emoji('👪'))
         .child(async () => {
           const client = context.getClient({ apiVersion: '2025-01-01' });
+          // class.slug is Sanity's slug TYPE here (unlike page slugs, which
+          // are plain strings) — project .current or the pane id renders
+          // "[object Object]" and the whole structure errors.
           const classes = await client.fetch<{ slug?: string; name?: string }[]>(
-            `*[_type == "class" && !(_id in path("drafts.**")) && defined(slug)] | order(name asc){ slug, name }`,
+            `*[_type == "class" && !(_id in path("drafts.**")) && defined(slug.current)] | order(name asc){ "slug": slug.current, name }`,
           );
           return S.list()
             .id('directoryEntry')
