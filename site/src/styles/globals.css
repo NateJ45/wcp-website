@@ -211,9 +211,10 @@
   --color-amber: #ffa334; /* Amber. Stars, Twos class color. */
   --color-green: #22c55e; /* Green. Threes class color (decorative). */
   --color-grey: #eff0f1; /* Light grey. Alternating section backgrounds. */
-  --color-sunshine: #ffe2a9; /* Saturated warm band (2026-09-01 bold pass).
-     Deeper than cream — a real marigold field, Aardvark volume. Body ink on
-     it measures comfortably past AA (dark navy-grey text on #ffe2a9). */
+  --color-sunshine: #ffa334; /* THE bold warm band (2026-09-01, Nathan:
+     "our bold orange and navy" — the old site's confidence). This IS brand
+     amber as a field. Navy text on it measures 4.86:1 and the body ink
+     darker still, so AA holds; eyebrows on it use the 'heading' tone. */
 
   /* ---- INK tier: any TEXT or interactive label (WCAG AA verified) ----
      Contrast ratios measured against white (#fff) and grey (#EFF0F1):
@@ -1351,21 +1352,6 @@ li:nth-child(4n + 4) > .hub-note {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* Eased, not linear. A straight ramp still has a perceptible "front" moving
-     across the icons; the extra stops weight the fade toward the edge so the
-     texture is already almost gone by the time it reaches the seam, and the
-     approach to full strength is gentle. */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    rgba(0, 0, 0, 0.12) calc(var(--wcp-texture-fade) * 0.35),
-    rgba(0, 0, 0, 0.55) calc(var(--wcp-texture-fade) * 0.68),
-    #000 var(--wcp-texture-fade),
-    #000 calc(100% - var(--wcp-texture-fade)),
-    rgba(0, 0, 0, 0.55) calc(100% - var(--wcp-texture-fade) * 0.68),
-    rgba(0, 0, 0, 0.12) calc(100% - var(--wcp-texture-fade) * 0.35),
-    transparent 100%
-  );
   mask-image: linear-gradient(
     to bottom,
     transparent 0,
@@ -1378,18 +1364,78 @@ li:nth-child(4n + 4) > .hub-note {
     transparent 100%
   );
 }
+/* 2026-09-01 (Nathan): the doodles cover the WHOLE band — every band, at
+   double size. Layer order matters: first listed paints on TOP, so each
+   stack reads grain → doodles → strata, and the strata arcs can never blank
+   the icons out again (they did, as a separate ::after painting over this
+   layer — that block is gone). background-size is per-layer: grain keeps its
+   intrinsic tile, doodles double to 680px, gradients fill the band. */
 .wcp-site-paper section.bg-grey::before {
-  background-image: var(--wcp-grain);
-}
-.wcp-site-paper section.bg-cream::before,
-.wcp-site-paper section.bg-sunshine::before {
   background-image: var(--wcp-grain), var(--wcp-doodles);
+  background-size:
+    auto,
+    680px 680px;
+}
+.wcp-site-paper section.bg-cream::before {
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      120% 42% at 16% 109%,
+      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      95% 34% at 82% 112%,
+      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    );
+  background-size:
+    auto,
+    680px 680px,
+    auto,
+    auto;
+}
+.wcp-site-paper section.bg-sunshine::before {
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      120% 42% at 20% 109%,
+      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 32% at 80% 112%,
+      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    );
+  background-size:
+    auto,
+    680px 680px,
+    auto,
+    auto;
 }
 .wcp-site-paper section.bg-sky-soft::before {
-  background-image: var(--wcp-grain);
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      115% 40% at 18% 109%,
+      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 30% at 84% 112%,
+      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
+      transparent 100%
+    );
+  background-size:
+    auto,
+    680px 680px,
+    auto,
+    auto;
 }
 .wcp-site-paper section.bg-navy::before {
   background-image: var(--wcp-doodles-dark);
+  background-size: 680px 680px;
 }
 
 /* Hero drench (2026-07-17, Nathan: "all heroes ... deep navy bg and the low
@@ -1402,6 +1448,9 @@ li:nth-child(4n + 4) > .hub-note {
    header (which replaced HeroFramed's old lg-only masthead hack). */
 .wcp-hero-drench {
   background-color: var(--color-navy);
+  background-size:
+    680px 680px,
+    auto;
   background-image:
     var(--wcp-doodles-dark),
     linear-gradient(
@@ -1412,9 +1461,14 @@ li:nth-child(4n + 4) > .hub-note {
       rgba(1, 32, 58, 0.5)
     );
 }
-.dark .wcp-site-paper section.bg-cream,
-.dark .wcp-site-paper section.bg-sunshine {
+.dark .wcp-site-paper section.bg-grey::before,
+.dark .wcp-site-paper section.bg-cream::before,
+.dark .wcp-site-paper section.bg-sunshine::before,
+.dark .wcp-site-paper section.bg-sky-soft::before {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
+  background-size:
+    auto,
+    680px 680px;
 }
 
 /* ============================================================================
@@ -2488,62 +2542,6 @@ body.wcp-hub-paper .wcp-photo-print > * {
    text contrast (content sits above on its own layer). color-mix keeps the
    step relative to the cream token, so dark mode derives its own quiet
    version. Public layer only; the hub keeps its flat canvas. ------------- */
-/* On ::after, NOT ::before — the texture layer (grain/doodles, further up)
-   already owns section::before, and a second higher-specificity ::before
-   silently clobbered the cream doodles for a day (2026-09-01). The bands'
-   position/isolation come from the texture rules; the strata layer shares
-   the z:-1 slot behind all band content (positioned or not — the Septembers
-   rail's plain year tabs included). Applied to every TINTED band, each
-   mixing toward its own hue family. */
-.wcp-site-paper section.bg-cream::after,
-.wcp-site-paper section.bg-sunshine::after,
-.wcp-site-paper section.bg-sky-soft::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-.wcp-site-paper section.bg-cream::after {
-  background:
-    radial-gradient(
-      120% 42% at 16% 109%,
-      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
-      transparent 100%
-    ),
-    radial-gradient(
-      95% 34% at 82% 112%,
-      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
-      transparent 100%
-    );
-}
-.wcp-site-paper section.bg-sunshine::after {
-  background:
-    radial-gradient(
-      120% 42% at 20% 109%,
-      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
-      transparent 100%
-    ),
-    radial-gradient(
-      90% 32% at 80% 112%,
-      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
-      transparent 100%
-    );
-}
-.wcp-site-paper section.bg-sky-soft::after {
-  background:
-    radial-gradient(
-      115% 40% at 18% 109%,
-      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
-      transparent 100%
-    ),
-    radial-gradient(
-      90% 30% at 84% 112%,
-      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
-      transparent 100%
-    );
-}
-
 /* Seam variety (2026-09-01 bold pass): alternate sections mirror their sweep
    horizontally, so the one divider language stops reading as one repeated
    stamp. Tailwind v4's translate/scale are independent CSS properties, so
@@ -3333,9 +3331,9 @@ li:nth-child(3n + 3) .wcp-testi {
                                 composite light enough that muted meta text dropped
                                 under AA — keep the fill dark, lean on the border) */
   --color-cream: #241a12; /* dark warm-tint surface (was the pale orange tint) */
-  --color-sunshine: #2e2310; /* dark sunshine band — one warm step above cream's
-                                dark twin, so the two warm bands still read as
-                                different surfaces in dark mode */
+  --color-sunshine: #3b2a0d; /* dark sunshine band — a real amber-brown, a
+                                clear step above cream's dark twin so the bold
+                                band stays bold in dark mode */
   --color-sky-soft: #10222c; /* dark soft-sky tint */
 
   /* Shadcn-style semantic aliases (not consumed by hand-authored components

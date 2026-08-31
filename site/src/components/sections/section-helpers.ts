@@ -64,8 +64,12 @@ export function titleIdFor(section: SectionData): string | undefined {
  * picking the Navy background radio can never ship a contrast failure.
  * Non-navy returns "sky", which matches SectionHeader's own default.
  */
-export function eyebrowTone(bg?: string): 'amber' | 'sky' {
-  return bg === 'navy' ? 'amber' : 'sky';
+export function eyebrowTone(bg?: string): 'amber' | 'sky' | 'heading' {
+  if (bg === 'navy') return 'amber';
+  // The sunshine band IS brand amber now, and sky-ink fails AA on it; the
+  // heading token holds in both themes (see Eyebrow.astro).
+  if (bg === 'sunshine') return 'heading';
+  return 'sky';
 }
 
 export function bandSize(section: SectionData): 'compact' | 'default' {

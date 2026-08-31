@@ -111,8 +111,8 @@ export const BAND_OPTIONS: readonly BandChoice[] = [
     title: 'Sunshine (bold warm)',
     hint: 'The loudest warm band.',
     className: 'bg-sunshine',
-    dot: '#ffe2a9',
-    dotDark: '#2e2310',
+    dot: '#ffa334',
+    dotDark: '#3b2a0d',
   },
   {
     value: 'sky',
