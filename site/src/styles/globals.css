@@ -2427,6 +2427,76 @@ body.wcp-hub-paper .wcp-photo-print > * {
   }
 }
 
+/* -- Annotations write themselves (2026-09-01, from the Aardvark study).
+   .wcp-annotation is the Great Vibes margin-note register; on scroll-driven
+   browsers the note now REVEALS left-to-right as it scrolls into view, like
+   a hand writing it in. clip-path only (no layout, no opacity), applied in
+   the element's own coordinates so a rotated note writes along its own
+   baseline. The vertical insets are negative so ascenders/descenders never
+   clip. Same double gate as every scroll-scrub: everyone else gets the full
+   note, still. --------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper .wcp-annotation {
+      animation: wcp-annotation-write linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 45%;
+    }
+  }
+}
+@keyframes wcp-annotation-write {
+  from {
+    clip-path: inset(-30% 100% -30% -10%);
+  }
+  to {
+    clip-path: inset(-30% -10% -30% -10%);
+  }
+}
+
+/* -- One mischievous letter (2026-09-01, same study). displayTitleHtml wraps
+   a single deterministic letter of an occasional display heading in this
+   span; the tilt is static (no motion doctrine implications) and scoped to
+   the public paper layer, so the same shared component renders it inert on
+   the hub. The angle rides a custom property so typography.ts can vary it
+   per heading without new classes. --------------------------------------- */
+.wcp-site-paper .wcp-tilt-letter {
+  display: inline-block;
+  transform: rotate(var(--tilt-letter, -3deg));
+}
+
+/* -- Band strata: the torn-paper depth inside a warm band (Aardvark's
+   in-band waves, at Construction Paper volume). Two big hard-stop radial
+   arcs sit along a cream band's bottom edge, a few percent darker than the
+   band — enough that the band reads as layered paper, never enough to touch
+   text contrast (content sits above on its own layer). color-mix keeps the
+   step relative to the cream token, so dark mode derives its own quiet
+   version. Public layer only; the hub keeps its flat canvas. ------------- */
+/* isolation makes the section its own stacking context, so the z:-1 layer
+   sits behind ALL band content (positioned or not — the Septembers rail's
+   plain year tabs included) yet can never dive under the page background. */
+.wcp-site-paper .wcp-section.bg-cream {
+  position: relative;
+  isolation: isolate;
+}
+.wcp-site-paper .wcp-section.bg-cream::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 42% at 16% 109%,
+      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      95% 34% at 82% 112%,
+      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    );
+}
+
 /* -- The arch window: a photo matted behind an arched cut, the storybook
    doorway. Sits INSIDE a .wcp-photo-print mat (the white paper stays a
    rectangle — a real matted arch print), so it composes with the print frame
