@@ -1,20 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useWorkspace } from 'sanity';
 import { Box, Button, Card, Dialog, Flex, Heading, Stack, Text } from '@sanity/ui';
 import emblem from '../../assets/brand/wcp-emblem.png';
 
 // =============================================================================
 // StudioTour — the Studio's first-visit welcome, like the hub's HubTourModal
 // =============================================================================
-// A small stepped dialog that greets a volunteer the FIRST time this browser
-// opens the Studio, then never again (localStorage, same device-local pattern
-// as the hub tour). It rides StudioLayout, so it works in both workspaces and
+// A stepped dialog that greets a volunteer the FIRST time this browser opens
+// the Studio, then never again (localStorage, same device-local pattern as
+// the hub tour). It rides StudioLayout, so it works in both workspaces and
 // needs no Sanity feature beyond a custom layout component.
 //
+// The tour is WORKSPACE-AWARE: the shared steps (publish model, the two
+// doors, click-to-edit, starters, media, tools, help, safety) show in both,
+// and two middle steps swap to the work THIS side is for — news/menus on the
+// public side, the weekly hub rhythm + families on the hub side.
+//
 // Re-open path: the Welcome pane fires the OPEN_EVENT below. Nothing here
-// mutates content; Escape / "Skip" close it for good.
+// mutates content; Escape / "Skip" close it for good. Bump SEEN_KEY when the
+// steps change enough that returning volunteers should see them again.
 // =============================================================================
 
-const SEEN_KEY = 'wcp-studio-tour-v1';
+const SEEN_KEY = 'wcp-studio-tour-v2';
 
 /** The Welcome pane dispatches this to replay the tour on demand. */
 export const OPEN_EVENT = 'wcp-studio-tour-open';
@@ -27,7 +34,7 @@ interface Step {
   body: string;
 }
 
-const STEPS: Step[] = [
+const OPENING: Step[] = [
   {
     emoji: '👋',
     title: 'Welcome to the Studio',
@@ -36,17 +43,62 @@ const STEPS: Step[] = [
   {
     emoji: '🚪',
     title: 'Two doors, one website',
-    body: 'The name in the top-left corner switches between Public website (blue — what everyone sees) and Family Hub (orange — behind the family password). If you cannot find something, you are probably in the other one.',
+    body: 'The name in the top-left corner switches between Public website (blue — what everyone sees) and Family Hub (orange — behind the family password). If you cannot find something, you are probably in the other one. The left menu is the same idea on both sides: everyday jobs on top, setup at the bottom.',
   },
   {
     emoji: '🖱️',
     title: 'Edit pages by clicking the page',
-    body: 'Open Presentation in the top bar to see the site itself. Click any words on the page and the matching text box opens beside it. The page list on the left flips between pages, like a site builder.',
+    body: 'Open Presentation in the top bar to see the site itself. Click any words on the page and the matching text box opens beside it. The page list on the left flips between pages like a site builder — an amber dot means unpublished edits, the ↗ opens the real live page, and ＋ New page starts a fresh one.',
+  },
+  {
+    emoji: '➕',
+    title: 'Half-done starting points',
+    body: 'The ＋ button in the top-left makes anything new, and for the regulars it offers ready-made starters: a meeting-minutes post, a spotlight pop-up, a birthday celebration, a helper sign-up sheet. Next to it, the 🔍 search finds any document by name.',
+  },
+  {
+    emoji: '🖼️',
+    title: 'Every photo, one place',
+    body: 'Media in the top bar is the photo library: browse, search, edit a caption, and see which pages use each picture. Every image picker can also browse it, so you never upload the same photo twice.',
+  },
+];
+
+const MIDDLE: Record<'public' | 'family-hub', Step[]> = {
+  public: [
+    {
+      emoji: '📰',
+      title: 'News, events, and the newsletter',
+      body: 'News posts, the Events page, and Newsletter issues each have a home in the left menu. Publish a post and the website rebuilds itself in a couple of minutes — no other steps. The newsletter composes here too, with a web archive for free.',
+    },
+    {
+      emoji: '🧭',
+      title: 'Pages, menus, and old links',
+      body: 'Pages are stacks of sections you add, reorder, and drag — the menu is editable the same way (drag a page in or out of it, right in the page list). Rename a page and the old address keeps working automatically. Saved sections let you keep a favorite section and reuse it on any page.',
+    },
+  ],
+  'family-hub': [
+    {
+      emoji: '📣',
+      title: 'The weekly rhythm',
+      body: 'The top of the left menu is the hub week: post an Update, open a Sign-up sheet (its Responses tab shows who signed up), share a Document, post a Celebration, or run a Spotlight pop-up that greets every family once. The Alert banner sits first for snow days.',
+    },
+    {
+      emoji: '👪',
+      title: 'Families and the co-op',
+      body: 'The Family Directory opens by class — handy for class reps. Family photos wait in a review queue until you approve them. Co-op roles draw the org chart, and "Who’s who" is the list to refresh each fall. Adding a class is two steps: publish the class, and every page, list, and menu updates itself.',
+    },
+  ],
+};
+
+const CLOSING: Step[] = [
+  {
+    emoji: '🩺',
+    title: 'The tools do the remembering',
+    body: 'In the top bar: Checkup answers "does anything need attention?" (stale pages, expired pop-ups, anything pointing at a missing class). Start of year walks the annual rollover. Export downloads any list as a spreadsheet, and Clean up clears old inbox records in one go.',
   },
   {
     emoji: '❔',
     title: 'Help is built in',
-    body: 'Help & Guide (near the top of the left menu) has a plain-language walkthrough for every job — posting news, changing tuition, running sign-ups. Checkup in the top bar answers "does anything need attention?"',
+    body: 'Help & Guide (near the top of the left menu) has a plain-language walkthrough for every job — posting news, changing tuition, running sign-ups, reviewing photos. When you are unsure, start there.',
   },
   {
     emoji: '🛟',
@@ -56,8 +108,15 @@ const STEPS: Step[] = [
 ];
 
 export function StudioTour() {
+  const workspace = useWorkspace();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+
+  const steps: Step[] = [
+    ...OPENING,
+    ...(MIDDLE[workspace.name as 'public' | 'family-hub'] ?? []),
+    ...CLOSING,
+  ];
 
   useEffect(() => {
     // First visit on this browser only. try/catch: storage can throw in
@@ -95,8 +154,8 @@ export function StudioTour() {
 
   if (!open) return null;
 
-  const current = STEPS[step];
-  const last = step === STEPS.length - 1;
+  const current = steps[Math.min(step, steps.length - 1)];
+  const last = step >= steps.length - 1;
 
   return (
     <Dialog
@@ -111,7 +170,7 @@ export function StudioTour() {
             <Flex gap={2} align="center">
               {/* Step dots — decorative; the count is in the button label. */}
               <Text size={1} muted aria-hidden>
-                {STEPS.map((_, i) => (i === step ? '●' : '○')).join(' ')}
+                {steps.map((_, i) => (i === step ? '●' : '○')).join(' ')}
               </Text>
               {step > 0 && (
                 <Button mode="ghost" text="Back" onClick={() => setStep((s) => s - 1)} />
