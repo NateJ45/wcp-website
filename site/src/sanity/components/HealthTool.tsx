@@ -136,6 +136,64 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // Slug drift — the silent breakage behind everything a class touches.
+    // The whole hub joins on the class SLUG (directory children, teacher
+    // notes, curriculum guides, supply lists, families' "my classes" picks).
+    // The slug field warns on rename, but if a volunteer renames one anyway
+    // the joins break with NO error anywhere: a family quietly drops off its
+    // class list, a welcome note stops showing. This check finds every stored
+    // class key that matches no live class (or class page) and names the
+    // document to fix.
+    id: 'class-slug-drift',
+    run: async (c) => {
+      const snap = await c.fetch<{
+        slugs: (string | null)[];
+        pageKeys: (string | null)[];
+        families: { family?: string; classes?: (string | null)[] }[];
+        notes: { key?: string | null }[];
+        guides: { key?: string | null; title?: string | null }[];
+      }>(`{
+        "slugs": *[_type == "class" && !(_id in path("drafts.**"))].slug.current,
+        "pageKeys": *[_type == "hubPage" && !(_id in path("drafts.**")) && count(classes) > 0].hubKey,
+        "families": *[_type == "directoryEntry" && count(children[defined(class)]) > 0]{
+          "family": familyName, "classes": children[].class
+        },
+        "notes": *[_type == "teacherNote" && !(_id in path("drafts.**")) && defined(class)]{ "key": class },
+        "guides": *[_type == "curriculumGuide" && !(_id in path("drafts.**")) && defined(class)]{ "key": class, title }
+      }`);
+      const slugs = new Set((snap?.slugs ?? []).filter(Boolean));
+      if (slugs.size === 0) return null; // an unreachable class list would flag everything
+      // Teacher notes and curriculum guides may name a class PAGE instead of
+      // a single class (Twos + Threes share one page), so their key-space is
+      // slugs plus the hub pages that name classes.
+      const pageOrSlug = new Set([...slugs, ...(snap?.pageKeys ?? []).filter(Boolean)]);
+      const broken: string[] = [];
+      for (const f of snap?.families ?? []) {
+        const bad = (f.classes ?? []).filter((k) => k && !slugs.has(k));
+        if (bad.length) broken.push(`the ${f.family ?? '?'} family lists "${bad[0]}"`);
+      }
+      for (const n of snap?.notes ?? []) {
+        if (n.key && !pageOrSlug.has(n.key))
+          broken.push(`a teacher note is filed under "${n.key}"`);
+      }
+      for (const g of snap?.guides ?? []) {
+        if (g.key && !pageOrSlug.has(g.key))
+          broken.push(`the curriculum guide "${g.title ?? g.key}" points at "${g.key}"`);
+      }
+      return broken.length
+        ? {
+            severity: 'alert',
+            label: `${broken.length} thing${broken.length === 1 ? '' : 's'} pointing at a class that no longer exists`,
+            detail: `A class web address probably changed. ${broken
+              .slice(0, 4)
+              .join(
+                '; ',
+              )}${broken.length > 4 ? '…' : ''}. Open each document and re-pick the class, or change the class address back.`,
+          }
+        : null;
+    },
+  },
+  {
     // A teacher swap that nobody finished. The hub's teacher card follows the
     // WELCOME NOTE, not the class's Teacher field, so after a swap the class
     // page keeps showing the old teacher's letter, photo and email until

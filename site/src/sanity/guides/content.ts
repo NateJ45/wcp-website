@@ -119,7 +119,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The Studio vs. the website' },
       {
         kind: 'p',
-        text: 'This **Studio** is your control room. The **website** is what families and visitors see. You make changes here, and they appear on the website after you publish. The Studio is private. The website is public.',
+        text: 'This **Studio** is your control room. The **website** is what families and visitors see. You make changes here, and they appear on the website after you publish. The Studio is private. The website is public. (The first time you open the Studio it greets you with a short **welcome tour** — replay it any time from the **Welcome** page, "Show the welcome tour again".)',
       },
       { kind: 'h', text: 'Nothing is live until you Publish' },
       {
@@ -899,6 +899,10 @@ export const guides: Guide[] = [
           '_Sign-up sheet_ for named slots (helper shifts, snack days). Give each slot a "how many needed" cap if you want one.',
           '_Event RSVP_ for a simple "we’ll be there" count.',
         ],
+      },
+      {
+        kind: 'p',
+        text: 'The `＋` (new) menu offers ready-made starting points — a helper-jobs sheet with three example slots, and an RSVP. Both start **closed**: fill in the words, then turn on **Open for responses?** and Publish when it is ready for families.',
       },
       {
         kind: 'p',
@@ -2497,7 +2501,7 @@ export const guides: Guide[] = [
       { kind: 'path', items: ['Checkup (top nav, either workspace)'], link: { tool: 'checkup' } },
       {
         kind: 'p',
-        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
+        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, edits you saved but never published, and anything **pointing at a class that no longer exists** (this happens if a class web address changes — families and letters quietly fall off that class until it is fixed, so Checkup shouts about it). It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
       },
       {
         kind: 'callout',
@@ -2795,7 +2799,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Celebrations** in the left menu, then `＋`.',
+          'Open **Celebrations** in the left menu, then `＋`. The menu offers **Birthday** and **Welcome a new family** starting points, half-filled.',
           'Pick a **type** (Birthday, Shout-out, Welcome, Milestone), write a short happy **headline**, and add a line of detail if you like.',
           '`Publish`. It appears on the hub Celebrations page for families.',
           'Tidy up old ones now and then by deleting them.',

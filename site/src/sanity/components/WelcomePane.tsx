@@ -1,8 +1,9 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { useClient, useWorkspace } from 'sanity';
 import { IntentLink, useRouter } from 'sanity/router';
-import { Box, Card, Stack, Text, Flex, Spinner } from '@sanity/ui';
+import { Box, Button, Card, Stack, Text, Flex, Spinner } from '@sanity/ui';
 import { ToolHeading } from './ToolHeading';
+import { OPEN_EVENT as TOUR_OPEN_EVENT } from './StudioTour';
 
 // =============================================================================
 // WelcomePane — the Studio landing screen, in the Family Hub's card language
@@ -250,6 +251,15 @@ export function WelcomePane() {
             <strong>{otherWorkspace}</strong>? Click the workspace name in the top-left corner to
             switch — both edit the same website.
           </Text>
+          <Box>
+            {/* Replays the first-visit tour (StudioTour.tsx listens). */}
+            <Button
+              mode="bleed"
+              padding={2}
+              text="Show the welcome tour again"
+              onClick={() => window.dispatchEvent(new CustomEvent(TOUR_OPEN_EVENT))}
+            />
+          </Box>
         </Stack>
 
         <Stack space={3}>

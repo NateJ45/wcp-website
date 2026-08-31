@@ -52,4 +52,52 @@ export const HUB_TEMPLATES: Template[] = [
       publishedAt: new Date().toISOString(),
     }),
   },
+  {
+    id: 'celebration-birthday',
+    title: 'Birthday celebration',
+    schemaType: 'celebration',
+    icon: () => '🎂',
+    value: () => ({
+      kind: 'birthday',
+      date: inDays(0),
+    }),
+  },
+  {
+    id: 'celebration-welcome',
+    title: 'Welcome a new family',
+    schemaType: 'celebration',
+    icon: () => '👋',
+    value: () => ({
+      kind: 'welcome',
+      headline: 'Welcome to the co-op!',
+      date: inDays(0),
+    }),
+  },
+  {
+    id: 'signup-helpers',
+    title: 'Sign-up sheet — helper jobs',
+    schemaType: 'signupSheet',
+    icon: () => '📝',
+    value: () => ({
+      kind: 'signup',
+      open: false, // starts CLOSED, like the spotlights: nothing half-made goes live
+      eventDate: inDays(14),
+      slots: [
+        { _key: 'setup', _type: 'slot', label: 'Set-up crew', capacity: 2 },
+        { _key: 'snacks', _type: 'slot', label: 'Bring snacks', capacity: 3 },
+        { _key: 'cleanup', _type: 'slot', label: 'Clean-up crew', capacity: 2 },
+      ],
+    }),
+  },
+  {
+    id: 'signup-rsvp',
+    title: 'Event RSVP (a "we’ll be there" count)',
+    schemaType: 'signupSheet',
+    icon: () => '🙋',
+    value: () => ({
+      kind: 'rsvp',
+      open: false,
+      eventDate: inDays(14),
+    }),
+  },
 ];
