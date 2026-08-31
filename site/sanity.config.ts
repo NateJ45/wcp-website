@@ -81,8 +81,10 @@ import { projectId, dataset } from './src/sanity/env';
 // - scheduledDrafts.enabled: false — per-document scheduled publishing is a
 //   Growth-plan feature. We keep it OFF on purpose: it was briefly on during the
 //   trial, but a "Schedule" button that disappears when the trial ends would
-//   leave the board confused, so publishing is always immediate. (Same story for
-//   Comments/Tasks and AI Assist, which we deliberately have NOT added.)
+//   leave the board confused, so publishing is always immediate. (Same story
+//   for AI Assist, deliberately not added. COMMENTS turned out to be core and
+//   free — they work today and the volunteer guide teaches them, 2026-08-31;
+//   Tasks are not present in this Studio version and stay un-taught.)
 // - releases.enabled: false — the "Content Releases" bundle tool is also a paid
 //   feature and more than the board needs, so we keep it off too.
 // =============================================================================
