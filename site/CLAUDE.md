@@ -240,6 +240,7 @@ docs/                        # the deeper docs (see the list at the bottom of th
 - [docs/REDIRECTS.md](docs/REDIRECTS.md) — mapping old Squarespace URLs → new at domain cutover.
 - [docs/PENDING.md](docs/PENDING.md) — **read this early in a session**: the open patch queue, the remaining code-owned content decisions, and open human tasks. (The 2026-07 quota-freeze stopgap layer was fully retired 2026-08-04.)
 - [docs/GOOGLE.md](docs/GOOGLE.md) — every Google-side dependency (calendar, Apps Scripts, sheets, albums), which account owns it, and the recovery story.
+- [docs/HANDOFF.md](docs/HANDOFF.md) — the one-page "if the maintainer disappears" note for the Board: the five accounts, what runs by itself, and the worst-case recovery paragraph.
 - [docs/TESTING.md](docs/TESTING.md) — which test suite covers what, and the testing gotchas.
 - [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) — the domain-cutover runbook (status-annotated).
 - `docs/superpowers/` — historical plan/spec snapshots; deliberately NOT kept in sync (see its README).

@@ -147,6 +147,14 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
 
 ## Waiting on a human
 
+- **Give the Board second-admin access to the five accounts (added
+  2026-08-31).** [HANDOFF.md](HANDOFF.md) is the Board's "if the maintainer
+  disappears" note, and its first successor task assumes at least two board
+  members can reach GitHub, Cloudflare, Sanity, the Google pieces
+  ([GOOGLE.md](GOOGLE.md)), and Fourthwall. Today most of those are
+  single-owner. Until that changes, account access — not code — is the
+  project's biggest single point of failure.
+
 - **Mint the Cloudflare analytics token, then round-trip "Site stats" (added
   2026-08-28).** The Studio's new **Site stats** tool (Public website
   workspace) is inert until one Worker secret exists. Two steps, in order:
