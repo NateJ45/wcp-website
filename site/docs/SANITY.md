@@ -341,8 +341,20 @@ and the tool shows a "not set up yet" card. Nothing else on the site changes.
 All site content lives in Sanity. A bad mutation, a mis-run patch script, or an
 accidental "Remove field" in the Studio can destroy content that no code change
 can restore. `.github/workflows/sanity-backup.yml` exports the whole production
-dataset (documents + assets) every night at 07:00 UTC and keeps each tarball for
-90 days as a GitHub Actions artifact.
+dataset (documents + assets) every night at 07:00 UTC, ENCRYPTS it, and keeps
+each tarball for 90 days as a GitHub Actions artifact.
+
+**The encryption is load-bearing, not optional.** This repo is PUBLIC, and any
+logged-in GitHub user can download a public repo's artifacts. The dataset holds
+the family directory (names, addresses, phones), health details, the children's
+photos, and the share-by-link Google URLs. A plaintext artifact publishes all
+of it. This shipped wrong 2026-08-27 (two duplicate workflows, both plaintext);
+found and fixed 2026-09-01 — the workflow now encrypts with
+AES-256-CBC/PBKDF2 before upload, refuses to export at all when the
+`BACKUP_PASSPHRASE` secret is missing, and the old plaintext artifacts were
+deleted. Never add an upload of the raw tarball back, here or in any other
+workflow. (`backup.yml` is the retired duplicate — a manual-only stub, safe to
+delete.)
 
 Facts:
 
@@ -350,22 +362,31 @@ Facts:
 - The job runs from `site/`, because `sanity.cli.ts` (which carries the project
   id) lives there.
 - It reuses the existing `secrets.SANITY_TOKEN`, mapped to the `SANITY_AUTH_TOKEN`
-  environment variable the Sanity CLI reads. A gate job checks the secret first:
-  a missing secret gives a WARNING and skips, it never fails the run.
+  environment variable the Sanity CLI reads.
+- It also needs `secrets.BACKUP_PASSPHRASE` — the encryption key. The same
+  value must live in the school records (and in `site/.dev.vars` locally):
+  GitHub can never show a secret again, and a backup nobody can decrypt is no
+  backup. Create it once with
+  `openssl rand -base64 32 | gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website`
+  (and store the value before piping it away).
+- A gate job checks both secrets first: a missing secret gives a WARNING and
+  skips, it never fails the run — and never uploads plaintext.
 
 To restore a backup:
 
 1. Open the workflow run in the Actions tab and download the `sanity-backup`
    artifact.
-2. Unzip it to get `sanity-backup-<date>.tar.gz`.
+2. Unzip it to get `sanity-backup-<date>.tar.gz.enc`, then decrypt:
+   `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in sanity-backup-<date>.tar.gz.enc -out sanity-backup.tar.gz`
+   (it prompts for the passphrase from the school records).
 3. From `site/`, run
-   `npx sanity dataset import sanity-backup-<date>.tar.gz production --replace`.
+   `npx sanity dataset import sanity-backup.tar.gz production --replace`.
 
 WARNING: `--replace` overwrites documents that have the same id. Restore into a
 scratch dataset first if you only need one document back.
 
-For longer or off-site retention, push the tarball to R2 in the workflow instead
-of (or as well as) uploading the artifact.
+For longer or off-site retention, push the encrypted tarball to R2 in the
+workflow instead of (or as well as) uploading the artifact.
 
 ## Auto-deploy on publish (Sanity → GitHub Actions → Cloudflare)
 

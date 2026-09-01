@@ -8,12 +8,24 @@ name: Sanity dataset backup
 #
 # The schedule is ENABLED. This repo is PUBLIC, so Actions minutes are free.
 #
-# The gate job below checks that the SANITY_TOKEN secret exists. A missing
-# secret gives a WARNING and skips the export; it never fails the run. That
-# keeps a red X off the Actions tab if the secret is ever rotated out.
+# The gate job below checks that the SANITY_TOKEN and BACKUP_PASSPHRASE
+# secrets exist. A missing secret gives a WARNING and skips the export; it
+# never fails the run. That keeps a red X off the Actions tab if a secret is
+# ever rotated out.
+#
+# WARNING: the export is ENCRYPTED before upload, and that is load-bearing.
+# This repo is PUBLIC, so any logged-in GitHub user can download artifacts.
+# The dataset holds the family directory, health details, and the
+# share-by-link Google URLs. A plaintext artifact publishes all of it
+# (found 2026-09-01; the old plaintext artifacts were deleted). Never
+# upload the tarball without the openssl step.
 #
 # Restore: download the artifact, then from site/ run
-#   npx sanity dataset import sanity-backup-<date>.tar.gz production --replace
+#   openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+#     -in sanity-backup-<date>.tar.gz.enc -out sanity-backup.tar.gz \
+#     -pass env:BACKUP_PASSPHRASE
+#   npx sanity dataset import sanity-backup.tar.gz production --replace
+# The passphrase lives in the school records and in site/.dev.vars.
 # See site/docs/SANITY.md -> "Nightly dataset backup".
 on:
   schedule:
@@ -32,12 +44,19 @@ jobs:
       - id: check
         env:
           TOKEN: ${{ secrets.SANITY_TOKEN }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
-          if [ -n "$TOKEN" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
+          if [ -z "$TOKEN" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "::warning::SANITY_TOKEN not set; skipping backup. See site/docs/SANITY.md."
+          elif [ -z "$PASSPHRASE" ]; then
+            # No passphrase means the artifact would upload as PLAINTEXT on a
+            # public repo. Refuse to export at all rather than leak the
+            # directory — see the header warning.
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::BACKUP_PASSPHRASE not set; skipping backup so the dataset never uploads unencrypted. See site/docs/SANITY.md."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
   export:
@@ -72,11 +91,25 @@ jobs:
           STAMP=$(date -u +%Y-%m-%d)
           npx sanity dataset export production "sanity-backup-$STAMP.tar.gz"
 
+      # Encrypt BEFORE upload — see the header warning. AES-256-CBC with a
+      # PBKDF2-stretched passphrase; openssl ships on every runner and every
+      # laptop a restore would happen on.
+      - name: Encrypt the export
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          for f in sanity-backup-*.tar.gz; do
+            openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+              -in "$f" -out "$f.enc" -pass env:BACKUP_PASSPHRASE
+            rm "$f"
+          done
+          ls -lh sanity-backup-*.tar.gz.enc
+
       - name: Upload backup artifact
         uses: actions/upload-artifact@v7
         with:
           name: sanity-backup
-          path: site/sanity-backup-*.tar.gz
+          path: site/sanity-backup-*.tar.gz.enc
           # GitHub keeps artifacts 90 days. For longer or off-site retention,
           # push the tarball to R2 here instead.
           retention-days: 90

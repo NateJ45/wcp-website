@@ -22,12 +22,15 @@ website task the Board has.
 
 - The website keeps serving even if nobody touches anything for years.
 - Board edits in the Studio (`/studio`) go live on their own after Publish.
-- Every night, the whole content database is exported and kept on GitHub
-  (Actions → Backup; kept 30–90 days). Restore steps are in
-  [SANITY.md](SANITY.md) — and read the warning there before practicing one.
-- Every 30 minutes a robot publishes any post scheduled with "Publish
+- Every night, the whole content database is exported, **encrypted**, and kept
+  on GitHub for 90 days (Actions → "Sanity dataset backup"). The unlock
+  phrase is in the school records — keep it with this page; without it a
+  backup cannot be opened. Restore steps are in [SANITY.md](SANITY.md) —
+  and read the warning there before practicing one.
+- Every 30 minutes a robot publishes any page or post scheduled with "Publish
   automatically at". Every Monday another one checks the Google links and
-  writes the "Link health" report in the Studio.
+  writes the "Link health" report in the Studio. Every hour a third one
+  checks that the site answers, and shows a red X on GitHub if it does not.
 - The Studio's **Checkup** tool answers "does anything need attention?".
 
 ## What DOES need a person, eventually
