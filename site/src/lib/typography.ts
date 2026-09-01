@@ -79,17 +79,23 @@ export function displayTitleHtml(title: string): string {
       const glue = isHyphenCompound(part) && part.length <= MAX_NOWRAP;
       // Escape character by character so the mischief span can wrap exactly
       // one letter without ever slicing an HTML entity.
+      let tilted = false;
       const escaped = [...part]
         .map((ch) => {
           const isLetter = /\p{L}/u.test(ch);
           if (isLetter) letterIndex += 1;
           if (mischief && isLetter && letterIndex === mischief.ordinal) {
+            tilted = true;
             return `<span class="wcp-tilt-letter" style="--tilt-letter:${mischief.angle}deg">${escapeHtml(ch)}</span>`;
           }
           return escapeHtml(ch);
         })
         .join('');
-      return glue ? `<span class="whitespace-nowrap">${escaped}</span>` : escaped;
+      // The tilt span is an inline-block, and an inline-block is a LINE-BREAK
+      // OPPORTUNITY — "typical" wrapped as "TYPIC / AL" in a live heading
+      // (found 2026-09-01). Any word carrying the tilted letter is glued
+      // whole, exactly like a hyphen compound.
+      return glue || tilted ? `<span class="whitespace-nowrap">${escaped}</span>` : escaped;
     })
     .join('');
 }

@@ -101,7 +101,13 @@ const bandClass = isNavy
 ---
 
 <section
-  class={cn('relative -mt-px', bandClass, isNavy && 'wcp-cta-doodled', className)}
+  class={cn(
+    'relative -mt-px',
+    seam && 'wcp-seamed',
+    bandClass,
+    isNavy && 'wcp-cta-doodled',
+    className,
+  )}
   aria-labelledby={titleId}
 >
   {seam && <Seam color={tone} variant="trim" />}
