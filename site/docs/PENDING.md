@@ -147,6 +147,24 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
 
 ## Waiting on a human
 
+- **Create the `BACKUP_PASSPHRASE` secret so nightly backups resume (added
+  2026-09-01).** The nightly Sanity backup uploaded the FULL dataset —
+  directory PII, health details, the share-by-link Google URLs — as a
+  plaintext artifact on this PUBLIC repo (any logged-in GitHub user can
+  download artifacts). Fixed 2026-09-01: the workflow now encrypts before
+  upload and refuses to run without the secret, and all 8 exposed artifacts
+  were deleted (one copy saved locally to `backups/`, gitignored). Backups
+  are PAUSED until the secret exists. One command:
+  `openssl rand -base64 32 | tee /dev/tty | gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website`
+  — then copy the printed value into the school records AND
+  `site/.dev.vars` (a backup nobody can decrypt is no backup). Full story in
+  [SANITY.md → Nightly dataset backup](SANITY.md#nightly-dataset-backup-added-2026-08-27).
+  Unknowable: whether anyone downloaded an artifact while they were public
+  (2026-08-28 → 2026-09-01). If the Board wants belt-and-braces, rotate the
+  share-by-link Google URLs (already on the list from the July audit).
+  Related cleanup when convenient: delete the retired `backup.yml` stub and
+  its now-unused `SANITY_BACKUP_TOKEN` secret.
+
 - **Give the Board second-admin access to the five accounts (added
   2026-08-31).** [HANDOFF.md](HANDOFF.md) is the Board's "if the maintainer
   disappears" note, and its first successor task assumes at least two board
