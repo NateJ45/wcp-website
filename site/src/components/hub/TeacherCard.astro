@@ -73,14 +73,20 @@ const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signNam
       data-sanity={editAttr}
     >
       {photoUrl ? (
-        <img
-          src={photoUrl}
-          alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
-          width="80"
-          height="80"
-          loading="lazy"
-          class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-        />
+        <span
+          class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
+        >
+          {/* Zoomed 1.5x from the top so the FACE fills the little circle —
+              a half-body shot read as a speck at 80px (Nathan, 2026-09-01). */}
+          <img
+            src={photoUrl}
+            alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+            width="80"
+            height="80"
+            loading="lazy"
+            class="h-full w-full origin-top scale-150 object-cover object-top"
+          />
+        </span>
       ) : (
         <span
           class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}

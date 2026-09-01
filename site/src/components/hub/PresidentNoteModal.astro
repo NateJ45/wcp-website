@@ -87,13 +87,16 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
             {/* Photo + signer */}
             <div class="flex shrink-0 items-center gap-4 sm:w-40 sm:flex-col sm:text-center">
               {note!.photo?.asset ? (
-                <SanityImage
-                  source={note!.photo as never}
-                  alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
-                  widths={[160, 320]}
-                  sizes="10rem"
-                  class="h-20 w-20 rounded-full border-4 border-amber object-cover sm:h-32 sm:w-32"
-                />
+                <span class="inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-amber sm:h-32 sm:w-32">
+                  {/* Zoomed 1.5x from the top — see hub TeacherCard. */}
+                  <SanityImage
+                    source={note!.photo as never}
+                    alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
+                    widths={[160, 320]}
+                    sizes="10rem"
+                    class="h-full w-full origin-top scale-150 object-cover object-top"
+                  />
+                </span>
               ) : (
                 <span
                   class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-amber bg-grey font-display text-3xl text-heading sm:h-32 sm:w-32"

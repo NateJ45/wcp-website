@@ -65,15 +65,20 @@ const telHref = toTel(phone);
     <div class="mx-auto flex max-w-2xl flex-col items-center gap-5 border-t border-white/15 pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-6">
       <div class="flex items-center gap-4">
         {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
-            width="80"
-            height="80"
-            loading="lazy"
-            decoding="async"
-            class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-          />
+          <span
+            class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
+          >
+            {/* Zoomed 1.5x from the top — see TeacherCard. */}
+            <img
+              src={photoUrl}
+              alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+              width="80"
+              height="80"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full origin-top scale-150 object-cover object-top"
+            />
+          </span>
         ) : (
           <span
             class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-white/10 ${cc.border}`}
