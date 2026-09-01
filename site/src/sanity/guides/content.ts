@@ -2306,6 +2306,12 @@ export const guides: Guide[] = [
     diy: 'self',
     body: [
       {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Little round photos crop to the FACE point.',
+        text: 'The hub shows teachers, class reps, and the President in small circles. When you upload one of those photos, click the **crop/hotspot** button on the image (the circle-in-a-square icon) and drag the circle onto the face — the little round photo then centres on it everywhere, whatever shape the original is.',
+      },
+      {
         kind: 'steps',
         items: [
           'Click any image box, then **Upload** and choose a photo from your computer.',

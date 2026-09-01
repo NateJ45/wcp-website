@@ -18,8 +18,8 @@
 // for a font nothing visible-at-load uses (Lighthouse, 2026-07-14).
 import Icon from '@/components/Icon.astro';
 import Prose from '@/components/Prose.astro';
-import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { urlForImage } from '@/lib/image';
 import { renderPortableText } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 
@@ -88,13 +88,18 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
             <div class="flex shrink-0 items-center gap-4 sm:w-40 sm:flex-col sm:text-center">
               {note!.photo?.asset ? (
                 <span class="inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-amber sm:h-32 sm:w-32">
-                  {/* Zoomed 1.5x from the top — see hub TeacherCard. */}
-                  <SanityImage
-                    source={note!.photo as never}
+                  {/* SQUARE hotspot-aware CDN crop — see hub TeacherCard. */}
+                  <img
+                    src={urlForImage(note!.photo as never)
+                      .width(256)
+                      .height(256)
+                      .fit('crop')
+                      .url()}
                     alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
-                    widths={[160, 320]}
-                    sizes="10rem"
-                    class="h-full w-full origin-top scale-150 object-cover object-top"
+                    width="128"
+                    height="128"
+                    loading="lazy"
+                    class="h-full w-full object-cover"
                   />
                 </span>
               ) : (

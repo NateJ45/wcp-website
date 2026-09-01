@@ -50,9 +50,16 @@ try {
 
 const cc = colorStyles(color);
 // 160px covers the 80px (h-20 w-20) circle at 2x; portrait-preserving crop.
+// SQUARE hotspot-aware crop (2026-09-01, round three): the Sanity CDN crops
+// to the face when the photo's hotspot is set in the Studio (drag the circle
+// in the image editor), and center otherwise. This replaced two rounds of
+// CSS zoom guesswork — no transform can center every face, because faces sit
+// in different places per photo. The hotspot is board-editable truth.
 const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
       .width(160)
+      .height(160)
+      .fit('crop')
       .url()
   : null;
 // Studio value wins; fall back to the committed number until the field is set.
@@ -68,7 +75,7 @@ const telHref = toTel(phone);
           <span
             class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
           >
-            {/* Zoomed 1.5x from the top — see TeacherCard. */}
+            {/* Zoomed 1.5x about the face line — see TeacherCard. */}
             <img
               src={photoUrl}
               alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
@@ -76,7 +83,7 @@ const telHref = toTel(phone);
               height="80"
               loading="lazy"
               decoding="async"
-              class="h-full w-full origin-top scale-150 object-cover object-top"
+              class="h-full w-full object-cover"
             />
           </span>
         ) : (

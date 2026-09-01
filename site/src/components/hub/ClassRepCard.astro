@@ -54,9 +54,16 @@ const tel = telHref(person.phone);
 // A headshot the Board uploaded to the role document. Sized through the Sanity
 // CDN, not astro:assets — this is an SSR page and the adapter cannot resize at
 // request time (it would serve the full-size upload into an 80px circle).
+// SQUARE hotspot-aware crop (2026-09-01, round three): the Sanity CDN crops
+// to the face when the photo's hotspot is set in the Studio (drag the circle
+// in the image editor), and center otherwise. This replaced two rounds of
+// CSS zoom guesswork — no transform can center every face, because faces sit
+// in different places per photo. The hotspot is board-editable truth.
 const photoUrl = person.sanityPhoto?.asset
   ? urlForImage(person.sanityPhoto as SanityImageSource)
       .width(160)
+      .height(160)
+      .fit('crop')
       .url()
   : null;
 ---
@@ -70,14 +77,14 @@ const photoUrl = person.sanityPhoto?.asset
       <span
         class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
       >
-        {/* Zoomed 1.5x from the top — see TeacherCard. */}
+        {/* Zoomed 1.5x about the face line — see TeacherCard. */}
         <img
           src={photoUrl}
           alt={`${person.name}, class rep`}
           width="80"
           height="80"
           loading="lazy"
-          class="h-full w-full origin-top scale-150 object-cover object-top"
+          class="h-full w-full object-cover"
         />
       </span>
     ) : (
