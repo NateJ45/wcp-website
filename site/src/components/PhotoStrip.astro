@@ -40,7 +40,7 @@ const bgClass: Record<string, string> = {
 {
   photos.length > 0 && (
     <section
-      class={cn('wcp-section', seam && 'relative -mt-px', bgClass[bg])}
+      class={cn('wcp-section', seam && 'wcp-seamed relative -mt-px', bgClass[bg])}
       aria-label="Photos from our classrooms"
     >
       {seam && <Seam color={bg} />}

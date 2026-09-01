@@ -2524,6 +2524,62 @@ body.wcp-hub-paper .wcp-photo-print > * {
   scale: -1 1;
 }
 
+/* -- Icons flow THROUGH the curved rim (2026-09-01, Nathan: "have the icon
+   layer on top of both the section bg and the outer curve"). The seam svg's
+   flat fill used to cap the band with an icon-less curve. Now, on seamed
+   tinted bands: the seam svg drops to z:-2 (still above the band's own
+   background inside the isolated context, but UNDER the icon layer), and
+   the band's ::before EXTENDS UP by the seam height with its top strip
+   masked to the SAME sweep path — same element, same tile origin, so the
+   doodles/grain/strata run continuously from the curve's crest to the
+   band's bottom. The mask is the seam's own path (mirrored on even
+   sections, matching the svg's flip); the +1px overlaps kill hairlines.
+   Every seamed section isolates so the negative-z pair can never sink
+   below the page. */
+.wcp-site-paper {
+  --wcp-seam-h: 2rem;
+  --wcp-sweep-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cpath d='M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z' fill='%23000'/%3E%3C/svg%3E");
+  --wcp-sweep-mask-flip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cg transform='translate(1440 0) scale(-1 1)'%3E%3Cpath d='M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z' fill='%23000'/%3E%3C/g%3E%3C/svg%3E");
+}
+@media (min-width: 640px) {
+  .wcp-site-paper {
+    --wcp-seam-h: 3rem;
+  }
+}
+.wcp-site-paper section.wcp-seamed {
+  isolation: isolate;
+}
+.wcp-site-paper section.wcp-seamed > .wcp-seam {
+  z-index: -2;
+}
+.wcp-site-paper
+  section.wcp-seamed:is(.bg-grey, .bg-cream, .bg-sunshine, .bg-sky-soft, .bg-navy)::before {
+  top: calc(-1 * var(--wcp-seam-h) + 1px);
+  -webkit-mask-image: var(--wcp-sweep-mask), linear-gradient(#000, #000);
+  mask-image: var(--wcp-sweep-mask), linear-gradient(#000, #000);
+  -webkit-mask-size:
+    100% var(--wcp-seam-h),
+    100% calc(100% - var(--wcp-seam-h) + 2px);
+  mask-size:
+    100% var(--wcp-seam-h),
+    100% calc(100% - var(--wcp-seam-h) + 2px);
+  -webkit-mask-position: top, bottom;
+  mask-position: top, bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.wcp-site-paper
+  section.wcp-seamed:nth-of-type(even):is(
+    .bg-grey,
+    .bg-cream,
+    .bg-sunshine,
+    .bg-sky-soft,
+    .bg-navy
+  )::before {
+  -webkit-mask-image: var(--wcp-sweep-mask-flip), linear-gradient(#000, #000);
+  mask-image: var(--wcp-sweep-mask-flip), linear-gradient(#000, #000);
+}
+
 /* -- The arch window: a photo matted behind an arched cut, the storybook
    doorway. Sits INSIDE a .wcp-photo-print mat (the white paper stays a
    rectangle — a real matted arch print), so it composes with the print frame

@@ -40,9 +40,11 @@ const fill: Record<string, string> = {
   navy: 'var(--color-navy)',
   amber: 'var(--color-amber)',
 };
-// The trace line: orange everywhere except ON amber, where orange-on-amber
-// disappears — the amber drench band gets a navy trace instead (decorative).
-const stroke = color === 'amber' ? 'var(--color-navy)' : 'var(--color-orange)';
+// The trace line: orange everywhere except ON an amber field, where
+// orange-on-amber disappears — the amber drench AND the sunshine band (brand
+// amber since 2026-09-01) get a navy trace instead (decorative).
+const stroke =
+  color === 'amber' || color === 'sunshine' ? 'var(--color-navy)' : 'var(--color-orange)';
 
 // THE sweep (2026-07-19, Nathan: "make the seams look exactly like the
 // squarespace dividers"): one broad, slightly asymmetric arc — the section
