@@ -216,7 +216,7 @@ for (const [i, section] of sections.entries()) {
   }
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
-  const doodleEligible = bg === 'navy' || bg === 'cream';
+  const doodleEligible = bg !== 'white';
   if (doodleEligible && prevDoodled) {
     section.noDoodle = true;
     prevDoodled = false;
@@ -228,7 +228,7 @@ for (const [i, section] of sections.entries()) {
   for (const m of momentsAfter.get(i) ?? []) {
     m.seam = wantsSeam(momentBg(m), prevBg);
     prevBg = momentBg(m);
-    prevDoodled = prevBg === 'cream';
+    prevDoodled = prevBg !== 'white';
   }
 }
 

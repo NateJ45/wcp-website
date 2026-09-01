@@ -2195,8 +2195,51 @@ body.wcp-hub-paper .wcp-photo-print > * {
 .wcp-site-paper [data-nodoodle] > section.bg-navy::before {
   background-image: none;
 }
-.wcp-site-paper [data-nodoodle] > section.bg-cream::before {
+.wcp-site-paper [data-nodoodle] > section.bg-grey::before {
   background-image: var(--wcp-grain);
+}
+/* The tinted bands keep grain AND their strata arcs — only the icons rest. */
+.wcp-site-paper [data-nodoodle] > section.bg-cream::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      120% 42% at 16% 109%,
+      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      95% 34% at 82% 112%,
+      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper [data-nodoodle] > section.bg-sunshine::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      120% 42% at 20% 109%,
+      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 32% at 80% 112%,
+      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper [data-nodoodle] > section.bg-sky-soft::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      115% 40% at 18% 109%,
+      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 30% at 84% 112%,
+      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
+      transparent 100%
+    );
 }
 
 /* -- Header treatment: TAPED LABEL (left-anchored data sections) ------------ */
