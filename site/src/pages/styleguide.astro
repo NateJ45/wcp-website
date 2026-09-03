@@ -23,7 +23,6 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import type { SectionData } from '@/components/sections/section-helpers';
-import Seam from '@/components/Seam.astro';
 import { site } from '@/data/site';
 
 // Local Portable Text helper — mirrors the seed library's toPT(), post-
@@ -245,8 +244,11 @@ const sections: SectionData[] = [
     </div>
   </section>
 
-  <div class="relative">
-    <Seam color="cream" variant="trim" />
-    <SectionRenderer sections={sections} site={site} afterHero={false} />
-  </div>
+  {
+    /* afterHero: the renderer's first band carries its own seam against the
+      navy drench above — the same contract as every public page, and what
+      keeps tests/seams.spec.ts honest here (a hand-placed Seam on a
+      transparent wrapper failed it, 2026-09-03). */
+  }
+  <SectionRenderer sections={sections} site={site} afterHero={true} />
 </BaseLayout>
