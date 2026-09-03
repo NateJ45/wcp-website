@@ -1,0 +1,252 @@
+---
+/* ============================================================================
+   /styleguide — the kitchen-sink page (code-owned, like /colophon and /404)
+   ============================================================================
+   Every fixture-driven section type rendered once with FIXED sample data, in
+   a band order that exercises the whole Construction Paper system: all six
+   band colours, seams at every colour change, doodles + strata, the dealt
+   step cards, and the navy doodled CTA.
+
+   Three jobs:
+     1. The visual-regression target. tests/visual.spec.ts screenshots this
+        page against committed baselines, so a CSS change that shifts a band,
+        seam, or doodle FAILS CI with a pixel diff. That only works because
+        nothing here reads Sanity: CMS-driven sections (testimonials, tuition
+        table, galleries, feeds) are deliberately absent — board edits must
+        never move these pixels. Add a section here ONLY with literal data.
+     2. The design-review surface: one page to eyeball after globals.css work.
+     3. A client demo: "these are the sections your pages are built from."
+
+   noindex: a workshop wall, not a marketing page. It IS in tests/routes.ts,
+   so the a11y + reflow sweeps gate it like any public page.
+   ============================================================================ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionRenderer from '@/components/sections/SectionRenderer.astro';
+import type { SectionData } from '@/components/sections/section-helpers';
+import Seam from '@/components/Seam.astro';
+import { site } from '@/data/site';
+
+// Local Portable Text helper — mirrors the seed library's toPT(), post-
+// projection shape (what the bridges actually consume).
+let k = 0;
+const key = () => `sg${(k++).toString(36)}`;
+const pt = (...paras: string[]) =>
+  paras.map((text) => ({
+    _type: 'block',
+    _key: key(),
+    style: 'normal',
+    markDefs: [],
+    children: [{ _type: 'span', _key: key(), text, marks: [] }],
+  }));
+
+const header = (eyebrow: string, title: string, lead?: string) => ({
+  _type: 'sectionHeader',
+  eyebrow,
+  title,
+  ...(lead ? { lead } : {}),
+  align: 'center',
+});
+
+/* The fixture sections. Band order is deliberate: cream → navy → white →
+   grey → cream → sunshine → white → sky → grey → white → navy hits every
+   colour and forces a seam at each change. */
+const sections: SectionData[] = [
+  {
+    _type: 'proseSection',
+    _key: key(),
+    background: 'cream',
+    header: header('Prose band', 'The everyday paragraph section'),
+    narrow: true,
+    body: pt(
+      'This is the workhorse band. It carries the cream ground with the doodle tile and the torn-paper strata along its bottom edge.',
+      'A second paragraph proves spacing, and this sentence carries enough length to show the measure at its widest comfortable width.',
+    ),
+  },
+  {
+    _type: 'statBandSection',
+    _key: key(),
+    ariaLabel: 'Sample numbers',
+    stats: [
+      { _key: key(), value: '57', label: 'Septembers', note: 'A fixed sample stat' },
+      { _key: key(), value: '12', label: 'Children per class', note: 'Never changes here' },
+      { _key: key(), value: '4.8', label: 'Sample rating', note: 'Fixture data only' },
+    ],
+  },
+  {
+    _type: 'cardGridSection',
+    _key: key(),
+    background: 'white',
+    header: header('Card grid', 'Three cards on a white band'),
+    columns: 3,
+    layout: 'card',
+    cards: [
+      {
+        _key: key(),
+        chip: 'One',
+        title: 'A steady card',
+        body: 'Cards hold a chip, a title, and a body line.',
+      },
+      {
+        _key: key(),
+        chip: 'Two',
+        title: 'A second card',
+        body: 'The grid collapses to one column on phones.',
+      },
+      { _key: key(), chip: 'Three', title: 'A third card', body: 'Hover lifts are motion-gated.' },
+    ],
+  },
+  {
+    _type: 'stepListSection',
+    _key: key(),
+    background: 'grey',
+    header: header('Step list', 'The dealt paper cards'),
+    steps: [
+      {
+        _key: key(),
+        title: 'First step',
+        body: 'Each step is a dealt card with an alternating tilt.',
+      },
+      { _key: key(), title: 'Second step', body: 'The start-here annotation rides above the row.' },
+      { _key: key(), title: 'Third step', body: 'Settle reveals stay inside the clipped row.' },
+    ],
+    footnote: 'A footnote line closes the band.',
+  },
+  {
+    _type: 'pullQuoteSection',
+    _key: key(),
+    background: 'cream',
+    quote:
+      'A fixed pull quote proves the display face, the measure, and the cream band twice in a row never happens on real pages.',
+    attribution: 'The style guide',
+  },
+  {
+    _type: 'scheduleSection',
+    _key: key(),
+    background: 'sunshine',
+    header: header('Schedule', 'A morning on the sunshine band'),
+    entries: [
+      {
+        _key: key(),
+        time: '9:30',
+        title: 'Greeting and free play',
+        description: 'Fixture copy for the first entry.',
+      },
+      {
+        _key: key(),
+        time: '10:00',
+        title: 'Centers',
+        description: 'The sunshine band is brand amber with navy ink.',
+      },
+      { _key: key(), time: '10:50', title: 'Snack', description: 'Entries keep a steady rhythm.' },
+      { _key: key(), time: '11:40', title: 'Outside, then hugs', description: 'The closer entry.' },
+    ],
+  },
+  {
+    _type: 'faqSection',
+    _key: key(),
+    background: 'white',
+    header: header('FAQ', 'Two questions, fixed answers'),
+    source: 'inline',
+    items: [
+      {
+        question: 'Does this page ever change?',
+        answer: pt(
+          'Only when the code changes. That is the point: pixel drift here means a real regression.',
+        ),
+      },
+      {
+        question: 'Why are there no photos?',
+        answer: pt(
+          'Image sections read the CMS, and board edits must never move these pixels. They will join with pinned assets in v2.',
+        ),
+      },
+    ],
+  },
+  {
+    _type: 'compareSection',
+    _key: key(),
+    background: 'sky',
+    header: header('Compare', 'The two-column table on sky'),
+    wcpLabel: 'This site',
+    typicalLabel: 'A typical site',
+    rows: [
+      {
+        _key: key(),
+        feature: 'Band system',
+        wcp: 'Six colours, seams at every change',
+        typical: 'Flat sections',
+      },
+      { _key: key(), feature: 'Motion', wcp: 'Five gated moves', typical: 'Everything animates' },
+      { _key: key(), feature: 'Accessibility', wcp: 'Gated at 100', typical: 'Best effort' },
+    ],
+  },
+  {
+    _type: 'quickFactsSection',
+    _key: key(),
+    background: 'grey',
+    header: header('Quick facts', 'The stat chips'),
+    facts: [
+      { _key: key(), value: '6', label: 'Band colours' },
+      { _key: key(), value: '5', label: 'Motion moves' },
+      { _key: key(), value: '0', label: 'CMS reads on this page' },
+    ],
+  },
+  {
+    _type: 'noticeBarSection',
+    _key: key(),
+    text: 'The notice bar: one fixed line, no link.',
+  },
+  {
+    _type: 'contactDetailsSection',
+    _key: key(),
+    background: 'white',
+    reachHeading: 'Reach us',
+    visitHeading: 'Visit',
+    showParking: true,
+  },
+  {
+    _type: 'ctaSection',
+    _key: key(),
+    title: 'The closing band.',
+    lead: 'Navy CTA with the doodle tile, the press physics, and the trust slip.',
+    tone: 'navy',
+    seam: true,
+    actions: [
+      {
+        _key: key(),
+        label: 'Primary action',
+        style: 'primary',
+        linkType: 'url',
+        url: '/styleguide',
+      },
+      { _key: key(), label: 'Ghost action', style: 'ghost', linkType: 'url', url: '/styleguide' },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Style guide | West Chester Preschool"
+  description="Every section type with fixed sample data. The visual-regression target."
+  noindex
+  footerSeam="navy"
+>
+  {/* Navy drench opener, same structural pattern as /colophon. */}
+  <section class="wcp-hero-drench relative bg-navy text-white" aria-labelledby="styleguide-title">
+    <div class="wcp-container pt-40 pb-[var(--wcp-space-xl)] lg:pt-56">
+      <p class="wcp-taped-chip wcp-tape-tc relative mb-5">The kitchen sink</p>
+      <h1 id="styleguide-title" class="max-w-[20ch] text-balance text-white">
+        Every section, one wall.
+      </h1>
+      <p class="mt-4 max-w-xl text-lg leading-relaxed text-white/90">
+        Fixed sample data only. If the pixels here move, the design system moved. That is what the
+        visual tests check.
+      </p>
+    </div>
+  </section>
+
+  <div class="relative">
+    <Seam color="cream" variant="trim" />
+    <SectionRenderer sections={sections} site={site} afterHero={false} />
+  </div>
+</BaseLayout>

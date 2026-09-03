@@ -172,6 +172,28 @@ Facts to know:
 - Proof it works: build, capture, rebuild, compare gave **27/27 PASS**
   (2026-08-27).
 
+## Visual regression (`npm run test:visual`, added 2026-09-03)
+
+`playwright.visual.config.ts` pixel-diffs full-page screenshots of
+`/styleguide` (light and dark) against baselines committed under
+`tests/visual/__screenshots__/`. The styleguide renders every
+fixture-driven section with FIXED literal data, so its pixels move only
+when the design system moves - a lost doodle tile, a shifted seam, a band
+colour change all fail CI with a visual diff artifact.
+
+Rules:
+
+- Baselines are generated ON THE LINUX RUNNERS by the manual
+  `update-visual-baselines.yml` workflow and committed by it. Never commit
+  baselines from Windows - font rasterisation differs and every CI run
+  would fail.
+- When a visual change is INTENDED, dispatch that workflow so the new look
+  becomes the baseline, in the same PR/push as the change. Never dispatch
+  it just to silence a red diff - look at the diff artifact first; that is
+  the regression it exists to catch.
+- Never add a CMS-reading section to `/styleguide` - a board edit would
+  move the pixels and the suite would cry wolf.
+
 ## What to run when
 
 - Touched pure logic in `src/lib/`? → `test:unit` (and add cases there, not in

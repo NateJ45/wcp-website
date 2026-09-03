@@ -64,6 +64,7 @@ npm run format:check # prettier
 npm test             # Playwright: smoke + axe a11y + reflow at 320/768/1024/1440 (builds fresh, serves dist; Chromium + WebKit-iPhone)
 npm run test:unit    # Vitest: pure-function unit tests across src/lib + src/data (21 suites)
 npm run test:hub     # Playwright: SSR Family Hub — shell + Home + every reskinned section (rail, drawer, 320px, axe light+dark) — separate config, see gotcha
+npm run test:visual  # Playwright: pixel-diffs /styleguide (light+dark) against committed Linux baselines. Baselines regenerate ONLY via the update-visual-baselines workflow (dispatch it when a visual change is INTENDED, in the same PR); a local Windows run diffs against Linux rasterisation and fails — CI is the arbiter
                      # Which suite covers what + the testing gotchas: docs/TESTING.md
 npm run check:links  # linkinator over dist/client
 npm run typegen      # Sanity schema → src/lib/sanity.types.ts (committed; CI fails on a stale diff)
@@ -97,6 +98,7 @@ src/
     enrollment-packet.astro  # print-ready enrollment packet (CMS-assembled; Save as PDF via print CSS)
     search.astro             # site search (Pagefind UI over the build-time index)
     colophon.astro           # how-this-site-is-made page (code-owned; footer legal-bar link)
+    styleguide.astro         # kitchen-sink wall: every fixture-driven section with FIXED literal data (noindex; in tests/routes.ts). The visual-regression target — NEVER add a CMS-reading section to it (board edits must not move its pixels), and any new section type with literal data should join it
     family-hub/**            # SSR gated hub pages (+ family-hub/api/: signup, log-hours, photo-submit, search-index)
     family-hub/[...slug].astro # the gated catch-all: DERIVED class pages (src/lib/hub-classrooms.ts) + Board-created pages
     api/                     # hub login/logout, draft toggle, contact/subscribe/testimonial forms, availability, digest, reminders, stats (Studio-gated Cloudflare traffic numbers)
