@@ -43,7 +43,7 @@ const header = (eyebrow: string, title: string, lead?: string) => ({
   eyebrow,
   title,
   ...(lead ? { lead } : {}),
-  align: 'center',
+  align: 'center' as const,
 });
 
 /* The fixture sections. Band order is deliberate: cream → navy → white →

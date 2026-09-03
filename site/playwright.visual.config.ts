@@ -30,7 +30,9 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4321',
     // Reduced motion freezes the reveal/scroll systems: content renders in
     // its resting state, which is exactly what a stable screenshot needs.
-    reducedMotion: 'reduce',
+    // (A browser-context option, so it lives under contextOptions — at the
+    // top level of `use` it is a type error, and silently did nothing.)
+    contextOptions: { reducedMotion: 'reduce' },
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

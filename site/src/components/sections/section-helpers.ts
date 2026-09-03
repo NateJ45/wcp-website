@@ -31,7 +31,9 @@ export function headerLeadHtml(header?: HeaderData): string {
 export interface SectionData {
   _type: string;
   _key: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  // The six-colour palette (sunshine + sky joined 2026-09-01); Section.astro
+  // and section-fields.ts are the other sync points for this union.
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   seam?: boolean;
   /** Doodle alternation: set by SectionRenderer when this band skips the
    *  doodle tile (its neighbor already carries it). */
