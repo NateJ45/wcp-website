@@ -22,7 +22,13 @@ test('styleguide, light', async ({ page }) => {
 });
 
 test('styleguide, dark', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'dark' });
+  // Dark mode is CLASS-driven (localStorage 'wcp-theme', applied by the
+  // BaseLayout head script before first paint), not media-driven —
+  // emulateMedia does nothing here. Seeding the site's own storage key uses
+  // the real mechanism, so the screenshot can never catch a light flash.
+  await page.addInitScript(() => {
+    localStorage.setItem('wcp-theme', 'dark');
+  });
   await settle(page);
   await expect(page).toHaveScreenshot('styleguide-dark.png', { fullPage: true });
 });
