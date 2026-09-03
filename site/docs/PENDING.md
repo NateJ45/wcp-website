@@ -373,14 +373,11 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
 - **Supply the Google Business Profile review short URL** (g.page/r/...) for
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
-- **Cloudflare "Workers Builds" Git integration fails on EVERY commit.** It
-  runs `npx wrangler deploy` from the repo root with no install/build. Fix in
-  the dashboard (Workers & Pages → wcp-website → Settings → Build), pick ONE:
-  (a) RECOMMENDED: disconnect the Git integration — deploys already ride
-  deploy.yml; or (b) keep it for PR previews: root `site`, build
-  `npm ci && npm run build`, deploy
-  `npx wrangler deploy -c dist/server/wrangler.json`, build vars SANITY_TOKEN,
-  and disable production-branch builds.
+- ~~Cloudflare "Workers Builds" Git integration fails on EVERY commit~~ —
+  DONE 2026-09-03: Nathan disconnected the Git integration in the dashboard
+  (verified via API: no build configuration, zero triggers on the Worker).
+  Deploys ride `deploy.yml` only, as intended. 489 failed builds were the
+  cost of it lingering since August.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for.
