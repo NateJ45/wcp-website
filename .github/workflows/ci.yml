@@ -46,10 +46,21 @@ jobs:
       # same command succeeded locally - the classic signature of a Linux CI box
       # with less memory than the dev machine. The preview layer that landed
       # that day added to the config's graph and pushed it over.
+      # `sanity schema extract` intermittently dies with "Aborted (core
+      # dumped)" (exit 134) on the hosted runners — twice on 2026-09-03 alone,
+      # both times passing on a plain re-run. It is runner flake, not a
+      # schema problem, so retry up to three times before calling it red.
       - name: Generate Sanity types
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: npm run typegen
+        run: |
+          for attempt in 1 2 3; do
+            if npm run typegen; then exit 0; fi
+            echo "::warning::typegen attempt $attempt failed (runner flake?) - retrying"
+            sleep 15
+          done
+          echo "::error::typegen failed three times"
+          exit 1
 
       - name: Fail if committed Sanity types are stale
         run: |
