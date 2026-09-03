@@ -25,7 +25,10 @@ export default defineConfig({
   // A filename allowlist fails OPEN, which is the wrong direction for a suite
   // whose whole job is catching things. Any tests/hub-*.ts file is the hub
   // config's business now.
-  testIgnore: /hub-.*\.(spec|setup)\.ts$/,
+  // tests/visual/ belongs to playwright.visual.config.ts — run here, these
+  // specs lose their snapshot paths and reduced-motion setup and fail with
+  // "snapshot doesn't exist" (bit the first styleguide CI run, 2026-09-03).
+  testIgnore: [/hub-.*\.(spec|setup)\.ts$/, /visual[\\/].*\.spec\.ts$/],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

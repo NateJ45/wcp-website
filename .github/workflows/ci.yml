@@ -4,6 +4,11 @@ on:
   push:
     branches: [main, staging]
   pull_request:
+  # Manual runs exist for one reason: the baselines bot commits with the
+  # default GITHUB_TOKEN, whose pushes never trigger workflows — so after a
+  # baseline regeneration, dispatch CI by hand to validate against the new
+  # truth images.
+  workflow_dispatch:
 
 # A newer push to the same branch obsoletes the in-flight run; cancel it
 # instead of paying for both (private-repo Actions minutes are metered).
