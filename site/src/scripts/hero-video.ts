@@ -4,9 +4,10 @@
 // The hero's still poster (a tiny WebP) is the LCP and paints immediately. The
 // background <video> is deliberately heavier, so we:
 //
-//   1. DEFER its download until the browser is idle — so the ~9MB file never
-//      competes with the LCP poster or first interaction. (The <video> ships
-//      preload="none"; nothing loads until we call play() here.)
+//   1. DEFER its download until the load event has fired AND the browser is
+//      idle — so the multi-MB file never competes with the LCP poster or first
+//      interaction. (The <video> ships preload="none"; nothing loads until we
+//      call play() here.)
 //   2. FADE it in only once it is actually playing frames, cross-fading over
 //      the poster — a smooth "load-in", never an abrupt pop.
 //
@@ -49,14 +50,23 @@ function init(): void {
 
   const kick = (): void => videos.forEach(start);
 
-  // Defer to idle so the download never blocks first paint / the transition.
-  const ric = (
-    window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
-    }
-  ).requestIdleCallback;
-  if (typeof ric === 'function') ric(kick, { timeout: 2500 });
-  else window.setTimeout(kick, 250);
+  // Defer to idle AFTER the load event. Idle alone is not enough: on a throttled
+  // phone the main thread goes idle at ~500ms while the hero poster, fonts and
+  // CSS are still in flight, and the 3MB webm then shares the connection with
+  // the LCP (measured 2026-09-04: the video started at 542ms in Lighthouse).
+  // After `load` every first-paint resource is done, so the video costs nothing
+  // the visitor can see.
+  const whenIdle = (): void => {
+    const ric = (
+      window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
+      }
+    ).requestIdleCallback;
+    if (typeof ric === 'function') ric(kick, { timeout: 4000 });
+    else window.setTimeout(kick, 500);
+  };
+  if (document.readyState === 'complete') whenIdle();
+  else window.addEventListener('load', whenIdle, { once: true });
 }
 
 onPageLoad(() => {
