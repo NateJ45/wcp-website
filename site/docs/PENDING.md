@@ -352,9 +352,11 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
 
 ### Public-site transformation, Phase 0 (see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
 
-- **DNS cutover** — www.westchesterpreschool.org still serves the old
-  Squarespace site. The single highest-leverage conversion item. Runbook:
-  [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). Verify a Search Console Domain
+- **DNS cutover — ON HOLD (2026-09-04).** www.westchesterpreschool.org still
+  serves the old Squarespace site, and Nathan is assuming the Board does not
+  want to move forward with the cutover. The build stays live on workers.dev
+  (Family Hub + Studio in use). If the Board ever says yes, the runbook is
+  [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); verify a Search Console Domain
   property (DNS TXT) BEFORE the flip.
 - **Seed the blog batch (Phase 3)** — Board approval pending; also give the
   fresh quota a day or two of calm before a large seeding run.
