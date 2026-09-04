@@ -134,10 +134,104 @@ jobs:
       # diff means the design system moved: look at the diff artifact; if
       # the change is INTENDED, dispatch update-visual-baselines.yml.
       - name: Visual regression (styleguide)
+        id: visual
         run: npm run test:visual
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
           INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+
+      # Reports the visual step's pass/fail to the studio-status dashboard so
+      # it can show one line per site: "visual regression: pass/fail" plus a
+      # thumbnail of the last diff. Runs after a pass OR a fail (if: always).
+      # Never fails the job: a curl error, or a missing
+      # STUDIO_STATUS_INGEST_TOKEN secret, only skips the report. On a failed
+      # visual step, Playwright writes an expected/actual/diff PNG triplet per
+      # broken screenshot under site/test-results/ (the same folder the
+      # visual-diffs artifact below uploads) — only the *-diff.png files go
+      # to the dashboard, capped at six, downscaled to 800px wide with
+      # ImageMagick when the runner has it (ubuntu-latest does).
+      - name: Report visual regression to studio-status
+        if: always()
+        env:
+          STUDIO_STATUS_INGEST_TOKEN: ${{ secrets.STUDIO_STATUS_INGEST_TOKEN }}
+          VISUAL_OUTCOME: ${{ steps.visual.outcome }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set +e
+
+          if [ -z "$STUDIO_STATUS_INGEST_TOKEN" ]; then
+            echo "STUDIO_STATUS_INGEST_TOKEN is not set. Skipping the dashboard report."
+            exit 0
+          fi
+
+          # if: always() also fires when an EARLIER step broke and the visual
+          # step never ran (outcome "skipped"/"cancelled"). That is not a
+          # visual failure; report nothing rather than a false red.
+          if [ "$VISUAL_OUTCOME" != "success" ] && [ "$VISUAL_OUTCOME" != "failure" ]; then
+            echo "Visual step outcome is '$VISUAL_OUTCOME' (did not run). Skipping the dashboard report."
+            exit 0
+          fi
+
+          BASE_URL="https://studio-status.nathanjnixon86.workers.dev"
+          SHA7="${COMMIT_SHA:0:7}"
+          STATUS="fail"
+          if [ "$VISUAL_OUTCOME" = "success" ]; then
+            STATUS="pass"
+          fi
+
+          # Playwright's diff files: <testname>-diff.png inside test-results/.
+          DIFF_FILES=$(find test-results -type f -name "*-diff.png" 2>/dev/null | sort | head -n 6)
+
+          DIFF_NAMES_JSON="[]"
+          if [ -n "$DIFF_FILES" ]; then
+            NAMES_JSON="["
+            FIRST=1
+            while IFS= read -r FILE; do
+              [ -z "$FILE" ] && continue
+              BASENAME=$(basename "$FILE")
+              UPLOAD_FILE="$FILE"
+
+              # Downscale to max width 800px so the dashboard thumbnail stays
+              # small. A failed resize falls back to the original file.
+              if command -v convert >/dev/null 2>&1; then
+                RESIZED="/tmp/${BASENAME}"
+                if convert "$FILE" -resize 800x\> "$RESIZED" 2>/dev/null; then
+                  UPLOAD_FILE="$RESIZED"
+                fi
+              fi
+
+              curl --fail-with-body -sS \
+                -X PUT "$BASE_URL/ingest/visual/wcp/$BASENAME" \
+                -H "Authorization: Bearer $STUDIO_STATUS_INGEST_TOKEN" \
+                -H "Content-Type: image/png" \
+                --data-binary "@$UPLOAD_FILE" \
+                || echo "::warning::upload of $BASENAME to studio-status failed - dashboard ingest skipped"
+
+              if [ "$FIRST" -eq 1 ]; then
+                FIRST=0
+              else
+                NAMES_JSON="${NAMES_JSON},"
+              fi
+              NAMES_JSON="${NAMES_JSON}\"${BASENAME}\""
+            done <<< "$DIFF_FILES"
+            DIFF_NAMES_JSON="${NAMES_JSON}]"
+          fi
+
+          PAYLOAD=$(cat <<EOF
+          { "status": "$STATUS", "runId": "$RUN_ID", "runUrl": "$RUN_URL", "commit": "$SHA7", "diffs": $DIFF_NAMES_JSON }
+          EOF
+          )
+
+          curl --fail-with-body -sS \
+            -X POST "$BASE_URL/ingest/visual/wcp" \
+            -H "Authorization: Bearer $STUDIO_STATUS_INGEST_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            || echo "::warning::studio-status summary POST failed - dashboard ingest skipped"
+
+          exit 0
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

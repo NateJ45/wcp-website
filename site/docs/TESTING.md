@@ -194,6 +194,16 @@ Rules:
 - Never add a CMS-reading section to `/styleguide` - a board edit would
   move the pixels and the suite would cry wolf.
 
+After the visual step, CI runs a "Report visual regression to studio-status"
+step (`if: always()`, so it runs on a pass or a fail) that sends the result to
+the `studio-status` dashboard: the pass/fail outcome, plus up to six
+`*-diff.png` thumbnails when the step failed, so the dashboard can show one
+line per site with the last diff image. The step authenticates with the
+`STUDIO_STATUS_INGEST_TOKEN` repo secret. A missing secret only skips the
+report - the step logs a line and exits 0, and CI itself never fails because
+of it. Likewise, a curl error (dashboard down or unreachable) is caught and
+logged, never propagated.
+
 ## What to run when
 
 - Touched pure logic in `src/lib/`? → `test:unit` (and add cases there, not in
