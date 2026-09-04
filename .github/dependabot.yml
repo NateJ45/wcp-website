@@ -31,6 +31,12 @@ updates:
       - dependency-name: "sanity"
       - dependency-name: "@sanity/*"
       - dependency-name: "sanity-plugin-*"
+      # oxlint ships new default rules with minor releases (1.73 -> 1.81 turned on
+      # refs-during-render, setState-in-effect and empty-export checks and failed
+      # the Lint step on the 2026-09-04 grouped PR). Bump it on purpose, with the
+      # lint fixes in the same PR, not inside the weekly group.
+      - dependency-name: "oxlint"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
