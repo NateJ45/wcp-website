@@ -162,5 +162,3 @@ function wire(): void {
 onPageLoad(() => {
   if (document.getElementById('hub-event-dialog')) wire();
 });
-
-export {};

@@ -1,6 +1,6 @@
 import { VisualEditing } from '@sanity/visual-editing/react';
 import type { HistoryAdapter, HistoryRefresh } from '@sanity/visual-editing';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import { inCanvasControls } from './overlay/index.ts';
 import { SOFT_REFRESH_EVENT, useInstantText } from './overlay/useInstantText.ts';
 import { startTiming } from './overlay/timing.ts';
@@ -293,7 +293,10 @@ export default function VisualEditingOverlay({ pageId }: Props) {
     }
     if (decision.waitMs > 0) timer.current = setTimeout(() => tickRef.current(), decision.waitMs);
   }, [runRefresh]);
-  tickRef.current = tick;
+  // Latest-callback ref, written after commit rather than during render (react/refs).
+  useLayoutEffect(() => {
+    tickRef.current = tick;
+  }, [tick]);
 
   // A change arrived. Register the caller, advance the sequence (which is what
   // makes any in-flight response stale), and let the scheduler decide the rest.

@@ -77,5 +77,3 @@ onPageLoad(() => {
     init();
   }
 });
-
-export {};

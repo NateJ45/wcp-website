@@ -160,5 +160,3 @@ onPageLoad(() => {
   linkifyEmails(document.body);
   wireCopyOnce();
 });
-
-export {};

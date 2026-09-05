@@ -168,5 +168,3 @@ onPageLoad(() => {
     apply(picks);
   });
 });
-
-export {};

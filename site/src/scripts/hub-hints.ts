@@ -117,5 +117,3 @@ onPageLoad(() => {
 });
 
 onBeforeSwap(teardown);
-
-export {};

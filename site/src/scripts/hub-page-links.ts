@@ -183,5 +183,3 @@ onPageLoad(() => {
   const main = document.getElementById('main');
   if (main) linkifyPageRefs(main, currentSlug());
 });
-
-export {};
