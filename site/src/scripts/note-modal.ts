@@ -153,4 +153,3 @@ onPageLoad(() => {
   bindGlobals();
 });
 
-export {};

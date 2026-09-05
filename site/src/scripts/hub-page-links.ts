@@ -184,4 +184,3 @@ onPageLoad(() => {
   if (main) linkifyPageRefs(main, currentSlug());
 });
 
-export {};

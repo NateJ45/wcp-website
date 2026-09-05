@@ -45,4 +45,3 @@ onPageLoad(() => {
   document.querySelectorAll<HTMLElement>('[data-cal-root]').forEach(wire);
 });
 
-export {};

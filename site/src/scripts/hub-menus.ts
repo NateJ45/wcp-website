@@ -45,4 +45,3 @@ onPageLoad(() => {
   }
 });
 
-export {};

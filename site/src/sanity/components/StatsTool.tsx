@@ -247,7 +247,16 @@ export function StatsTool() {
   }, []);
 
   useEffect(() => {
-    void load();
+    // load() sets busy synchronously; kick it off after the effect body so React does not
+    // see a setState inside the effect itself (react/set-state-in-effect), and drop the call
+    // if the component unmounts or `load` changes before the microtask runs.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   return (

@@ -161,4 +161,3 @@ onPageLoad(() => {
   wireCopyOnce();
 });
 
-export {};

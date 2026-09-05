@@ -185,4 +185,3 @@ onPageLoad(() => {
   });
 });
 
-export {};
