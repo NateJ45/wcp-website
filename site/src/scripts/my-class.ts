@@ -168,4 +168,3 @@ onPageLoad(() => {
     apply(picks);
   });
 });
-

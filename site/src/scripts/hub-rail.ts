@@ -35,4 +35,3 @@ function init() {
 }
 
 onPageLoad(init);
-

@@ -75,4 +75,3 @@ onBeforeSwap(clearTimers);
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) init();
 });
-

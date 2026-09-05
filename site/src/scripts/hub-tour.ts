@@ -314,4 +314,3 @@ onPageLoad(() => {
   init();
   bindGlobals();
 });
-

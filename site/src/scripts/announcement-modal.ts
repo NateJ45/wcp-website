@@ -130,4 +130,3 @@ onPageLoad(() => {
   init();
   bindGlobals();
 });
-

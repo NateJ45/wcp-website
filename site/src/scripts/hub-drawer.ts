@@ -104,4 +104,3 @@ onPageLoad(() => {
   initDrawer();
   bindGlobals();
 });
-

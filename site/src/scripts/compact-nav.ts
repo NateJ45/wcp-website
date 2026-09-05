@@ -50,4 +50,3 @@ function init() {
 }
 
 onPageLoad(init);
-

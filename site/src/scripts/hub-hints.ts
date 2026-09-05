@@ -117,4 +117,3 @@ onPageLoad(() => {
 });
 
 onBeforeSwap(teardown);
-
