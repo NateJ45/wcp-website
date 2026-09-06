@@ -113,3 +113,39 @@ jobs:
           # GitHub keeps artifacts 90 days. For longer or off-site retention,
           # push the tarball to R2 here instead.
           retention-days: 90
+      # OFF-SITE COPY. The artifact above expires after 90 days and lives in the
+      # same GitHub account as the repo it protects, so a lost account loses the
+      # site AND its backups together. R2 is a different provider and a
+      # different blast radius.
+      #
+      # No new credentials: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are
+      # already set in every site repo for the deploy. The token does need R2
+      # write permission added to it - a deploy-only token will 403 here.
+      #
+      # To enable, per site:
+      #   1. Create the bucket:  npx wrangler r2 bucket create <name>
+      #   2. Add "Workers R2 Storage: Edit" to CLOUDFLARE_API_TOKEN
+      #   3. Set the BACKUP_R2_BUCKET repo variable to <name>
+      # Unset, this step skips with a warning and the artifact still uploads,
+      # matching the stance of the gate job: a missing off-site copy must never
+      # fail the backup that is otherwise working.
+      #
+      # The tarball is ALREADY encrypted at this point. Do not move this step
+      # above the encrypt step.
+      - name: Copy the backup off-site to R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BUCKET: ${{ vars.BACKUP_R2_BUCKET }}
+        run: |
+          if [ -z "$BUCKET" ] || [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::BACKUP_R2_BUCKET variable and/or Cloudflare credentials not set; the backup exists only as a 90-day GitHub artifact. See the header of sanity-backup.yml."
+            exit 0
+          fi
+          for f in sanity-backup-*.tar.gz.enc; do
+            # Keyed by repo so one bucket can hold the whole family, and by date
+            # so a bad dataset restored last week has not overwritten the good
+            # copy from the week before.
+            KEY="sanity/${GITHUB_REPOSITORY##*/}/$f"
+            echo "uploading $f -> $BUCKET/$KEY"
+            npx wrangler r2 object put "$BUCKET/$KEY" --file "$f" --remote
