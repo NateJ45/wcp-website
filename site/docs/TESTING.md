@@ -139,6 +139,42 @@ Notes:
 - Typegen prints "Encountered errors in N files" for files it cannot parse for
   GROQ. That is a warning, it exits 0, and it does not affect the schema types.
 
+## Canonical-file drift (`npm run sync-check`, added 2026-09-06)
+
+`scripts/sync-check.mjs` walks this repo for files whose first lines carry
+
+```
+PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
+```
+
+and byte-diffs each against the starter's copy of the same path, exiting 1 on
+any drift. CRLF is normalized to LF and one trailing newline ignored, so a
+Windows working tree and a Linux runner agree; everything else is exact,
+including the marker line. Point it at the library with `NCS_STARTER_DIR`, or
+leave it to find a sibling `ncs-astro-sanity-starter` directory. Because this
+repo's app lives in `site/` while the starter's files sit at ITS root, the
+script strips one leading path segment when the exact path misses: that is what
+makes `site/scripts/free-dist.mjs` match `scripts/free-dist.mjs`.
+
+**CI runs it on every push and PR.** The build job checks the starter out at
+`.ncs-starter` at the REPO ROOT (an action's `path:` ignores this workflow's
+`working-directory: site`) and points `NCS_STARTER_DIR` there.
+
+This repo went without the script until 2026-09-06, which made it the one repo
+in the family that could not say when it had drifted. Its first run checked 22
+marked files and found three real drifts: `src/lib/preview-morph.ts` held a fix
+nobody else had (the `data-morph-keep` guard, now ported up and out to the
+whole family), and `src/sanity/components/UndoRedo.tsx` and
+`shareDraftLink.tsx` are a genuine fork, because this repo resolves
+`@sanity/icons` 5 and the starter is on 3, so their icon imports cannot agree.
+Those two dropped their PORTABLE marker and say so in their headers; re-mark
+them and take the starter's copy when the starter moves to icons 5. On any
+other drift: port the improvement up into the starter with a PORTS.md card in
+the same commit, or pull the starter's copy forward here.
+
+`scripts/page-parity.mjs` deliberately carries no marker: it was ported as a
+pattern, and its PAGES list is per-site.
+
 ## Parity verification (`scripts/page-parity.mjs`, added 2026-08-27)
 
 A rendered-HTML parity harness, back-ported from the presacademy repo. Use it
