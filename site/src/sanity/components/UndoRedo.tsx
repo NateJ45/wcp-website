@@ -1,4 +1,10 @@
-// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
+// FORKED from ncs-astro-sanity-starter (PORTS.md card 36, 2026-09-06). The
+// canonical copy is still the starter's; this repo's differs by its icon
+// imports alone, because it resolves @sanity/icons 5.2.1 while the starter and
+// every other site are on 3.8.0, and the 5.x barrel no longer re-exports each
+// icon. The marker is deliberately absent so sync-check does not report a drift
+// nobody can fix from either side. Re-mark this file when the starter moves to
+// icons 5, and take the starter's copy at that point.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
   definePlugin,
