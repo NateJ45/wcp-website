@@ -42,11 +42,11 @@
     "@fontsource/great-vibes": "^5.3.0",
     "@portabletext/to-html": "^6.0.0",
     "@sanity/astro": "^3.4.2",
-    "@sanity/client": "^7.23.0",
+    "@sanity/client": "7.26.2",
     "@sanity/image-url": "^2.1.1",
     "@sanity/orderable-document-list": "^2.0.9",
-    "@sanity/preview-url-secret": "^4.0.8",
-    "@sanity/visual-editing": "^5.4.5",
+    "@sanity/preview-url-secret": "4.1.5",
+    "@sanity/visual-editing": "5.7.3",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.0.7",
     "class-variance-authority": "^0.7.1",
@@ -56,7 +56,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-is": "^19.2.7",
-    "sanity": "^6.4.0",
+    "sanity": "6.9.1",
     "sanity-plugin-documents-pane": "^4.1.8",
     "sanity-plugin-link-checker": "^0.3.2",
     "sanity-plugin-media": "^6.1.7",
@@ -120,6 +120,7 @@
     },
     "external-editor": {
       "tmp": "^0.2.6"
-    }
+    },
+    "@sanity/cli-core": "3.5.0"
   }
 }
