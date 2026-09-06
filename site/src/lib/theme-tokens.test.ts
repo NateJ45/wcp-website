@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AA_BODY_TEXT, AA_NON_TEXT, contrastRatio, flatten, hexToRgb, rgbToHex } from './contrast';
+import { DARK_SCOPE, LIGHT_SCOPE, scopeReader, tokensIn } from './css-tokens';
 
 // =============================================================================
 // Theme token contrast — the gate that can actually see this class of bug
@@ -19,52 +20,28 @@ import { AA_BODY_TEXT, AA_NON_TEXT, contrastRatio, flatten, hexToRgb, rgbToHex }
 
 const css = readFileSync(new URL('../styles/globals.css', import.meta.url), 'utf8');
 
-/**
- * Pull `--name: #hex;` declarations out of EVERY block whose header matches.
- *
- * This is Tailwind v4 with CSS-first config, so the brand tokens live in
- * `@theme` blocks rather than `:root`, and there is more than one of each.
- * Brace-counting rather than a lazy regex, so a nested rule cannot end a block
- * early.
- */
-function tokensMatching(header: RegExp): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const m of css.matchAll(header)) {
-    let depth = 0;
-    let i = css.indexOf('{', m.index);
-    if (i === -1) continue;
-    const open = i;
-    for (; i < css.length; i++) {
-      if (css[i] === '{') depth++;
-      else if (css[i] === '}' && --depth === 0) break;
-    }
-    // Capture hex values AND `var(--other)` aliases. Capturing only hex was a
-    // real bug in this test's first draft: `.dark` re-points the ink tokens
-    // with `--color-sky-ink: var(--color-sky)`, so hex-only extraction silently
-    // fell through to the LIGHT value and reported the dark focus ring as
-    // failing when it passes. A test that measures the wrong colour is worse
-    // than no test.
-    const decl = /(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8}|var\(\s*--[\w-]+\s*\))\s*;/g;
-    for (const d of css.slice(open, i).matchAll(decl)) out[d[1]] = d[2];
-  }
-  return out;
-}
-
-const light = tokensMatching(/(?:^|\n)\s*(?:@theme[^{]*|:root)\s*\{/g);
-const dark = tokensMatching(/(?:^|\n)\s*\.dark\s*\{/g);
-
-/** Follow `var(--x)` aliases to a concrete hex, within one theme's scope. */
-function resolve(value: string | undefined, scope: Record<string, string>, seen = 0): string {
-  if (!value) throw new Error('Token has no value');
-  if (seen > 5) throw new Error(`Alias loop resolving "${value}"`);
-  const alias = value.match(/^var\(\s*(--[\w-]+)\s*\)$/);
-  if (!alias) return value;
-  return resolve(scope[alias[1]] ?? light[alias[1]], scope, seen + 1);
-}
+// The reader is shared, the pairs below are not. Extraction moved to
+// src/lib/css-tokens.ts (canonical in ncs-astro-sanity-starter, 2026-09-06)
+// because the same brace-counted, scope-aware, alias-following logic had been
+// written three times across the family in three different qualities, and the
+// weakest copy was silently measuring the wrong declaration. The lesson this
+// file's first draft paid for is now in that module's header: capturing only
+// hex made `--color-sky-ink: var(--color-sky)` in `.dark` invisible, so the
+// dark focus ring was reported as failing when it passes. A test that measures
+// the wrong colour is worse than no test.
+//
+// This file stays a deliberate fork and stays unmarked: it is Vitest rather
+// than node:test, and its pairs, its paper inks and its navy trap are WCP's
+// own. Only the reading of globals.css is common property.
+//
+// This is Tailwind v4 with CSS-first config, so the brand tokens live in
+// `@theme` blocks as well as `:root`, and there is more than one of each.
+const light = tokensIn(css, LIGHT_SCOPE);
+const dark = tokensIn(css, DARK_SCOPE);
 
 /** Dark overrides only some tokens; the rest inherit from the light scope. */
-const darkValue = (name: string) => resolve(dark[name] ?? light[name], dark);
-const lightValue = (name: string) => resolve(light[name], light);
+const darkValue = scopeReader(dark, light);
+const lightValue = scopeReader(light);
 
 describe('token extraction', () => {
   it('found a meaningful number of tokens in both themes', () => {
