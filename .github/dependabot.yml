@@ -37,6 +37,11 @@ updates:
       # lint fixes in the same PR, not inside the weekly group.
       - dependency-name: "oxlint"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # TypeScript 7 (the native Go compiler) drops the JavaScript compiler API
+      # Astro's tooling drives astro check and the build through. 6.0.3 is the
+      # studio standard (2026-09-06); the rule is "never 7".
+      - dependency-name: "typescript"
+        versions: [">=7"]
 
   - package-ecosystem: github-actions
     directory: /
