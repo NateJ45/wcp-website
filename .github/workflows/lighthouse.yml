@@ -1,9 +1,14 @@
 name: Lighthouse
 
 on:
+  # staging added 2026-09-06: this workflow only ever ran on main, so a
+  # staging change could not be proven green before promotion, which is the
+  # whole point of having a staging branch. Dispatchable too, for re-auditing
+  # a tip on demand.
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
+  workflow_dispatch:
 
 # A newer push to the same branch obsoletes the in-flight run; cancel it
 # instead of paying for both (private-repo Actions minutes are metered).
