@@ -28,6 +28,13 @@
  * Derived by hand from src/pages/family-hub/*.astro. Adding a hub route means
  * adding it here — the test in hub-pages.test.ts asserts this list matches the
  * routes on disk, so a missing entry fails CI rather than shipping a trap.
+ *
+ * The CLASS addresses are not here any more. They used to be (twos, threes,
+ * pre-k, pre-k-am, pre-k-pm, twos-threes were real .astro files), but classes
+ * are Sanity documents now, so their addresses are not knowable at build time.
+ * The catch-all resolves a classroom BEFORE a Board page, and the Studio
+ * rejects a Board page at a class's address — see src/lib/hub-classrooms.ts
+ * (`classroomAddresses`) and the slug validation in hubPage.ts.
  */
 export const RESERVED_HUB_SLUGS: readonly string[] = [
   'api',
@@ -43,15 +50,9 @@ export const RESERVED_HUB_SLUGS: readonly string[] = [
   'index',
   'login',
   'photos',
-  'pre-k',
-  'pre-k-am',
-  'pre-k-pm',
   'sign-ups',
   'super-helper',
-  'threes',
   'tuition',
-  'twos',
-  'twos-threes',
   'updates',
 ];
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Badge, Box, Button, Card, Flex, Grid, Heading, Spinner, Stack, Text } from '@sanity/ui';
 import { barFractions, type SiteStats } from '../../lib/site-stats';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // StatsTool — "Site stats", the traffic panel Squarespace refugees look for
@@ -246,7 +247,16 @@ export function StatsTool() {
   }, []);
 
   useEffect(() => {
-    void load();
+    // load() sets busy synchronously; kick it off after the effect body so React does not
+    // see a setState inside the effect itself (react/set-state-in-effect), and drop the call
+    // if the component unmounts or `load` changes before the microtask runs.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   return (
@@ -254,7 +264,7 @@ export function StatsTool() {
       <Box style={{ maxWidth: 760, margin: '0 auto' }}>
         <Stack space={5}>
           <Stack space={3}>
-            <Heading size={2}>Site stats</Heading>
+            <ToolHeading>📈 Site stats</ToolHeading>
             <Text size={1} muted>
               How busy the website has been. Read only, and always a few minutes behind.
             </Text>

@@ -29,6 +29,11 @@ export interface PhotoMoment {
       CTAs, replacing the Sanity hp-visit proseSection that has no image
       slot). */
   kind?: 'strip' | 'interlude' | 'tuition-opener' | 'heritage' | 'chooser' | 'septembers' | 'visit';
+  /** Set at render time by SectionRenderer's seam chain (never authored):
+      whether this moment's band enters on a color change and should carry
+      the sweep. Only band-shaped moments consume it; a full-bleed interlude
+      is a photograph and keeps its photographic edge. */
+  seam?: boolean;
   slot: string;
   bg?: 'cream' | 'grey' | 'white';
   captions?: string[];

@@ -60,10 +60,12 @@ export const GUIDE_CATEGORIES = [
 ] as const;
 export type GuideCategory = (typeof GUIDE_CATEGORIES)[number];
 
-// Every guide shows in BOTH workspaces (help must not dead-end in the wrong
-// view), but each side LEADS with its own work: the hub workspace lists the
-// Family Hub group right after "Start here", the public workspace lists the
-// website groups first. Housekeeping closes both.
+// Each workspace lists the guides for ITS OWN work (per-guide `ws` tag;
+// untagged = both sides — the shared jobs: money, classes, the alert, the
+// tools). Each side also LEADS with its own groups: the hub workspace lists
+// the Family Hub group right after "Start here", the public workspace lists
+// the website groups first. Housekeeping closes both. A category with no
+// guides on a side simply does not render there.
 export const GUIDE_CATEGORY_ORDER: Record<'public' | 'hub', readonly GuideCategory[]> = {
   public: [
     'Start here',
@@ -95,6 +97,11 @@ for (const order of Object.values(GUIDE_CATEGORY_ORDER)) {
 export interface Guide {
   slug: string;
   category: GuideCategory;
+  /** Which workspace's Help & Guide lists this guide. Absent = both sides.
+      Set it when the job only EXISTS on one side (a hub sign-up, a public
+      menu) so each side's guide list matches what that side can do
+      (structure.ts howThisWorks filters on it, 2026-08-31). */
+  ws?: 'public' | 'hub';
   title: string;
   icon: string; // emoji, shown in the left nav
   lead: string;
@@ -119,7 +126,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'The Studio vs. the website' },
       {
         kind: 'p',
-        text: 'This **Studio** is your control room. The **website** is what families and visitors see. You make changes here, and they appear on the website after you publish. The Studio is private. The website is public.',
+        text: 'This **Studio** is your control room. The **website** is what families and visitors see. You make changes here, and they appear on the website after you publish. The Studio is private. The website is public. (The first time you open the Studio it greets you with a short **welcome tour** — replay it any time from the **Welcome** page, "Show the welcome tour again".)',
       },
       { kind: 'h', text: 'Nothing is live until you Publish' },
       {
@@ -147,7 +154,7 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'Two workspaces, one website' },
       {
         kind: 'p',
-        text: 'The Studio opens in **Public website** (what everyone sees). Click the workspace name in the top-left corner to switch to **Family Hub** (the private, families-only area; it has a little lock on its icon). Both edit the same website. The split just keeps each job’s menu short and obvious. If you cannot find something, you are probably in the other workspace.',
+        text: 'The Studio opens in **Public website** (what everyone sees). Click the workspace name in the top-left corner to switch to **Family Hub** (the private, families-only area; it has a little lock on its icon). Both edit the same website. The split just keeps each job’s menu short and obvious. The Family Hub side wears **warm orange** colours and the Public side stays **blue**, so one glance at the screen tells you which door you are in. If you cannot find something, you are probably in the other workspace.',
       },
       { kind: 'h', text: 'The left menu, band by band' },
       {
@@ -201,6 +208,7 @@ export const guides: Guide[] = [
   {
     slug: 'build-page',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Build or edit a page',
     icon: '🧱',
     lead: 'Pages are built from stacked sections. You can edit the words, add or remove sections, reorder them, and even make brand-new pages.',
@@ -248,7 +256,7 @@ export const guides: Guide[] = [
       {
         kind: 'bullets',
         items: [
-          '**The band colour.** Every band has a small `🎨` button in its top right corner. Click it and a short list opens: White, Light grey, Warm cream, Navy. Click one and the band changes colour under your hand. (A call-to-action banner offers its own two, Navy and Warm cream.)',
+          '**The band colour.** Every band has a small `🎨` button in its top right corner. Click it and a short list opens: White, Light grey, Warm cream, Sunshine, Sky, Navy. Click one and the band changes colour under your hand. (A call-to-action banner offers its own two, Navy and Warm cream.)',
           '**The underlined word in a heading.** Click a heading, then `Underline a word`, then click the word. See "Make words bold or stand out".',
           '**The words themselves.** Click an intro line or a card line, then `✎ Edit here`, and type in the small card that opens. Enter saves, Esc cancels.',
         ],
@@ -273,6 +281,7 @@ export const guides: Guide[] = [
           'The `⋯` button on a page gives you **Duplicate** and **Archive** (see below).',
           'The `⋮⋮` grip lets you drag a page into the menu, out of it, or up and down inside it (see below).',
           '`＋ New page` at the bottom starts a fresh page right here.',
+          '**News posts** under the page list opens the latest articles, so you can preview and edit a post the same way as a page.',
           'The **Site-wide** shortcuts underneath jump to the menus, the site settings, and the alert banner without leaving this view.',
         ],
       },
@@ -486,6 +495,7 @@ export const guides: Guide[] = [
   {
     slug: 'saved-sections',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Save a section and use it again',
     icon: '🧩',
     lead: 'Built a band you like? Keep it, and drop the same one onto any other page.',
@@ -553,6 +563,7 @@ export const guides: Guide[] = [
   {
     slug: 'check-a-page',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Check a page before you publish',
     icon: '🔍',
     lead: 'A quick second pair of eyes: missing photo descriptions, empty sections, and links that may go nowhere.',
@@ -720,6 +731,7 @@ export const guides: Guide[] = [
   {
     slug: 'share-a-draft',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Show someone a draft',
     icon: '🔗',
     lead: 'Send a link that lets someone read your unpublished page, without giving them a Studio login.',
@@ -776,6 +788,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-hub-page',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Edit a Family Hub page',
     icon: '🔒',
     lead: 'The private, families-only pages (Calendar, Documents, Tuition, the classrooms, and the rest) are editable too, the same way public pages are.',
@@ -802,8 +815,8 @@ export const guides: Guide[] = [
         items: [
           'The **page list** on the left flips between hub pages, like a site builder. An amber dot means unpublished edits; a hollow dot means never published.',
           'The `⋯` on a page gives you **Duplicate** (a full copy, as a draft) and **Archive** (takes the page off the hub and keeps it in an **Archived** group at the bottom, ready to **Restore**). Archiving a page that came with the site puts back the wording the site ships with.',
-          'The preview shows the parts you can edit: the heading, the intro, and the sections.',
-          'Where a page has a fixed built-in part (the live calendar, the pay buttons, the directory), a small 🔒 note marks the spot and says where that part is really managed.',
+          'The preview is the **real hub page** — the menu, the widgets, everything a family sees — with your editable heading, intro, and sections in place. Click your text to edit it; the built-in widgets are shown but not clickable.',
+          'On **Hub home**, a **Widgets** list of on/off switches lets you hide any dashboard tile (weather, store, photos, and so on), and **Widget wording** below it lets you rewrite a tile’s title or one-liner — empty boxes keep the standard words. The preview updates before you even publish.',
         ],
       },
       { kind: 'h', text: 'What you can change, and what stays put' },
@@ -853,7 +866,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Every **class page** carries that teacher’s entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more (Pre-K shares one page for both AM and PM). When the teacher changes a routine, edit the matching section right here so the page stays the source of truth.',
+        text: 'Every **class page** carries that teacher’s entire parent handbook as editable sections — daily schedules, drop-off and pick-up, the helper-day playbook, snack duty, and more (Twos and Threes share one page, and so do the two Pre-K classes, because each pair shares a teacher). When the teacher changes a routine, edit the matching section right here so the page stays the source of truth. A class with no handbook page yet still has a working hub page — use **Create its hub page** on the class to start one.',
       },
       {
         kind: 'p',
@@ -881,6 +894,12 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'For something every family must notice (a closure, a deadline), also turn on **Highlight in the bell menu** on that Update. It sits at the top of the hub’s bell menu with an "Important" tag until you turn it off — so do turn it off once it has run its course.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The bell watches more than Updates.',
+        text: 'Families see a row in the bell menu when any of these happen, so you never have to post an Update just to say it: a new **document**, a live **Spotlight pop-up**, a **teacher’s note or President’s note** given a new version stamp, a **new hub page** you build, an **event added to the calendar** in the last two weeks, and the **fundraising total** passing 50%, 75%, and the goal. The bell keeps room for each kind, so one busy week never hides the rest.',
+      },
       { kind: 'h', text: 'Sign-up sheets and RSVPs' },
       {
         kind: 'p',
@@ -895,7 +914,11 @@ export const guides: Guide[] = [
       },
       {
         kind: 'p',
-        text: 'Families respond on the hub page; every response lands in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
+        text: 'The `＋` (new) menu offers ready-made starting points — a helper-jobs sheet with three example slots, and an RSVP. Both start **closed**: fill in the words, then turn on **Open for responses?** and Publish when it is ready for families.',
+      },
+      {
+        kind: 'p',
+        text: 'Families respond on the hub page. To see who signed up, open the sheet and click its **Responses** tab (next to the pencil at the top) — every response for that sheet is right there, newest first. The full inbox across all sheets still lives in **Sign-up responses** (and in the submissions Google Sheet + an email, once the forms inbox is set up).',
       },
       {
         kind: 'callout',
@@ -905,7 +928,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'seealso',
-        items: ['Build or edit a page', 'Do it yourself vs. ask for help'],
+        items: ['Add a new Family Hub page', 'Do it yourself vs. ask for help'],
       },
     ],
   },
@@ -913,6 +936,7 @@ export const guides: Guide[] = [
   {
     slug: 'new-hub-page',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Add a new Family Hub page',
     icon: '🆕',
     lead: 'Make a whole new page for families — a committee, a programme, anything the school grows into.',
@@ -974,7 +998,7 @@ export const guides: Guide[] = [
       },
       {
         kind: 'seealso',
-        items: ['Edit a Family Hub page', 'Edit the menus', 'Delete something (and get it back)'],
+        items: ['Edit a Family Hub page', 'Delete something (and get it back)'],
       },
     ],
   },
@@ -982,6 +1006,7 @@ export const guides: Guide[] = [
   {
     slug: 'first-visit-tour',
     category: 'Start here',
+    ws: 'hub',
     title: 'The first-visit tour',
     icon: '🎈',
     lead: 'A short walkthrough that greets each family on their first sign-in to the Family Hub.',
@@ -1014,13 +1039,14 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'Beyond the tour, small **feature hints** point at one control on a page the first time a family lands there — the Directory map, the Calendar filters. Each shows once per device. You control them in **Family Hub → Feature hints**: a master switch, a per-hint switch, and the wording.',
       },
-      { kind: 'seealso', items: ['Edit a Family Hub page', 'Edit the menus'] },
+      { kind: 'seealso', items: ['Edit a Family Hub page'] },
     ],
   },
 
   {
     slug: 'little-delights',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Fun days & the daily giggle',
     icon: '🎉',
     lead: 'The "Today is National Kazoo Day" line and the joke at the foot of the hub home.',
@@ -1048,6 +1074,7 @@ export const guides: Guide[] = [
   {
     slug: 'pdf-content',
     category: 'School info & money',
+    ws: 'hub',
     title: 'Edit the curriculum guides & supply list',
     icon: '📚',
     lead: 'The branded PDFs on the class pages. Edit the words here; the files rebuild themselves.',
@@ -1072,8 +1099,8 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and `Publish`.',
-          'For the supply list: update the **School year**, the per-class items, or the wish list, and `Publish`.',
+          'For a curriculum guide: pick the class document, edit the intro or any section’s objectives, and `Publish`. To write one for a class you added, make a NEW curriculum guide and pick that class — the PDF and the button on its hub page both appear by themselves.',
+          'For the supply list: update the **School year**, the per-class items, or the wish list, and `Publish`. Added a class? Add a row under **Per-class lists**, pick it, and type its items — it gets its own card on the printed list, in its own colour.',
           'Give the site a few minutes to rebuild, then open the PDF from the class page to check it.',
         ],
       },
@@ -1119,6 +1146,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-menus',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Edit the menus',
     icon: '🔗',
     lead: 'The links along the top of the site and down in the footer live in one place.',
@@ -1309,6 +1337,7 @@ export const guides: Guide[] = [
   {
     slug: 'write-post',
     category: 'News, events & alerts',
+    ws: 'public',
     title: 'Write a news post',
     icon: '📰',
     lead: 'Share an announcement, update, or story on the News page.',
@@ -1353,6 +1382,7 @@ export const guides: Guide[] = [
   {
     slug: 'newsletter',
     category: 'News, events & alerts',
+    ws: 'public',
     title: 'Put out a newsletter',
     icon: '🗞️',
     lead: 'Compose an issue, give it a web page, and (optionally) email it to families.',
@@ -1389,6 +1419,7 @@ export const guides: Guide[] = [
   {
     slug: 'add-event',
     category: 'News, events & alerts',
+    ws: 'public',
     title: 'Add an event',
     icon: '📅',
     lead: 'Put an open house, tour day, or community event on the public Events page.',
@@ -1438,6 +1469,7 @@ export const guides: Guide[] = [
   {
     slug: 'form-messages',
     category: 'Yearly jobs & housekeeping',
+    ws: 'public',
     title: 'Read messages from your forms',
     icon: '📨',
     lead: 'When someone fills out a contact or tour form, the message lands here.',
@@ -1590,6 +1622,7 @@ export const guides: Guide[] = [
   {
     slug: 'announcements',
     category: 'News, events & alerts',
+    ws: 'public',
     title: 'Post an announcement bar or popup',
     icon: '📢',
     lead: 'Ready-made bars and popups you turn on and off — waitlist status, open house, fundraiser, and more.',
@@ -1674,16 +1707,28 @@ export const guides: Guide[] = [
       { kind: 'h', text: 'To add a brand-new class' },
       {
         kind: 'p',
-        text: 'Maybe a summer class or a new session. You can add as many as you like.',
+        text: 'Maybe a summer class or a new session. You can add as many as you like. Make the class and almost everything follows on its own — including its **Family Hub page**, which exists the moment you publish. Two optional buttons fill in the rest.',
       },
       {
         kind: 'steps',
         items: [
-          'Click **Classes**, then the `＋` (new) button at the top of the list.',
-          'Fill in the name, then click `Generate` next to the web address (slug).',
-          'Fill in the schedule, ages, and tuition. Pick the teacher from the Staff list.',
-          '`Publish`. The new class appears on the site automatically.',
+          '**Make the class.** Click **Classes**, then the `＋` (new) button. Fill in the name, click `Generate` for the web address (slug), then pick a **colour** and an **icon**, and fill in the schedule, ages, and tuition. Pick the teacher from the Staff list, and paste in the **Helper schedule link** and the **Class photo album link**. `Publish`.',
+          '**Check the Family Hub.** The class is already there: its own page at `/family-hub/<web address>`, a link in the hub menu, a helper-schedule tile and a photo-album tile on the hub home, a button in the "Which classes are yours?" picker, a row on the hub Tuition page, and a filter in the Directory. Nothing to set up.',
+          '**Optional — give it a public page.** On the class, open the `⋯` menu and click **Create its page**. That copies an existing class page to the right address and opens the draft. Put in this class’s words and photos, then `Publish`. The moment the page is live, the **Classes menu** adds its link automatically.',
+          '**Optional — give it a handbook.** On the class, open the `⋯` menu and click **Create its hub page**. That starts the teacher’s parent handbook (daily routine, drop-off and pick-up, snack duty, the helper playbook) as a draft at the right address. Fill it in and `Publish`. Until you do, the class’s hub page still works — it just says the handbook is not written yet.',
         ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Two classes that share a teacher share ONE hub page.',
+        text: 'Twos and Threes are one page, and both Pre-K classes are another, because each pair shares a teacher and a handbook. That is set on the hub page itself: **Classes on this page**. Leave it empty on a normal page. Put two or more classes in it and they get one shared classroom page, with a fact card, pay button, helper sheet and photo album for each.',
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The Used on panel is your checklist.',
+        text: 'Open the class and look at **Used on** at the top: it lists every page the class appears on, live. A hand-picked class cards row (like the one on the Pre-K page) never changes by itself — add the class there yourself if it belongs.',
       },
       {
         kind: 'callout',
@@ -1693,6 +1738,12 @@ export const guides: Guide[] = [
           'The **PayPal button** fields connect the "Pay Tuition" buttons to real money. If you are adding a new class that needs its own pay button, check with ' +
           SITE.contactName +
           ' before filling those in.',
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'A welcome note and a curriculum guide, too.',
+        text: 'The **Teacher welcome note** and the **Curriculum guide (PDF)** both ask which class page they belong to, and that list now includes every class you add. Pick the new class and it appears on its hub page — the note as a first-visit letter, the guide as a "Curriculum guide (PDF)" button. **Who’s who this year** gains a “<Class name> Rep” seat for the class too, so its class-rep card can be filled in instead of staying "To be announced".',
       },
       { kind: 'seealso', items: ['Change tuition or fees', 'Add or edit a teacher'] },
     ],
@@ -1813,6 +1864,7 @@ export const guides: Guide[] = [
   {
     slug: 'enrollment-status',
     category: 'School info & money',
+    ws: 'public',
     title: 'Enrollment status & cost calculator',
     icon: '📝',
     lead: 'One switch changes your enrollment message everywhere, plus a "what will it cost?" tool for families.',
@@ -1898,13 +1950,91 @@ export const guides: Guide[] = [
         kind: 'p',
         text: 'To connect a teacher to a class, open the **class** and pick them in the **Teacher** field. That link is the only place you set it.',
       },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'The teacher walls and the class cards update themselves.',
+        text: 'The "people your child will love" walls (Why WCP, Visit) show **every** teacher automatically, in the order of the Staff list — drag people up or down there to reorder the wall. Each class page’s "Meet the teacher" card follows the class’s **Teacher** field. So when someone joins or leaves: edit Staff, point the class at the right teacher, and every card is already correct. The one thing to reword by hand is a heading that names them, like "Meet Mrs. Erin".',
+      },
       { kind: 'seealso', items: ['Add or change a class', 'Photos and images'] },
     ],
   },
 
   {
+    slug: 'org-chart',
+    category: 'School info & money',
+    ws: 'hub',
+    title: 'Change the co-op roles or the org chart',
+    icon: '🤝',
+    lead: 'Rename a job, add one, retire one, or change who reports to whom. The chart on the Co-op Jobs page redraws itself.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'This used to need a developer. It does not any more.',
+        text: 'The org chart is drawn from the **Co-op roles & org chart** list. Every box on it, every column, and every line between boxes comes from that list — so the shape of your co-op is yours to change, not something written into the website.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Co-op roles & org chart'],
+        link: { pane: 'coopRole', ws: 'family-hub' },
+      },
+      { kind: 'h', text: 'Rename a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Open the role and change **Role**.',
+          '`Publish`. The chart, the job list, and the person holding it all follow the new name.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Renaming never loses the person.',
+        text: 'Whoever holds the job is attached to the ROLE, not to its name. Rename "Publicity Chair" to "Communications Chair" and her card, photo and email move with it.',
+      },
+      { kind: 'h', text: 'Add a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Press **＋** and name it.',
+          'Pick **Where it sits**: Executive Board, Cabinet chair, Class representative, or Committee. (Paid staff is for the teachers and administrator — those show on the chart but not in the job list, because they are not jobs a family signs up for.)',
+          'Pick **Reports to** — the role above it. A Board role with people reporting to it gets its own column on the chart. A committee shows as a small tag under whoever it reports to.',
+          'Write **What they do** so it appears in the job list, and add **How many people** for a committee.',
+          '`Publish`, then drag it up or down the list to place it.',
+        ],
+      },
+      { kind: 'h', text: 'Retire a role' },
+      {
+        kind: 'steps',
+        items: [
+          'Delete the role, or move it under a different **Reports to** if the work simply moved.',
+          'If anything still reported to it, point those at their new role — until you do, they gather in an "Other roles" column on the chart so nothing disappears quietly.',
+          'Delete the matching **Who’s who this year** card too, if the job is gone for good.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Class reps stay automatic.',
+        text: 'There is ONE "Class Rep" role, ticked **One of these for every class**. The chart draws a rep card for every class by itself, so adding a class needs no new role. Leave that tick alone.',
+      },
+      { kind: 'h', text: 'Rename the headings' },
+      {
+        kind: 'p',
+        text: 'The five headings on the Co-op Jobs page ("Executive Board", "Cabinet Chairs", and so on) live in **How the co-op works → Job-list headings**. Change the wording there if your school calls them something else. The five GROUPS themselves are fixed: they are the shapes the chart knows how to draw.',
+      },
+      {
+        kind: 'seealso',
+        items: ['Update who holds each co-op job', 'Add or change a class'],
+      },
+    ],
+  },
+  {
     slug: 'whos-who',
     category: 'School info & money',
+    ws: 'hub',
     title: 'Update who holds each co-op job',
     icon: '🪪',
     lead: 'The org chart on the Co-op Jobs page, and the class rep on each class page. This is the once-a-year job after elections.',
@@ -1926,6 +2056,7 @@ export const guides: Guide[] = [
         items: [
           'Open **Family Hub → Who’s who this year**. There is one card per seat on the chart.',
           'Click the role that changed and type the new person’s name in **Who holds it**.',
+          'For a class rep, also pick **Which class** she looks after. There is ONE "Class Rep" role covering every class, so a class you add later needs no new role.',
           'Nobody has taken the job yet? Leave the name **empty**. The chart shows it as an open role, which is exactly how someone notices it needs filling.',
           '`Publish`. Give it a minute, then reload the Family Hub to see it.',
         ],
@@ -1950,12 +2081,9 @@ export const guides: Guide[] = [
       },
       {
         kind: 'callout',
-        tone: 'primary',
-        title: 'The roles are a fixed list.',
-        text:
-          'You pick a role from a dropdown rather than typing one, because the chart has to know where to put it. Need a seat that is not on the list, or one retired? That is a chart change — ask ' +
-          SITE.contactName +
-          '.',
+        tone: 'positive',
+        title: 'The roles are yours too.',
+        text: 'You pick a role from the list rather than typing one, because the chart has to know where to put it — but the LIST itself is now yours. Rename a role, add one, or retire one under **Co-op roles & org chart**. See "Change the co-op roles or the org chart".',
       },
       {
         kind: 'p',
@@ -1963,7 +2091,11 @@ export const guides: Guide[] = [
       },
       {
         kind: 'seealso',
-        items: ['Edit a Family Hub page', 'Add or edit a teacher', 'Photos and images'],
+        items: [
+          'Change the co-op roles or the org chart',
+          'Edit a Family Hub page',
+          'Add or edit a teacher',
+        ],
       },
     ],
   },
@@ -1971,6 +2103,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-testimonial',
     category: 'Photos & community',
+    ws: 'public',
     title: 'Add a parent quote',
     icon: '💬',
     lead: 'Collect a nice thing a family said and show it on the site.',
@@ -2023,6 +2156,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-faq',
     category: 'Photos & community',
+    ws: 'public',
     title: 'Add or edit an FAQ',
     icon: '❓',
     lead: 'Answer a common question once and it appears on the FAQ page.',
@@ -2049,6 +2183,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-contact',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Change the phone, email, or address',
     icon: '⚙️',
     lead: 'The school’s basic facts live in one place and appear all over the site.',
@@ -2121,7 +2256,18 @@ export const guides: Guide[] = [
         kind: 'bullets',
         items: [
           'The Family Handbook PDF, the co-op hours goal, the family-count override, and the past fundraising totals.',
+          'The **Hub welcome line** — the sentence under the big greeting on the hub home. Change it for the season ("Welcome back!", "Happy graduation week!"); empty means the standard line.',
+          'The **Super Helper program** (its own tab): the program’s name, its pitch, the requirement cards, and the footnote. Written once, shown in two places — the big band on the hub home and the top of the Become a Super Helper page. A step can carry a link (the training site, the CPR class finder).',
+          'The **Family Handbook cover image** — upload the new cover art with the yearly PDF and the hub-home card follows.',
           'The Google connections: the treasurer’s **Budget Google Sheet ID**, the **Calendar feed link**, and the **Google Calendar code**. These rarely change; update them only when the sheet or feed is replaced.',
+          'When you link to another page of OUR site inside any text box, use **Page link** (not the raw-URL Link): pick the page from a list, and the link keeps working even if that page’s address changes later.',
+          'The busy lists (Updates, Sign-ups, Celebrations, News, Events, Newsletters, Co-op hours) open as **This school year** with past years underneath — nothing is deleted or moved, the list just leads with now. **Everything (all years)** at the bottom searches across time.',
+          'Little **status chips** now appear on documents: an amber “Past its end date” on a spotlight still switched on, “Past event”, “Publishes …” on a scheduled draft, “Pinned” on updates. They are hints, not buttons.',
+          'The **new-document menus** offer pre-filled starting points: a two-week Spotlight, a Meeting-minutes post, an Announcement post — half the boxes already sensible.',
+          'You can leave **comments** on any document (the speech-bubble icon top-right of the editor, or hover a field for “Add comment”) — handy for “can you check this wording?” between board members, without leaving the Studio.',
+          'On the public site: the **Building note**, **Summer tour note**, and the **secular statement** live in Site settings; the tuition table’s **age-cutoff column label**, **billed months per year**, and the **deposit note** live in Tuition & Fees; each review card can carry its own **Stars**. The Septembers wall and the home heritage numbers now compute themselves from the founding year and the school-year dates.',
+          'One quirk by design: every page’s big hero shows ONE button — the tour invitation — no matter how many buttons are stored on the hero. That is the site’s conversion doctrine, not a bug; your first stored non-tour button shows as the quieter second link.',
+          'Under **Hub look & feel** (one folder for the menu, tour, hints, delights, and store card): the **Family Hub menu**’s **Phone tab bar** picks which three destinations sit on the phone’s bottom bar, and the **First-visit tour**’s “Steps to skip” trims the tour. On the **Merch store card** (same folder): the shipping-perk line, the treasurer-sheet row name for store sales, and the “selling since” label. On **Tuition & Fees**: every word on the two enrollment-fee cards. The weather-closure statement lives in **Site settings** and shows on the hub’s Calendar and Health pages too.',
         ],
       },
       {
@@ -2160,6 +2306,12 @@ export const guides: Guide[] = [
     diy: 'self',
     body: [
       {
+        kind: 'callout',
+        tone: 'primary',
+        title: 'Little round photos crop to the FACE point.',
+        text: 'The hub shows teachers, class reps, and the President in small circles. When you upload one of those photos, click the **crop/hotspot** button on the image (the circle-in-a-square icon) and drag the circle onto the face — the little round photo then centres on it everywhere, whatever shape the original is.',
+      },
+      {
         kind: 'steps',
         items: [
           'Click any image box, then **Upload** and choose a photo from your computer.',
@@ -2193,6 +2345,7 @@ export const guides: Guide[] = [
   {
     slug: 'community-content',
     category: 'Photos & community',
+    ws: 'public',
     title: 'Programs, board, downloads & more',
     icon: '🌟',
     lead: 'A few simple lists — programs, board, partners, downloads, jobs, photo albums — that appear on your pages as ready-made sections.',
@@ -2242,6 +2395,7 @@ export const guides: Guide[] = [
   {
     slug: 'redirects',
     category: 'Website pages & menus',
+    ws: 'public',
     title: 'Fix a broken old link',
     icon: '↪️',
     lead: 'Renaming a page keeps old links working. We forward the old address for you.',
@@ -2329,6 +2483,7 @@ export const guides: Guide[] = [
   {
     slug: 'cleanup',
     category: 'Yearly jobs & housekeeping',
+    ws: 'hub',
     title: 'Clear out old records',
     icon: '🧹',
     lead: 'Old form messages and sign-up responses build up over the years. Clear the old ones in one go.',
@@ -2383,7 +2538,7 @@ export const guides: Guide[] = [
       { kind: 'path', items: ['Checkup (top nav, either workspace)'], link: { tool: 'checkup' } },
       {
         kind: 'p',
-        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, and edits you saved but never published. It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
+        text: 'It flags things like: the Alert banner still on, announcements past their end date, form messages over a month old and unanswered, pages not touched in months, classes missing tuition or a teacher, edits you saved but never published, and anything **pointing at a class that no longer exists** (this happens if a class web address changes — families and letters quietly fall off that class until it is fixed, so Checkup shouts about it). It also shows a **Coming up** list of what is due or happening in the next two weeks (the enrollment deadline, events, and sign-up sheets closing). Handy at the start of each month.',
       },
       {
         kind: 'callout',
@@ -2398,6 +2553,7 @@ export const guides: Guide[] = [
   {
     slug: 'site-stats',
     category: 'Yearly jobs & housekeeping',
+    ws: 'public',
     title: 'See how many people visit',
     icon: '📈',
     lead: 'A simple traffic panel: the last 7 days, the last 28 days, and a bar for each day.',
@@ -2534,6 +2690,7 @@ export const guides: Guide[] = [
   {
     slug: 'edit-directory',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Add or edit a family in the directory',
     icon: '👪',
     lead: 'The family directory is private to signed-in families. Add a new family, or update anyone’s details, in a few clicks.',
@@ -2549,6 +2706,10 @@ export const guides: Guide[] = [
         kind: 'path',
         items: ['Family Hub', 'Directory', 'pick a family (or ＋ new)'],
         link: { pane: 'directoryEntry', ws: 'family-hub' },
+      },
+      {
+        kind: 'p',
+        text: 'The Directory opens as **All families** plus one list **per class** — handy when you are a class rep looking for "my Twos families". A family with children in two classes shows under both. A new class gets its own list automatically.',
       },
       { kind: 'h', text: 'What you can fill in' },
       {
@@ -2566,7 +2727,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Directory** and click the `＋` (new) button.',
+          'Open **Directory → All families** and click the `＋` (new) button.',
           'Type the surname in **Family name**, then add the parents, the children, and any photo or notes.',
           'If you add a **home address**, save it, then ask ' +
             SITE.contactName +
@@ -2597,8 +2758,71 @@ export const guides: Guide[] = [
   },
 
   {
+    slug: 'spotlight-popups',
+    category: 'Family Hub',
+    ws: 'hub',
+    title: 'Put a spotlight in front of families',
+    icon: '🔦',
+    lead: 'A pop-up that greets families on any Family Hub page, for the one thing you want them to notice.',
+    diy: 'self',
+    body: [
+      {
+        kind: 'p',
+        text: 'A **spotlight** is a pop-up in the same style as the President’s note, but you can have as many as the year needs: the supply lists in August, the auction in March, a store offer in December. It greets a family on **whatever hub page they open**, not only the hub home, and each family sees each one **once**.',
+      },
+      {
+        kind: 'path',
+        items: ['Family Hub', 'Spotlight pop-ups', '＋ new', 'turn on', 'Publish'],
+        link: { pane: 'orderable-hubSpotlight', ws: 'family-hub' },
+      },
+      {
+        kind: 'steps',
+        items: [
+          'Open **Spotlight pop-ups** in the left menu, under Everyday edits, then `＋`.',
+          'Give it a **name** (just for you) and a **heading** families read first. Add a **short line**, and a **message** if you want more.',
+          'The message uses the same editor as News and Updates: **bold**, italic, links, lists, pictures, and **attachments** families can download.',
+          'Optional: add a **picture** across the top, a little **icon**, and pick one of the four **colours** for the pop-up edge.',
+          'Optional: add ONE **button**. It can open a page that came with the site, a page you made, an update, an outside link, or the merch store.',
+          'Under **When it shows**, flip **Turn it on**. Add **Start showing** / **Stop showing** dates if you want it to appear and stop on its own.',
+          '`Publish`. Families see it on their next hub page, about a minute later.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'positive',
+        title: 'Edited it after families saw it? Show it again.',
+        text: 'Change the **version stamp** (e.g. from "v1" to "v2") and everyone sees that pop-up one more time. Turn **Turn it on** off to retire it.',
+      },
+      {
+        kind: 'bullets',
+        items: [
+          '**Several at once:** turn on as many as you like. Families get ONE pop-up with **arrows** to page through them, in the order you drag them in the list. Drag the most important to the top.',
+          '**One pop-up per visit:** on a family’s very first sign-in the President’s note and the tour come first, so the spotlight waits for their next page. Nobody ever gets two pop-ups stacked.',
+          '**It is a nudge, not the only way in:** put the real content on a hub page or an update, and let the spotlight point at it.',
+          '**Tidy up:** the **Checkup** tool lists any spotlight left switched on past its end date, and the **Start of year** tool reminds you each summer.',
+        ],
+      },
+      {
+        kind: 'callout',
+        tone: 'caution',
+        title: 'Use them sparingly.',
+        text: 'A pop-up on every page is the fastest way to teach families to close it without reading. One at a time, for something that really matters.',
+      },
+      {
+        kind: 'seealso',
+        items: [
+          'The first-visit tour',
+          'Post an announcement bar or popup',
+          'Edit a Family Hub page',
+        ],
+      },
+    ],
+  },
+
+  {
     slug: 'celebrations',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Post a celebration',
     icon: '🎉',
     lead: 'Birthdays, shout-outs, welcomes — little happy notes on the Family Hub.',
@@ -2616,7 +2840,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Celebrations** in the left menu, then `＋`.',
+          'Open **Celebrations** in the left menu, then `＋`. The menu offers **Birthday** and **Welcome a new family** starting points, half-filled.',
           'Pick a **type** (Birthday, Shout-out, Welcome, Milestone), write a short happy **headline**, and add a line of detail if you like.',
           '`Publish`. It appears on the hub Celebrations page for families.',
           'Tidy up old ones now and then by deleting them.',
@@ -2628,6 +2852,7 @@ export const guides: Guide[] = [
   {
     slug: 'family-photos',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Review family photos',
     icon: '📷',
     lead: 'Families upload photos on the hub; you approve the ones that appear.',
@@ -2645,7 +2870,7 @@ export const guides: Guide[] = [
       {
         kind: 'steps',
         items: [
-          'Open **Family photos (review)** — new ones show an hourglass (⏳).',
+          'Open **Family photos (review)** — it opens on **Waiting for review**, so new photos are always on top. (**Approved** and **Everything** sit behind it.)',
           'Click a photo to see it full size.',
           'If it’s good to share, turn on **Approved** and `Publish`. It then appears in the hub gallery for families.',
           'If you don’t want it, just **delete** it.',
@@ -2662,6 +2887,7 @@ export const guides: Guide[] = [
   {
     slug: 'coop-hours',
     category: 'Family Hub',
+    ws: 'hub',
     title: 'Co-op hours tracking',
     icon: '⏱️',
     lead: 'Set the yearly hours goal and confirm the hours families log.',

@@ -17,7 +17,7 @@ import Section from '@/components/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import { cmsFetch } from '@/lib/cms';
 import { ALL_NEWSLETTER_SLUGS_QUERY, NEWSLETTER_BY_SLUG_QUERY } from '@/lib/queries';
-import { renderPostBody } from '@/lib/portable-text';
+import { ensureInternalRouteMap, renderPostBody } from '@/lib/portable-text';
 import { imageUrl, type SanityImageSource, type SanityImageValue } from '@/lib/image';
 import { formatDate } from '@/lib/utils';
 import { site } from '@/data/site';
@@ -45,6 +45,8 @@ if (!issue) {
   return new Response(`No newsletter issue found for "${slug}"`, { status: 404 });
 }
 
+// Page frontmatter runs before BaseLayout primes the link map — prime here.
+await ensureInternalRouteMap();
 const bodyHtml = renderPostBody(issue.body);
 const cover = issue.coverImage;
 const shareImg = issue.ogImage ?? issue.coverImage;

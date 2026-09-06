@@ -1,4 +1,5 @@
-import { defineType, defineField } from 'sanity';
+import { defineType, defineField, defineArrayMember } from 'sanity';
+import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Hub settings (SINGLETON) — the Family Hub's own yearly data and Google links
@@ -18,12 +19,25 @@ export const hubSettings = defineType({
   icon: () => '🛠️',
   groups: [
     { name: 'year', title: 'Each year', default: true },
+    // The Super Helper certification program — ONE source for the hub-home
+    // band and the /family-hub/super-helper page header. See
+    // src/lib/hub-super-helper.ts for the merge; every field optional, the
+    // shipped program is the fallback.
+    { name: 'superHelper', title: 'Super Helper' },
     // Set-once plumbing (Google codes and feeds) lives apart from the fields
     // volunteers touch every year, so "Each year" stays approachable.
     { name: 'connections', title: 'Google connections' },
   ],
   fields: [
     // Each year
+    defineField({
+      name: 'welcomeLine',
+      title: 'Hub welcome line',
+      type: 'string',
+      group: 'year',
+      description:
+        'The sentence under the big greeting on the hub home, e.g. "Welcome back — happy spring!". Leave empty for "Welcome to the WCP Family Hub!".',
+    }),
     defineField({
       name: 'familyHandbook',
       title: 'Family Handbook (PDF)',
@@ -32,6 +46,14 @@ export const hubSettings = defineType({
       options: { accept: '.pdf' },
       description:
         'The current Family Handbook. Upload the new one each year and every hub link to it updates by itself (the topbar button and the hub home card).',
+    }),
+    defineField({
+      name: 'familyHandbookCover',
+      title: 'Family Handbook cover image',
+      type: 'image',
+      group: 'year',
+      description:
+        'The cover art on the hub-home handbook card. Upload the new cover each year with the PDF; empty keeps the shipped cover.',
     }),
     defineField({
       name: 'coopHoursGoal',
@@ -87,6 +109,72 @@ export const hubSettings = defineType({
     }),
 
     // Google connections
+    // --- Super Helper program ----------------------------------------------
+    defineField({
+      name: 'superHelper',
+      title: 'Super Helper program',
+      type: 'object',
+      group: 'superHelper',
+      description:
+        'The certification program, written once and shown in two places: the big band on the hub home and the top of its own page. Every box is optional — empty means the wording the site shipped with.',
+      fields: [
+        defineField({
+          name: 'name',
+          title: 'Program name',
+          type: 'string',
+          description: 'e.g. "Super Helper". Renames the band and the page heading.',
+        }),
+        defineField({
+          name: 'blurb',
+          title: 'One-paragraph pitch',
+          type: 'text',
+          rows: 3,
+          description: 'The sentence or two under the heading on the hub home band.',
+        }),
+        defineField({
+          name: 'requirements',
+          title: 'Requirements',
+          type: 'array',
+          description:
+            'The steps to certify, in order. Filling this in REPLACES the shipped three-step list everywhere.',
+          of: [
+            defineArrayMember({
+              type: 'object',
+              fields: [
+                iconField('icon', { description: 'The little picture on the card.' }),
+                defineField({
+                  name: 'title',
+                  title: 'Step',
+                  type: 'string',
+                  validation: (R) => R.required().error('Every step needs a name.'),
+                }),
+                defineField({
+                  name: 'detail',
+                  title: 'One-liner',
+                  type: 'string',
+                  description: 'e.g. "About 8 hours, free, from home."',
+                }),
+                defineField({
+                  name: 'url',
+                  title: 'Link (optional)',
+                  type: 'url',
+                  description:
+                    'Where to start this step — the training site, the CPR class finder. The card becomes a link when set.',
+                }),
+              ],
+              preview: { select: { title: 'title', subtitle: 'detail' } },
+            }),
+          ],
+        }),
+        defineField({
+          name: 'footnote',
+          title: 'Footnote',
+          type: 'string',
+          description: 'The small line under the cards, e.g. the renewal reminder.',
+        }),
+      ],
+    }),
+
     defineField({
       name: 'budgetSheetId',
       title: 'Budget spreadsheet code (Google Sheets)',

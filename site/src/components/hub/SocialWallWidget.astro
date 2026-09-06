@@ -20,6 +20,7 @@
    reduced-motion-safe.
    ============================================================================ */
 import { env } from 'cloudflare:workers';
+import { hubEditAttr } from '@/lib/hub-preview';
 import Icon from '@/components/Icon.astro';
 import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -46,7 +47,14 @@ interface Tile {
   videoUrl: string;
 }
 
+// The VISIBLE handle derives from the same URL the link uses, so renaming the
+// account in Site settings updates the text too (it used to be typed twice).
+const handleFromUrl = (url: string | undefined, fallback: string) => {
+  const last = (url ?? '').split('?')[0].split('/').filter(Boolean).pop() ?? '';
+  return last && !last.includes('.') ? `@${last}` : fallback;
+};
 const igProfile = site.social?.instagram || 'https://www.instagram.com/westchesterpreschool';
+const igHandle = handleFromUrl(igProfile, '@westchesterpreschool');
 const fbProfile = site.social?.facebook || 'https://www.facebook.com/westchesterpreschool';
 
 let tiles: Tile[] = [];
@@ -102,6 +110,12 @@ if (tiles.length === 0) {
       videoUrl: '',
     }));
 }
+interface Props {
+  /** Board wording override (hubPage.widgetText). Undefined = shipped copy. */
+  heading?: string;
+  blurb?: string;
+}
+const { heading, blurb } = Astro.props;
 ---
 
 {
@@ -144,7 +158,7 @@ if (tiles.length === 0) {
                   id="hub-social-heading"
                   class="mt-1.5 font-display text-2xl leading-tight text-white sm:text-3xl"
                 >
-                  Life inside WCP
+                  {heading ?? 'Life inside WCP'}
                 </h2>
               </div>
             </div>
@@ -155,15 +169,17 @@ if (tiles.length === 0) {
                 target="_blank"
                 rel="noopener"
                 class="inline-flex items-center gap-2 rounded-full border border-white/30 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'instagram')}
               >
                 <Icon name="instagram" class="h-4 w-4" aria-hidden="true" />
-                @westchesterpreschool
+                {igHandle}
               </a>
               <a
                 href={fbProfile}
                 target="_blank"
                 rel="noopener"
                 class="inline-flex items-center gap-2 rounded-full border border-white/30 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'facebook')}
               >
                 <Icon name="facebook" class="h-4 w-4" aria-hidden="true" />
                 Facebook
@@ -172,8 +188,8 @@ if (tiles.length === 0) {
           </div>
 
           <p class="mt-2 max-w-lg text-sm text-white/80">
-            Classroom moments, school events, and the everyday joy of being part of a co-op
-            community.
+            {blurb ??
+              'Classroom moments, school events, and the everyday joy of being part of a co-op community.'}
           </p>
 
           <ul class="wcp-wall-grid" data-wall>
@@ -217,7 +233,7 @@ if (tiles.length === 0) {
                     <span class="wcp-wall-cap">{t.caption}</span>
                   ) : (
                     <span class="wcp-wall-cap wcp-wall-cap--stamp" aria-hidden="true">
-                      @westchesterpreschool
+                      {igHandle}
                     </span>
                   )}
                 </a>

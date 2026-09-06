@@ -5,6 +5,7 @@ import type { APIRoute } from 'astro';
 // secret (`wrangler secret put FAMILY_HUB_PASSWORD`).
 import { env } from 'cloudflare:workers';
 import { HUB_SESSION_KEY, passwordFingerprint, safeEqual } from '@/lib/hub-auth';
+import { readForm } from '@/lib/read-form';
 
 export const prerender = false;
 
@@ -14,7 +15,10 @@ function safeReturnTo(to: string | null): string {
 }
 
 export const POST: APIRoute = async (context) => {
-  const form = await context.request.formData();
+  // A non-form body used to crash formData() with a 500; treat it as a failed
+  // sign-in, back to the login form.
+  const form = await readForm(context.request);
+  if (!form) return context.redirect('/family-hub/login?error=1');
   // .trim() both sides: a shared password never has meaningful leading/trailing
   // whitespace, and secrets pasted into a dashboard/terminal often pick up a
   // stray trailing newline — trimming avoids a maddening "correct password fails".

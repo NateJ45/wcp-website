@@ -61,10 +61,15 @@ Every `/family-hub/*` page renders inside `HubShell` → `BaseLayout chrome="hub
 draws the hub's persistent chrome:
 
 - **Desktop (≥ `lg`):** a sticky left navigation **rail** (`HubRail.astro`), built from the
-  single grouped nav config in `src/data/hub-nav.ts` — Home, Classes, News & Events,
+  single grouped nav config in `src/data/hub-nav.ts` — Home, Classes (SELF-FILLING: the
+  group carries `autoClasses`, so its links are derived from the `class` documents, one per
+  classroom page — see "Class pages are DERIVED" below), News & Events,
   Resources (Getting Started, Become a Super Helper), Money, Community (Directory, Co-op
   Jobs, Celebrations, the external Store link), each group with its own accent color — the active page highlighted, a
-  light/dark `ThemeToggle`, and Sign out. The rail collapses to an icon rail
+  light/dark `ThemeToggle`, and Sign out. Above Sign out sits a **Follow WCP!** row —
+  Facebook/Instagram icons reading the SAME Site settings links (and show-socials switch)
+  as the public footer, over the Board-content cache, so the Board edits them in one place
+  (Studio → Public website → Site settings). The rail collapses to an icon rail
   (`hub-rail.ts` persists the choice in localStorage; BaseLayout sets the attribute early
   so there's no flash).
 - **Mobile (< `lg`):** a navy top strip (`HubTopBar.astro`: menu button, page title,
@@ -244,17 +249,17 @@ health/illness policy, event-type legend, and so on), and every page's heading, 
 body sections are Board-editable through the page-builder (see "Editing hub pages" below).
 Each page's live/private data reads from Sanity behind the gate:
 
-| Section                       | Live data source                                                                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Hub settings |
-| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                          |
-| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                 |
-| Documents                     | `hubDocument` docs                                                                                                           |
-| Co-op Jobs                    | `coopRole` docs + org-chart holders (`src/data/hub/org-holders.ts`)                                                          |
-| Classes                       | `class` docs (facts + tuition button) + `teacherNote` docs (welcome modal)                                                   |
-| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                           |
-| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                              |
-| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                   |
+| Section                       | Live data source                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar                      | Google Calendar feed → agenda list + our own branded month grid (`HubCalendarGrid`); `googleCalendarId`/feed in Hub settings                                      |
+| Fundraising                   | `campaign` docs (Treasurer updates the raised amount in the Studio)                                                                                               |
+| Updates                       | `update` docs (the migrated meeting blog; `category` = announcement/minutes)                                                                                      |
+| Documents                     | `hubDocument` docs                                                                                                                                                |
+| Co-op Jobs                    | `coopRole` docs (the seats AND the chart's shape) + `roleHolder` docs (the people)                                                                                |
+| Classes                       | `class` docs (the whole page: facts, colour, icon, links, tuition button) + an optional `hubPage` naming them (the handbook) + `teacherNote` docs (welcome modal) |
+| Tuition                       | `class` docs (rates + PayPal button) + the `feeSchedule` singleton                                                                                                |
+| Directory, Health (per-child) | `directoryEntry` docs / per-child info — opt-in PII, gated only                                                                                                   |
+| Sign-ups & RSVPs              | `signupSheet` docs (board creates) + `signupEntry` docs (families respond)                                                                                        |
 
 Where a data source is empty, the page shows a designed empty-state that names its source.
 Fallback layout content lives in typed data files under `src/data/hub/` and
@@ -271,7 +276,9 @@ instead of per-event RSVP because calendar events live in Google, not Sanity, an
 no stable identity to hang responses on). Families respond on the page; each response
 posts to `/family-hub/api/signup` (inside the hub prefix, so the middleware gate covers
 it), which validates open/slot/capacity server-side, stores a `signupEntry` doc (the
-count source and the board's Studio inbox), and forwards a row + FYI email through the
+count source and the board's Studio inbox — since 2026-08-30 each sheet also has a
+**Responses** document tab listing its own entries, newest first, via
+`sanity-plugin-documents-pane` in `sanity.config.ts`), and forwards a row + FYI email through the
 Google forms inbox when configured (see [FORMS.md](FORMS.md)). Forms work without JS
 (native POST → redirect with `?thanks=1`); `src/scripts/hub-signup.ts` upgrades them to
 background submits. Two clearly-titled example sheets are seeded by
@@ -302,7 +309,9 @@ A page-wide line totals the whole school's logged hours.
 photo (with an optional caption) through the form; the browser **never writes to
 Sanity directly** — it posts to `/family-hub/api/photo-submit`, which holds the server
 token, and the upload lands as a `photoSubmission` with `approved: false`. Only after a
-board member reviews it in the Studio (**Inboxes → Family photos (review)**) and flips
+board member reviews it in the Studio (**Inboxes → Family photos (review)**, which opens
+on a **Waiting for review** pane — `approved != true` — with Approved and Everything
+behind it) and flips
 **Approved** (then Publishes) does it show in the gallery. These are photos of children,
 so they are **gated and moderated by design and never appear on the public site**.
 
@@ -356,10 +365,12 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   - **Routes resolve by CONVENTION, not a registry.** `hubPageRoute()` takes
     `/family-hub/<hubKey>` when hub-nav says that page exists, so a hub page
     added later indexes itself. Two escape hatches: `HUB_PAGE_OVERRIDES` for the
-    routes that don't match (`twos` → `/family-hub/twos-threes`, `home` →
+    routes that don't match (`home` →
     `/family-hub`), and `HUB_PAGE_DENY` for docs that must never be indexed
-    (`directory` = PII, `threes` = a doc NO page renders, since twos-threes
-    reads the twos doc for both classes). Deny always wins over convention.
+    (`directory` = PII). Deny always wins over convention. The route set the
+    convention is checked against is the resolved nav WITH its classroom pages
+    filled in, so a class the Board adds is searchable — page name and handbook
+    words — the day it publishes.
     This replaced a hardcoded allow-list that failed silently — add a page,
     forget to register it, and search omitted it forever.
 
@@ -382,11 +393,37 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   usable with no JS — and `hub-menus.ts` adds outside-tap (pointerdown — iOS Safari
   doesn't synthesize document-level clicks on non-clickable targets) / Escape closing. `HubTable`'s
   sticky column headers offset by `lg:top-14` to slide under this bar.
-- **The bell** (`HubBell.astro`): server-renders the recent feed (updates + newest
-  documents, one `BOARD_CONTENT_CACHE`-tier query fetched once in `HubTopBar` and shared
-  by both bell instances). Updates with the Board's **`highlight`** checkbox pin to the
-  top with an amber "Important" pill until the Board unchecks them. `hub-fresh.ts` adds
-  the unseen-count badge and marks everything seen when a panel is opened.
+- **The bell** (`HubBell.astro`): server-renders the recent feed. **Eight feeds** reach
+  it, all assembled once in `HubTopBar` and shared by both bell instances:
+
+  | Feed               | Where it comes from                                                    | Row                                       |
+  | ------------------ | ---------------------------------------------------------------------- | ----------------------------------------- |
+  | Announcements      | `update` docs (+ the Board's `highlight` flag)                         | the post title → the post                 |
+  | Spotlights         | live `hubSpotlight` docs                                               | the heading → re-opens the pop-up         |
+  | Documents          | newest `hubDocument` docs                                              | the title → Documents                     |
+  | Note bumps         | `teacherNote` / `presidentNote` with a version stamp, by `_updatedAt`  | "A note from ..." → the class page/home   |
+  | New Board pages    | `hubPage` with a slug, no `hubKey`, not archived, carrying no classes  | "New page: ..." → the page                |
+  | Events just added  | Google feed `created` + Sanity `event._createdAt`, both inside 14 days | "Added to the calendar: ..." → Calendar   |
+  | Events rescheduled | Google feed `updated` inside 14 days on an event whose add is older    | "Updated on the calendar: ..." → Calendar |
+  | Fundraising        | the cached gviz Fundraising tab, at 50% / 75% / 100% of the goal       | "Fundraising passed 75% ..." → the page   |
+
+  Every Sanity feed rides ONE `BOARD_CONTENT_CACHE`-tier query; the calendar and the
+  fundraising sheet reuse the cached getters the bar already calls, so the bell adds no
+  external fetch and no KV key. The query holds no date window and no threshold — the
+  cache keeps the raw readings and the rules run per request (see CLAUDE.md, "cache the
+  reading, never the copy").
+  The rules are pure and unit-tested in [`src/lib/hub-bell.ts`](../src/lib/hub-bell.ts):
+  the 14-day window, the milestone thresholds, the calendar added/updated/recurring rules (`calendarBellRows` - a recurring series never announces, an add and an edit never both announce), and the merge. **The merge caps each feed
+  (2 rows, updates 4) BEFORE it merges**, so a busy feed cannot starve a quiet one — three
+  documents uploaded in one evening must not hide this morning's note bump. Spotlights and
+  Board highlights pin to the top with an amber "Important" pill; the rest reads newest
+  first, and the panel holds 9 rows.
+  **The fundraising row carries NO date.** Nothing records when the campaign crossed 75%,
+  so the row lists but never counts toward the unseen badge — `hub-fresh.ts` skips a row
+  whose `data-published` will not parse, which is the honest behaviour.
+  `hub-fresh.ts` adds the unseen-count badge and marks everything seen when a panel is
+  opened.
+
 - **Persistent-shell view transitions**: the rail, both top bars, and the tab bar carry
   `view-transition-name`s (globals.css), so hub→hub navigations hold the shell still
   while only the content cross-fades — the app feel without client routing. Motion-only
@@ -394,8 +431,17 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **My classes** (`my-class.ts`, localStorage `wcp-my-classes`, no accounts):
   MULTI-select toggle chips on the home dashboard (plenty of families have kids in
   more than one class); each picked class's helper tile moves to the front with a
-  "Your class" tag, its photo album gets a ring, and its rail link gets a dot (the
-  shared Pre-K page link is never double-dotted).
+  "Your class" tag, its photo album gets a ring, and its rail link gets a dot (two
+  classes sharing one classroom page never double-dot it).
+  **The class list is DATA, not code.** `HubRail` prints it once per page as a
+  `<script type="application/json" data-hub-classes>` block — slug, label, and the
+  classroom page each class lives on — straight from the `class` documents. The
+  script reads that, so a class the Board adds appears in the picker, the tiles and
+  the rail dots with no code change. It used to be a hardcoded map of the four
+  2026-27 slugs, which is what made the hub blind to a new class.
+  `hub-page-links.ts` reads the same block for its prose auto-links (a derived class
+  target always requires the literal " page" suffix, because a class name is an
+  ordinary word).
 - **"New since your last visit"** (`hub-fresh.ts`, localStorage `wcp-updates-seen`):
   home announcement/minutes items newer than your last Updates visit get a "New"
   pill and the Updates links (rail/drawer/tab bar) a count badge; opening Updates
@@ -483,16 +529,17 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   welcome modal; the card shows a **Say hi** (email) and a **Call or text** (phone) link)
   next to one `ClassRepCard` **per class the page covers** (Twos + Threes, or Pre-K AM +
   PM). Each class elects ONE parent rep in the fall; until then the rep card is a designed
-  **"To be announced"** placeholder that reserves the seat. Rep names/emails/photos live in
-  `src/data/hub/org-holders.ts` (`classReps`, code-owned, so they can be filled in while
-  the Studio is quota-blocked); all four seats are named for 2026-27. Their **contact
-  details are not there** -- a volunteer's email and phone are PII and this repo is public.
+  **"To be announced"** placeholder that reserves the seat. The rep SEAT is derived — one
+  `coopRole` marked "one of these for every class", expanded per class by `classRepPerson()`
+  in `src/lib/hub-org.ts` — so a class the Board adds gets a fillable rep card with no code
+  change. Rep names and photos live only in the Studio (`roleHolder`). Their **contact
+  details are never committed** -- a volunteer's email and phone are PII and this repo is public.
   The card's "Say hi" / "Call or text" links come from the Directory instead, read per
-  request behind the gate: the page does ONE uncached read
-  (`DIRECTORY_REP_CONTACTS_QUERY`) for its two reps and passes the map down, joining on the
-  rep's full name, so the name in `org-holders.ts` must match the adult's name on their
-  Directory entry exactly. Shaping + the `tel:` formatting live in
-  `src/lib/hub-rep-contacts.ts` (pure, unit-tested). A rep who opted out of the Directory,
+  request behind the gate: the page does ONE uncached read (`ROLE_HOLDERS_QUERY`) for its
+  reps and passes the map down. Each rep's `roleHolder` links her Directory entry
+  (`contactFrom`) and the query resolves the adult whose name matches **Who holds it**, so
+  the details are typed once. Shaping + the `tel:` formatting live in
+  `src/lib/hub-org.ts` (pure, unit-tested). A rep who opted out of the Directory,
   or whose name doesn't match, simply renders without links. Below the row, a `ClassAskGuide` box (**"Not sure who to
   ask?"**) splits **teacher vs. class rep** questions — grounded in `coop-roles.ts` + the
   class handbooks (teacher = the child, curriculum, routines, attendance, health-in-class;
@@ -503,7 +550,7 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
 - **Signed sign-off CTA.** The handbook's **closing** CTA on a class page becomes a signed
   sign-off card: the teacher's headshot in a class-colour ring + **Email** / **Call or
   text** pill buttons (`TeacherSignoff.astro`), which stand in for the CTA's plain-text
-  note. `HubSectionedBody` takes a `signoff` slug (`twos` / `pre-k`) and renders that
+  note. `HubSectionedBody` takes `signoff` (the classroom's teacher-note keys) and renders that
   page's LAST `ctaSection` through `CtaSection` with a `teacherSlug`, so a mid-handbook CTA
   never gets a signature. Contact comes from the same `teacherNote` (email + the
   2026-07-15 `phone` field); phone falls back to `teacherPhoneFallback` (`live-links.ts`)
@@ -511,8 +558,10 @@ there is deliberately **no service worker** (the SSR hub must never serve stale)
   closing note. Erin signs Twos & Threes; Mrs. Lisa signs Pre-K.
 - **Curriculum guide PDFs.** The class-page header action row carries the handbook pill
   (`handbookUrl` from the class's `hubPage` doc) plus a **"Curriculum guide (PDF)"** pill
-  linking a static, brand-styled PDF in `public/curriculum/` (`twos-` / `threes-` /
-  `pre-k-curriculum.pdf`; the Twos & Threes page shows one per class since the objectives
+  linking a static, brand-styled PDF in `public/curriculum/` (`<key>-curriculum.pdf`, one per
+  `curriculumGuide` document — a pill only appears when the document exists, and
+  `generate-curriculum.mjs` renders a guide for any document, not just the shipped three; the
+  Twos & Threes page shows one per class since the objectives
   differ, Pre-K shows one shared guide). These are NOT CMS-editable: the objectives + the
   layout are the SOURCE OF TRUTH in `scripts/generate-curriculum.mjs` (`npm run
 gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined). Edit the
@@ -520,12 +569,101 @@ gen:curriculum` re-renders them via Playwright/Chromium, fonts + emblem inlined)
   school's old name.
 - **Supply list.** The same action row carries a **"Supply list (PDF)"** pill on both class
   pages, linking `public/supplies/supply-list.pdf` — one brand-styled one-pager covering
-  ALL four classes, each list card in its class colour. Like the curriculum guides it is
-  NOT CMS-editable: the items + layout are the SOURCE OF TRUTH in
+  every class, each list card in its class colour. The items are Board-editable in the
+  `supplyList` singleton and its "Class" dropdown reads the LIVE classes, so a class the Board
+  adds gets its own card (the generator derives the card's name and colour from the class
+  document). The layout and the committed defaults live in
   `scripts/generate-supplies.mjs` (`npm run gen:supplies`), which also renders a 1080x1350
   social carousel (`public/supplies/social/*.png` — cover, one slide per class, wish list)
   for the Facebook/Instagram back-to-school posts. The filename is deliberately year-less
-  so the pill links never rot; each fall update `YEAR` + the items and regenerate.
+  so the pill links never rot; each fall update the school year + the items in the Studio.
+
+## Spotlight pop-ups
+
+A **spotlight** is a Board-managed pop-up that greets a signed-in family on **any** hub
+page. It is the collection sibling of the President's note (one letter, hub home only) and
+the answer to "the board wants to draw attention to the supply lists in August, the auction
+in March, a store offer in December".
+
+**Why a new `hubSpotlight` type and not the public `announcement`.** An `announcement` is a
+STATIC-site thing: `getAnnouncements()` reads it through `src/lib/cms.ts` at BUILD time,
+BaseLayout renders it only when `chrome === 'site'`, its `pages` field references public
+`page` documents, and its placement model is public paths. A hub pop-up is read at REQUEST
+time behind the password gate and links to hub routes, hub pages, updates, and the store.
+Extending `announcement` would have coupled hub SSR to the build-time query path and grown
+a second placement axis nobody could explain to a volunteer. So the two stay separate, and
+each stays simple.
+
+| Concern             | File                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
+| Schema              | `src/sanity/schemaTypes/documents/hubSpotlight.ts`                            |
+| Studio pane         | `src/sanity/structure.ts` (Family Hub → Everyday edits, drag-orderable)       |
+| Rules + GROQ        | `src/lib/hub-spotlight.ts` (pure, unit-tested)                                |
+| Rendering           | `src/components/hub/HubSpotlightModal.astro`                                  |
+| Behaviour           | `src/scripts/hub-spotlight.ts`                                                |
+| Mounted             | `src/layouts/BaseLayout.astro`, hub branch (every hub page)                   |
+| Checkup / reminders | `HealthTool.tsx`, `SetupWizard.tsx`, `src/lib/reminders.ts`, `/api/reminders` |
+| Guide               | Help & Guide → "Put a spotlight in front of families"                         |
+| Tests               | `src/lib/hub-spotlight.test.ts`, `tests/hub-spotlight.spec.ts`                |
+
+**What the Board controls.** A name (for the list), a heading, an optional date line, an
+optional short line, a rich **message**, an optional picture and icon, one of four
+validated **tones** (the pop-up's edge colour), ONE optional button, show-from / show-until
+dates, a master on/off, a **version stamp**, and the drag order.
+
+**The message is `postBody`** — the same editor News posts, newsletter issues, and Updates
+use, rendered by the same `renderPostBody()`. So it carries bold, italic, links, lists,
+pictures with required alt text, **file attachments** families download with one tap,
+callout boxes, buttons, tables, and click-to-load video. There is deliberately **no colour
+picker**: brand-lock forbids design knobs, and coloured body text on a tinted surface is the
+hub's #1 dark-mode AA trap. Colour is expressed through the four-tone edge and the callout
+box's two looks.
+
+**The button offers five kinds**, the same plain-language vocabulary as the hub menu:
+"Page that came with the site" (a dropdown of real hub routes), "Page you made" (a `hubPage`
+reference), "An update" (an `update` reference, so linking a new announcement is a pick and
+not a pasted URL), "Outside link", and "The merch store" (the address is dereferenced from
+the `hubStore` singleton, so it never needs pasting). A kind whose target went missing
+renders NO button rather than a dead one. Every link field validates only when a button is
+asked for AND that kind is chosen, so a hidden field can never block publishing (the
+hubNavMenu lesson).
+
+**One pop-up per visit, and the ordering.** `hub-spotlight.ts` opens nothing while the
+President's note or the first-visit tour is still due, so the order a family meets things is
+note → tour → spotlight, one per page load, never stacked. On every hub page other than the
+home there is no note and no tour, so a spotlight opens straight away (1100ms after load,
+later than the note's 700ms and the tour's 900ms so a race cannot stack them).
+
+**Several live at once paginate.** The modal holds one PAGE per live spotlight (capped at
+`MAX_RENDERED_SPOTLIGHTS`, 3) in the Board's drag order, with prev/next arrows, an
+aria-live "2 of 3" counter, Left/Right arrow keys, and the dialog label following the
+visible page's heading. With ONE spotlight live the arrows and counter do not render at
+all, so it reads exactly like its sibling note modals. No swipe: gestures are not worth
+hand-rolling, and the arrows are 44px targets.
+
+**Seen is per spotlight, marked on DISPLAY** — not on close. `localStorage`
+`wcp-spotlights-seen` holds `{ spotlightId: version }`, so closing after reading 2 of 3
+leaves the third to greet the family next visit, and bumping ONE version stamp resurfaces
+exactly that one. Device-local, like the rest of the hub app layer.
+
+**No-JS = no pop-up**, deliberately. A spotlight points at content that already lives on a
+hub page; it is promotion, not the only path to any information.
+
+**The read rides `BOARD_CONTENT_CACHE`** (5 min fresh, L1-only, **zero KV writes**;
+since 2026-08-30 a null/undefined reading — "no such document" — stays fresh for at most
+30s and never rides the stale window, so a just-created page stops 404ing in seconds
+instead of minutes; see `MISS_TTL_MS` in `src/lib/hub-cache.ts`).
+CLAUDE.md keeps COLLECTIONS live so lists feel fresh, but a spotlight is not a list: it is
+board-edited chrome that renders on EVERY hub page, which is exactly what that cache tier
+exists for (the topbar and the `hubPage` docs use it). An uncached read here would put a
+Sanity round-trip on every hub navigation, and five minutes of staleness on a promotional
+pop-up costs nothing.
+
+**Housekeeping.** The Checkup tool flags a spotlight past its end date but still switched
+on; the same count feeds `/api/reminders` (the board's daily email) and the Start-of-year
+tool's "Clear out old notices" card, which now names announcements and spotlights
+separately. `scripts/patch-hub-spotlight-example.mjs` creates one example document,
+**switched off**, so a Board opens a filled-in form instead of a blank one.
 
 ## Updates / meeting blog
 
@@ -550,7 +688,11 @@ The **Directory** reads opted-in `directoryEntry` docs (PII, gated), sorted
 alphabetically by `familyName` (the surname). Every family is **fully editable in Studio →
 Family Hub → Directory**: family name, each parent (name + their own email + phone), each
 child (name + class), a family photo, the home address, the map pin, notes, and a "Show in
-directory" toggle. Adding a new family = create a `directoryEntry` and turn on "Show in
+directory" toggle. In the Studio the Family Directory list opens as **All families**
+plus one pane **per class** (2026-08-30, `structure.ts`: the panes derive from the live
+`class` docs, filter `$slug in children[].class` on the stored class slug — a family
+spanning classes shows under each, and a new class gets its pane for free). Adding a new
+family = create a `directoryEntry` and turn on "Show in
 directory". The **Map** is a Board on/off switch — **Hub settings → Google connections → "Show
 the family directory map"** (`showDirectoryMap`, **off by default**). When off, the page shows
 just the List (no Map tab, and Leaflet never loads); when on, a **List / Map toggle** appears and
@@ -606,26 +748,89 @@ the build-time "pull" sections can't run behind the gate). The page's **fixed wi
 class facts) stays locked in code and the editable sections wrap around it. If no `hubPage`
 doc exists for a key, the page shows its built-in fallback content, so it can never go blank.
 
-Edit them in **Studio → Family Hub → Hub pages**. Since 2026-08-24 hub pages also get the
-**Presentation click-to-edit preview**: opening a hubPage doc shows its editable surface
-(heading/intro/sections through `HubSectionedBody`) at `/preview/family-hub/<hubKey-or-slug>`.
-That route gates ITSELF on the Studio-issued preview cookie (`/api/draft-mode/enable`
-validates Sanity's one-time secret) and answers 401 without it — it sits outside
-`/family-hub`, so the middleware does not cover it, and gated content must never render on
-an open preview route (`tests/hub-gate.spec.ts` pins the 401). The code-owned chrome and
-fixed widgets deliberately don't render in the preview — since 2026-08-24 a dashed 🔒
-"Built into the site" placeholder marks each built-in page's fixed part instead
-(`BUILTIN_WIDGETS` map in the preview route), so an editor knows why that content is not
-there and where it is really managed. The preview also passes `editDoc` into
-`HubSectionedBody`, which puts a `data-sanity` target on every `.hub-doc-block` so the
-overlay shows section-level move/duplicate/delete/insert controls (see
-`src/lib/preview-edit-attr.ts`; the live hub pages never pass `editDoc`). Seed a page's
-starting content with `node scripts/migrate-hub-pages.mjs` (idempotent, `hubPage-<key>` ids).
+Edit them in **Studio → Family Hub → Hub pages**. Since 2026-08-30 **the real
+`/family-hub/*` routes ARE the Presentation preview** (the 2026-08-24 stub at
+`/preview/family-hub/<key>` is now a cookie-gated 302 to the real page; `tests/hub-gate.spec.ts`
+still pins its 401 without the cookie). The pieces:
+
+- `src/lib/hub-preview.ts` — `hubDraftMode()` verifies the Studio-issued preview cookie
+  (fingerprint of the server Sanity token, `src/lib/preview-auth.ts`, fails closed) and
+  `readHubPageDoc()` swaps the page's hubPage read to the draft perspective with stega on.
+  A draft read NEVER touches the board-content cache (it would show unpublished words to
+  families for the TTL).
+- `src/middleware.ts` accepts that cookie as a second verified credential for
+  `/family-hub/*` and stamps `Cache-Control: no-store` on every preview response. It is a
+  credential, not a bypass flag — see the incident note at the top of that file.
+- Every hub route computes `draftMode`, reads via `readHubPageDoc`, and hands HubShell a
+  `previewDocId` (the published doc id) → BaseLayout mounts `VisualEditingOverlay` OUTSIDE
+  `#main` (the soft refresh morphs `#main` and must not morph the overlay away).
+- Board pages (and Hub home's welcome sections) pass `editDoc` in draft mode, so sections
+  get the move/duplicate/delete toolbar; built-in widgets render for real but carry no
+  edit handles.
+
+**Preview-only rendering details (2026-08-30)**: BaseLayout forces every `[data-reveal]`
+to its end state while previewing (morphed-in nodes never meet the IntersectionObserver, so
+without this the dashboard faded out after the first edit), and the soft-refresh morph
+skips `data-morph-keep` subtrees — the four `server:defer` islands on Hub home — because
+the refetched HTML holds only their fallback skeletons (island swap scripts never run in a
+DOMParser parse). The greeting and events tiles also adapt their grid spans to the widget
+switches so the bento never shows a hole.
+
+**Widgets are SELECTABLE in the preview (2026-08-30)**: every code-owned widget wraps
+itself in a `data-sanity` target via `hubEditAttr` (src/lib/hub-preview.ts) when
+`Astro.locals.hubPreview` is true (stamped by the middleware from the verified cookie —
+families never render the attribute). Clicking a widget in Presentation opens its OWNING
+document at the right field: teacher card → its `teacherNote`, class-rep card → its
+`roleHolder` (docId threads through `RoleHolderRow` → `Holder` → `OrgPerson`), class fact
+cards + album tiles → the `class` doc (docId threads `HUB_CLASSROOMS_QUERY` →
+`toHubClass` → `HubClass`/`ClassTile` — the mapper must keep new fields or they silently
+vanish), handbook chips → `hubPage.handbookFile` / `hubSettings.familyHandbook`,
+announcement + minutes rows → their `update` docs, store → `hubStore`, greeting stats →
+Site/Hub settings, social pills → the Site settings handles.
+
+**Preview cost control (2026-08-30, after a live Error 1102)**: a hub soft refresh
+renders ONLY `#main` (`hubSoftRefresh` in BaseLayout skips both rails, the seven-feed
+top bar, tab bar, search, and the spotlight modal — the reconcile discards them anyway),
+and `/preview/live`'s listen filter excludes family-generated machine docs (sign-ups,
+photo submissions, hours logs, form submissions, subscribers, `sanity.*`) so background
+family activity never triggers preview re-renders.
+
+**Editability program (2026-08-31)**: see [HUB_EDITABILITY.md](HUB_EDITABILITY.md) for
+the audit + what shipped in its four waves — the Super Helper procedure page
+(`seed-super-helper-page.mjs`), store facts on the Merch store card, fully-overridable fee
+cards, the single-sourced closure statement, the documents category registry
+(`src/lib/hub-doc-categories.ts`), the Board-picked phone tab bar (`resolveTabBar`),
+skippable tour steps, class extra fact rows, note sign-offs, and the shared contact
+microcopy (`src/data/hub/microcopy.ts`).
+
+**Editable widget wording (P1–P4, 2026-08-31)**: `hubPage.widgetText` stores per-widget
+title/blurb overrides (empty = shipped copy; `widgetTextFor` in `src/lib/hub-widgets.ts`
+strips stega from the KEY only — titles keep it for click-to-edit; Studio input
+`HubWidgetTextInput`, rows limited to registry entries with a `text` capability). The
+greeting's welcome line is `hubSettings.welcomeLine`; the handbook card derives its year
+from `siteSettings.schoolYearLabel`. The **Super Helper program** is ONE source
+(`hubSettings.superHelper`, merge rules + committed fallback in
+`src/lib/hub-super-helper.ts` / `src/data/hub/super-helper.ts`) feeding both the hub-home
+band and `/family-hub/super-helper`'s header + "What it takes" cards; a Board-written
+requirements list replaces the shipped one wholesale, and a requirement may carry a link.
+The home page's settings/store reads are draft-aware in preview, so all of this shows
+pre-publish.
+
+**Widget switches (2026-08-30)**: `hubPage.hiddenWidgets` stores the OFF list (missing =
+all on, so no migration ever). The registry of switchable tiles per hubKey, the
+`hiddenWidgetSet`/`shows` rules, and a drift gate that proves the page honors every
+registered value live in `src/lib/hub-widgets.ts` (+ `.test.ts`); the Studio input is
+`src/sanity/components/HubWidgetToggles.tsx` (on/off switches; the field hides on pages
+with no registered widgets). Today only **Hub home** registers tiles — add a page's
+widgets to `HUB_WIDGETS_BY_KEY` and gate its markup with `shows()` to grow it. Seed a
+page's starting content with `node scripts/migrate-hub-pages.mjs` (idempotent,
+`hubPage-<key>` ids).
 
 **All hub pages are converted:** Landing (`home`), **Getting Started** (`getting-started` —
 new-family onboarding), Calendar, Co-op Jobs, Documents, Tuition, Updates, Fundraising,
-Health, Directory, and the class pages (the merged `twos-threes` and `pre-k` — each class
-pair shares one page, with the per-class routes 301-redirecting there). Each
+Health, Directory, and the class pages (DERIVED from the `class` documents since 2026-08-29 —
+see "Class pages are DERIVED" below; `twos-threes` and `pre-k` each cover a class pair, with the
+per-class addresses 301-redirecting there). Each
 reads its `hubPage` doc for an editable heading, intro, and a stack of hub-safe sections,
 wrapped around a **fixed widget** that stays locked in code:
 
@@ -637,19 +842,71 @@ coop-jobs / tuition / fundraising / calendar / twos / threes by
 The source PDFs are uploaded as gated `hubDocument` files on the Documents page — the
 PDFs themselves are gitignored (they contain the hub password and phone numbers).
 
-**Each class page carries that teacher's entire parent handbook** as editable sections. Pre-K
-(daily schedules, drop-off/pick-up, the helper-day playbook, snack duty, helper wisdom,
-communication, dress code, FAQs, and the class-pet band) is seeded from Mrs. Lisa's 2026-27 PDF
-by `node scripts/seed-pre-k-page.mjs`; its fixed widget is the pair of AM/PM fact cards (facts,
-pay button, helper sheet, photo album per class). **Twos + Threes** likewise share ONE page,
-`/family-hub/twos-threes` (same teacher Ms. Erin, same 9:30-noon rhythm, same handbook): the
-combined page shows Erin's teacher card + a Twos and a Threes fact card side by side, and reads
-the handbook from the single `hubPage-twos-threes` doc (ONE doc for the one page since
-2026-08-24 — `patch-merge-twos-threes.mjs` consolidated the old per-class twos/threes docs,
-which had drifted while only the twos one rendered; the historical
-`seed-twos-threes-page.mjs` seeded the old pair and must not be re-run as-is). `/family-hub/twos`
-and `/family-hub/threes` 301-redirect to the combined page; the nav + home class cards point
-there. Re-running a seed RESETS that page to its baseline; day-to-day edits happen in the Studio.
+### Class pages are DERIVED — the classroom model (2026-08-29)
+
+**A class the Board adds gets its whole hub presence with no code change.** This was the last
+developer-only corner of the site: the class pages were hand-written `.astro` routes over a
+hardcoded slug union in `src/data/classes.ts`, so a `class` document that existed only in Sanity
+was invisible to the hub. Now the hub derives its class pages from the `class` documents, the
+same way the public site already derived its tuition table, calculator, card grids, Classes menu
+and teacher cards.
+
+**The one idea is a CLASSROOM** ([`src/lib/hub-classrooms.ts`](../src/lib/hub-classrooms.ts),
+pure + unit-tested). A classroom is one hub page. It covers one class, or several classes that
+share a teacher and a handbook. Two rules build the list:
+
+1. A `hubPage` may name the classes it is the class page for — **"Classes on this page"**. That
+   page becomes their shared classroom, at its own address (`hubKey` for a page that came with
+   the site, else its web address). This is how `/family-hub/twos-threes` (Ms. Erin's Twos +
+   Threes) and `/family-hub/pre-k` (Mrs. Lisa's AM + PM) keep the addresses families bookmarked.
+2. Any class no such page names becomes **its own classroom**, at `/family-hub/<class slug>`,
+   with no document at all. The page is complete from the class entry alone: facts, teacher card,
+   class-rep card, pay button, helper-schedule sheet, photo album, the supply list, and a coaching
+   empty state where the handbook would go. Every pill and card that needs a value it has not got
+   (no pay link yet, no album yet, no curriculum guide yet) is simply not rendered — a class page
+   never shows a dead link while it is being filled in.
+
+**Routing.** All of it is served by the gated catch-all
+[`src/pages/family-hub/[...slug].astro`](../src/pages/family-hub/%5B...slug%5D.astro). The six
+`.astro` files that used to do this (`twos`, `threes`, `pre-k`, `pre-k-am`, `pre-k-pm`,
+`twos-threes`) are deleted; the old per-class addresses 301-redirect to the page that covers them,
+from data rather than from four redirect files. `HubClassroomBody.astro` renders the whole page.
+
+**Precedence** is one unit-tested function, `hubPathKind()`: a real `.astro` route, then a
+CLASSROOM, then a Board-created page, then 404. A class page outranks a Board page at the same
+address because its address is DERIVED from the class rather than typed by a person — and the
+Studio refuses to save a Board page at a class's address, so that collision is caught before it
+can happen (`hubPage.ts` slug validation). `RESERVED_HUB_SLUGS` no longer lists the class slugs:
+they are Sanity data now, not files on disk.
+
+**Handbook content.** Pre-K (daily schedules, drop-off/pick-up, the helper-day playbook, snack
+duty, helper wisdom, communication, dress code, FAQs, and the class-pet band) is seeded from
+Mrs. Lisa's 2026-27 PDF by `node scripts/seed-pre-k-page.mjs`. The Twos & Threes handbook lives
+in the single `hubPage-twos-threes` doc (ONE doc for the one page since 2026-08-24 —
+`patch-merge-twos-threes.mjs` consolidated the old per-class docs, which had drifted while only
+the twos one rendered; the historical `seed-twos-threes-page.mjs` seeded the old pair and must
+not be re-run as-is). Re-running a seed RESETS that page to its baseline; day-to-day edits happen
+in the Studio.
+
+**The one-shot migration** was `node scripts/patch-hub-classrooms.mjs --apply` (run 2026-08-29,
+idempotent, dry-run by default): it set "Classes on this page" on the two shipped class pages and
+moved the four committed class icons into their `class` documents.
+
+**What a volunteer does to add a class, end to end:**
+
+1. Studio → **Classes** → **＋** — name, web address, colour, icon, days, time, ages, tuition,
+   PayPal links, helper-schedule sheet, photo album, teacher. Publish.
+2. The class is immediately in the tuition table, the calculator, the card grids, the public
+   Classes menu, the hub rail, the hub home's helper tile and photo-album tile, the my-classes
+   picker, the first-visit tour, the ⌘K palette, the directory filter, and **its own hub page**.
+3. Optional, from buttons on the class document: **Create its page** (the public detail page) and
+   **Create its hub page** (the handbook, as a draft to fill in).
+4. Optional: a **Teacher's welcome note** and a **Curriculum guide** — both dropdowns now list the
+   live class pages, so the new class is there to pick. The class also gets its own **rep seat**
+   on the org chart automatically (the ONE `perClass` Class Rep role — see "The org chart is
+   DERIVED" below), so its class-rep card can hold a real person the same day instead of
+   “To be announced” for ever: add a **Who's who this year** card, pick **Class Rep**, then pick
+   the class.
 
 The handbook body (and Getting Started) renders through `HubSectionedBody` → the shared
 `SectionRenderer`, i.e. the SAME page-builder sections the public site uses. Their marketing
@@ -725,8 +982,8 @@ Workers-UTC gotcha). `HUB_PAGE_QUERY` projects `_updatedAt`. Both helpers are Vi
 
 A `card` section shows a small **type-derived icon chip** above its title (map in
 `HubSectionedBody`; no Sanity field, so it stays brand-locked), and the whole column can be
-**tinted to a class color** via `HubSectionedBody`'s `tint` prop (a class slug — the pre-k and
-twos-threes handbooks pass theirs): the card chips use that class's `iconChip` and the active TOC
+**tinted to a class color** via `HubSectionedBody`'s `tint` prop (a brand COLOUR from the class
+document, e.g. `amber` — every classroom passes its own): the card chips use that class's `iconChip` and the active TOC
 entry picks up the class color through `--hub-doc-accent`. Getting Started stays neutral sky.
 
 `src/scripts/hub-doc.ts` (one client script, superseding the old `hub-toc.ts`, imported once from
@@ -818,7 +1075,7 @@ island) — the single album read rides the CDN cache, below the cost of an extr
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Landing                                | Quick-link nav grids                                                                                                                                                                                                                                    | —                                                  |
 | Calendar (agenda + branded month grid) | Upcoming agenda (type-coloured) + full-year view: `HubCalendarGrid` month grid (desktop) / `HubCalendarSchedule` collapsible-month list (mobile); clicking an agenda card, grid day, or schedule row opens `HubEventDialog` (details + add-to-calendar) | `googleCalendarId` / feed in Hub settings          |
-| Co-op Jobs                             | Role descriptions + tiered org chart                                                                                                                                                                                                                    | `coopRole` docs (holders: `org-holders.ts`)        |
+| Co-op Jobs                             | Role descriptions + the derived org chart                                                                                                                                                                                                               | `coopRole` (seats) + `roleHolder` (people)         |
 | Documents                              | Document library + required-forms callout                                                                                                                                                                                                               | `hubDocument` docs                                 |
 | Tuition                                | Pay-card + fee-card layout, payment FAQ                                                                                                                                                                                                                 | `class` docs + `feeSchedule` (rates, buttons, FAQ) |
 | Updates                                | Meeting-blog post list (minutes rows get a category pill)                                                                                                                                                                                               | `update` docs                                      |
@@ -929,8 +1186,12 @@ PDF uploaded at Hub settings → Each year → Family Handbook, with the committ
 fallback, so the yearly re-upload needs no code edit.
 
 **The curriculum guides and the supply list are Board-editable** (2026-08-17): their content
-moved from the generator scripts into `curriculumGuide` documents (one per class) and the
-`supplyList` singleton, seeded by `scripts/seed-pdf-content.mjs`. The generators read the
+moved from the generator scripts into `curriculumGuide` documents (one per class page) and the
+`supplyList` singleton, seeded by `scripts/seed-pdf-content.mjs`. Since 2026-08-29 the
+generator renders a guide for ANY `curriculumGuide` document, not just the three the script
+ships content for — a class the Board adds can be given its own guide, in its own class colour,
+and the hub shows the pill only for guides that exist. "Which class" is a dropdown of the LIVE
+class pages (`ClassroomPickInput`), so a guide can cover one class or a whole shared page. The generators read the
 Studio at build time (committed content = fallback) and run in postbuild with `--dist`, so a
 publish regenerates the PDFs on the next deploy; the deploy workflow installs Playwright's
 Chromium for the render, and a build without a browser skips gracefully and ships the
@@ -1003,36 +1264,87 @@ tour closes. The greeting hero's "Take the tour" chip reopens it any time. The h
 storageState pre-seeds `wcp-tour-seen` so the other suites never fight the overlay;
 `tests/hub-tour.spec.ts` clears it deliberately.
 
-**Org chart holders:** WHO fills each role is Board-editable in the Studio — **Family Hub →
-"Who's who this year"** (`roleHolder` documents, one per seat, seeded by
-`scripts/seed-role-holders.mjs`). The post-election update needs no deploy.
+### The org chart is DERIVED — the seat model (2026-08-29)
 
-The chart is deliberately split:
+**The co-op's own structure was the last developer-only corner of the hub.** The chart's
+SHAPE — its tiers, its two cabinet branches, its icons and committee sizes — lived in
+`src/data/hub/org-holders.ts`, and the Studio's Role field was a fixed dropdown of fourteen
+names. A school that renamed a role ("Operations Lead"), added one ("Sustainability Chair"),
+or shrank its board could not do any of it. Now both halves are documents:
 
-|                                                | Owner                                | Why                                            |
-| ---------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
-| Tiers, branches, icons, committee labels/sizes | code (`src/data/hub/org-holders.ts`) | layout — brand-lock keeps it out of the Studio |
-| Names, photos, contact                         | Sanity (`roleHolder`)                | changes every spring                           |
+|                                                                                                 | Document                | Studio                                        |
+| ----------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
+| The SEATS — what each job is, where it sits, who it reports to, team size, stipend, description | `coopRole`              | **Co-op roles & org chart** (drag to reorder) |
+| The PEOPLE — who holds a seat this year, photo, contact                                         | `roleHolder`            | **Who's who this year (update each fall)**    |
+| The five group HEADINGS on the job list                                                         | `coopGuidance.sections` | **How the co-op works → Job-list headings**   |
 
-`src/lib/hub-org.ts` merges the two (pure, unit-tested). Rules worth knowing:
+**The shape is derived, not stored.** `src/lib/hub-org.ts` (pure, unit-tested — 33 cases)
+turns the two lists into a chart:
+
+- **`tier`** puts a seat in one of five sections: `board`, `staff`, `chairs`, `reps`,
+  `committee`. That list is the ONE thing still fixed in code, because it is the grammar the
+  drawing follows (a top row, a paid-staff row, columns, rep cards, committee pills). A
+  volunteer moves seats between the five and renames what each is CALLED; they do not invent a
+  sixth kind of box. That is the brand-lock rule.
+- **`reportsTo` is a reference to another seat**, and the COLUMNS fall out of it: a board seat
+  becomes a column the moment something reports to it. Adding an officer, removing one, or
+  moving a chair between two all work with no code. It replaced free text ("Reports to VP"),
+  which a chart cannot follow — the tag on the job list is derived from the reference now, so
+  it can never name a deleted role.
+- **Paid staff are on the chart but NOT in the job list** (`LISTED_TIERS` in
+  `coop-jobs.astro`): the page's claim is that every other role is a parent volunteer, so a
+  teacher does not belong among the jobs a family signs up for.
+- **Nothing is ever silently dropped.** A chair whose officer was deleted lands in a final
+  **"Other roles"** column, so a volunteer SEES that it needs re-pointing.
+
+**Class reps stay automatic.** There is ONE `coopRole` marked **`perClass`** ("One of these
+for every class"), and `buildOrgChart` expands it into one rep card per live class, wearing
+that class's own icon. A class the Board adds gets its rep card the same day, with no seat for
+anyone to remember to create. `classRepPerson()` is the same rule for the class page's
+`ClassRepCard` — which used to look the class up in a committed list, so a NEW class's rep card
+could never be filled at all (fixed here, with a regression test).
+
+**A rename never orphans a holder.** `roleHolder.seat` is a REFERENCE, so renaming "Publicity
+Chair" to "Communications Chair" carries her card, photo and email with it. `toHolderMap` files
+each holder under three keys — the seat id, `<seat id>:<class slug>` for a rep, and the legacy
+role LABEL — so a document written before the migration still resolves, and so the committed
+fallback (which has no Sanity ids) still joins by name.
+
+Other rules worth knowing:
 
 - **Sanity wins, including when it's empty.** Clearing a name really does vacate the seat, so
-  a volunteer who steps down disappears from the chart via the Studio. A role with no document
-  at all keeps the committed name, which is what makes `org-holders.ts` a working fallback if
-  Sanity is unreachable — the chart is never blank.
-- **A role label that matches nothing is ignored**, so a Studio typo cannot break the page.
-- **Two seats share the displayed label "Teacher"**, so they carry a `key` (`Teacher — Pre-K`,
-  `Teacher — Twos & Threes`) that the join uses instead.
+  a volunteer who steps down disappears from the chart via the Studio. An unreachable Sanity
+  falls back to `src/data/hub/org-holders.ts` for BOTH the seats and the names — without the
+  names, an outage would draw every seat as an open role, which reads as "the whole board
+  resigned". Never add a new seat to that file; add it in the Studio.
+- **A row with no name, no id, or an unknown section is dropped**, so a bad document cannot
+  break the page.
 - **Class reps link to a Directory entry** (`contactFrom`) rather than storing an email/phone,
   so the details live in exactly one place and none of them land in this public repo. The
   query resolves the adult whose name matches the holder. A family who opted **out** of the
   Directory resolves to nothing: the name shows, the contact links don't.
-- **The read carries PII once a rep is linked, so it is never cached.** Both class pages and
-  the org chart each do one uncached read.
+- **The holders read carries PII once a rep is linked, so it is never cached.** The seats read
+  is not PII but is uncached too (it rides alongside). The class list the rep seats expand over
+  is the hub's existing L1-only cached read — no new KV writes.
+
+**The one-shot migration** was `node scripts/patch-org-chart.mjs --apply` (run 2026-08-29,
+idempotent, dry-run by default): it turned every "Reports to" into a reference, created the
+three paid-staff seats the old chart carried in code, ticked `perClass` on Class Rep, pointed
+all 17 holders at their seats (the four reps at the ONE Class Rep seat plus their class), and
+seeded the five job-list headings. One deliberate visual change: Copy Room Helper was drawn as
+a chair CARD and also as a "Copy Room" pill; it is one seat now (a committee reporting to the
+Secretary) and draws as a single pill.
 
 Three seats are open for 2026-27 (Facilities Chair, Family Activities Chair, Copy Room
-Helper) and are seeded as named documents with no holder, so the vacancy is visible in the
+Helper) and exist as named documents with no holder, so the vacancy is visible in the
 Studio rather than just missing.
+
+**What a volunteer does, end to end:** rename a role → open it under **Co-op roles & org
+chart**, change **Role**, Publish. Add one → **＋**, name it, pick **Where it sits** and
+**Reports to**, Publish, drag to place. Remove one → delete it (and re-point anything that
+reported to it, or find it under "Other roles"). Reorder → drag the list. Mark a seat vacant →
+clear **Who holds it** on its "Who's who" card, or delete that card. All of it is written up in
+the in-Studio guide as "Change the co-op roles or the org chart".
 
 ---
 

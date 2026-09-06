@@ -46,6 +46,29 @@ interface RawLink {
 interface RawItem extends RawLink {
   _type?: string;
   children?: RawLink[];
+  /** The self-maintaining Classes dropdown (see queries.ts): one candidate
+      link per class page, deduped below because two classes can share a page. */
+  autoClasses?: boolean;
+  autoChildren?: RawLink[];
+}
+
+/**
+ * The links a dropdown opens with. When `autoClasses` is on, the derived
+ * class links come first - deduped by page (Pre-K AM and PM share one page,
+ * which must read as ONE "Pre-K Class" link) - and the hand-written links
+ * follow, skipping any page the automatic list already covers.
+ */
+export function groupChildren(item: RawItem): RawLink[] {
+  if (!item.autoClasses) return item.children ?? [];
+  const seen = new Set<string>();
+  const merged: RawLink[] = [];
+  for (const link of [...(item.autoChildren ?? []), ...(item.children ?? [])]) {
+    const key = link.pageSlug ?? link.url ?? link.label ?? '';
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(link);
+  }
+  return merged;
 }
 interface RawHeaderCta extends RawLink {
   show?: boolean;
@@ -135,7 +158,7 @@ export function resolveNavigation(doc: unknown): SiteNavigation {
         item._type === 'navGroup'
           ? ({
               label: item.label ?? '',
-              children: (item.children ?? []).filter(isLive).map(toLink),
+              children: groupChildren(item).filter(isLive).map(toLink),
             } as NavGroup)
           : toLink(item),
       )

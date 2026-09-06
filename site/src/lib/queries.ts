@@ -29,7 +29,27 @@ export const NAVIGATION_QUERY = `*[_type == "navigation"][0]{
   mainNav[]{
     _type, label,
     _type == "navLink" => { linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
-    _type == "navGroup" => { children[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } }
+    _type == "navGroup" => {
+      autoClasses,
+      // One candidate link per class, carrying the PAGE's title. The page is
+      // the LONGEST slug that class-path starts on a "-" boundary - exact
+      // match usually, but Pre-K AM (pre-k-am) and PM share the classes/pre-k
+      // page, which no exact match can see (found 2026-08-29: the automatic
+      // dropdown shipped without a Pre-K link). The "-" sentinel keeps
+      // classes/pre-k from also claiming a hypothetical pre-kinder. Two
+      // classes on one page yield the same link twice; nav.ts dedupes. A
+      // class with no page yields null and is dropped - never a dead link.
+      autoClasses == true => {
+        "autoChildren": *[_type == "class"] | order(orderRank){
+          "p": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0]{
+            "label": title, "linkType": "page", "pageSlug": slug, "pageArchived": archived
+          }
+        }[defined(p)].p
+      },
+      children[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url }
+    }
   },
   headerCta{ show, label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url },
   footerColumns[]{ label, links[]{ label, linkType, "pageSlug": page->slug, "pageArchived": page->archived, url } },
@@ -59,17 +79,44 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     _type == "enrollmentCtaSection" => { "pageSlug": page->slug },
     _type == "testimonialSection" => {
       "items": select(
-        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role, photo },
-        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role, photo },
-        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role, photo },
-        source == "manual" => manualItems[]->{ quote, author, role, photo }
+        source == "featured" => *[_type == "testimonial" && featured == true] | order(orderRank){ quote, author, role, rating, photo },
+        source == "all" => *[_type == "testimonial"] | order(orderRank){ quote, author, role, rating, photo },
+        source == "tag" => *[_type == "testimonial" && ^.tag in tags] | order(orderRank){ quote, author, role, rating, photo },
+        source == "manual" => manualItems[]->{ quote, author, role, rating, photo }
       )
     },
     _type == "teacherSection" => {
-      "people": staff[]->{ name, honorific, role, email, photo, bio }
+      // "all" = the whole staff wall keeps itself current on a hire or a
+      // leave. "classTeacher" follows THIS page's class through the class doc
+      // (same longest-prefix "-"-sentinel slug rule as the automatic menu; ^
+      // climbs: section -> sections array -> page), so replacing a teacher on
+      // the class updates the card with no page edit. Two Pre-K classes share
+      // one page and one teacher; the bridge dedupes by _id.
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        source == "classTeacher" => *[_type == "class"
+            && string::startsWith("classes/" + slug.current + "-", ^.^.slug + "-")]
+          | order(orderRank) { "person": teacher->{ _id, name, honorific, role, email, photo, bio } }[defined(person)].person,
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
     },
     _type == "classCardsSection" => {
-      "classItems": classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current }
+      // "all" derives the row from the Classes list itself (same drag order),
+      // so a new class appears the moment it publishes; manual keeps the
+      // hand-picked list (the Pre-K page shows only its own two classes).
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
+      ),
+      // Same preview-fidelity rule as the calculator below: fees ride the
+      // page query so a draft fee change previews on the cards too.
+      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote, ageCutoffLabel }
     },
     _type == "faqSection" => {
       "items": select(
@@ -82,7 +129,95 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
     },
     _type == "tuitionTableSection" => {
       "classItems": *[_type == "class"] | order(orderRank){ name, days, time, age, monthly, annual, studentFee },
-      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+      "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote, ageCutoffLabel }
+    },
+    // Expanded HERE, not fetched by the component (2026-08-29). The calculator
+    // used to run its own cmsFetch, which reads the PUBLISHED perspective no
+    // matter who is rendering - so in the Studio preview a draft class showed
+    // up in the tuition TABLE (this query, draft-aware via previewFetch) while
+    // the calculator two sections down still offered the old four. Same page,
+    // two answers. Riding the page query gives both surfaces the same
+    // perspective; the component keeps its own fetch only as a fallback for
+    // renderers that do not come through this query (the hub body).
+    _type == "tuitionCalculatorSection" => {
+      "calcClasses": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
+      "calcFees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote, ageCutoffLabel }
+    }
+  }
+}`;
+
+// -----------------------------------------------------------------------------
+// Family Hub classrooms — every class, and the pages that group them
+// -----------------------------------------------------------------------------
+// ONE gated read that tells the hub what its class pages are: the `class`
+// documents in the Board's drag order, plus every hubPage that names classes on
+// it ("Classes on this page"). src/lib/hub-classrooms.ts turns the two lists
+// into the classroom pages. Sections are deliberately NOT here — the classroom
+// route fetches those for the one page it renders, so the rail and the home
+// tiles never pay for two handbooks' worth of content.
+export const HUB_CLASSROOMS_QUERY = `{
+  "classes": *[_type == "class" && defined(slug.current)] | order(orderRank){
+    "docId": _id,
+    "slug": slug.current, name, icon, color, days, time, age, monthly, annual,
+    studentFee, payId, studentFeePayId, helperScheduleUrl, photoAlbumUrl,
+    extraFacts[]{ label, value },
+    // The PUBLIC page for this class, so the hub can offer "See the full
+    // program" without knowing the page list. Same longest-prefix rule the
+    // Classes menu uses (NAVIGATION_QUERY above): the "-" sentinel lets
+    // classes/pre-k claim pre-k-am and pre-k-pm without claiming pre-kinder.
+    // A class with no public page yields null, and the pill is not shown.
+    "publicSlug": *[_type == "page" && archived != true
+      && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+      | order(length(slug) desc)[0].slug
+  },
+  "pages": *[_type == "hubPage" && count(classes) > 0 && archived != true]{
+    hubKey, slug, title, heading, navIcon,
+    "classSlugs": classes[]->slug.current
+  },
+  // Which curriculum PDFs exist, by the key they are filed under (a class slug,
+  // or a whole classroom's address when one guide covers several classes). It
+  // rides along here rather than in its own read: same cache tier, same kind of
+  // board content, and a classroom page needs both in the same breath.
+  "guides": *[_type == "curriculumGuide" && defined(class)].class
+}`;
+
+/**
+ * One classroom page's editable content, by its address.
+ *
+ * Matches `hubKey` OR `slug`, because a classroom page is either one that came
+ * with the site (twos-threes, pre-k) or one the Board made for a class it
+ * added. The projection mirrors HUB_PAGE_QUERY so the same sections render.
+ */
+export const HUB_CLASSROOM_PAGE_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key) && archived != true][0]{
+  _id, title, heading, intro, navIcon, _updatedAt,
+  "handbookUrl": handbookFile.asset->url,
+  "classSlugs": classes[]->slug.current,
+  sections[]{
+    ...,
+    actions[]{ label, style, linkType, "pageSlug": page->slug, url },
+    _type == "faqSection" => {
+      "items": select(
+        source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
+        source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
+      )
     }
   }
 }`;
@@ -96,7 +231,7 @@ export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug == $slug][0]{
 // An archived hub page drops out: a built-in page falls back to the content it
 // ships with, so the hub can never go blank.
 export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archived != true][0]{
-  heading, intro, _updatedAt,
+  _id, heading, intro, hiddenWidgets, widgetText, _updatedAt,
   "handbookUrl": handbookFile.asset->url,
   sections[]{
     ...,
@@ -105,6 +240,24 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
       "items": select(
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
       )
     }
   }
@@ -119,7 +272,7 @@ export const HUB_PAGE_QUERY = `*[_type == "hubPage" && hubKey == $key && archive
  * shadow the real page. Only genuinely free-standing pages match.
  */
 export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && !defined(hubKey) && archived != true][0]{
-  title, heading, intro, navIcon, _updatedAt,
+  _id, title, heading, intro, navIcon, _updatedAt,
   sections[]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
@@ -127,6 +280,24 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
       "items": select(
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
       )
     }
   }
@@ -141,6 +312,7 @@ export const HUB_PAGE_BY_SLUG_QUERY = `*[_type == "hubPage" && slug == $slug && 
  */
 export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key || slug == $key)][0]{
   _id, title, heading, intro,
+  "classSlugs": classes[]->slug.current,
   sections[]{
     ...,
     actions[]{ label, style, linkType, "pageSlug": page->slug, url },
@@ -148,6 +320,24 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
       "items": select(
         source == "category" => *[_type == "faqItem" && category == ^.category] | order(coalesce(orderRank, "~") asc, order asc){ question, answer },
         source == "inline" => inlineItems[]{ question, answer }
+      )
+    },
+    _type == "classCardsSection" => {
+      "classItems": select(
+        source == "all" => *[_type == "class"] | order(orderRank){ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug },
+        classes[]->{ name, color, monthly, days, time, age, studentFee, "slug": slug.current,
+          "publicSlug": *[_type == "page" && archived != true
+            && string::startsWith("classes/" + ^.slug.current + "-", slug + "-")]
+            | order(length(slug) desc)[0].slug }
+      )
+    },
+    _type == "teacherSection" => {
+      "people": select(
+        source == "all" => *[_type == "staff"] | order(coalesce(orderRank, _createdAt) asc) { _id, name, honorific, role, email, photo, bio },
+        staff[]->{ _id, name, honorific, role, email, photo, bio }
       )
     }
   }
@@ -159,7 +349,7 @@ export const HUB_PAGE_PREVIEW_QUERY = `*[_type == "hubPage" && (hubKey == $key |
  * fallback wording live in HubTourModal.astro.
  */
 export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
-  enabled, version,
+  enabled, version, hiddenSteps,
   welcomeTitle, welcomeBody, navigateTitle, navigateBody, classesTitle, classesBody,
   helperTitle, helperBody, updatesTitle, updatesBody, moneyTitle, moneyBody,
   searchTitle, searchBody, helpTitle, helpBody
@@ -171,9 +361,16 @@ export const HUB_TOUR_QUERY = `*[_type == "hubTour"][0]{
  * resolver (src/lib/hub-nav-doc.ts) drops anything that dereferences to
  * nothing and falls back to the committed menu when the doc yields nothing.
  */
+// The rail's Follow WCP! block. Same Site settings doc the public footer
+// reads, cut down to the three PII-free fields the rail needs so it can ride
+// the Board-content cache (the full SITE_SETTINGS_QUERY carries contact info
+// that has no business in a shared module cache).
+export const HUB_SOCIAL_QUERY = `*[_type == "siteSettings"][0]{ facebook, instagram, showSocials }`;
+
 export const HUB_NAV_MENU_QUERY = `*[_type == "hubNavMenu"][0]{
+  tabBar,
   groups[]{
-    label, accent,
+    label, accent, autoClasses,
     links[]{
       _type, target, label, hidden, url, icon,
       "page": page->{ title, heading, slug, navIcon }
@@ -270,13 +467,26 @@ export const OPEN_JOBS_QUERY = `*[_type == "jobPosting" && active == true] | ord
 export const RESOURCES_QUERY = `*[_type == "resource"] | order(orderRank){ title, category, description, url, "fileUrl": file.asset->url }`;
 export const PHOTO_ALBUM_QUERY = `*[_id == $id][0]{ title, description, photos }`;
 
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, founded, tagline, url, phone, emailGeneral, emailAdmin, emailTreasurer, street, city, state, zip, parkingNote, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, googleRating, googleReviews, googleUrl, license, showPhone, showEmail, showSocials, logoOverride, openingHours[]{ days, opens, closes } }`;
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{ name, shortName, founded, tagline, url, phone, emailGeneral, emailAdmin, emailContact, emailTreasurer, street, city, state, zip, parkingNote, venueNote, summerTourNote, secularLine, schoolYearLabel, enrollmentMode, enrollmentDeadline, closureStatement, yearStart, yearEnd, firstDay, facebook, instagram, licenseAuthority, googleRating, googleReviews, googleUrl, license, showPhone, showEmail, showSocials, logoOverride, openingHours[]{ days, opens, closes } }`;
 
 // The Family Hub home's store card (its own singleton so it lives in the
 // Family Hub workspace; moved out of Site Settings 2026-08-23).
 // Each product's picture prefers the uploaded photo; the legacy hotlinked
 // URL is the fallback for anything unconverted (field audit 2026-08-23).
-export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, storeProducts[]{ title, price, url, "image": coalesce(photo.asset->url, image) } }`;
+// The store FACTS the fundraising surfaces need (sheet row name, goal, since-
+// label) - tiny and PII-free, rides the board-content cache.
+export const STORE_FACTS_QUERY = `*[_type == "hubStore"][0]{ salesRowName, salesGoal, openedLabel }`;
+
+// Site settings' weather-closure statement (already a Board field on the
+// PUBLIC side) - the hub's calendar + health pages read it too (W1.4), so the
+// district the school follows is stated in ONE place.
+// The Administrator's address (Site settings), for hub surfaces that offer a
+// mailto - the committed site.ts value is the fallback.
+export const ADMIN_EMAIL_QUERY = `*[_type == "siteSettings"][0].emailAdmin`;
+
+export const WEATHER_CLOSURE_QUERY = `*[_type == "siteSettings"][0].closureStatement`;
+
+export const HUB_STORE_QUERY = `*[_type == "hubStore"][0]{ storeUrl, storeHeadline, storeTagline, shippingLine, featuredCollection, storeProducts[]{ title, price, url, "image": coalesce(photo.asset->url, image) } }`;
 
 /**
  * The handful of strings on code-owned utility pages (thank-you, 404, the
@@ -300,7 +510,9 @@ export const HUB_DELIGHTS_QUERY = `*[_type == "hubDelights"][0]{
 export const FAMILY_HANDBOOK_URL_QUERY = `*[_type == "hubSettings"][0].familyHandbook.asset->url`;
 
 /** The hub home's numbers from Hub settings (family-count override). */
-export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount }`;
+export const HUB_SETTINGS_HOME_QUERY = `*[_type == "hubSettings"][0]{ familyCount, welcomeLine,
+  "handbookCoverUrl": familyHandbookCover.asset->url,
+  superHelper{ name, blurb, footnote, requirements[]{ icon, title, detail, url } } }`;
 
 /** The "Seasonal touches" dropdown (auto / fall / winter / spring / summer / off). */
 export const SITE_SETTINGS_SEASON_QUERY = `*[_type == "siteSettings"][0].season`;
@@ -340,15 +552,39 @@ export const OPERATING_BUDGET_QUERY = `*[_type == "operatingBudget"][0]{
  */
 export const COOP_GUIDANCE_QUERY = `*[_type == "coopGuidance"][0]{
   principles[]{ icon, title, body },
+  sections[]{ key, label, blurb },
   teacherAsks,
   repAsks
 }`;
 
 /**
+ * The co-op's SEATS (Studio → Family Hub → Co-op roles) — the org chart's own
+ * shape, in drag order.
+ *
+ * This used to be a committed list (src/data/hub/org-holders.ts), which made
+ * the co-op's structure the last thing on the hub a volunteer could not change.
+ * The chart is derived from these rows now: `tier` says which part of the chart
+ * draws the seat, `reportsTo` draws the line to the seat above it, and
+ * `perClass` marks the Class Rep seat that expands to one card per live class.
+ * The rules are pure and unit-tested in src/lib/hub-org.ts.
+ *
+ * No PII — these are job definitions. The PEOPLE are ROLE_HOLDERS_QUERY.
+ */
+export const ORG_SEATS_QUERY = `*[_type == "coopRole"] | order(orderRank){
+  _id, name, tier, icon, team, stipend, body, perClass,
+  "reportsTo": reportsTo._ref
+}`;
+
+/**
  * WHO holds each co-op role this year (Studio → Family Hub → Who's who), for
- * the org chart and the class-rep cards. The chart's SHAPE stays in code
- * (src/data/hub/org-holders.ts); these documents supply only the people, so the
- * Board can do the post-election update without a deploy.
+ * the org chart and the class-rep cards. The SEATS are ORG_SEATS_QUERY; these
+ * documents supply only the people, so the Board can do the post-election
+ * update without a deploy.
+ *
+ * The join is `seat` (a reference), which survives renaming a role. `forClass`
+ * picks out WHICH class a rep looks after, because one Class Rep seat covers
+ * them all. `role` is the label these documents stored before the seats became
+ * documents, kept as a second join key so an unmigrated row still resolves.
  *
  * `contactFrom` resolves the linked Directory entry inline, so a class rep's
  * email and phone are typed once (in the Directory) and reused here. The
@@ -357,7 +593,10 @@ export const COOP_GUIDANCE_QUERY = `*[_type == "coopGuidance"][0]{
  *
  * CONTAINS PII once a rep is linked — never cache this result.
  */
-export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && defined(role)]{
+export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && (defined(seat) || defined(role))]{
+  _id,
+  "seat": seat._ref,
+  "forClass": forClass->slug.current,
   role,
   person,
   email,
@@ -399,10 +638,10 @@ export const COOP_HOURS_FOR_FAMILY_QUERY = `*[_type == "hoursLog" && lower(famil
 // Tuition calculator: class prices + the one-time enrollment fees.
 export const TUITION_CALC_QUERY = `{
   "classes": *[_type == "class"] | order(orderRank){ name, "slug": slug.current, color, monthly, studentFee },
-  "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee }
+  "fees": *[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote, ageCutoffLabel }
 }`;
 
-export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee }`;
+export const FEE_SCHEDULE_QUERY = `*[_type == "feeSchedule"][0]{ registrationFee, participationFee, schoolYearMonths, depositNote, ageCutoffLabel }`;
 
 // Everything the printable enrollment packet assembles: school facts + key
 // dates, the classes with ages/schedule/tuition, the fee schedule, and the
@@ -427,7 +666,9 @@ export const ENROLLMENT_PACKET_QUERY = `{
  *  ids, student-fee bands, and the payment FAQ. Falls back to hardcoded values. */
 export const FEE_SCHEDULE_HUB_QUERY = `*[_type == "feeSchedule"][0]{
   registrationFee, registrationNote, registrationPayId,
+  registrationTitle, registrationWhen, registrationAction,
   participationFee, participationNote, participationPayId,
+  participationTitle, participationWhen, participationAction,
   studentFeeBands[]{ label, amount, payId },
   paymentTerms[]{ icon, question, answer }
 }`;

@@ -25,8 +25,61 @@ export const coopGuidance = defineType({
   groups: [
     { name: 'principles', title: 'The four rules', default: true },
     { name: 'asks', title: 'Who to ask about what' },
+    { name: 'sections', title: 'Job-list headings' },
   ],
   fields: [
+    // The five headings the Co-op Jobs page groups the job list under. The
+    // GROUPS themselves are fixed (they are the shapes the org chart can draw —
+    // see ORG_TIERS in src/lib/hub-org.ts), but what each is CALLED, and the
+    // sentence under it, are the school's words. A school that calls its chairs
+    // "Programme Leads" says so here instead of asking for a code change.
+    defineField({
+      name: 'sections',
+      title: 'Job-list headings',
+      type: 'array',
+      group: 'sections',
+      description:
+        'What each group of roles is called on the Co-op Jobs page. Leave a heading out and the standard wording is used.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'orgSection',
+          fields: [
+            defineField({
+              name: 'key',
+              title: 'Group',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Executive Board', value: 'board' },
+                  { title: 'Paid staff', value: 'staff' },
+                  { title: 'Cabinet chairs', value: 'chairs' },
+                  { title: 'Class representatives', value: 'reps' },
+                  { title: 'Committees', value: 'committee' },
+                ],
+                layout: 'dropdown',
+              },
+              validation: (R) => R.required().error('Pick which group this heading is for.'),
+            }),
+            defineField({
+              name: 'label',
+              title: 'Heading',
+              type: 'string',
+              description: 'e.g. "Executive Board".',
+              validation: (R) => R.required().error('Give the group a heading.'),
+            }),
+            defineField({
+              name: 'blurb',
+              title: 'Sentence under the heading',
+              type: 'text',
+              rows: 2,
+            }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'blurb' } },
+        }),
+      ],
+      validation: (R) => R.max(5).warning('There are only five groups.'),
+    }),
     defineField({
       name: 'principles',
       title: 'The four rules',

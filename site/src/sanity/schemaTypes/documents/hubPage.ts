@@ -3,6 +3,10 @@ import { HUB_SECTION_TYPE_NAMES, sectionInsertMenu } from '../sections';
 import { ICON_NAMES } from '../objects/_shared';
 import { RESERVED_HUB_SLUGS } from '../../../lib/hub-pages';
 import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
+import { widgetOptionsFor } from '../../../lib/hub-widgets';
+import { HubWidgetToggles } from '../../components/HubWidgetToggles';
+import { HubWidgetTextInput } from '../../components/HubWidgetTextInput';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 // =============================================================================
 // hubPage — a Family Hub page, built from sections (GATED, editable)
@@ -17,6 +21,13 @@ import { PUBLISH_AT_GROUP, publishAtField } from '../_publishAt';
 // =============================================================================
 export const hubPage = defineType({
   name: 'hubPage',
+  // Studio search finds these pages by what families see (heading/intro), not
+  // just the internal name.
+  __experimental_search: [
+    { path: 'title', weight: 5 },
+    { path: 'heading', weight: 4 },
+    { path: 'intro', weight: 2 },
+  ],
   title: 'Family Hub page',
   type: 'document',
   icon: () => '🔒',
@@ -43,6 +54,22 @@ export const hubPage = defineType({
       group: 'settings',
       description:
         'Only for the pages that came with the site. Pick the one this content belongs to, and set it once — do not change it later. Making a BRAND-NEW page instead? Leave this empty and fill in the web address below.',
+      validation: (R) =>
+        R.custom(async (value, context) => {
+          // "Set it once — do not change it later" is now ENFORCED, not just
+          // described: once a published version has a hubKey, changing it
+          // blocks publish (the built-in routes key on it; a changed key
+          // orphans the page's content). Clearing back to the published value
+          // always passes.
+          const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
+          if (!id) return true;
+          const client = context.getClient({ apiVersion: '2025-01-01' });
+          const published = await client.fetch<string | null>(`*[_id == $id][0].hubKey`, { id });
+          if (published && value !== published) {
+            return `This page is published as “${published}”. The hub key is set once — to move content, make a new page instead.`;
+          }
+          return true;
+        }),
       options: {
         list: [
           { title: 'Hub home', value: 'home' },
@@ -54,6 +81,8 @@ export const hubPage = defineType({
           { title: 'Fundraising', value: 'fundraising' },
           { title: 'Health', value: 'health' },
           { title: 'Directory', value: 'directory' },
+          { title: 'Getting Started', value: 'getting-started' },
+          { title: 'Become a Super Helper', value: 'super-helper' },
           // One entry per PAGE (both class pairs share one page each; the
           // per-class keys were merged away 2026-08-24).
           { title: 'Twos & Threes classroom', value: 'twos-threes' },
@@ -93,17 +122,78 @@ export const hubPage = defineType({
             // Two pages at one address: the site can only serve one of them,
             // and which one it picks is arbitrary. Catch it here instead.
             const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
-            const taken = await context
-              .getClient({ apiVersion: '2025-01-01' })
-              .fetch<string | null>(
-                `*[_type == "hubPage" && slug == $slug && !(_id in [$id, "drafts." + $id])][0].title`,
-                { slug: value, id },
-              );
-            return taken
-              ? `“${value}” is already used by the page “${taken}”. Pick a different web address.`
-              : true;
+            const client = context.getClient({ apiVersion: '2025-01-01' });
+            const taken = await client.fetch<string | null>(
+              `*[_type == "hubPage" && slug == $slug && !(_id in [$id, "drafts." + $id])][0].title`,
+              { slug: value, id },
+            );
+            if (taken) {
+              return `“${value}” is already used by the page “${taken}”. Pick a different web address.`;
+            }
+
+            // Every class already has a hub page at its own address, whether or
+            // not anyone made one (src/lib/hub-classrooms.ts). A page taking a
+            // class's address would never show, because the class page answers
+            // there first — UNLESS this page IS that class's classroom page,
+            // which is exactly how a new class gets a handbook.
+            const owner = await client.fetch<string | null>(
+              `*[_type == "class" && slug.current == $slug][0].name`,
+              { slug: value },
+            );
+            if (owner) {
+              const mine = ((context.document as { classes?: { _ref?: string }[] })?.classes ?? [])
+                .map((r) => r?._ref)
+                .filter(Boolean);
+              const isMine =
+                mine.length > 0 &&
+                (await client.fetch<boolean>(
+                  `count(*[_type == "class" && slug.current == $slug && _id in $ids]) > 0`,
+                  { slug: value, ids: mine },
+                ));
+              if (!isMine) {
+                return `“${value}” is the ${owner} class's own page address. Add ${owner} under “Classes on this page” to make this its classroom page, or pick a different web address.`;
+              }
+            }
+            return true;
           }),
     }),
+    // --- Classroom pages ----------------------------------------------------
+    // A hub page becomes the CLASSROOM page for the classes named here. Twos
+    // and Threes share one (same teacher, same handbook), and so do Pre-K AM
+    // and PM. A class that no page names still gets a hub page — the site
+    // builds it from the class entry alone — so this field is only for putting
+    // two or more classes together, or for giving one class a handbook.
+    defineField({
+      name: 'classes',
+      title: 'Classes on this page',
+      type: 'array',
+      group: 'settings',
+      of: [defineArrayMember({ type: 'reference', to: [{ type: 'class' }] })],
+      description:
+        'Leave empty for a normal page. Pick one or more classes to make this their classroom page: the class facts, teacher, pay button and photo album appear at the top, and everything you add below becomes their handbook. Classes that share a teacher and a handbook go on one page together.',
+      validation: (R) =>
+        R.custom(async (value, context) => {
+          const refs = (value ?? []) as { _ref?: string }[];
+          if (refs.length === 0) return true;
+
+          // Two pages claiming one class: the site can only show it on one, so
+          // catch it here instead of letting the other page look broken.
+          const id = context.document?._id?.replace(/^drafts\./, '') ?? '';
+          const ids = refs.map((r) => r?._ref).filter(Boolean);
+          const clash = await context
+            .getClient({ apiVersion: '2025-01-01' })
+            .fetch<{ title?: string; name?: string } | null>(
+              `*[_type == "hubPage" && !(_id in [$id, "drafts." + $id]) && count(classes[@._ref in $ids]) > 0][0]{
+                 title, "name": classes[@._ref in $ids][0]->name
+               }`,
+              { id, ids },
+            );
+          return clash
+            ? `“${clash.name ?? 'That class'}” is already on the page “${clash.title ?? 'another hub page'}”. A class can only have one classroom page.`
+            : true;
+        }),
+    }),
+
     defineField({
       name: 'navIcon',
       title: 'Page icon',
@@ -112,6 +202,7 @@ export const hubPage = defineType({
       description:
         'The little picture at the top of the page, and beside its menu link if you add one (Family Hub menu).',
       options: { list: ICON_NAMES.map((v) => ({ title: v, value: v })) },
+      components: { input: IconPickerInput },
       initialValue: 'file-text',
     }),
 
@@ -152,7 +243,11 @@ export const hubPage = defineType({
       group: 'content',
       options: { accept: 'application/pdf' },
       description:
-        'The teacher’s own handbook, as a PDF. When set, a “Download the handbook (PDF)” button appears at the top of this class page. Class pages only.',
+        'The teacher’s own handbook, as a PDF. When set, a “Download the handbook (PDF)” button appears at the top of this class page.',
+      // Class pages only, and now the field agrees: it hides unless the doc
+      // names classes ("how come every page has this field", 2026-08-30).
+      hidden: ({ document }) =>
+        !((document as { classes?: unknown[] } | undefined)?.classes?.length ?? 0),
     }),
     defineField({
       name: 'sections',
@@ -164,6 +259,46 @@ export const hubPage = defineType({
       // hub-safe palette (see sections/index.ts).
       options: sectionInsertMenu(HUB_SECTION_TYPE_NAMES),
       description: 'The page body. Add, remove, and drag to reorder sections.',
+    }),
+
+    defineField({
+      name: 'hiddenWidgets',
+      title: 'Widgets',
+      type: 'array',
+      of: [{ type: 'string' }],
+      group: 'content',
+      description:
+        'Switch the built-in widgets on this page on or off. Everything is on until you switch it off.',
+      // Stores the OFF list (empty/missing = all on) so old docs and future
+      // widgets need no migration; the input shows on/off switches instead.
+      // Only pages with registered widgets show the field at all — the
+      // registry is src/lib/hub-widgets.ts, shared with the page render.
+      components: { input: HubWidgetToggles },
+      hidden: ({ document }) =>
+        widgetOptionsFor((document as { hubKey?: string } | undefined)?.hubKey).length === 0,
+    }),
+    defineField({
+      name: 'widgetText',
+      title: 'Widget wording',
+      type: 'array',
+      group: 'content',
+      description:
+        'Rewrite a widget’s title or one-liner. Empty boxes keep the wording the site shipped with.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'widget', title: 'Widget', type: 'string' }),
+            defineField({ name: 'title', title: 'Title', type: 'string' }),
+            defineField({ name: 'blurb', title: 'One-liner', type: 'string' }),
+          ],
+        }),
+      ],
+      components: { input: HubWidgetTextInput },
+      hidden: ({ document }) =>
+        widgetOptionsFor((document as { hubKey?: string } | undefined)?.hubKey).filter(
+          (o) => o.text,
+        ).length === 0,
     }),
 
     // Keep the page a DRAFT and it publishes itself at this time (within the

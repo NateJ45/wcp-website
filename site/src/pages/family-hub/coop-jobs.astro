@@ -2,9 +2,12 @@
 /* ============================================================================
    Family Hub — Co-op Jobs (GATED)
    ============================================================================
-   How WCP is organized + the role descriptions (from src/data/hub/coop-roles.ts).
-   Role definitions only — who holds each job is live assignment data that loads
-   from Sanity behind the gate, never hardcoded here.
+   How WCP is organized + the role descriptions. Both the JOBS and the org
+   chart's shape come from the `coopRole` documents now (Studio → Family Hub →
+   Co-op roles), so a school that renames a role, adds one, or retires one does
+   it itself. Who HOLDS each job is live assignment data that loads from Sanity
+   behind the gate, never hardcoded here. src/data/hub/coop-roles.ts and
+   src/data/hub/org-holders.ts are the fallbacks for an unreachable Sanity.
    ============================================================================ */
 export const prerender = false;
 
@@ -21,22 +24,35 @@ import {
   coopPrinciples as coopPrinciplesFallback,
   coopTiers as coopTiersFallback,
 } from '@/data/hub/coop-roles';
+import { orgSeats as seatsFallback } from '@/data/hub/org-holders';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { HUB_PAGE_QUERY, COOP_GUIDANCE_QUERY } from '@/lib/queries';
+import { HUB_PAGE_QUERY, COOP_GUIDANCE_QUERY, ORG_SEATS_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
+import { toSeats, ORG_TIERS, type OrgSeatRow, type OrgTier } from '@/lib/hub-org';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
 
-const TIER_META: Record<string, { label: string; blurb: string }> = {
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
+
+// The standard headings for the five groups. A school renames any of them in
+// the Studio (How the co-op works → Job-list headings); these are what shows
+// until it does.
+const TIER_META: Record<OrgTier, { label: string; blurb: string }> = {
   board: {
     label: 'Executive Board',
     blurb:
       'Elected each spring, serving one-year terms. Meets monthly to set policy, manage finances, and oversee school operations.',
   },
+  staff: { label: 'Paid Staff', blurb: 'The school’s only paid employees.' },
   chairs: {
     label: 'Cabinet Chairs',
     blurb: 'Each chair leads a small team of co-op members and reports to a Board officer.',
@@ -51,62 +67,70 @@ const TIER_META: Record<string, { label: string; blurb: string }> = {
       'The hands-on roles that keep everything running — most are light, predictable commitments.',
   },
 };
-const TIER_ORDER = ['board', 'chairs', 'reps', 'committee'];
-
-interface CoopRoleDoc {
-  name: string;
-  tier: string;
-  icon?: string;
-  team?: string;
-  reportsTo?: string;
-  stipend?: string;
-  body?: string;
-}
+// Paid staff appear on the ORG CHART but not in this list: the page's whole
+// claim is that every other role is filled by a parent volunteer, so a teacher
+// does not belong among the jobs a family signs up for.
+const LISTED_TIERS = ORG_TIERS.filter((t) => t !== 'staff');
 // Independent of the roles read — start now, await later (2026-07 hub-speed
 // pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(
-  HUB_PAGE_QUERY,
-  { key: 'coop-jobs' },
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
+const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'coop-jobs',
+}).catch(() => null);
 
 // Independent of the roles read — start it alongside, await after.
-const guidancePromise = sanityFetch<{ principles?: typeof coopPrinciplesFallback } | null>(
-  COOP_GUIDANCE_QUERY,
-  {},
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
-
-let coopTiers = coopTiersFallback;
-try {
-  const roleDocs = await sanityFetch<CoopRoleDoc[]>(
-    `*[_type == "coopRole"] | order(orderRank){ name, tier, icon, team, reportsTo, stipend, body }`,
-  );
-  if (roleDocs.length > 0) {
-    coopTiers = TIER_ORDER.filter((t) => roleDocs.some((r) => r.tier === t)).map((t) => ({
-      key: t,
-      label: TIER_META[t]?.label ?? t,
-      blurb: TIER_META[t]?.blurb ?? '',
-      roles: roleDocs
-        .filter((r) => r.tier === t)
-        .map((r) => ({
-          name: r.name,
-          icon: r.icon ?? 'users',
-          team: r.team,
-          reportsTo: r.reportsTo,
-          stipend: r.stipend,
-          body: r.body ?? '',
-        })),
-    }));
-  }
-} catch {
-  coopTiers = coopTiersFallback;
+interface OrgSectionHeading {
+  key?: string;
+  label?: string;
+  blurb?: string;
 }
+const guidancePromise = sanityFetch<{
+  principles?: typeof coopPrinciplesFallback;
+  sections?: OrgSectionHeading[];
+} | null>(COOP_GUIDANCE_QUERY, {}, { cache: BOARD_CONTENT_CACHE }).catch(() => null);
+
+// ONE read for both the job list and the chart: the same seats drive both, so
+// they can never disagree about what the co-op's roles are.
+const seatRows = await sanityFetch<OrgSeatRow[]>(ORG_SEATS_QUERY).catch(() => null);
+const seats = seatRows?.length ? toSeats(seatRows) : seatsFallback;
+// The seat a role reports to, by name — the "Reports to VP" tag. Derived from
+// the reporting line rather than typed, so it can never name a deleted role.
+const seatNames = new Map(seats.map((s) => [s.id, s.name]));
 
 const guidance = await guidancePromise;
 // A cleared list falls back rather than dropping the row entirely — the four
 // rules are the co-op commitment, not decoration.
 const coopPrinciples = guidance?.principles?.length ? guidance.principles : coopPrinciplesFallback;
+
+// The Board's own headings for the five groups, where it set any.
+const headings = new Map<string, { label: string; blurb: string }>(
+  (guidance?.sections ?? [])
+    .filter((s) => s?.key && s?.label)
+    .map((s) => [s.key as string, { label: s.label as string, blurb: s.blurb ?? '' }]),
+);
+const heading = (key: OrgTier) => headings.get(key) ?? TIER_META[key];
+const chartLabels = Object.fromEntries(
+  ORG_TIERS.map((t) => [t, headings.get(t)?.label ?? TIER_META[t].label]),
+);
+
+// With Sanity unreachable the committed DESCRIPTIONS are richer than the
+// committed seats (which carry the chart's shape, not the job write-ups), so
+// the offline page keeps the full job list rather than a list of bare titles.
+const derivedTiers = LISTED_TIERS.filter((t) => seats.some((s) => s.tier === t)).map((t) => ({
+  key: t,
+  label: heading(t).label,
+  blurb: heading(t).blurb,
+  roles: seats
+    .filter((s) => s.tier === t)
+    .map((s) => ({
+      name: s.name,
+      icon: s.icon,
+      team: s.team,
+      reportsTo: s.reportsTo ? `Reports to ${seatNames.get(s.reportsTo)}` : undefined,
+      stipend: s.stipend,
+      body: s.body ?? '',
+    })),
+}));
+const coopTiers = seatRows?.length ? derivedTiers : coopTiersFallback;
 
 const doc: HubPageDoc | null = await hubDocPromise;
 const title = doc?.heading || 'Co-op Jobs';
@@ -115,7 +139,12 @@ const intro =
   'How WCP is run, the roles families fill each year, and the org chart that ties it together.';
 ---
 
-<HubShell title={title} bare pageTitle="Co-op Jobs — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Co-op Jobs — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="heart-handshake" />
@@ -192,7 +221,10 @@ const intro =
           the teachers and administrator is a parent volunteer.
         </p>
         <HubCard class="mt-6">
-          <OrgChart />
+          <OrgChart
+            labels={chartLabels}
+            blurbs={Object.fromEntries(ORG_TIERS.map((t) => [t, heading(t).blurb]))}
+          />
         </HubCard>
       </div>
 
@@ -206,7 +238,7 @@ const intro =
         </span>
         <p class="text-lg font-bold text-white">Questions about co-op jobs?</p>
         <p class="mt-2 max-w-xl leading-relaxed text-white/85">
-          The Secretary is the first stop for job questions, swaps, and clarifications — she’ll
+          The Secretary is the first stop for job questions, swaps, and clarifications — they’ll
           route it to the right chair or raise it to the Board.
         </p>
         <div class="mt-6 flex flex-wrap gap-3">

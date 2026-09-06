@@ -32,6 +32,20 @@ export const richProse = defineType({
         ],
         annotations: [
           {
+            name: 'internalLink',
+            type: 'object',
+            title: 'Page link',
+            fields: [
+              {
+                name: 'reference',
+                type: 'reference',
+                title: 'Page',
+                to: [{ type: 'page' }, { type: 'post' }, { type: 'hubPage' }],
+                validation: (R) => R.required(),
+              },
+            ],
+          },
+          {
             name: 'link',
             type: 'object',
             title: 'Link',

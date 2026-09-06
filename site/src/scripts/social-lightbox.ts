@@ -110,5 +110,3 @@ function setup() {
 }
 
 onPageLoad(setup);
-
-export {};

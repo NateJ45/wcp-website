@@ -9,6 +9,7 @@
    announcements.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import { hubEditAttr } from '@/lib/hub-preview';
 import { sanityFetch } from '@/lib/sanity';
 import { EVENT_TZ } from '@/lib/events';
 import { formatShortDate } from '@/lib/hub-dashboard-dates';
@@ -32,11 +33,17 @@ try {
 }
 
 const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="newspaper"
-  title="Announcements"
+  title={heading ?? 'Announcements'}
   seeAllHref="/family-hub/updates"
   postit
   empty={updates.length === 0}
@@ -51,7 +58,10 @@ const fmt = (iso: string) => formatShortDate(iso, EVENT_TZ);
       updates.map((u) => (
         /* data-published feeds the "new since your last visit" pills
            (src/scripts/hub-fresh.ts). */
-        <li data-published={u.publishedAt}>
+        <li
+          data-published={u.publishedAt}
+          data-sanity={hubEditAttr(Astro.locals, u._id, 'update', 'title')}
+        >
           {u.slug ? (
             <a
               href={`/family-hub/updates/${u.slug}`}

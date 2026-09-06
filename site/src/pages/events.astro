@@ -10,6 +10,7 @@
 export const prerender = true;
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import EventsListing from '@/components/EventsListing.astro';
 import { cmsFetch, getSiteSettings } from '@/lib/cms';
 import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY } from '@/lib/queries';
@@ -111,7 +112,7 @@ const eventsJsonLd = events.flatMap((e) => {
         <p class="mt-4">
           <a
             class="wcp-press inline-block rounded-full bg-amber px-6 py-2.5 font-bold text-[#01203a] no-underline"
-            href="/virtual-tour#sec-pp-tour-form"
+            href={TOUR_HREF}
           >
             Schedule a Tour
           </a>

@@ -28,9 +28,17 @@ import Icon from '@/components/Icon.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_TOUR_QUERY } from '@/lib/queries';
 
+interface Props {
+  /** The classes a family can pick, from the `class` documents. Same list the
+      home picker shows, so the tour learns a new class by itself. */
+  classes: { slug: string; label: string }[];
+}
+const { classes } = Astro.props;
+
 interface TourDoc {
   enabled?: boolean;
   version?: string;
+  hiddenSteps?: string[];
   [key: string]: unknown;
 }
 let doc: TourDoc | null = null;
@@ -51,7 +59,7 @@ const t = (key: string, fallback: string): string => {
 
 // The six steps. `icon` is decorative. Steps 2 and 3 add fixed interactive or
 // responsive content below the Board-editable text (see the markup).
-const STEPS = [
+const ALL_STEPS = [
   {
     key: 'welcome',
     icon: 'sun',
@@ -137,12 +145,12 @@ const STEPS = [
   },
 ];
 
-const CLASS_CHIPS = [
-  { slug: 'twos', label: 'Twos' },
-  { slug: 'threes', label: 'Threes' },
-  { slug: 'pre-k-am', label: 'Pre-K AM' },
-  { slug: 'pre-k-pm', label: 'Pre-K PM' },
-];
+// The Board can leave steps out (Studio → First-visit tour → "Steps to skip");
+// the welcome stays unless they really mean it. An unknown value is ignored.
+const hidden = new Set(
+  Array.isArray(doc?.hiddenSteps) ? doc.hiddenSteps.filter((v) => typeof v === 'string') : [],
+);
+const STEPS = ALL_STEPS.filter((st) => !hidden.has(st.key));
 ---
 
 <div
@@ -229,7 +237,7 @@ const CLASS_CHIPS = [
 
           {step.key === 'classes' && (
             <div class="mt-3 flex flex-wrap gap-2">
-              {CLASS_CHIPS.map((c) => (
+              {classes.map((c) => (
                 <button
                   type="button"
                   data-tour-class-pick={c.slug}

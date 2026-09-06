@@ -30,6 +30,7 @@ interface Props {
   customFields?: CustomFormField[];
 }
 import { FIELD_CLASS } from '@/lib/field-classes';
+import { cmsFetch } from '@/lib/cms';
 import type { CustomFormField } from '@/lib/custom-form-fields';
 
 const {
@@ -57,6 +58,24 @@ type Field =
   | { kind: 'select'; name: string; label: string; required?: boolean; options: string[] }
   | { kind: 'checkboxes'; name: string; label: string; options: string[] };
 
+// The class-interest checklists DERIVE from the class documents, so a fifth
+// class appears on the forms the day it publishes (the two hand-typed lists
+// here had already drifted from each other). The committed names are the
+// read-failed fallback.
+let classOptions = ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM'];
+try {
+  const names = await cmsFetch<(string | null)[]>(
+    `*[_type == "class"] | order(orderRank).name`,
+    {},
+    [],
+  );
+  const usable = (names ?? []).filter((n): n is string => Boolean(n && n.trim()));
+  if (usable.length > 0) classOptions = usable;
+} catch {
+  /* fallback stands */
+}
+const classInterestOptions = [...classOptions, 'Not sure yet'];
+
 const VARIANTS: Record<string, Field[]> = {
   general: [
     { kind: 'text', name: 'subject', label: 'Subject', required: true },
@@ -72,7 +91,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class interested in',
-      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM', 'Not sure yet'],
+      options: classInterestOptions,
     },
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },
     { kind: 'textarea', name: 'message', label: 'Anything else you’d like us to know' },
@@ -84,7 +103,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class you’re hoping for',
-      options: ['Twos', 'Threes', 'Pre-K AM', 'Pre-K PM', 'Not sure yet'],
+      options: classInterestOptions,
     },
     {
       kind: 'text',
@@ -100,7 +119,7 @@ const VARIANTS: Record<string, Field[]> = {
       kind: 'checkboxes',
       name: 'classInterest',
       label: 'Class interested in',
-      options: ['Twos', 'Threes', 'Pre-K', 'Not sure yet'],
+      options: classInterestOptions,
     },
     { kind: 'text', name: 'datesTimes', label: 'Dates/times that work for you', required: true },
     { kind: 'text', name: 'hearAbout', label: 'How did you hear about us?', optionalNote: true },

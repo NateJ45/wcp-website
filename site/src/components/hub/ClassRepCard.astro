@@ -5,14 +5,17 @@
    Mirrors TeacherCard's layout (photo/icon ring + name + contact) so the class
    page opens with the people who run the room: the teacher, then one parent rep
    per class. Each class elects ONE rep in the fall, so until then the card is a
-   designed placeholder ("To be announced") that reserves the seat. Reps live in
-   src/data/hub/org-holders.ts (`classReps`, code-owned so a name/email can be
-   filled in even while the Studio is unavailable); pass the `role` that matches
-   a classReps entry. Always renders — the empty seat is the point.
+   designed placeholder ("To be announced") that reserves the seat. Always
+   renders — the empty seat is the point.
+
+   The rep seat is DERIVED (src/lib/hub-org.ts, `classRepPerson`): the co-op has
+   ONE "Class Rep" role marked "one of these for every class", so a class the
+   Board adds gets a fillable rep card the same day. This card used to look the
+   class up in a committed list, which is exactly why a new class's card could
+   never be filled at all.
 
    WHO the rep is, and how to reach her, both come from the Studio (Family Hub →
-   "Who's who this year"), read per request behind the gate and merged over the
-   committed fallback by src/lib/hub-org.ts. Her email and phone are never typed
+   "Who's who this year"), read per request behind the gate. Her email and phone are never typed
    here: the role document LINKS to her Directory entry and the query resolves
    them from it, so they live in exactly one place and this public repo holds
    none of them. Contact links mirror TeacherCard's row ("Say hi" / "Call or
@@ -20,53 +23,70 @@
    to a card with the name and no links.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
-import { classReps } from '@/data/hub/org-holders';
-import { classStyles } from '@/lib/class-colors';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
+import { colorStyles } from '@/lib/class-colors';
+import { hubEditAttr } from '@/lib/hub-preview';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import { telHref, applyHolder, type Holder } from '@/lib/hub-org';
+import { telHref, classRepPerson, type Holder, type OrgClass, type OrgSeat } from '@/lib/hub-org';
 
 interface Props {
-  /** Class slug for the accent color (e.g. 'pre-k-am', 'twos'). */
-  slug: string;
-  /** Role label to look up in `classReps`, e.g. 'Pre-K AM Rep'. */
-  role: string;
-  /** Subtitle under the name, e.g. 'Morning class rep · 2026-27'. */
+  /** The class's brand colour, from its document (e.g. 'orange'). */
+  color?: string;
+  /** The class this rep looks after. */
+  cls: OrgClass;
+  /** Subtitle under the name, e.g. 'Pre-K AM class rep'. */
   label: string;
-  /** Role holders from the page's single read, keyed by role label. */
+  /** The co-op's seats, from the page's single read. */
+  seats: OrgSeat[];
+  /** Role holders from the page's single read. */
   holders?: Map<string, Holder>;
 }
-const { slug, role, label, holders } = Astro.props;
+const { color, cls, label, seats, holders } = Astro.props;
 
-const fallback = classReps.find((r) => r.role === role);
-const person = fallback ? applyHolder(fallback, holders) : undefined;
-const cc = classStyles(slug);
-const named = Boolean(person?.name);
+const person = classRepPerson(seats, cls, holders);
+const cc = colorStyles(color);
+const named = Boolean(person.name);
+// Studio preview only: the card opens the roleHolder doc that names this rep.
+const editAttr = hubEditAttr(Astro.locals, person.docId, 'roleHolder', 'person');
 
-const email = person?.email;
-const tel = telHref(person?.phone);
+const email = person.email;
+const tel = telHref(person.phone);
 // A headshot the Board uploaded to the role document. Sized through the Sanity
 // CDN, not astro:assets — this is an SSR page and the adapter cannot resize at
 // request time (it would serve the full-size upload into an 80px circle).
-const photoUrl = person?.sanityPhoto?.asset
+// SQUARE hotspot-aware crop (2026-09-01, round three): the Sanity CDN crops
+// to the face when the photo's hotspot is set in the Studio (drag the circle
+// in the image editor), and center otherwise. This replaced two rounds of
+// CSS zoom guesswork — no transform can center every face, because faces sit
+// in different places per photo. The hotspot is board-editable truth.
+const photoUrl = person.sanityPhoto?.asset
   ? urlForImage(person.sanityPhoto as SanityImageSource)
       .width(160)
+      .height(160)
+      .fit('crop')
       .url()
   : null;
 ---
 
 <div
   class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+  data-sanity={editAttr}
 >
   {
     photoUrl ? (
-      <img
-        src={photoUrl}
-        alt={`${person!.name}, class rep`}
-        width="80"
-        height="80"
-        loading="lazy"
-        class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-      />
+      <span
+        class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
+      >
+        {/* Zoomed 1.5x about the face line — see TeacherCard. */}
+        <img
+          src={photoUrl}
+          alt={`${person.name}, class rep`}
+          width="80"
+          height="80"
+          loading="lazy"
+          class="h-full w-full object-cover"
+        />
+      </span>
     ) : (
       <span
         class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}
@@ -77,10 +97,12 @@ const photoUrl = person?.sanityPhoto?.asset
     )
   }
   <div class="min-w-0">
-    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Class rep</p>
+    <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+      {CONTACT_LABELS.classRep}
+    </p>
     {
       named ? (
-        <p class="font-display text-xl text-heading">{person!.name}</p>
+        <p class="font-display text-xl text-heading">{person.name}</p>
       ) : (
         <p class="font-display text-xl text-ink-muted">To be announced</p>
       )
@@ -95,7 +117,7 @@ const photoUrl = person?.sanityPhoto?.asset
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
-              Say hi
+              {CONTACT_LABELS.email}
             </a>
           )}
           {tel && (
@@ -104,7 +126,7 @@ const photoUrl = person?.sanityPhoto?.asset
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="phone" class="h-3.5 w-3.5" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
         </div>

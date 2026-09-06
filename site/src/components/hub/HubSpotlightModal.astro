@@ -1,0 +1,238 @@
+---
+/* ============================================================================
+   HubSpotlightModal — the Board's "look at this" pop-up, on any hub page
+   ============================================================================
+   ONE hidden modal, on EVERY gated hub page (BaseLayout's hub branch), holding
+   one PAGE per live spotlight in the Board's drag order.
+   src/scripts/hub-spotlight opens it at the first page this browser has not
+   seen, and arrows page back and forth through the rest.
+
+   Why paginate instead of showing only the top one: a Board can have the
+   supply lists, the auction, and a store offer live in the same week, and a
+   family should be able to read all three without waiting three visits.
+
+   One modal per visit still holds. The President's note and the first-visit
+   tour both speak before a spotlight, and a family never meets two modals in
+   one page load.
+
+   With ONE spotlight live the arrows and the counter do not render at all, so
+   the modal reads exactly like its sibling note modals. No vestigial chrome.
+
+   NO-JS: no pop-up. That is deliberate and acceptable. A spotlight points at
+   something that is already on a hub page; it is promotion, not the only path
+   to any information, so a browser without JavaScript loses nothing but the
+   nudge.
+
+   The read rides BOARD_CONTENT_CACHE (5 min fresh, L1-only, ZERO KV writes).
+   Spotlights are a collection, and CLAUDE.md keeps collections live so LISTS
+   feel fresh — but this is not a list. It is board-edited CHROME that renders
+   on EVERY hub page, exactly what that constant exists for (the topbar and the
+   hubPage docs use it). An uncached read here would add a Sanity round-trip to
+   every hub navigation. Five minutes of staleness on a promotional pop-up
+   costs nothing. Same a11y contract as the note modals: role=dialog, focus
+   trap, Esc / backdrop / X, scroll lock, focus restored on close. The pages
+   scroll INSIDE their own area, so the arrow bar stays reachable on a phone
+   however long a rich body runs.
+   ============================================================================ */
+import Icon from '@/components/Icon.astro';
+import Prose from '@/components/Prose.astro';
+import SanityImage from '@/components/SanityImage.astro';
+// <Icon> THROWS on a name it does not know, and an icon value can outlive the
+// icon set (a retired name left in an old document). Check before rendering.
+import { lucideIcons } from '@/lib/lucide-icons';
+import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { renderPostBody } from '@/lib/portable-text';
+import { POST_BODY_PROJECTION } from '@/lib/queries';
+import {
+  liveSpotlights,
+  spotlightLink,
+  spotlightsQuery,
+  toneBorder,
+  type Spotlight,
+} from '@/lib/hub-spotlight';
+
+let all: Spotlight[] = [];
+try {
+  all =
+    (await sanityFetch<Spotlight[]>(
+      spotlightsQuery(POST_BODY_PROJECTION),
+      {},
+      { cache: BOARD_CONTENT_CACHE },
+    )) ?? [];
+} catch {
+  // A failed read must never break a hub page. No spotlight, page renders.
+  all = [];
+}
+
+const live = liveSpotlights(all, Date.now());
+const cards = live.map((s) => ({
+  spot: s,
+  link: spotlightLink(s),
+  bodyHtml: renderPostBody(s.body ?? undefined),
+  image: s.image as { asset?: unknown; alt?: string } | null | undefined,
+  icon: s.icon && lucideIcons[s.icon] ? s.icon : null,
+}));
+// The edge colour follows the FIRST spotlight and does not change as a family
+// pages: a box whose border recolours mid-read reads as a different dialog.
+const edge = toneBorder(cards[0]?.spot.tone);
+const many = cards.length > 1;
+---
+
+{
+  cards.length > 0 && (
+    <div
+      hidden
+      data-spotlight-modal
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      {/* Backdrop — a tap anywhere on it closes the pop-up. */}
+      <div data-spotlight-close class="absolute inset-0 bg-navy/60" />
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="spotlight-heading"
+        class:list={[
+          // A full 2px tone edge (a construction-paper sheet), the same idiom
+          // AnnouncementModal uses. Never a top strip.
+          'hub-spotlight-box relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-[var(--radius)] border-2 bg-white shadow-2xl dark:bg-surface',
+          edge,
+        ]}
+        style="max-height: 92dvh"
+      >
+        <button
+          type="button"
+          data-spotlight-close
+          aria-label="Close"
+          class="absolute top-3 right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white shadow-md transition-colors hover:bg-navy/85"
+        >
+          <Icon name="x" class="h-5 w-5" />
+        </button>
+
+        {/* The scroller. `min-h-0` is what lets it shrink inside the flex
+            column so the arrow bar below stays on screen on a phone. */}
+        <div data-spotlight-scroller class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {cards.map(({ spot, link, bodyHtml, image, icon }, i) => (
+            <article
+              hidden={i > 0}
+              data-spotlight-page={i}
+              data-spotlight-id={spot._id}
+              data-spotlight-version={spot.version}
+            >
+              {image?.asset && (
+                <SanityImage
+                  source={image as never}
+                  alt={image.alt ?? ''}
+                  widths={[512, 1024]}
+                  sizes="36rem"
+                  class="h-44 w-full object-cover sm:h-56"
+                />
+              )}
+              <div class="p-6 pt-12 sm:p-8 sm:pt-12">
+                <div class="flex items-start gap-3">
+                  {icon && (
+                    <span
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/15"
+                      aria-hidden="true"
+                    >
+                      <Icon name={icon} class="h-5 w-5 text-sky-ink" />
+                    </span>
+                  )}
+                  <div class="min-w-0">
+                    {/* The dialog's label follows the visible page: the script
+                        moves the `spotlight-heading` id onto this heading. */}
+                    <h2
+                      id={i === 0 ? 'spotlight-heading' : undefined}
+                      data-spotlight-title
+                      class="font-display text-2xl text-heading sm:text-3xl"
+                    >
+                      {spot.heading}
+                    </h2>
+                    {spot.dateLabel && <p class="mt-1 text-sm text-ink-muted">{spot.dateLabel}</p>}
+                  </div>
+                </div>
+
+                {spot.summary && (
+                  <p class="mt-4 text-lg leading-relaxed text-ink">{spot.summary}</p>
+                )}
+
+                {bodyHtml && (
+                  <Prose class="mt-4">
+                    <Fragment set:html={bodyHtml} />
+                  </Prose>
+                )}
+
+                {link && (
+                  <div class="mt-6">
+                    <a
+                      href={link.href}
+                      data-spotlight-cta
+                      class="inline-flex min-h-12 items-center justify-center rounded-full bg-navy px-7 font-semibold text-white shadow-sm transition hover:bg-navy/90"
+                      {...(link.external ? { target: '_blank', rel: 'noopener' } : {})}
+                    >
+                      {link.label}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* The arrow bar. Rendered only when there is more than one spotlight,
+            so a single one looks exactly like the sibling note modals.
+            Neutral text on the card surface (never colored text on a tint),
+            which is what keeps it AA in dark mode too. */}
+        {many && (
+          <div class="flex shrink-0 items-center justify-between gap-3 border-t border-border px-4 py-3">
+            <button
+              type="button"
+              data-spotlight-prev
+              aria-label="Previous notice"
+              class="flex h-11 w-11 items-center justify-center rounded-full border border-border text-heading transition-colors hover:bg-grey disabled:opacity-40 dark:hover:bg-white/10"
+            >
+              <Icon name="chevron-left" class="h-5 w-5" />
+            </button>
+            <p
+              data-spotlight-progress
+              aria-live="polite"
+              class="text-sm font-semibold text-ink-muted"
+            >
+              1 of {cards.length}
+            </p>
+            <button
+              type="button"
+              data-spotlight-next
+              aria-label="Next notice"
+              class="flex h-11 w-11 items-center justify-center rounded-full border border-border text-heading transition-colors hover:bg-grey disabled:opacity-40 dark:hover:bg-white/10"
+            >
+              <Icon name="chevron-right" class="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+{/* `embeds` wires the click-to-load video facade a rich body can carry. */}
+{cards.length > 0 && <script>import '@/scripts/hub-spotlight'; import '@/scripts/embeds';</script>}
+
+<style>
+  /* Gentle entrance — short, state-conveying, reduced-motion-safe. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-spotlight-modal]:not([hidden]) .hub-spotlight-box {
+      animation: hub-spotlight-in 0.25s ease-out both;
+    }
+  }
+  @keyframes hub-spotlight-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

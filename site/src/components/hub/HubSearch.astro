@@ -13,7 +13,17 @@
    moment the input focuses — the results list was invisible while typing.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { hubDraftMode, readHubPageDoc } from '@/lib/hub-preview';
+import { ADMIN_EMAIL_QUERY } from '@/lib/queries';
 import { site } from '@/data/site';
+// "Ask the school" goes to Site settings' emailAdmin (Board-editable), with
+// the committed address as fallback.
+const adminEmail =
+  (
+    await readHubPageDoc<string>(await hubDraftMode(Astro.cookies), ADMIN_EMAIL_QUERY, {}).catch(
+      () => null,
+    )
+  )?.trim() || site.email.admin;
 ---
 
 <dialog
@@ -75,7 +85,7 @@ import { site } from '@/data/site';
         Browse all pages
       </button>
       <a
-        href={`mailto:${site.email.admin}`}
+        href={`mailto:${adminEmail}`}
         class="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-ink no-underline hover:bg-grey dark:hover:bg-white/10"
       >
         <Icon name="mail" class="h-4 w-4" aria-hidden="true" />

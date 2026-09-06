@@ -1,0 +1,23 @@
+# =============================================================================
+# RETIRED 2026-09-01 — sanity-backup.yml is the one nightly backup
+# =============================================================================
+# This 2026-08-31 back-port from presacademy duplicated sanity-backup.yml
+# (2026-08-27): two nightly exports of the same dataset. Worse, BOTH uploaded
+# the tarball as a PLAINTEXT artifact on a public repo, where any logged-in
+# GitHub user can download it — the dataset holds the family directory,
+# health details, and the share-by-link Google URLs. sanity-backup.yml now
+# encrypts before upload; this file keeps only a manual trigger and exits
+# immediately, so the schedule is gone. Delete this file whenever convenient
+# (kept only because the fix shipped from a session that could not delete
+# files). Also retire the SANITY_BACKUP_TOKEN secret if nothing else uses it.
+# =============================================================================
+name: Backup
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  retired:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Retired. The nightly backup is sanity-backup.yml (encrypted). See the header."

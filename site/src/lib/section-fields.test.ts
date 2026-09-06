@@ -118,8 +118,9 @@ describe('the band field', () => {
   });
 
   it('BAND_OPTIONS carries the schema’s own values, in the schema’s own order', () => {
-    const list = SHARED.slice(SHARED.indexOf('export const BACKGROUND_OPTIONS'));
-    const values = [...list.matchAll(/value: '(\w+)'/g)].slice(0, 4).map((m) => m[1]);
+    const at = SHARED.indexOf('export const BACKGROUND_OPTIONS');
+    const list = SHARED.slice(at, SHARED.indexOf('];', at));
+    const values = [...list.matchAll(/value: '(\w+)'/g)].map((m) => m[1]);
     expect(BAND_OPTIONS.map((b) => b.value)).toEqual(values);
   });
 
@@ -275,11 +276,13 @@ describe('bandFieldFor and bandChoicesFor', () => {
     expect(bandFieldFor(null)).toBeNull();
   });
 
-  it('offers all four bands, or the CTA’s two, or none', () => {
+  it('offers the full band palette, or the CTA’s two, or none', () => {
     expect(bandChoicesFor('proseSection').map((b) => b.value)).toEqual([
       'white',
       'grey',
       'cream',
+      'sunshine',
+      'sky',
       'navy',
     ]);
     expect(bandChoicesFor('ctaSection').map((b) => b.value)).toEqual(['navy', 'cream']);

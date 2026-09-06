@@ -40,8 +40,19 @@ import {
   HUB_STORE_QUERY,
   DIRECTORY_FAMILY_COUNT_QUERY,
 } from '@/lib/queries';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { hubDraftMode, readHubPageDoc, publishedId, hubEditAttr } from '@/lib/hub-preview';
+import { hiddenWidgetSet, shows, widgetTextFor } from '@/lib/hub-widgets';
+import { mergeSuperHelper, type SuperHelperDoc } from '@/lib/hub-super-helper';
+import { classTiles } from '@/lib/hub-classrooms';
 import { site, familyHandbookUrl as familyHandbookFallback } from '@/data/site';
 import { FAMILY_HANDBOOK_URL_QUERY } from '@/lib/queries';
+
+// The classes a family can pick, and the page each one lives on. Derived from
+// the `class` documents, so the picker, the tour chips and my-class.ts all
+// learn a new class the moment it publishes (src/lib/hub-classrooms.ts). The
+// read rides the same board-content cache the rail already paid for.
+const myClassOptions = classTiles(await getHubClassrooms());
 
 // The handbook link follows the Studio upload (Hub settings → Each year),
 // so the yearly re-upload never needs a code edit. The committed URL is the
@@ -63,24 +74,33 @@ try {
 import handbookCover from '@/assets/brand/handbook-cover-sm.webp';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
+  hiddenWidgets?: string[];
+  widgetText?: { widget?: string; title?: string; blurb?: string }[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
 interface SettingsDoc {
   tagline?: string;
+  schoolYearLabel?: string;
   yearStart?: string;
   yearEnd?: string;
   firstDay?: string;
 }
 interface HubSettingsDoc {
   familyCount?: number;
+  welcomeLine?: string;
+  handbookCoverUrl?: string;
+  superHelper?: SuperHelperDoc;
 }
 interface HubStoreDoc {
   storeUrl?: string;
   storeHeadline?: string;
   storeTagline?: string;
+  shippingLine?: string;
+  featuredCollection?: string;
   storeProducts?: { title?: string; price?: string; url?: string; image?: string }[];
 }
 
@@ -89,12 +109,17 @@ interface HubStoreDoc {
 // on top of each widget's own fetch is worth avoiding). Promise.allSettled
 // preserves each fetch's existing fallback (null / 0) even if
 // one (or more) of them fails, matching the previous try/catch behavior.
+// Studio Presentation loads this REAL page as its preview (2026-08-30): with
+// the verified preview cookie the hubPage read is draft-aware with stega on,
+// and the overlay mounts via HubShell's previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
+
 const [docResult, settingsResult, hubSettingsResult, storeResult, familyCountResult] =
   await Promise.allSettled([
-    sanityFetch<HubPageDoc | null>(HUB_PAGE_QUERY, { key: 'home' }, { cache: BOARD_CONTENT_CACHE }),
-    sanityFetch<SettingsDoc | null>(SITE_SETTINGS_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-    sanityFetch<HubSettingsDoc | null>(HUB_SETTINGS_HOME_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
-    sanityFetch<HubStoreDoc | null>(HUB_STORE_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
+    readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, { key: 'home' }),
+    readHubPageDoc<SettingsDoc>(draftMode, SITE_SETTINGS_QUERY, {}),
+    readHubPageDoc<HubSettingsDoc>(draftMode, HUB_SETTINGS_HOME_QUERY, {}),
+    readHubPageDoc<HubStoreDoc>(draftMode, HUB_STORE_QUERY, {}),
     // The count is a scalar over directory docs (no PII in the result), so it
     // rides the same cache — a new opt-in showing a few minutes late is fine.
     sanityFetch<number>(DIRECTORY_FAMILY_COUNT_QUERY, {}, { cache: BOARD_CONTENT_CACHE }),
@@ -106,12 +131,27 @@ const store = storeResult.status === 'fulfilled' ? storeResult.value : null;
 const liveFamilyCount = familyCountResult.status === 'fulfilled' ? familyCountResult.value : 0;
 
 const title = doc?.heading || 'Family Hub';
+// The Board's widget switches (Hub home -> Widgets). Missing = everything on.
+// Drafts count in preview, so flipping a switch shows in Presentation before
+// Publish. The registry + rules live in src/lib/hub-widgets.ts.
+const hidden = hiddenWidgetSet(doc?.hiddenWidgets);
+// P3 wording overrides (Hub home -> Widget wording). Empty = shipped copy.
+const text = (w: string) => widgetTextFor(doc?.widgetText, w);
+// P2: the Super Helper program, Board-edited in one place for band + page.
+const superHelper = mergeSuperHelper(hubSettings?.superHelper);
+// P1: year-facts derive from Site settings so nothing goes stale in September.
+const yearLabel = settings?.schoolYearLabel?.trim() || '2026/2027';
 const familyCount = hubSettings?.familyCount ?? liveFamilyCount;
 
 const firstDay = settings?.firstDay;
 ---
 
-<HubShell title={title} bare pageTitle="Family Hub — West Chester Preschool">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Family Hub — West Chester Preschool"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     {
       /* Bento dashboard: a 12-column grid where tile SIZE encodes importance
@@ -175,13 +215,18 @@ const firstDay = settings?.firstDay;
         aria-hidden="true"
       >
       </div>
-      {/* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`. */}
-      <div class="relative lg:col-span-8">
+      {
+        /* HubGreeting owns the page h1 (id="hub-page-title") — Home is `bare`.
+          Full-width when its row partner (Upcoming events) is switched off, so
+          the bento never opens with a hole beside the hero. */
+      }
+      <div class:list={['relative', shows(hidden, 'events') ? 'lg:col-span-8' : 'lg:col-span-12']}>
         <HubGreeting
           yearStart={settings?.yearStart}
           yearEnd={settings?.yearEnd}
           firstDay={firstDay}
           familyCount={familyCount}
+          welcomeLine={hubSettings?.welcomeLine}
         />
       </div>
 
@@ -201,14 +246,28 @@ const firstDay = settings?.firstDay;
           widgets stay inline: the authenticated CDN answers in ~100ms, below
           the cost of an extra island round-trip. */
       }
-      <div
-        class="lg:col-span-4 lg:row-span-2"
-        style="--reveal-delay: 60ms; --note-accent: var(--color-sky)"
-      >
-        <UpcomingEventsWidget server:defer>
-          <HubWidgetSkeleton slot="fallback" title="Upcoming events" lines={6} />
-        </UpcomingEventsWidget>
-      </div>
+      {
+        shows(hidden, 'events') && (
+          <div
+            class:list={[
+              'lg:col-span-4',
+              // Double height only while the class tiles fill the row beside
+              // it — alone, the second row would be an 8-wide hole.
+              shows(hidden, 'classTiles') && 'lg:row-span-2',
+            ]}
+            style="--reveal-delay: 60ms; --note-accent: var(--color-sky)"
+            data-morph-keep
+          >
+            <UpcomingEventsWidget server:defer heading={text('events').title}>
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('events').title ?? 'Upcoming events'}
+                lines={6}
+              />
+            </UpcomingEventsWidget>
+          </div>
+        )
+      }
 
       {
         /* lg:flex-col so ClassHelperRow can fill the leftover row height with
@@ -218,60 +277,68 @@ const firstDay = settings?.firstDay;
           hero row got taller (bit 2026-07-14 when the command strip grew the
           hero; same family as the f2425bf mobile overflow). */
       }
-      <div class="lg:col-span-8 lg:flex lg:flex-col" style="--reveal-delay: 120ms">
-        {
-          /* My-classes picker (JS-only nicety; hidden without JS). Stored on
-            the device — no accounts. MULTI-select: plenty of families have
-            kids in more than one class, so the chips toggle (aria-pressed)
-            and Done closes. src/scripts/my-class.ts shows exactly one of
-            these two strips and personalizes tiles/albums/rail from the set. */
-        }
-        <div
-          data-my-class-picker
-          hidden
-          class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
-        >
-          <span class="font-semibold text-heading">Which classes are yours?</span>
-          {
-            [
-              { slug: 'twos', label: 'Twos' },
-              { slug: 'threes', label: 'Threes' },
-              { slug: 'pre-k-am', label: 'Pre-K AM' },
-              { slug: 'pre-k-pm', label: 'Pre-K PM' },
-            ].map((c) => (
+      {
+        shows(hidden, 'classTiles') && (
+          <div class="lg:col-span-8 lg:flex lg:flex-col" style="--reveal-delay: 120ms">
+            {/* My-classes picker (JS-only nicety; hidden without JS). Stored on
+                the device — no accounts. MULTI-select: plenty of families have
+                kids in more than one class, so the chips toggle (aria-pressed)
+                and Done closes. src/scripts/my-class.ts shows exactly one of
+                these two strips and personalizes tiles/albums/rail from the set. */}
+            <div
+              data-my-class-picker
+              hidden
+              class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
+            >
+              <span class="font-semibold text-heading">Which classes are yours?</span>
+              {
+                /* One chip per class, in the Board's class order. `data-my-class-page`
+                  carries the classroom this class lives on, so my-class.ts marks the
+                  right rail link without a class list of its own. */
+                myClassOptions.map((c) => (
+                  <button
+                    type="button"
+                    data-my-class-pick={c.slug}
+                    data-my-class-page={c.page}
+                    data-my-class-name={c.label}
+                    aria-pressed="false"
+                    class="rounded-full border border-border bg-white px-3 py-1 font-semibold text-ink transition-colors hover:border-navy hover:text-heading aria-pressed:border-navy aria-pressed:bg-navy aria-pressed:text-white dark:bg-surface"
+                  >
+                    {c.label}
+                  </button>
+                ))
+              }
               <button
                 type="button"
-                data-my-class-pick={c.slug}
-                aria-pressed="false"
-                class="rounded-full border border-border bg-white px-3 py-1 font-semibold text-ink transition-colors hover:border-navy hover:text-heading aria-pressed:border-navy aria-pressed:bg-navy aria-pressed:text-white dark:bg-surface"
+                data-my-class-done
+                hidden
+                class="ml-auto font-bold text-sky-ink hover:underline"
               >
-                {c.label}
+                Done
               </button>
-            ))
-          }
-          <button
-            type="button"
-            data-my-class-done
-            hidden
-            class="ml-auto font-bold text-sky-ink hover:underline"
-          >
-            Done
-          </button>
-        </div>
-        <div
-          data-my-class-current
-          hidden
-          class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
-        >
-          <span class="text-ink">Your class<span data-my-class-plural>es</span>:</span>
-          {/* Separate flex item so the strip's gap-2 spaces it from the label. */}
-          <strong class="text-heading" data-my-class-label></strong>
-          <button type="button" data-my-class-change class="font-bold text-sky-ink hover:underline">
-            Change
-          </button>
-        </div>
-        <ClassHelperRow />
-      </div>
+            </div>
+            <div
+              data-my-class-current
+              hidden
+              class="mb-3 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-border bg-white/80 px-4 py-2.5 text-sm dark:bg-surface/80"
+            >
+              <span class="text-ink">
+                Your class<span data-my-class-plural>es</span>:
+              </span>
+              {/* Separate flex item so the strip's gap-2 spaces it from the label. */}
+              <strong class="text-heading" data-my-class-label />
+              <button
+                type="button"
+                data-my-class-change
+                class="font-bold text-sky-ink hover:underline"
+              >
+                Change
+              </button>
+            </div>
+            <ClassHelperRow />
+          </div>
+        )
+      }
 
       {
         /* Week-ahead forecast — a full-width planning band directly under the
@@ -285,9 +352,13 @@ const firstDay = settings?.firstDay;
           half-empty. No `order-*`: it keeps its source position (order-0,
           after the class tiles) in the phone stack, before the ordered cards. */
       }
-      <div class="lg:col-span-12" style="--reveal-delay: 150ms">
-        <WeatherWeekWidget />
-      </div>
+      {
+        shows(hidden, 'weather') && (
+          <div class="lg:col-span-12" style="--reveal-delay: 150ms">
+            <WeatherWeekWidget heading={text('weather').title} blurb={text('weather').blurb} />
+          </div>
+        )
+      }
 
       {
         /* Mobile ordering: group the two post-it list cards (Announcements +
@@ -296,214 +367,276 @@ const firstDay = settings?.firstDay;
           `order-*` reorders only the phone stack; `lg:order-none` restores the
           source order so the desktop bento layout is unchanged. */
       }
-      <div
-        class="order-1 lg:order-none lg:col-span-8"
-        style="--reveal-delay: 180ms; --note-accent: var(--color-orange)"
-      >
-        <AnnouncementsWidget />
-      </div>
-      <div
-        class="order-3 lg:order-none lg:col-span-4"
-        style="--reveal-delay: 240ms; --note-accent: var(--color-green)"
-      >
-        <FundraisingWidget server:defer>
-          <HubWidgetSkeleton slot="fallback" title="Fundraising" lines={3} />
-        </FundraisingWidget>
-      </div>
-      <div
-        class="order-2 lg:order-none lg:col-span-4"
-        style="--reveal-delay: 300ms; --note-accent: var(--color-amber)"
-      >
-        <MeetingMinutesWidget />
-      </div>
-      <div
-        class="order-5 lg:order-none lg:col-span-4"
-        style="--reveal-delay: 360ms; --note-accent: var(--color-sky)"
-      >
-        <ClassPhotosWidget />
-      </div>
-      <div
-        class="order-4 lg:order-none lg:col-span-4"
-        style="--reveal-delay: 420ms; --note-accent: var(--color-green)"
-      >
-        <BudgetSnapshotWidget server:defer>
-          <HubWidgetSkeleton slot="fallback" title="Budget snapshot" lines={3} />
-        </BudgetSnapshotWidget>
-      </div>
+      {
+        shows(hidden, 'announcements') && (
+          <div
+            class="order-1 lg:order-none lg:col-span-8"
+            style="--reveal-delay: 180ms; --note-accent: var(--color-orange)"
+          >
+            <AnnouncementsWidget heading={text('announcements').title} />
+          </div>
+        )
+      }
+      {
+        shows(hidden, 'fundraising') && (
+          <div
+            class="order-3 lg:order-none lg:col-span-4"
+            style="--reveal-delay: 240ms; --note-accent: var(--color-green)"
+            data-morph-keep
+          >
+            <FundraisingWidget server:defer heading={text('fundraising').title}>
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('fundraising').title ?? 'Fundraising'}
+                lines={3}
+              />
+            </FundraisingWidget>
+          </div>
+        )
+      }
+      {
+        shows(hidden, 'minutes') && (
+          <div
+            class="order-2 lg:order-none lg:col-span-4"
+            style="--reveal-delay: 300ms; --note-accent: var(--color-amber)"
+          >
+            <MeetingMinutesWidget heading={text('minutes').title} />
+          </div>
+        )
+      }
+      {
+        shows(hidden, 'photos') && (
+          <div
+            class="order-5 lg:order-none lg:col-span-4"
+            style="--reveal-delay: 360ms; --note-accent: var(--color-sky)"
+          >
+            <ClassPhotosWidget heading={text('photos').title} />
+          </div>
+        )
+      }
+      {
+        shows(hidden, 'budget') && (
+          <div
+            class="order-4 lg:order-none lg:col-span-4"
+            style="--reveal-delay: 420ms; --note-accent: var(--color-green)"
+            data-morph-keep
+          >
+            <BudgetSnapshotWidget server:defer heading={text('budget').title}>
+              <HubWidgetSkeleton
+                slot="fallback"
+                title={text('budget').title ?? 'Budget snapshot'}
+                lines={3}
+              />
+            </BudgetSnapshotWidget>
+          </div>
+        )
+      }
     </div>
 
     {
-      /* Become a Super Helper — the school's top volunteer ask, so this banner
-        previews the certification path itself: the three requirements from
-        /family-hub/super-helper as mini-cards, plus the one-time reassurance
-        and a renewal pointer. The pill is the ONE link; its after:inset-0
-        overlay stretches the click target across the whole card while the
-        accessible link name stays short. Keep the copy in step with the
-        super-helper page when its requirements change. */
+      /* The Super Helper band — the school's top volunteer ask. Everything it
+        says is the PROGRAM's data (Hub settings → Super Helper program, one
+        source shared with /family-hub/super-helper's header; committed
+        fallback in src/data/hub/super-helper.ts), so a future board renames a
+        step once and both surfaces follow. The pill is the ONE link; its
+        after:inset-0 overlay stretches the click target across the card —
+        unless a step carries its own link, which sits above the overlay. */
     }
-    <section aria-labelledby="hub-super-heading" class="mt-4" data-reveal>
-      <div
-        class="wcp-lift hub-note group relative isolate overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 dark:bg-amber/10"
-        style="--note-accent: var(--color-amber)"
-      >
-        <HubWatermark icon="star" colorStyle="color: var(--color-amber)" />
-        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <span
-            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
-            aria-hidden="true"
+    {
+      shows(hidden, 'superHelper') && (
+        <section
+          aria-labelledby="hub-super-heading"
+          class="mt-4"
+          data-reveal
+          data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'superHelper')}
+        >
+          <div
+            class="wcp-lift hub-note group relative isolate overflow-hidden rounded-[var(--radius)] border border-amber/40 bg-amber/10 p-6 dark:bg-amber/10"
+            style="--note-accent: var(--color-amber)"
           >
-            <Icon name="star" class="wcp-pop h-7 w-7" />
-          </span>
-          <div class="min-w-0 flex-1">
-            <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
-              Become a Super Helper
-            </h2>
-            <p class="mt-1 text-ink">
-              Certified parents can be counted in the classroom and help lead the day. It is a
-              one-time certification, and it takes three things.
-            </p>
+            <HubWatermark icon="star" colorStyle="color: var(--color-amber)" />
+            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <span
+                class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber text-navy shadow-sm"
+                aria-hidden="true"
+              >
+                <Icon name="star" class="wcp-pop h-7 w-7" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <h2 id="hub-super-heading" class="font-display text-2xl text-heading">
+                  Become a {superHelper.name}
+                </h2>
+                <p class="mt-1 text-ink">{superHelper.blurb}</p>
+              </div>
+              <a
+                href="/family-hub/super-helper"
+                class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white no-underline after:absolute after:inset-0 after:content-['']"
+              >
+                See every step
+                <Icon
+                  name="arrow-right"
+                  class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                  aria-hidden="true"
+                />
+              </a>
+            </div>
+            <ol class="mt-5 grid gap-3 sm:grid-cols-3">
+              {superHelper.requirements.map((req, i) => {
+                /* The shipped palette cycles so a fourth requirement still
+                   gets a sensible chip color. */
+                const chips = [
+                  'bg-sky/25 text-sky-ink',
+                  'bg-orange/20 text-orange-ink',
+                  'bg-green/20 text-green-ink',
+                ];
+                return (
+                  <li class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5">
+                    <span
+                      class={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${chips[i % chips.length]}`}
+                      aria-hidden="true"
+                    >
+                      <Icon name={req.icon} class="h-5 w-5" />
+                    </span>
+                    <span class="min-w-0">
+                      {req.url ? (
+                        <a
+                          href={req.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="relative z-10 block font-bold text-heading underline decoration-amber decoration-2 underline-offset-2"
+                        >
+                          {req.title}
+                        </a>
+                      ) : (
+                        <span class="block font-bold text-heading">{req.title}</span>
+                      )}
+                      {req.detail && <span class="block text-sm text-ink">{req.detail}</span>}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+            <p class="mt-4 text-sm text-ink-muted">{superHelper.footnote}</p>
           </div>
-          <a
-            href="/family-hub/super-helper"
-            class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white no-underline after:absolute after:inset-0 after:content-['']"
-          >
-            See every step
-            <Icon
-              name="arrow-right"
-              class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-              aria-hidden="true"
-            />
-          </a>
-        </div>
-        <ol class="mt-5 grid gap-3 sm:grid-cols-3">
-          <li
-            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
-          >
-            <span
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky/25 text-sky-ink"
-              aria-hidden="true"
-            >
-              <Icon name="monitor" class="h-5 w-5" />
-            </span>
-            <span class="min-w-0">
-              <span class="block font-bold text-heading">Online training</span>
-              <span class="block text-sm text-ink">About 8 hours, free, from home.</span>
-            </span>
-          </li>
-          <li
-            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
-          >
-            <span
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange/20 text-orange-ink"
-              aria-hidden="true"
-            >
-              <Icon name="heart-pulse" class="h-5 w-5" />
-            </span>
-            <span class="min-w-0">
-              <span class="block font-bold text-heading">CPR & First Aid</span>
-              <span class="block text-sm text-ink">One in-person class near you.</span>
-            </span>
-          </li>
-          <li
-            class="flex items-start gap-3 rounded-xl border border-amber/30 bg-white/70 p-4 dark:bg-white/5"
-          >
-            <span
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green/20 text-green-ink"
-              aria-hidden="true"
-            >
-              <Icon name="graduation-cap" class="h-5 w-5" />
-            </span>
-            <span class="min-w-0">
-              <span class="block font-bold text-heading">Proof of education</span>
-              <span class="block text-sm text-ink">Send a transcript or diploma.</span>
-            </span>
-          </li>
-        </ol>
-        <p class="mt-4 text-sm text-ink-muted">
-          Already a Super Helper? The background check renewal steps live on the same page.
-        </p>
-      </div>
-    </section>
+        </section>
+      )
+    }
 
     {
       /* Family Handbook — the year's reference doc. The cover art is the
         widget's face, so it links straight to the PDF; a white card keeps it
         distinct from the amber Super Helper banner above. */
     }
-    <section aria-labelledby="hub-handbook-heading" class="mt-4" data-reveal>
-      <a
-        href={familyHandbookUrl}
-        target="_blank"
-        rel="noopener"
-        class="wcp-lift hub-note group relative isolate flex flex-col items-start gap-5 overflow-hidden rounded-[var(--radius)] border border-border bg-white p-6 no-underline sm:flex-row sm:items-center dark:bg-surface"
-      >
-        <HubWatermark icon="book-open" colorStyle="color: var(--note-accent, var(--color-sky))" />
-        <img
-          src={handbookCover.src}
-          width={handbookCover.width}
-          height={handbookCover.height}
-          alt="Family Handbook 2026/2027 cover"
-          class="h-32 w-auto shrink-0 rounded-lg border border-border shadow-md transition-transform duration-300 group-hover:-rotate-1 motion-reduce:group-hover:rotate-0"
-        />
-        <div class="min-w-0 flex-1">
-          <h2 id="hub-handbook-heading" class="font-display text-2xl text-heading">
-            Family Handbook
-          </h2>
-          <p class="mt-1 text-ink">
-            Everything about the 2026/2027 year in one place: our policies, the daily rhythm, co-op
-            duties, and who to call.
-          </p>
-        </div>
-        <span
-          class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white"
+    {
+      shows(hidden, 'handbook') && (
+        <section
+          aria-labelledby="hub-handbook-heading"
+          class="mt-4"
+          data-reveal
+          data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'familyHandbook')}
         >
-          Open the handbook
-          <Icon
-            name="arrow-right"
-            class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-            aria-hidden="true"
-          />
-        </span>
-      </a>
-    </section>
+          <a
+            href={familyHandbookUrl}
+            target="_blank"
+            rel="noopener"
+            class="wcp-lift hub-note group relative isolate flex flex-col items-start gap-5 overflow-hidden rounded-[var(--radius)] border border-border bg-white p-6 no-underline sm:flex-row sm:items-center dark:bg-surface"
+          >
+            <HubWatermark
+              icon="book-open"
+              colorStyle="color: var(--note-accent, var(--color-sky))"
+            />
+            {/* Board upload wins (sized via the Sanity CDN); committed art is
+                the fallback so the card never loses its face. */}
+            <img
+              src={
+                hubSettings?.handbookCoverUrl
+                  ? `${hubSettings.handbookCoverUrl}?w=256&fit=max&auto=format`
+                  : handbookCover.src
+              }
+              width={handbookCover.width}
+              height={handbookCover.height}
+              alt={`Family Handbook ${yearLabel} cover`}
+              class="h-32 w-auto shrink-0 rounded-lg border border-border shadow-md transition-transform duration-300 group-hover:-rotate-1 motion-reduce:group-hover:rotate-0"
+            />
+            <div class="min-w-0 flex-1">
+              <h2 id="hub-handbook-heading" class="font-display text-2xl text-heading">
+                {text('handbook').title ?? 'Family Handbook'}
+              </h2>
+              <p class="mt-1 text-ink">
+                {text('handbook').blurb ??
+                  `Everything about the ${yearLabel} year in one place: our policies, the daily rhythm, co-op duties, and who to call.`}
+              </p>
+            </div>
+            <span class="inline-flex shrink-0 items-center gap-2 rounded-pill bg-navy px-5 py-2.5 font-bold text-white">
+              Open the handbook
+              <Icon
+                name="arrow-right"
+                class="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                aria-hidden="true"
+              />
+            </span>
+          </a>
+        </section>
+      )
+    }
 
     {
       /* The official store — live Fourthwall catalog + a "supporting our co-op"
         sales stat. A server island so its external fetches never block the
         dashboard paint (it sits at the bottom); streams in behind a skeleton. */
     }
-    <StoreCard
-      server:defer
-      url={store?.storeUrl}
-      headline={store?.storeHeadline}
-      tagline={store?.storeTagline}
-      products={store?.storeProducts}
-    >
-      <div
-        slot="fallback"
-        class="mt-4 h-64 animate-pulse rounded-[var(--radius)] bg-navy/90"
-        aria-hidden="true"
-      >
-      </div>
-    </StoreCard>
+    {
+      shows(hidden, 'store') && (
+        /* data-morph-keep: a server island; see preview-morph.ts */
+        <div data-morph-keep>
+          <StoreCard
+            server:defer
+            url={store?.storeUrl}
+            headline={store?.storeHeadline}
+            tagline={store?.storeTagline}
+            shippingLine={store?.shippingLine}
+            featuredCollection={store?.featuredCollection}
+            products={store?.storeProducts}
+          >
+            <div
+              slot="fallback"
+              class="mt-4 h-64 animate-pulse rounded-[var(--radius)] bg-navy/90"
+              aria-hidden="true"
+            />
+          </StoreCard>
+        </div>
+      )
+    }
 
     {
       /* Community bulletin board — the hub-home twin of the public "Life inside
         WCP." section, so the dashboard closes on a warm, human note. Inline
         (not an island): its one album read rides the authenticated CDN cache. */
     }
-    <SocialWallWidget />
+    {
+      shows(hidden, 'social') && (
+        <SocialWallWidget heading={text('social').title} blurb={text('social').blurb} />
+      )
+    }
 
     {/* A tiny giggle for anyone who scrolled all the way down. */}
     <HubGiggle />
   </Section>
 
-  {/* Editable welcome section(s) the Board can add to the hub landing. */}
-  <SectionRenderer sections={doc?.sections} site={site} hub />
+  {
+    /* Editable welcome section(s) the Board can add to the hub landing. In the
+      Studio preview they carry the edit handles (editDoc), same as public pages. */
+  }
+  <SectionRenderer
+    sections={doc?.sections}
+    site={site}
+    hub
+    editDoc={draftMode && doc?._id ? { id: publishedId(doc._id)!, type: 'hubPage' } : undefined}
+  />
 
   {/* The President's welcome letter — pops once per version stamp. */}
   <PresidentNoteModal />
-  <HubTourModal />
+  <HubTourModal classes={myClassOptions} />
 
   {
     /* Event details dialog for the Upcoming Events widget rows — same shared

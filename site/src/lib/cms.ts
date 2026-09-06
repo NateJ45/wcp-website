@@ -162,11 +162,17 @@ interface SiteSettingsDoc {
   state?: string;
   zip?: string;
   parkingNote?: string;
+  venueNote?: string;
+  summerTourNote?: string;
+  secularLine?: string;
   schoolYearLabel?: string;
   closureStatement?: string;
   facebook?: string;
   instagram?: string;
   openingHours?: { days?: string[]; opens?: string; closes?: string }[];
+  shortName?: string;
+  emailContact?: string;
+  licenseAuthority?: string;
   googleRating?: string;
   googleReviews?: number;
   googleUrl?: string;
@@ -199,6 +205,9 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     email: { general: string; admin: string; contact: string; treasurer: string };
     teachers: { lisa: string; erin: string };
     license: string;
+    venueNote: string;
+    summerTourNote: string;
+    secularLine: string;
     licenseAuthority: string;
     calendar: string;
     social: { facebook: string; instagram: string };
@@ -211,6 +220,8 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
   return {
     ...f,
     name: doc.name ?? f.name,
+    // Was queried but never mapped (silent-edit bug, PUBLIC_EDITABILITY W1.4).
+    shortName: doc.shortName ?? f.shortName,
     founded: doc.founded ?? f.founded,
     tagline: doc.tagline ?? f.tagline,
     url: doc.url ?? f.url,
@@ -227,13 +238,18 @@ export async function getSiteSettings<T extends Record<string, unknown>>(fallbac
     // (Was queried but never mapped — the field silently did nothing until
     // 2026-08-23, see docs/FIELD_AUDIT.md.)
     parkingNote: doc.parkingNote,
+    venueNote: doc.venueNote ?? f.venueNote,
+    summerTourNote: doc.summerTourNote ?? f.summerTourNote,
+    secularLine: doc.secularLine ?? f.secularLine,
     email: {
       ...f.email,
       general: doc.emailGeneral ?? f.email.general,
       admin: doc.emailAdmin ?? f.email.admin,
+      contact: doc.emailContact ?? f.email.contact,
       treasurer: doc.emailTreasurer ?? f.email.treasurer,
     },
     license: doc.license ?? f.license,
+    licenseAuthority: doc.licenseAuthority ?? f.licenseAuthority,
     calendar: doc.closureStatement ?? f.calendar,
     social: {
       ...f.social,

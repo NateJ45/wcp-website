@@ -2,12 +2,10 @@ import { defineType, defineField } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
 import { iconField } from './objects/_shared';
 
-const HUB_DOC_CATEGORIES = [
-  { title: 'Required Form', value: 'required' },
-  { title: 'Handbook & Policy', value: 'handbook' },
-  { title: 'Orientation Material', value: 'orient' },
-  { title: 'Meeting Minutes', value: 'minutes' },
-];
+// ONE list with the Documents page's grouping — src/lib/hub-doc-categories.ts.
+// The page renders any value it does not recognize too, so a category added
+// here (or a legacy value) is never silently dropped.
+import { HUB_DOC_CATEGORIES } from '../../lib/hub-doc-categories';
 
 // Documents & Forms — handbook, bylaws, required state forms, meeting minutes.
 // A document is either an external link (Drive/Canva) or an uploaded file.

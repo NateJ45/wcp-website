@@ -31,7 +31,9 @@ export function headerLeadHtml(header?: HeaderData): string {
 export interface SectionData {
   _type: string;
   _key: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  // The six-colour palette (sunshine + sky joined 2026-09-01); Section.astro
+  // and section-fields.ts are the other sync points for this union.
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   seam?: boolean;
   /** Doodle alternation: set by SectionRenderer when this band skips the
    *  doodle tile (its neighbor already carries it). */
@@ -64,8 +66,12 @@ export function titleIdFor(section: SectionData): string | undefined {
  * picking the Navy background radio can never ship a contrast failure.
  * Non-navy returns "sky", which matches SectionHeader's own default.
  */
-export function eyebrowTone(bg?: string): 'amber' | 'sky' {
-  return bg === 'navy' ? 'amber' : 'sky';
+export function eyebrowTone(bg?: string): 'amber' | 'sky' | 'heading' {
+  if (bg === 'navy') return 'amber';
+  // The sunshine band IS brand amber now, and sky-ink fails AA on it; the
+  // heading token holds in both themes (see Eyebrow.astro).
+  if (bg === 'sunshine') return 'heading';
+  return 'sky';
 }
 
 export function bandSize(section: SectionData): 'compact' | 'default' {
@@ -76,7 +82,7 @@ export function bandSize(section: SectionData): 'compact' | 'default' {
 // (mirror of each bridge's own `section.background ?? '<x>'`). Kept here so the
 // renderer can compute a section's effective background without importing every
 // bridge. ctaSection is special: it uses `tone`, not `background`.
-const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'navy'> = {
+const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy'> = {
   countdownSection: 'navy',
   instagramSection: 'navy',
   statBandSection: 'navy',
@@ -87,7 +93,9 @@ const BG_DEFAULT: Record<string, 'white' | 'grey' | 'cream' | 'navy'> = {
 };
 
 /** A section's rendered background, resolving the per-type default. */
-export function effectiveBg(section: SectionData): 'white' | 'grey' | 'cream' | 'navy' {
+export function effectiveBg(
+  section: SectionData,
+): 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy' {
   if (section._type === 'ctaSection') {
     return (section.tone as 'navy' | 'cream' | undefined) ?? 'navy';
   }
@@ -110,7 +118,11 @@ export function wantsSeam(thisBg: string, prevBg: string | null): boolean {
   // seam, whatever its color. `null` = a surface with no hero above (hub etc.).
   if (prevBg === 'hero') return true;
   if (prevBg === null) return false;
-  return (thisBg === 'cream' || thisBg === 'navy') && thisBg !== prevBg;
+  // 2026-09-01 (Nathan: "less hard section borders with straight lines"):
+  // EVERY real color change now carries the sweep, not just entries into a
+  // strong band — a flat edge between two colors is exactly the hard line
+  // the bold pass removes. Same-color neighbors still meet flat.
+  return thisBg !== prevBg;
 }
 
 /** Resolve a page slug to a root-relative href ("home" → "/"). */

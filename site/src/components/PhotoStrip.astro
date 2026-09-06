@@ -15,6 +15,7 @@
 import { photosFor } from '@/lib/photo-registry';
 import { imageUrl, imageSrcSet } from '@/lib/image';
 import { cn } from '@/lib/utils';
+import Seam from '@/components/Seam.astro';
 
 interface Props {
   /** Registry slot name — different slots pull different shots. */
@@ -23,8 +24,10 @@ interface Props {
   bg?: 'cream' | 'grey' | 'white';
   /** Optional short captions, applied to prints in order (code-owned copy). */
   captions?: string[];
+  /** Carry the sweep at the top (SectionRenderer's seam chain decides). */
+  seam?: boolean;
 }
-const { slot, bg = 'cream', captions = [] } = Astro.props;
+const { slot, bg = 'cream', captions = [], seam = false } = Astro.props;
 const photos = await photosFor(slot, 3);
 
 const bgClass: Record<string, string> = {
@@ -36,7 +39,11 @@ const bgClass: Record<string, string> = {
 
 {
   photos.length > 0 && (
-    <section class={cn('wcp-section', bgClass[bg])} aria-label="Photos from our classrooms">
+    <section
+      class={cn('wcp-section', seam && 'wcp-seamed relative -mt-px', bgClass[bg])}
+      aria-label="Photos from our classrooms"
+    >
+      {seam && <Seam color={bg} />}
       <div class="wcp-container py-[var(--wcp-space-xl)]">
         <ul class="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3" role="list">
           {photos.map((p, i) => (

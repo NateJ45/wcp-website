@@ -18,8 +18,8 @@
 // for a font nothing visible-at-load uses (Lighthouse, 2026-07-14).
 import Icon from '@/components/Icon.astro';
 import Prose from '@/components/Prose.astro';
-import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
+import { urlForImage } from '@/lib/image';
 import { renderPortableText } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 
@@ -31,6 +31,7 @@ interface PresidentNote {
   salutation?: string;
   body?: PortableTextBlock[];
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   photo?: { asset?: unknown; alt?: string } | null;
@@ -39,7 +40,7 @@ interface PresidentNote {
 let note: PresidentNote | null = null;
 try {
   note = await sanityFetch<PresidentNote | null>(
-    `*[_type == "presidentNote"][0]{ active, version, heading, dateLabel, salutation, body, signName, signRole, email, photo }`,
+    `*[_type == "presidentNote"][0]{ active, version, heading, dateLabel, salutation, body, signName, signoff, signRole, email, photo }`,
   );
 } catch {
   note = null;
@@ -86,13 +87,21 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
             {/* Photo + signer */}
             <div class="flex shrink-0 items-center gap-4 sm:w-40 sm:flex-col sm:text-center">
               {note!.photo?.asset ? (
-                <SanityImage
-                  source={note!.photo as never}
-                  alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
-                  widths={[160, 320]}
-                  sizes="10rem"
-                  class="h-20 w-20 rounded-full border-4 border-amber object-cover sm:h-32 sm:w-32"
-                />
+                <span class="inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-amber sm:h-32 sm:w-32">
+                  {/* SQUARE hotspot-aware CDN crop — see hub TeacherCard. */}
+                  <img
+                    src={urlForImage(note!.photo as never)
+                      .width(256)
+                      .height(256)
+                      .fit('crop')
+                      .url()}
+                    alt={note!.photo!.alt ?? note!.signName ?? 'Board President'}
+                    width="128"
+                    height="128"
+                    loading="lazy"
+                    class="h-full w-full object-cover"
+                  />
+                </span>
               ) : (
                 <span
                   class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-amber bg-grey font-display text-3xl text-heading sm:h-32 sm:w-32"
@@ -121,7 +130,7 @@ const role = note?.signRole?.replace(/(\d)-(?=\d)/g, '$1‑');
                 <Fragment set:html={bodyHtml} />
               </Prose>
               <div class="mt-6 border-t border-border pt-4">
-                <p class="text-sm text-ink-muted">With warmth,</p>
+                <p class="text-sm text-ink-muted">{note?.signoff?.trim() || 'With warmth,'}</p>
                 {/* Handwritten-signature moment — Great Vibes runs small for its
                     em size, so the jump to text-4xl reads as normal sign-off
                     scale. -rotate-2 gives it the slight off-axis of a real pen

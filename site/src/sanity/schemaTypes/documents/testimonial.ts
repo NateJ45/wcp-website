@@ -57,6 +57,13 @@ export const testimonial = defineType({
         'Which page(s) this quote fits. Lets us show the right quotes in the right place.',
     }),
     defineField({
+      name: 'rating',
+      title: 'Stars',
+      type: 'number',
+      description: 'How many stars this review gave (1–5). Empty means five.',
+      validation: (R) => R.min(1).max(5).error('Between 1 and 5.'),
+    }),
+    defineField({
       name: 'featured',
       title: 'Feature this one?',
       type: 'boolean',

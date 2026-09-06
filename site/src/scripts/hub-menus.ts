@@ -44,5 +44,3 @@ onPageLoad(() => {
     });
   }
 });
-
-export {};

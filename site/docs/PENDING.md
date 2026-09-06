@@ -5,7 +5,7 @@ patch script, add a row; when you run one, delete its row AND remove its
 stopgap (each row says how). A stale row here misleads the next session, which
 defeats the point.
 
-_Last reviewed: 2026-08-08._
+_Last reviewed: 2026-08-29._
 
 ## The 2026-08-04 quota-reset close-out (context)
 
@@ -24,11 +24,33 @@ Fixed same day: the script now writes real references and re-ran, and
 `resolveNavigation` warns at build time if a page link ever loses its
 reference again.
 
+## Run and closed out
+
+| Script (`site/scripts/`)   | What it did                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Run                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `patch-org-chart.mjs`      | Moved the org chart's SHAPE out of code and into the `coopRole` documents: every "Reports to" became a REFERENCE (the chart's columns derive from it), the three paid-staff seats the old chart carried in code became roles, the Class Rep role was ticked "one of these for every class", all 17 `roleHolder` documents were pointed at their seat (the four reps at the ONE Class Rep seat plus their class), and the five job-list headings were seeded onto "How the co-op works". Idempotent; re-running reports "already …" for every row. | 2026-08-29 (`--apply`) |
+| `patch-hub-classrooms.mjs` | Set "Classes on this page" on the two shipped Family Hub class pages (`twos-threes` → Twos + Threes, `pre-k` → Pre-K AM + PM) and moved the four committed class icons into their `class` documents. Idempotent; re-running reports "already …" for every row.                                                                                                                                                                                                                                                                                    | 2026-08-29 (`--apply`) |
+
+## Needs a human
+
+- **The page-parity baseline is stale by one CONTENT change (2026-08-29).**
+  `node scripts/page-parity.mjs compare` reports 0/27 and the ONLY difference on
+  all 27 pages is the site-wide alert banner: the `closureAlert` singleton was
+  switched OFF in the Studio at 15:05 UTC, and the committed baselines in
+  `scripts/.parity/` were captured at 13:45 UTC with it ON. The diff has ZERO
+  added markup anywhere, and every removed line belongs to `ClosureBanner.astro`,
+  which no code change has touched — so the harness is reporting content drift,
+  not a regression. **To close it:** confirm the alert is meant to be off, then
+  `npm run build && node scripts/page-parity.mjs capture` and commit the new
+  baselines. Until then the harness fails on every run, which is how a real
+  regression gets ignored.
+
 ## Queued patch scripts
 
-| Script (`site/scripts/`)          | What it does                                                                                                                                                                                           | Blocked on                                                                                                                                                                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `patch-home-visit-splitmedia.mjs` | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.** | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
+| Script (`site/scripts/`)          | What it does                                                                                                                                                                                                                                        | Blocked on                                                                                                                                                                                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patch-hub-spotlight-example.mjs` | Creates ONE example Spotlight pop-up document (Family Hub → Everyday edits → Spotlight pop-ups), **switched off**, so the Board opens a filled-in form instead of a blank list. Idempotent (fixed `_id`). **Dry-run by default; needs `--commit`.** | **RUN 2026-08-29** (`--commit`). The example document exists, switched OFF. Nothing left to do; a re-run is a no-op.                                                                                                                                |
+| `patch-home-visit-splitmedia.mjs` | Replaces `page-home`'s `hp-visit` proseSection with a real `splitMediaSection` (photo + the same copy), returning the home visit block to volunteer editing. **Dry-run by default; needs `--commit`.**                                              | A human choosing `PHOTO_PATH` (see "Waiting on a human"). After `--commit`: delete `VisitBlock.astro`, the `'visit'` moment in `photo-moments.ts`, both `SectionRenderer` branches, and `'hp-visit'` from `SECTION_DROP.home` in `page-doctrine.ts` |
 
 ## Field audit follow-ups (2026-08-23)
 
@@ -69,7 +91,87 @@ rather than debt — re-read this before "finishing the job":
   not before; adding either to the shared `ToolTheme` today would force a copy
   into every sibling repo for nobody's benefit.
 
+## Preview fidelity: 10 section bridges still fetch published-only (2026-08-29)
+
+Found in the volunteer walkthrough: a section component that calls `cmsFetch`
+itself reads the PUBLISHED perspective even inside the Studio preview, so a
+draft never shows there. The two money surfaces are fixed (the tuition
+calculator and the class-cards fees now ride `PAGE_BY_SLUG_QUERY`, which is
+draft-aware through `previewFetch` — same pattern as `tuitionTableSection`).
+Still published-only in preview: AlbumSection, BoardMembersSection,
+CampaignSection, DownloadsSection, InstagramSection, JobsSection,
+LatestPostsSection, LogoStripSection, ProgramCardsSection,
+UpcomingEventsSection. Live pages are unaffected (published is correct there).
+Fix pattern when one starts to matter: move the feed into the page query
+under a `_type == "..." =>` arm and keep the component fetch as the fallback
+for renderers that skip the page query (the hub body).
+
+## Pre-staff-handoff testing (2026-08-29): findings
+
+An in-depth "act as a volunteer, then try to break it" pass. Fixed items
+shipped this session; the two below are decisions/setup left for a human.
+
+### 1. Anti-spam is built but OFF, and covers only 2 of 4 public write forms
+
+Turnstile verification is wired and DORMANT - it turns on when
+`TURNSTILE_SECRET_KEY` (Worker secret) and `PUBLIC_TURNSTILE_SITE_KEY`
+(env var) are set. See docs/FORMS.md. **Before the public launch, set
+those keys.** Two gaps:
+
+- Only `/api/contact` and `/family-hub/api/photo-submit` verify the
+  token. `/api/testimonial` and `/api/subscribe` are public, write to
+  Sanity on every POST, and have ONLY the honeypot. A non-browser
+  script can spoof the Origin header (so the CSRF check does not stop
+  it) and skip the honeypot field, then flood the board's review inbox
+  and newsletter list, burning the Sanity write quota. Extending the
+  dormant Turnstile check to those two endpoints (and rendering the
+  widget on their forms) is a small, low-risk follow-up - worth doing
+  in the same pass that activates the keys.
+- There is no rate limit on any endpoint. Turnstile is the intended
+  defence; if it proves not enough, a Cloudflare dashboard rate-limit
+  rule on `/api/*` needs no code.
+
+### 2. Adding a class - BUILT DOWN TO 2 STEPS (2026-08-29, same day)
+
+The 4-step finding below was closed the same day: `classCardsSection`
+gained an "All classes, automatically" source mode (the Home / Enroll /
+Visit / A Day rows now use it; the Pre-K page's 2-class row stays
+manual), the Classes dropdown gained `autoClasses` (derives one link per
+class page, longest-prefix matched so Pre-K AM + PM share the
+classes/pre-k link; hand links like "A Day at WCP" follow), and the
+class doc gained a "Create its page" action that scaffolds the detail
+page from an existing class page as a draft. What remains manual is
+exactly the content: writing the new page's words and photos, and any
+deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
+(ran 2026-08-29) flipped the existing content; parity held 27/27.
+
 ## Waiting on a human
+
+- **Create the `BACKUP_PASSPHRASE` secret so nightly backups resume (added
+  2026-09-01).** The nightly Sanity backup uploaded the FULL dataset —
+  directory PII, health details, the share-by-link Google URLs — as a
+  plaintext artifact on this PUBLIC repo (any logged-in GitHub user can
+  download artifacts). Fixed 2026-09-01: the workflow now encrypts before
+  upload and refuses to run without the secret, and all 8 exposed artifacts
+  were deleted (one copy saved locally to `backups/`, gitignored). Backups
+  are PAUSED until the secret exists. One command:
+  `openssl rand -base64 32 | tee /dev/tty | gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website`
+  — then copy the printed value into the school records AND
+  `site/.dev.vars` (a backup nobody can decrypt is no backup). Full story in
+  [SANITY.md → Nightly dataset backup](SANITY.md#nightly-dataset-backup-added-2026-08-27).
+  Unknowable: whether anyone downloaded an artifact while they were public
+  (2026-08-28 → 2026-09-01). If the Board wants belt-and-braces, rotate the
+  share-by-link Google URLs (already on the list from the July audit).
+  Related cleanup when convenient: delete the retired `backup.yml` stub and
+  its now-unused `SANITY_BACKUP_TOKEN` secret.
+
+- **Give the Board second-admin access to the five accounts (added
+  2026-08-31).** [HANDOFF.md](HANDOFF.md) is the Board's "if the maintainer
+  disappears" note, and its first successor task assumes at least two board
+  members can reach GitHub, Cloudflare, Sanity, the Google pieces
+  ([GOOGLE.md](GOOGLE.md)), and Fourthwall. Today most of those are
+  single-owner. Until that changes, account access — not code — is the
+  project's biggest single point of failure.
 
 - **Mint the Cloudflare analytics token, then round-trip "Site stats" (added
   2026-08-28).** The Studio's new **Site stats** tool (Public website
@@ -250,9 +352,11 @@ rather than debt — re-read this before "finishing the job":
 
 ### Public-site transformation, Phase 0 (see docs/superpowers/specs/2026-07-17-public-site-transformation-design.md)
 
-- **DNS cutover** — www.westchesterpreschool.org still serves the old
-  Squarespace site. The single highest-leverage conversion item. Runbook:
-  [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). Verify a Search Console Domain
+- **DNS cutover — ON HOLD (2026-09-04).** www.westchesterpreschool.org still
+  serves the old Squarespace site, and Nathan is assuming the Board does not
+  want to move forward with the cutover. The build stays live on workers.dev
+  (Family Hub + Studio in use). If the Board ever says yes, the runbook is
+  [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); verify a Search Console Domain
   property (DNS TXT) BEFORE the flip.
 - **Seed the blog batch (Phase 3)** — Board approval pending; also give the
   fresh quota a day or two of calm before a large seeding run.
@@ -271,14 +375,11 @@ rather than debt — re-read this before "finishing the job":
 - **Supply the Google Business Profile review short URL** (g.page/r/...) for
   the code-owned review link + `hasMap`; code slot in `src/data/site.ts`.
 
-- **Cloudflare "Workers Builds" Git integration fails on EVERY commit.** It
-  runs `npx wrangler deploy` from the repo root with no install/build. Fix in
-  the dashboard (Workers & Pages → wcp-website → Settings → Build), pick ONE:
-  (a) RECOMMENDED: disconnect the Git integration — deploys already ride
-  deploy.yml; or (b) keep it for PR previews: root `site`, build
-  `npm ci && npm run build`, deploy
-  `npx wrangler deploy -c dist/server/wrangler.json`, build vars SANITY_TOKEN,
-  and disable production-branch builds.
+- ~~Cloudflare "Workers Builds" Git integration fails on EVERY commit~~ —
+  DONE 2026-09-03: Nathan disconnected the Git integration in the dashboard
+  (verified via API: no build configuration, zero triggers on the Worker).
+  Deploys ride `deploy.yml` only, as intended. 489 failed builds were the
+  cost of it lingering since August.
 - **Board-approved wording for the safety trust answers** (background checks,
   CPR/first-aid certification, ratios, kindergarten readiness) so /safety and
   /faq can answer the questions parents actually screen for.
@@ -289,15 +390,27 @@ rather than debt — re-read this before "finishing the job":
   2026-07-17 list in [SANITY.md](SANITY.md) / `deploy.yml` (drop the dead
   `classNote`, add `hubPage`, `teacherNote`, `presidentNote`, `signupSheet`,
   `signupEntry`).
-- **Re-paste the deployed calendar-feed script**: the checked-in
-  `scripts/apps-script/calendar-feed.gs` now filters prospective-family tour
-  bookings ("Tour with …" titles carry visitor and child names) out of the
-  feed (2026-08-08). The site filters them too (`isTourBooking` in
-  `src/lib/hub-calendar.ts`), so the hub already hides them — redeploying the
-  script keeps the names from leaving Google at all (Deploy → Manage
-  deployments → new version — same URL). Related but separate: the tour
-  bookings still sit on the PUBLIC school calendar (embed + ICS); moving them
-  to a private calendar is the real fix at the source.
+- **Re-paste the deployed calendar-feed script one more time** — Version 5
+  (deployed 2026-08-29) closed the two long-waiting changes: it drops
+  prospective-family tour bookings at the source (visitor/child names no
+  longer leave Google) and emits `created` per event (the bell's "Added to
+  the calendar" rows, verified live). The checked-in script has since gained
+  three more optional fields: `updated` (`getLastUpdated`, powers the bell's
+  "Updated on the calendar" rows for reschedules), `id` (stable event id),
+  and `recurring` (so a weekly series never announces instance-by-instance).
+  Until the redeploy those fields are simply absent and the site behaves
+  exactly as today — no error, and "Updated" rows just don't appear yet.
+
+  How: Apps Script → open the project → paste
+  `scripts/apps-script/calendar-feed.gs` over the file → Deploy → **Manage
+  deployments** → edit the existing deployment → New version. Same /exec URL,
+  nothing in Sanity changes. Check by opening the /exec URL: events should
+  carry `"updated"`.
+
+  Related but separate: the tour bookings still sit on the PUBLIC school
+  calendar (embed + ICS); moving them to a private calendar is the real fix at
+  the source.
+
 - **Re-paste the deployed forms-inbox script**: the checked-in
   `scripts/apps-script/forms-inbox.gs` gained `hours`/`photo` tabs + the photo
   FYI email (2026-07-17); the DEPLOYED copy coerces those kinds into the

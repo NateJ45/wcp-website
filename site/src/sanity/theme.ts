@@ -34,11 +34,34 @@ function brandFont(font: ThemeFont): ThemeFont {
 // post-hoc `theme.fonts.family` patch is ignored and the Studio stays on Inter.
 const defaults = buildTheme();
 
-export const wcpStudioTheme: RootTheme = buildTheme({
-  font: {
-    ...defaults.fonts,
-    text: brandFont(defaults.fonts.text),
-    label: brandFont(defaults.fonts.label),
-    heading: brandFont(defaults.fonts.heading),
+const brandFonts = {
+  ...defaults.fonts,
+  text: brandFont(defaults.fonts.text),
+  label: brandFont(defaults.fonts.label),
+  heading: brandFont(defaults.fonts.heading),
+};
+
+export const wcpStudioTheme: RootTheme = buildTheme({ font: brandFonts });
+
+// The Family Hub workspace gets a WARM twin of the same theme, so a volunteer
+// always knows which door they are in — the same trick the site plays (navy
+// hub island vs paper-white public pages). Only HUES change: buildTheme still
+// derives every tint from the tested @sanity/color scales, so both schemes
+// stay accessible and the dark-mode toggle keeps working.
+//  - base default/transparent → yellow: a faint warm cast on the chrome.
+//  - primary + selection → orange: buttons, tabs and the selected row read
+//    orange here instead of the default blue.
+export const wcpHubStudioTheme: RootTheme = buildTheme({
+  font: brandFonts,
+  color: {
+    base: {
+      default: { _hue: 'yellow' },
+      transparent: { _hue: 'yellow' },
+      primary: { _hue: 'orange' },
+    },
+    selectable: {
+      default: { _hue: 'yellow' },
+      primary: { _hue: 'orange' },
+    },
   },
 });

@@ -100,3 +100,4 @@ playwright/.cache/
 # Saved Family Hub session from tests/hub-auth.setup.ts — a real signed-in
 # cookie for whatever password .dev.vars holds. Never commit it.
 site/tests/.auth/
+/backups/

@@ -50,5 +50,3 @@ function init() {
 }
 
 onPageLoad(init);
-
-export {};

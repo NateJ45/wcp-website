@@ -17,8 +17,13 @@
 import '../styles/globals.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import ClosureBanner from '@/components/ClosureBanner.astro';
 import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
 import { docEditAttr } from '@/lib/preview-edit-attr';
+import { ensureInternalRouteMap } from '@/lib/portable-text';
+import { previewFetch } from '@/lib/cms-preview';
+import { CLOSURE_ALERT_QUERY } from '@/lib/queries';
+import type { ClosureAlert } from '@/lib/cms';
 
 interface Props {
   title: string;
@@ -54,6 +59,7 @@ const { title, draftMode, pageId, chrome = 'public' } = Astro.props;
 // The response is still a valid page, just a chrome-less one. Nobody looks at
 // it: this header is only ever sent by the refetch in the overlay, never by a
 // navigation. Preview-only either way — the static build never reaches here.
+await ensureInternalRouteMap();
 const softRefresh = Astro.request.headers.get('x-preview-soft-refresh') === '1';
 const showChrome = chrome === 'public' && !softRefresh;
 
@@ -63,6 +69,31 @@ const showChrome = chrome === 'public' && !softRefresh;
 // footer → Site settings (its contact/identity content).
 const headerAttr = docEditAttr('navigation', 'navigation', 'mainNav');
 const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
+
+// THE SITE-WIDE ALERT, WHICH THIS SHELL USED TO SWALLOW (2026-08-29).
+// BaseLayout draws ClosureBanner at the top of every public page; this shell
+// never did. So an editor could switch the Alert on, watch the preview, see
+// nothing change, and have no way to check the wording or the tone before
+// publishing it to the whole site — which is the one piece of content where
+// getting it wrong in public matters most.
+//
+// Read draft-aware, so the banner appears the moment the toggle flips rather
+// than after Publish, and gated on the same `active && message` rule
+// getClosureAlert applies — the preview must not show a banner the live site
+// would not.
+//
+// Skipped on a soft refresh with the rest of the chrome: it renders OUTSIDE
+// <main>, which is the only thing the overlay's reconcile reads back, so
+// rendering it there would cost a Sanity read whose output is discarded. The
+// consequence is that toggling the Alert shows up on the next full navigation,
+// not mid-keystroke — the same deal Header and Footer already have.
+// Gated on softRefresh, NOT on showChrome: BaseLayout draws this banner on
+// every page including the hub, and it is the marketing header/footer that the
+// hub preview drops, not an urgent closure notice.
+const alertDoc = softRefresh
+  ? null
+  : await previewFetch<ClosureAlert | null>(draftMode, CLOSURE_ALERT_QUERY);
+const closureAlert = alertDoc?.active && alertDoc.message ? alertDoc : null;
 ---
 
 <!doctype html>
@@ -99,6 +130,7 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
     </style>
   </head>
   <body class="relative">
+    {closureAlert && <ClosureBanner alert={closureAlert} />}
     {
       showChrome && (
         <div data-sanity={headerAttr}>
@@ -155,7 +187,7 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
       // a NEW TAB so the preview surface is never hijacked. Route map:
       //   /               -> /preview
       //   /news/<slug>    -> /preview/news/<slug>       (post preview route)
-      //   /family-hub/... -> /preview/family-hub/...    (hub preview route)
+      //   /family-hub/... -> /family-hub/...            (previews at its real route)
       //   /<page slug>    -> /preview/<page slug>       (multi-segment slugs ok)
       document.addEventListener(
         'click',
@@ -190,6 +222,10 @@ const footerAttr = docEditAttr('siteSettings', 'siteSettings', 'name');
           const first = path === '/' ? '' : path.split('/')[1];
           // Already in preview, an API/Studio path, or a same-page hash: default.
           if (path.startsWith('/preview') || first === 'api' || first === 'studio') return;
+          // The hub previews AT its real routes since 2026-08-30 (the pages
+          // accept the Studio cookie and go draft-aware themselves), so a hub
+          // link navigates straight there — no /preview remap.
+          if (first === 'family-hub') return;
           if (path === window.location.pathname && url.hash) return;
           // A real file (pdf, image, ics...) has no preview: new tab when
           // standalone, suppressed when embedded (edit gesture).

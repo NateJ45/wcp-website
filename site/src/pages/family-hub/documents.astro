@@ -10,6 +10,12 @@
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
+import {
+  categoryFor,
+  countWord,
+  orderedCategories,
+  titleizeCategory,
+} from '@/lib/hub-doc-categories';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
@@ -21,27 +27,27 @@ import SectionRenderer from '@/components/sections/SectionRenderer.astro';
 import { documentGroups as fallbackGroups, driveFolderUrl } from '@/data/hub/documents';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
 
-const GROUP_META: Record<string, { label: string; action: string; intro?: string }> = {
-  required: {
-    label: 'Required Forms',
-    action: 'Open form',
-    intro:
-      'Ohio state licensing requires these four on file before your child’s first day. New families, start here.',
-  },
-  handbook: { label: 'Handbooks & Policies', action: 'Open document' },
-  orient: { label: 'Orientation Materials', action: 'View' },
-  minutes: { label: 'Meeting Minutes', action: 'Open document' },
-};
-const GROUP_ORDER = ['required', 'handbook', 'orient', 'minutes'];
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
+
+// Labels + order come from the shared registry (src/lib/hub-doc-categories.ts,
+// the same list the Studio dropdown shows), and the required-forms intro
+// derives its COUNT instead of hardcoding "four" (W1.5, 2026-08-31).
+const requiredIntro = (n: number) =>
+  `Ohio state licensing requires ${n > 0 ? `these ${countWord(n)}` : 'certain forms'} on file before your child’s first day. New families, start here.`;
 
 interface HubDocDoc {
   title: string;
@@ -53,11 +59,9 @@ interface HubDocDoc {
 }
 // Independent of the document-list read — start now, await later (2026-07
 // hub-speed pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(
-  HUB_PAGE_QUERY,
-  { key: 'documents' },
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
+const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'documents',
+}).catch(() => null);
 
 // The built-in fallback now ships with empty hrefs (share links were redacted
 // from src/data/hub/documents.ts — public repo). Drop any doc without a link so
@@ -77,11 +81,18 @@ try {
   );
   const usable = docs.filter((d) => d.href);
   if (usable.length > 0) {
-    documentGroups = GROUP_ORDER.filter((k) => usable.some((d) => d.category === k)).map((k) => ({
+    // Registry order first, then any category the registry has never heard of
+    // (titleized from the raw value) — a document filed somewhere new is shown,
+    // never dropped.
+    const present = usable.map((d) => d.category ?? '');
+    documentGroups = orderedCategories(present).map((k) => ({
       key: k,
-      label: GROUP_META[k]?.label ?? k,
-      action: GROUP_META[k]?.action ?? 'Open',
-      intro: GROUP_META[k]?.intro,
+      label: categoryFor(k)?.groupLabel ?? titleizeCategory(k),
+      action: categoryFor(k)?.action ?? 'Open',
+      intro:
+        k === 'required'
+          ? requiredIntro(usable.filter((d) => d.category === 'required').length)
+          : undefined,
       docs: usable
         .filter((d) => d.category === k)
         .map((d) => ({
@@ -122,7 +133,12 @@ const intro =
   'Family Handbook, Bylaws, Standing Rules, and the state forms families need on file. Everything to read, sign, or refer back to.';
 ---
 
-<HubShell title={title} bare pageTitle="Documents — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Documents — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="folder-open">
@@ -161,9 +177,9 @@ const intro =
                   <Icon name="file-check" class="h-5 w-5" />
                 </span>
                 <p class="min-w-0 flex-1 text-sm leading-relaxed text-ink">
-                  <strong class="font-bold text-heading">New families:</strong> the four Required
-                  Forms below must be on file before your child’s first day — Ohio state licensing
-                  requires them.
+                  <strong class="font-bold text-heading">New families:</strong> the{' '}
+                  {countWord(activeGroup.docs.length)} Required Forms below must be on file before
+                  your child’s first day — Ohio state licensing requires them.
                 </p>
               </HubCard>
             )}

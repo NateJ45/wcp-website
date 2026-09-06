@@ -1,5 +1,6 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list';
+import { iconField } from '../objects/_shared';
 
 // =============================================================================
 // Class / Program
@@ -36,12 +37,46 @@ export const classType = defineType({
       group: 'basics',
       options: { source: 'name', maxLength: 40 },
       description: 'The web address piece, e.g. "twos". Click Generate.',
-      validation: (R) => R.required().error('Click Generate to give this class a web address.'),
+      // The error is the old rule; the WARNING is new (2026-08-29). Everything
+      // the class touches is joined on this slug - the Family Hub classroom's
+      // address, the public page's longest-prefix match, the teacher welcome
+      // note's key, the supply/curriculum per-class lists, families'
+      // "my classes" picks. Testing found the field accepted a change to an
+      // established class SILENTLY, quietly breaking every one of those joins.
+      // A warning (not an error) because a typo fixed five minutes after
+      // creation is legitimate; the copy tells the volunteer what actually
+      // moves and what usually wants changing instead.
+      validation: (R) => [
+        R.required().error('Click Generate to give this class a web address.'),
+        R.custom(async (value, context) => {
+          const id = context.document?._id?.replace(/^drafts\./, '');
+          if (!id || !value?.current) return true;
+          const client = context.getClient({ apiVersion: '2025-01-01' });
+          const published = await client.fetch(
+            `*[_id == $id][0].slug.current`,
+            { id },
+            { perspective: 'published' },
+          );
+          if (!published || published === value.current) return true;
+          return (
+            `Changing the address of an established class moves its Family Hub page ` +
+            `(/family-hub/${published} stops working, families' bookmarks with it), and ` +
+            `detaches its public page, teacher welcome note, and supply list until those ` +
+            `are updated to match. To rename the class families see, change the NAME above instead.`
+          );
+        }).warning(),
+      ],
     }),
-    // DEAD (field audit 2026-08-23): nothing renders a class icon — the hub
-    // deliberately reads its icons from src/data/classes.ts. Hidden, not
-    // removed, so old documents keep validating. See docs/FIELD_AUDIT.md.
-    defineField({ name: 'icon', title: 'Icon', type: 'string', hidden: true }),
+    // LIVE AGAIN (2026-08-29): the hub used to read every class icon from
+    // src/data/classes.ts, which only knows the four classes the site shipped
+    // with — so a class added later had no icon anywhere. The Studio owns it
+    // now; the committed icon is the fallback for the original four.
+    iconField('icon', {
+      title: 'Class icon',
+      group: 'basics',
+      description:
+        'The little picture beside this class on the Family Hub — its tile, its page, and its photo album link.',
+    }),
     defineField({
       name: 'color',
       title: 'Class color',
@@ -177,6 +212,23 @@ export const classType = defineType({
       group: 'tuition',
       description:
         'The payment link from the PayPal button for this class’s student fee (Copy link in PayPal; older buttons used a short code, which still works). This is the ONLY place it is set — the Tuition page’s student-fee button reads it from here. Classes sharing an amount AND this link are shown as one button. Changing this changes where the money goes. Step-by-step help: Help & Guide → "Change tuition or fees".',
+    }),
+    defineField({
+      name: 'extraFacts',
+      title: 'Extra fact rows (optional)',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'label', title: 'Label', type: 'string' }),
+            defineField({ name: 'value', title: 'Value', type: 'string' }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'value' } },
+        }),
+      ],
+      description:
+        'Extra rows on the class fact card after Days/Time/Monthly/Student fee — e.g. a sibling discount or a lunch add-on. Label + value, shown in order.',
     }),
 
     // DEAD (field audit 2026-08-23): the class page's hero and learning cards

@@ -64,24 +64,104 @@ export type SignupEntry = {
   submittedAt?: string;
 };
 
-export type TeacherNote = {
+export type HubPageReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'hubPage';
+};
+
+export type UpdateReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'update';
+};
+
+export type HubSpotlight = {
   _id: string;
-  _type: 'teacherNote';
+  _type: 'hubSpotlight';
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  class?: 'twos' | 'threes' | 'pre-k';
-  active?: boolean;
-  version?: string;
+  title?: string;
   heading?: string;
   dateLabel?: string;
-  salutation?: string;
-  body?: BlockContent;
-  signName?: string;
-  signRole?: string;
-  email?: string;
-  phone?: string;
-  photo?: {
+  summary?: string;
+  body?: PostBody;
+  tone?: 'info' | 'good' | 'warning' | 'brand';
+  icon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'scale'
+    | 'bell'
+    | 'building-2'
+    | 'blocks'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'hand-heart'
+    | 'banknote'
+    | 'file-check'
+    | 'check'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'file-text'
+    | 'circle-dollar-sign'
+    | 'dumbbell'
+    | 'egg'
+    | 'mail'
+    | 'eye'
+    | 'file-pen'
+    | 'flower'
+    | 'folder'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'heart-handshake'
+    | 'heart'
+    | 'heart-pulse'
+    | 'house'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'map-pin'
+    | 'megaphone'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'book-open'
+    | 'door-open'
+    | 'folder-open'
+    | 'palette'
+    | 'send'
+    | 'party-popper'
+    | 'pencil'
+    | 'users'
+    | 'phone'
+    | 'image'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'school'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'message-circle'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down';
+  image?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
@@ -89,6 +169,29 @@ export type TeacherNote = {
     alt?: string;
     _type: 'image';
   };
+  linkLabel?: string;
+  linkKind?: 'builtin' | 'hubPage' | 'update' | 'url' | 'store';
+  builtinHref?:
+    | '/family-hub/updates'
+    | '/family-hub/calendar'
+    | '/family-hub/getting-started'
+    | '/family-hub/super-helper'
+    | '/family-hub/documents'
+    | '/family-hub/health'
+    | '/family-hub/tuition'
+    | '/family-hub/fundraising'
+    | '/family-hub/directory'
+    | '/family-hub/coop-jobs'
+    | '/family-hub/celebrations'
+    | 'https://store.westchesterpreschool.org/';
+  page?: HubPageReference;
+  update?: UpdateReference;
+  url?: string;
+  active?: boolean;
+  version?: string;
+  showFrom?: string;
+  showUntil?: string;
+  orderRank?: string;
 };
 
 export type SanityImageCrop = {
@@ -107,6 +210,157 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
+export type PageReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'page';
+};
+
+export type PostReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'post';
+};
+
+export type EventReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'event';
+};
+
+export type PostBody = Array<
+  | {
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: 'span';
+        _key: string;
+      }>;
+      style?: 'normal' | 'h2' | 'h3' | 'blockquote';
+      listItem?: 'bullet' | 'number';
+      markDefs?: Array<
+        | {
+            reference?: PageReference | PostReference | HubPageReference;
+            _type: 'internalLink';
+            _key: string;
+          }
+        | {
+            href?: string;
+            _type: 'link';
+            _key: string;
+          }
+      >;
+      level?: number;
+      _type: 'block';
+      _key: string;
+    }
+  | {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+      _type: 'image';
+      _key: string;
+    }
+  | {
+      tone?: 'sky' | 'warm';
+      text?: string;
+      _type: 'calloutBlock';
+      _key: string;
+    }
+  | {
+      label?: string;
+      url?: string;
+      _type: 'buttonBlock';
+      _key: string;
+    }
+  | {
+      sheet?: SignupSheetReference;
+      _type: 'signupCard';
+      _key: string;
+    }
+  | {
+      event?: EventReference;
+      _type: 'eventCard';
+      _key: string;
+    }
+  | {
+      headerRow?: boolean;
+      rows?: Array<{
+        cells?: Array<string>;
+        _type: 'tableRow';
+        _key: string;
+      }>;
+      _type: 'tableBlock';
+      _key: string;
+    }
+  | {
+      left?: BlockContent;
+      right?: BlockContent;
+      _type: 'twoColumns';
+      _key: string;
+    }
+  | {
+      url?: string;
+      title?: string;
+      _type: 'videoEmbed';
+      _key: string;
+    }
+  | {
+      images?: Array<{
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        caption?: string;
+        _type: 'image';
+        _key: string;
+      }>;
+      _type: 'postGallery';
+      _key: string;
+    }
+  | {
+      file?: FileAttachmentFile;
+      title?: string;
+      _type: 'fileAttachment';
+      _key: string;
+    }
+>;
+
+export type TeacherNote = {
+  _id: string;
+  _type: 'teacherNote';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  class?: string;
+  active?: boolean;
+  version?: string;
+  heading?: string;
+  dateLabel?: string;
+  salutation?: string;
+  body?: BlockContent;
+  signName?: string;
+  signoff?: string;
+  signRole?: string;
+  email?: string;
+  phone?: string;
+  photo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: 'image';
+  };
+};
+
 export type BlockContent = Array<{
   children?: Array<{
     marks?: Array<string>;
@@ -116,11 +370,18 @@ export type BlockContent = Array<{
   }>;
   style?: 'normal' | 'h3' | 'h4' | 'blockquote';
   listItem?: 'bullet' | 'number';
-  markDefs?: Array<{
-    href?: string;
-    _type: 'link';
-    _key: string;
-  }>;
+  markDefs?: Array<
+    | {
+        reference?: PageReference | PostReference | HubPageReference;
+        _type: 'internalLink';
+        _key: string;
+      }
+    | {
+        href?: string;
+        _type: 'link';
+        _key: string;
+      }
+  >;
   level?: number;
   _type: 'block';
   _key: string;
@@ -133,7 +394,7 @@ export type HubDocument = {
   _updatedAt: string;
   _rev: string;
   title?: string;
-  category?: 'required' | 'handbook' | 'orient' | 'minutes';
+  category?: 'required' | 'handbook' | 'orient' | 'minutes' | 'other';
   description?: string;
   icon?:
     | 'arrow-right'
@@ -255,108 +516,6 @@ export type Update = {
   body?: PostBody;
 };
 
-export type EventReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'event';
-};
-
-export type PostBody = Array<
-  | {
-      children?: Array<{
-        marks?: Array<string>;
-        text?: string;
-        _type: 'span';
-        _key: string;
-      }>;
-      style?: 'normal' | 'h2' | 'h3' | 'blockquote';
-      listItem?: 'bullet' | 'number';
-      markDefs?: Array<{
-        href?: string;
-        _type: 'link';
-        _key: string;
-      }>;
-      level?: number;
-      _type: 'block';
-      _key: string;
-    }
-  | {
-      asset?: SanityImageAssetReference;
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      alt?: string;
-      caption?: string;
-      _type: 'image';
-      _key: string;
-    }
-  | {
-      tone?: 'sky' | 'warm';
-      text?: string;
-      _type: 'calloutBlock';
-      _key: string;
-    }
-  | {
-      label?: string;
-      url?: string;
-      _type: 'buttonBlock';
-      _key: string;
-    }
-  | {
-      sheet?: SignupSheetReference;
-      _type: 'signupCard';
-      _key: string;
-    }
-  | {
-      event?: EventReference;
-      _type: 'eventCard';
-      _key: string;
-    }
-  | {
-      headerRow?: boolean;
-      rows?: Array<{
-        cells?: Array<string>;
-        _type: 'tableRow';
-        _key: string;
-      }>;
-      _type: 'tableBlock';
-      _key: string;
-    }
-  | {
-      left?: BlockContent;
-      right?: BlockContent;
-      _type: 'twoColumns';
-      _key: string;
-    }
-  | {
-      url?: string;
-      title?: string;
-      _type: 'videoEmbed';
-      _key: string;
-    }
-  | {
-      images?: Array<{
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        caption?: string;
-        _type: 'image';
-        _key: string;
-      }>;
-      _type: 'postGallery';
-      _key: string;
-    }
-  | {
-      file?: FileAttachmentFile;
-      title?: string;
-      _type: 'fileAttachment';
-      _key: string;
-    }
->;
-
 export type Slug = {
   _type: 'slug';
   current?: string;
@@ -405,11 +564,18 @@ export type RichProse = Array<{
   }>;
   style?: 'normal' | 'h2' | 'h3' | 'blockquote';
   listItem?: 'bullet' | 'number';
-  markDefs?: Array<{
-    href?: string;
-    _type: 'link';
-    _key: string;
-  }>;
+  markDefs?: Array<
+    | {
+        reference?: PageReference | PostReference | HubPageReference;
+        _type: 'internalLink';
+        _key: string;
+      }
+    | {
+        href?: string;
+        _type: 'link';
+        _key: string;
+      }
+  >;
   level?: number;
   _type: 'block';
   _key: string;
@@ -583,6 +749,20 @@ export type HoursLog = {
   submittedAt?: string;
 };
 
+export type CoopRoleReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'coopRole';
+};
+
+export type ClassReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'class';
+};
+
 export type DirectoryEntryReference = {
   _ref: string;
   _type: 'reference';
@@ -596,24 +776,8 @@ export type RoleHolder = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  role?:
-    | 'President'
-    | 'Vice President'
-    | 'Treasurer'
-    | 'Secretary'
-    | 'Teacher \u2014 Pre-K'
-    | 'Teacher \u2014 Twos & Threes'
-    | 'Administrator'
-    | 'Publicity Chair'
-    | 'Enrichment Coordinator'
-    | 'Copy Room Helper'
-    | 'Facilities Chair'
-    | 'Family Activities Chair'
-    | 'Fundraising Chair'
-    | 'Twos Rep'
-    | 'Threes Rep'
-    | 'Pre-K AM Rep'
-    | 'Pre-K PM Rep';
+  seat?: CoopRoleReference;
+  forClass?: ClassReference;
   person?: string;
   photo?: {
     asset?: SanityImageAssetReference;
@@ -626,6 +790,7 @@ export type RoleHolder = {
   email?: string;
   contactFrom?: DirectoryEntryReference;
   note?: string;
+  role?: string;
 };
 
 export type DirectoryEntry = {
@@ -678,7 +843,6 @@ export type CoopRole = {
   _updatedAt: string;
   _rev: string;
   name?: string;
-  tier?: 'board' | 'chairs' | 'reps' | 'committee';
   icon?:
     | 'arrow-right'
     | 'award'
@@ -750,10 +914,13 @@ export type CoopRole = {
     | 'tent'
     | 'trees'
     | 'trending-down';
-  team?: string;
-  reportsTo?: string;
-  stipend?: string;
   body?: string;
+  stipend?: string;
+  tier?: 'board' | 'staff' | 'chairs' | 'reps' | 'committee';
+  reportsTo?: CoopRoleReference;
+  perClass?: boolean;
+  team?: string;
+  reportsToLabel?: string;
   order?: number;
   orderRank?: string;
 };
@@ -831,13 +998,6 @@ export type Submission = {
   pageUrl?: string;
   submittedAt?: string;
   handled?: boolean;
-};
-
-export type PageReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'page';
 };
 
 export type Announcement = {
@@ -974,32 +1134,6 @@ export type NewsletterIssue = {
   coverImage?: FigureImage;
   body?: PostBody;
   emailedAt?: string;
-  seoDescription?: string;
-  ogImage?: FigureImage;
-};
-
-export type StaffReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'staff';
-};
-
-export type Post = {
-  _id: string;
-  _type: 'post';
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
-  slug?: Slug;
-  publishedAt?: string;
-  category?: 'news' | 'announcements' | 'events' | 'learning';
-  author?: StaffReference;
-  coverImage?: FigureImage;
-  excerpt?: string;
-  body?: PostBody;
-  seoTitle?: string;
   seoDescription?: string;
   ogImage?: FigureImage;
 };
@@ -1266,9 +1400,17 @@ export type Testimonial = {
     _type: 'image';
   };
   tags?: Array<string>;
+  rating?: number;
   featured?: boolean;
   order?: number;
   orderRank?: string;
+};
+
+export type StaffReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'staff';
 };
 
 export type Class = {
@@ -1279,7 +1421,77 @@ export type Class = {
   _rev: string;
   name?: string;
   slug?: Slug;
-  icon?: string;
+  icon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'scale'
+    | 'bell'
+    | 'building-2'
+    | 'blocks'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'hand-heart'
+    | 'banknote'
+    | 'file-check'
+    | 'check'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'file-text'
+    | 'circle-dollar-sign'
+    | 'dumbbell'
+    | 'egg'
+    | 'mail'
+    | 'eye'
+    | 'file-pen'
+    | 'flower'
+    | 'folder'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'heart-handshake'
+    | 'heart'
+    | 'heart-pulse'
+    | 'house'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'map-pin'
+    | 'megaphone'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'book-open'
+    | 'door-open'
+    | 'folder-open'
+    | 'palette'
+    | 'send'
+    | 'party-popper'
+    | 'pencil'
+    | 'users'
+    | 'phone'
+    | 'image'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'school'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'message-circle'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down';
   color?: 'amber' | 'green' | 'orange' | 'sky' | 'navy';
   tagline?: string;
   teacher?: StaffReference;
@@ -1301,6 +1513,11 @@ export type Class = {
   studentFee?: string;
   payId?: string;
   studentFeePayId?: string;
+  extraFacts?: Array<{
+    label?: string;
+    value?: string;
+    _key: string;
+  }>;
   heroImage?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -1317,29 +1534,6 @@ export type Class = {
   orderRank?: string;
 };
 
-export type Staff = {
-  _id: string;
-  _type: 'staff';
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  name?: string;
-  honorific?: string;
-  role?: string;
-  years?: string;
-  email?: string;
-  photo?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: 'image';
-  };
-  pullQuote?: string;
-  bio?: BlockContent;
-  order?: number;
-};
-
 export type PresidentNote = {
   _id: string;
   _type: 'presidentNote';
@@ -1353,6 +1547,7 @@ export type PresidentNote = {
   salutation?: string;
   body?: BlockContent;
   signName?: string;
+  signoff?: string;
   signRole?: string;
   email?: string;
   photo?: {
@@ -1427,7 +1622,7 @@ export type SupplyList = {
   dueNote?: string;
   waterNote?: string;
   lists?: Array<{
-    slug?: 'twos' | 'threes' | 'pre-k-am' | 'pre-k-pm';
+    slug?: string;
     items?: Array<string>;
     _key: string;
   }>;
@@ -1444,7 +1639,7 @@ export type CurriculumGuide = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  class?: 'twos' | 'threes' | 'pre-k';
+  class?: string;
   kicker?: string;
   title?: string;
   intro?: string;
@@ -1481,10 +1676,18 @@ export type HubSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  welcomeLine?: string;
   familyHandbook?: {
     asset?: SanityFileAssetReference;
     media?: unknown;
     _type: 'file';
+  };
+  familyHandbookCover?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: 'image';
   };
   coopHoursGoal?: number;
   familyCount?: number;
@@ -1493,6 +1696,88 @@ export type HubSettings = {
     amount?: number;
     _key: string;
   }>;
+  superHelper?: {
+    name?: string;
+    blurb?: string;
+    requirements?: Array<{
+      icon?:
+        | 'arrow-right'
+        | 'award'
+        | 'baby'
+        | 'scale'
+        | 'bell'
+        | 'building-2'
+        | 'blocks'
+        | 'cake'
+        | 'calculator'
+        | 'calendar-days'
+        | 'camera'
+        | 'hand-heart'
+        | 'banknote'
+        | 'file-check'
+        | 'check'
+        | 'clipboard-list'
+        | 'clock'
+        | 'coins'
+        | 'contact'
+        | 'file-text'
+        | 'circle-dollar-sign'
+        | 'dumbbell'
+        | 'egg'
+        | 'mail'
+        | 'eye'
+        | 'file-pen'
+        | 'flower'
+        | 'folder'
+        | 'gift'
+        | 'graduation-cap'
+        | 'hand'
+        | 'heart-handshake'
+        | 'heart'
+        | 'heart-pulse'
+        | 'house'
+        | 'info'
+        | 'languages'
+        | 'leaf'
+        | 'list'
+        | 'lock'
+        | 'map-pin'
+        | 'megaphone'
+        | 'microscope'
+        | 'moon'
+        | 'newspaper'
+        | 'notebook-pen'
+        | 'book-open'
+        | 'door-open'
+        | 'folder-open'
+        | 'palette'
+        | 'send'
+        | 'party-popper'
+        | 'pencil'
+        | 'users'
+        | 'phone'
+        | 'image'
+        | 'piggy-bank'
+        | 'puzzle'
+        | 'school'
+        | 'shield-check'
+        | 'shopping-bag'
+        | 'snowflake'
+        | 'sparkles'
+        | 'message-circle'
+        | 'sprout'
+        | 'star'
+        | 'sun'
+        | 'tent'
+        | 'trees'
+        | 'trending-down';
+      title?: string;
+      detail?: string;
+      url?: string;
+      _key: string;
+    }>;
+    footnote?: string;
+  };
   budgetSheetId?: string;
   calendarFeedUrl?: string;
   googleCalendarId?: string;
@@ -1508,6 +1793,11 @@ export type HubStore = {
   storeUrl?: string;
   storeHeadline?: string;
   storeTagline?: string;
+  shippingLine?: string;
+  featuredCollection?: string;
+  salesRowName?: string;
+  salesGoal?: number;
+  openedLabel?: string;
   storeProducts?: Array<{
     title?: string;
     price?: string;
@@ -1582,6 +1872,7 @@ export type HubTour = {
   _updatedAt: string;
   _rev: string;
   enabled?: boolean;
+  hiddenSteps?: Array<string>;
   version?: string;
   welcomeTitle?: string;
   welcomeBody?: string;
@@ -1601,27 +1892,20 @@ export type HubTour = {
   helpBody?: string;
 };
 
-export type HubPageReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'hubPage';
-};
-
 export type HubNavMenu = {
   _id: string;
   _type: 'hubNavMenu';
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  tabBar?: Array<string>;
   groups?: Array<{
     label?: string;
     accent?: 'sky' | 'amber' | 'green' | 'orange';
+    autoClasses?: boolean;
     links?: Array<
       | {
           target?:
-            | '/family-hub/twos-threes'
-            | '/family-hub/pre-k'
             | '/family-hub/updates'
             | '/family-hub/calendar'
             | '/family-hub/getting-started'
@@ -1728,167 +2012,6 @@ export type HubNavMenu = {
   }>;
 };
 
-export type HubPage = {
-  _id: string;
-  _type: 'hubPage';
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
-  hubKey?:
-    | 'home'
-    | 'calendar'
-    | 'coop-jobs'
-    | 'documents'
-    | 'tuition'
-    | 'updates'
-    | 'fundraising'
-    | 'health'
-    | 'directory'
-    | 'twos-threes'
-    | 'pre-k';
-  slug?: string;
-  navIcon?:
-    | 'arrow-right'
-    | 'award'
-    | 'baby'
-    | 'banknote'
-    | 'bell'
-    | 'blocks'
-    | 'book-open'
-    | 'building-2'
-    | 'cake'
-    | 'calculator'
-    | 'calendar-days'
-    | 'camera'
-    | 'check'
-    | 'circle-dollar-sign'
-    | 'clipboard-list'
-    | 'clock'
-    | 'coins'
-    | 'contact'
-    | 'door-open'
-    | 'dumbbell'
-    | 'egg'
-    | 'eye'
-    | 'file-check'
-    | 'file-pen'
-    | 'file-text'
-    | 'flower'
-    | 'folder'
-    | 'folder-open'
-    | 'gift'
-    | 'graduation-cap'
-    | 'hand'
-    | 'hand-heart'
-    | 'heart'
-    | 'heart-handshake'
-    | 'heart-pulse'
-    | 'house'
-    | 'image'
-    | 'info'
-    | 'languages'
-    | 'leaf'
-    | 'list'
-    | 'lock'
-    | 'mail'
-    | 'map-pin'
-    | 'megaphone'
-    | 'message-circle'
-    | 'microscope'
-    | 'moon'
-    | 'newspaper'
-    | 'notebook-pen'
-    | 'palette'
-    | 'party-popper'
-    | 'pencil'
-    | 'phone'
-    | 'piggy-bank'
-    | 'puzzle'
-    | 'scale'
-    | 'school'
-    | 'send'
-    | 'shield-check'
-    | 'shopping-bag'
-    | 'snowflake'
-    | 'sparkles'
-    | 'sprout'
-    | 'star'
-    | 'sun'
-    | 'tent'
-    | 'trees'
-    | 'trending-down'
-    | 'users';
-  archived?: boolean;
-  heading?: string;
-  intro?: string;
-  handbookFile?: {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    _type: 'file';
-  };
-  sections?: Array<
-    | ({
-        _key: string;
-      } & ProseSection)
-    | ({
-        _key: string;
-      } & CardGridSection)
-    | ({
-        _key: string;
-      } & StatBandSection)
-    | ({
-        _key: string;
-      } & CtaSection)
-    | ({
-        _key: string;
-      } & FaqSection)
-    | ({
-        _key: string;
-      } & ScheduleSection)
-    | ({
-        _key: string;
-      } & StepListSection)
-    | ({
-        _key: string;
-      } & CompareSection)
-    | ({
-        _key: string;
-      } & TabsSection)
-    | ({
-        _key: string;
-      } & AccordionSection)
-    | ({
-        _key: string;
-      } & QuickFactsSection)
-    | ({
-        _key: string;
-      } & PullQuoteSection)
-    | ({
-        _key: string;
-      } & VideoSection)
-    | ({
-        _key: string;
-      } & MapSection)
-    | ({
-        _key: string;
-      } & CountdownSection)
-    | ({
-        _key: string;
-      } & GallerySection)
-    | ({
-        _key: string;
-      } & StoryTimelineSection)
-    | ({
-        _key: string;
-      } & SplitMediaSection)
-    | ({
-        _key: string;
-      } & FormSection)
-  >;
-  publishAt?: string;
-};
-
 export type SiteMicrocopy = {
   _id: string;
   _type: 'siteMicrocopy';
@@ -1914,6 +2037,13 @@ export type CoopGuidance = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  sections?: Array<{
+    key?: 'board' | 'staff' | 'chairs' | 'reps' | 'committee';
+    label?: string;
+    blurb?: string;
+    _type: 'orgSection';
+    _key: string;
+  }>;
   principles?: Array<{
     icon?:
       | 'arrow-right'
@@ -2032,9 +2162,15 @@ export type FeeSchedule = {
   registrationFee?: string;
   registrationNote?: string;
   registrationPayId?: string;
+  registrationTitle?: string;
+  registrationWhen?: string;
+  registrationAction?: string;
   participationFee?: string;
   participationNote?: string;
   participationPayId?: string;
+  participationTitle?: string;
+  participationWhen?: string;
+  participationAction?: string;
   annualAdjustmentNote?: string;
   studentFeeBands?: Array<{
     label?: string;
@@ -2042,6 +2178,9 @@ export type FeeSchedule = {
     payId?: string;
     _key: string;
   }>;
+  ageCutoffLabel?: string;
+  schoolYearMonths?: number;
+  depositNote?: string;
   paymentTerms?: Array<{
     icon?:
       | 'arrow-right'
@@ -2151,6 +2290,7 @@ export type SiteSettings = {
   state?: string;
   zip?: string;
   parkingNote?: string;
+  venueNote?: string;
   schoolYearLabel?: string;
   enrolling?: boolean;
   enrollmentMode?: 'open' | 'waitlist' | 'closed';
@@ -2162,6 +2302,7 @@ export type SiteSettings = {
     _key: string;
   }>;
   closureStatement?: string;
+  summerTourNote?: string;
   yearStart?: string;
   yearEnd?: string;
   firstDay?: string;
@@ -2173,6 +2314,7 @@ export type SiteSettings = {
   googleReviews?: number;
   googleUrl?: string;
   license?: string;
+  secularLine?: string;
   licenseAuthority?: string;
 };
 
@@ -2187,7 +2329,7 @@ export type InstagramSection = {
   _type: 'instagramSection';
   header?: SectionHeader;
   fallbackAlbum?: PhotoAlbumReference;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2195,7 +2337,7 @@ export type AlbumSection = {
   _type: 'albumSection';
   header?: SectionHeader;
   album?: PhotoAlbumReference;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2218,7 +2360,7 @@ export type DownloadsSection = {
   _type: 'downloadsSection';
   header?: SectionHeader;
   category?: 'all' | 'handbook' | 'calendar' | 'forms' | 'other';
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2226,14 +2368,14 @@ export type JobsSection = {
   _type: 'jobsSection';
   header?: SectionHeader;
   emptyMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type CampaignSection = {
   _type: 'campaignSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2241,21 +2383,21 @@ export type LogoStripSection = {
   _type: 'logoStripSection';
   header?: SectionHeader;
   source?: 'partners' | 'credentials';
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type BoardMembersSection = {
   _type: 'boardMembersSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type ProgramCardsSection = {
   _type: 'programCardsSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2264,7 +2406,7 @@ export type ContactDetailsSection = {
   reachHeading?: string;
   visitHeading?: string;
   showParking?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2281,7 +2423,7 @@ export type ReviewFormSection = {
   _type: 'reviewFormSection';
   header?: SectionHeader;
   buttonLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2291,7 +2433,7 @@ export type NewsletterSignupSection = {
   askName?: boolean;
   buttonLabel?: string;
   successMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2309,7 +2451,7 @@ export type FormSection = {
   showPhone?: boolean;
   buttonLabel?: string;
   successMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2318,7 +2460,7 @@ export type UpcomingEventsSection = {
   header?: SectionHeader;
   limit?: 3 | 4 | 6;
   linkLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2327,7 +2469,7 @@ export type LatestPostsSection = {
   header?: SectionHeader;
   limit?: 2 | 3 | 4;
   linkLabel?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2346,7 +2488,7 @@ export type SplitMediaSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2366,7 +2508,7 @@ export type StoryTimelineSection = {
     _key: string;
   }>;
   footnote?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2378,7 +2520,7 @@ export type GallerySection = {
       _key: string;
     } & FigureImage
   >;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2387,7 +2529,7 @@ export type CountdownSection = {
   header?: SectionHeader;
   targetDate?: string;
   completedMessage?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2395,7 +2537,7 @@ export type MapSection = {
   _type: 'mapSection';
   header?: SectionHeader;
   address?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2405,7 +2547,7 @@ export type VideoSection = {
   videoUrl?: string;
   thumbnail?: FigureImage;
   caption?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2413,7 +2555,7 @@ export type PullQuoteSection = {
   _type: 'pullQuoteSection';
   quote?: string;
   attribution?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2497,7 +2639,7 @@ export type QuickFactsSection = {
     _type: 'fact';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2510,7 +2652,7 @@ export type AccordionSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2523,7 +2665,7 @@ export type TabsSection = {
     _type: 'tab';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2539,7 +2681,7 @@ export type CompareSection = {
     _type: 'row';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2555,7 +2697,7 @@ export type StepListSection = {
     _key: string;
   }>;
   footnote?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2572,7 +2714,7 @@ export type ScheduleSection = {
     _type: 'entry';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2581,7 +2723,7 @@ export type EnrollmentCtaSection = {
   linkType?: 'page' | 'url';
   page?: PageReference;
   url?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2589,7 +2731,7 @@ export type TuitionCalculatorSection = {
   _type: 'tuitionCalculatorSection';
   header?: SectionHeader;
   note?: string;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2598,14 +2740,14 @@ export type TuitionTableSection = {
   header?: SectionHeader;
   caption?: string;
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type SchoolYearSection = {
   _type: 'schoolYearSection';
   header?: SectionHeader;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2620,39 +2762,34 @@ export type FaqSection = {
     _type: 'qa';
     _key: string;
   }>;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
-};
-
-export type ClassReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'class';
 };
 
 export type ClassCardsSection = {
   _type: 'classCardsSection';
   header?: SectionHeader;
+  source?: 'all' | 'manual';
   classes?: Array<
     {
       _key: string;
     } & ClassReference
   >;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
 export type TeacherSection = {
   _type: 'teacherSection';
   header?: SectionHeader;
+  source?: 'all' | 'classTeacher' | 'manual';
   staff?: Array<
     {
       _key: string;
     } & StaffReference
   >;
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2676,7 +2813,7 @@ export type TestimonialSection = {
   >;
   layout?: 'grid' | 'wall';
   confetti?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2720,7 +2857,7 @@ export type CardGridSection = {
   columns?: 2 | 3 | 4;
   layout?: 'card' | 'compactIcon';
   callout?: Callout;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2730,7 +2867,7 @@ export type ProseSection = {
   body?: RichProse;
   callout?: Callout;
   narrow?: boolean;
-  background?: 'white' | 'grey' | 'cream' | 'navy';
+  background?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   compact?: boolean;
 };
 
@@ -2772,6 +2909,7 @@ export type HeroObject = {
 export type NavGroup = {
   _type: 'navGroup';
   label?: string;
+  autoClasses?: boolean;
   children?: Array<
     {
       _key: string;
@@ -2801,6 +2939,140 @@ export type ActionButton = {
   page?: PageReference;
   url?: string;
 };
+
+export type FormField = {
+  _type: 'formField';
+  label?: string;
+  kind?: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'checkbox';
+  options?: Array<string>;
+  required?: boolean;
+};
+
+export type SectionHeader = {
+  _type: 'sectionHeader';
+  eyebrow?: string;
+  title?: string;
+  headingAccent?: string;
+  lead?: string;
+  leadRich?: EmphasisText;
+  align?: 'center' | 'left';
+};
+
+export type IconCard = {
+  _type: 'iconCard';
+  icon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'scale'
+    | 'bell'
+    | 'building-2'
+    | 'blocks'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'hand-heart'
+    | 'banknote'
+    | 'file-check'
+    | 'check'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'file-text'
+    | 'circle-dollar-sign'
+    | 'dumbbell'
+    | 'egg'
+    | 'mail'
+    | 'eye'
+    | 'file-pen'
+    | 'flower'
+    | 'folder'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'heart-handshake'
+    | 'heart'
+    | 'heart-pulse'
+    | 'house'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'map-pin'
+    | 'megaphone'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'book-open'
+    | 'door-open'
+    | 'folder-open'
+    | 'palette'
+    | 'send'
+    | 'party-popper'
+    | 'pencil'
+    | 'users'
+    | 'phone'
+    | 'image'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'school'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'message-circle'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down';
+  chip?: 'sky' | 'orange' | 'amber' | 'green' | 'navy';
+  title?: string;
+  statValue?: string;
+  body?: string;
+  bodyRich?: EmphasisText;
+  href?: string;
+  linkLabel?: string;
+};
+
+export type EmphasisText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: 'span';
+    _key: string;
+  }>;
+  style?: 'normal';
+  listItem?: never;
+  markDefs?: null;
+  level?: number;
+  _type: 'block';
+  _key: string;
+}>;
+
+export type InlineText = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: 'span';
+    _key: string;
+  }>;
+  style?: 'normal';
+  listItem?: never;
+  markDefs?: Array<{
+    href?: string;
+    _type: 'link';
+    _key: string;
+  }>;
+  level?: number;
+  _type: 'block';
+  _key: string;
+}>;
 
 export type Page = {
   _id: string;
@@ -2948,138 +3220,23 @@ export type Page = {
   publishAt?: string;
 };
 
-export type SectionHeader = {
-  _type: 'sectionHeader';
-  eyebrow?: string;
+export type Post = {
+  _id: string;
+  _type: 'post';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
   title?: string;
-  headingAccent?: string;
-  lead?: string;
-  leadRich?: EmphasisText;
-  align?: 'center' | 'left';
-};
-
-export type EmphasisText = Array<{
-  children?: Array<{
-    marks?: Array<string>;
-    text?: string;
-    _type: 'span';
-    _key: string;
-  }>;
-  style?: 'normal';
-  listItem?: never;
-  markDefs?: null;
-  level?: number;
-  _type: 'block';
-  _key: string;
-}>;
-
-export type InlineText = Array<{
-  children?: Array<{
-    marks?: Array<string>;
-    text?: string;
-    _type: 'span';
-    _key: string;
-  }>;
-  style?: 'normal';
-  listItem?: never;
-  markDefs?: Array<{
-    href?: string;
-    _type: 'link';
-    _key: string;
-  }>;
-  level?: number;
-  _type: 'block';
-  _key: string;
-}>;
-
-export type FormField = {
-  _type: 'formField';
-  label?: string;
-  kind?: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'checkbox';
-  options?: Array<string>;
-  required?: boolean;
-};
-
-export type IconCard = {
-  _type: 'iconCard';
-  icon?:
-    | 'arrow-right'
-    | 'award'
-    | 'baby'
-    | 'scale'
-    | 'bell'
-    | 'building-2'
-    | 'blocks'
-    | 'cake'
-    | 'calculator'
-    | 'calendar-days'
-    | 'camera'
-    | 'hand-heart'
-    | 'banknote'
-    | 'file-check'
-    | 'check'
-    | 'clipboard-list'
-    | 'clock'
-    | 'coins'
-    | 'contact'
-    | 'file-text'
-    | 'circle-dollar-sign'
-    | 'dumbbell'
-    | 'egg'
-    | 'mail'
-    | 'eye'
-    | 'file-pen'
-    | 'flower'
-    | 'folder'
-    | 'gift'
-    | 'graduation-cap'
-    | 'hand'
-    | 'heart-handshake'
-    | 'heart'
-    | 'heart-pulse'
-    | 'house'
-    | 'info'
-    | 'languages'
-    | 'leaf'
-    | 'list'
-    | 'lock'
-    | 'map-pin'
-    | 'megaphone'
-    | 'microscope'
-    | 'moon'
-    | 'newspaper'
-    | 'notebook-pen'
-    | 'book-open'
-    | 'door-open'
-    | 'folder-open'
-    | 'palette'
-    | 'send'
-    | 'party-popper'
-    | 'pencil'
-    | 'users'
-    | 'phone'
-    | 'image'
-    | 'piggy-bank'
-    | 'puzzle'
-    | 'school'
-    | 'shield-check'
-    | 'shopping-bag'
-    | 'snowflake'
-    | 'sparkles'
-    | 'message-circle'
-    | 'sprout'
-    | 'star'
-    | 'sun'
-    | 'tent'
-    | 'trees'
-    | 'trending-down';
-  chip?: 'sky' | 'orange' | 'amber' | 'green' | 'navy';
-  title?: string;
-  statValue?: string;
-  body?: string;
-  bodyRich?: EmphasisText;
-  href?: string;
-  linkLabel?: string;
+  slug?: Slug;
+  publishedAt?: string;
+  category?: 'news' | 'announcements' | 'events' | 'learning';
+  author?: StaffReference;
+  coverImage?: FigureImage;
+  excerpt?: string;
+  body?: PostBody;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: FigureImage;
 };
 
 export type VenueReference = {
@@ -3139,6 +3296,222 @@ export type SignupSheet = {
     _key: string;
   }>;
   open?: boolean;
+};
+
+export type Staff = {
+  _id: string;
+  _type: 'staff';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  honorific?: string;
+  role?: string;
+  years?: string;
+  email?: string;
+  photo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: 'image';
+  };
+  pullQuote?: string;
+  bio?: BlockContent;
+  order?: number;
+  orderRank?: string;
+};
+
+export type HubPage = {
+  _id: string;
+  _type: 'hubPage';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  hubKey?:
+    | 'home'
+    | 'calendar'
+    | 'coop-jobs'
+    | 'documents'
+    | 'tuition'
+    | 'updates'
+    | 'fundraising'
+    | 'health'
+    | 'directory'
+    | 'getting-started'
+    | 'super-helper'
+    | 'twos-threes'
+    | 'pre-k';
+  slug?: string;
+  classes?: Array<
+    {
+      _key: string;
+    } & ClassReference
+  >;
+  navIcon?:
+    | 'arrow-right'
+    | 'award'
+    | 'baby'
+    | 'banknote'
+    | 'bell'
+    | 'blocks'
+    | 'book-open'
+    | 'building-2'
+    | 'cake'
+    | 'calculator'
+    | 'calendar-days'
+    | 'camera'
+    | 'check'
+    | 'circle-dollar-sign'
+    | 'clipboard-list'
+    | 'clock'
+    | 'coins'
+    | 'contact'
+    | 'door-open'
+    | 'dumbbell'
+    | 'egg'
+    | 'eye'
+    | 'file-check'
+    | 'file-pen'
+    | 'file-text'
+    | 'flower'
+    | 'folder'
+    | 'folder-open'
+    | 'gift'
+    | 'graduation-cap'
+    | 'hand'
+    | 'hand-heart'
+    | 'heart'
+    | 'heart-handshake'
+    | 'heart-pulse'
+    | 'house'
+    | 'image'
+    | 'info'
+    | 'languages'
+    | 'leaf'
+    | 'list'
+    | 'lock'
+    | 'mail'
+    | 'map-pin'
+    | 'megaphone'
+    | 'message-circle'
+    | 'microscope'
+    | 'moon'
+    | 'newspaper'
+    | 'notebook-pen'
+    | 'palette'
+    | 'party-popper'
+    | 'pencil'
+    | 'phone'
+    | 'piggy-bank'
+    | 'puzzle'
+    | 'scale'
+    | 'school'
+    | 'send'
+    | 'shield-check'
+    | 'shopping-bag'
+    | 'snowflake'
+    | 'sparkles'
+    | 'sprout'
+    | 'star'
+    | 'sun'
+    | 'tent'
+    | 'trees'
+    | 'trending-down'
+    | 'users';
+  archived?: boolean;
+  heading?: string;
+  intro?: string;
+  handbookFile?: {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    _type: 'file';
+  };
+  sections?: Array<
+    | ({
+        _key: string;
+      } & ProseSection)
+    | ({
+        _key: string;
+      } & CardGridSection)
+    | ({
+        _key: string;
+      } & StatBandSection)
+    | ({
+        _key: string;
+      } & CtaSection)
+    | ({
+        _key: string;
+      } & FaqSection)
+    | ({
+        _key: string;
+      } & ScheduleSection)
+    | ({
+        _key: string;
+      } & StepListSection)
+    | ({
+        _key: string;
+      } & CompareSection)
+    | ({
+        _key: string;
+      } & TabsSection)
+    | ({
+        _key: string;
+      } & AccordionSection)
+    | ({
+        _key: string;
+      } & QuickFactsSection)
+    | ({
+        _key: string;
+      } & PullQuoteSection)
+    | ({
+        _key: string;
+      } & VideoSection)
+    | ({
+        _key: string;
+      } & MapSection)
+    | ({
+        _key: string;
+      } & CountdownSection)
+    | ({
+        _key: string;
+      } & GallerySection)
+    | ({
+        _key: string;
+      } & StoryTimelineSection)
+    | ({
+        _key: string;
+      } & SplitMediaSection)
+    | ({
+        _key: string;
+      } & FormSection)
+  >;
+  hiddenWidgets?: Array<string>;
+  widgetText?: Array<{
+    widget?: string;
+    title?: string;
+    blurb?: string;
+    _key: string;
+  }>;
+  publishAt?: string;
+};
+
+export type MediaFolderReference = {
+  _ref: string;
+  _type: 'reference';
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: 'media.folder';
+};
+
+export type MediaFolder = {
+  _id: string;
+  _type: 'media.folder';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  parent?: MediaFolderReference;
 };
 
 export type MediaTag = {
@@ -3247,15 +3620,20 @@ export type AllSanitySchemaTypes =
   | FileAttachmentFile
   | SignupSheetReference
   | SignupEntry
-  | TeacherNote
+  | HubPageReference
+  | UpdateReference
+  | HubSpotlight
   | SanityImageCrop
   | SanityImageHotspot
+  | PageReference
+  | PostReference
+  | EventReference
+  | PostBody
+  | TeacherNote
   | BlockContent
   | HubDocument
   | Celebration
   | Update
-  | EventReference
-  | PostBody
   | Slug
   | Resource
   | JobPosting
@@ -3267,6 +3645,8 @@ export type AllSanitySchemaTypes =
   | BoardMember
   | Program
   | HoursLog
+  | CoopRoleReference
+  | ClassReference
   | DirectoryEntryReference
   | RoleHolder
   | DirectoryEntry
@@ -3277,19 +3657,16 @@ export type AllSanitySchemaTypes =
   | TestimonialSubmission
   | Subscriber
   | Submission
-  | PageReference
   | Announcement
   | Redirect
   | NewsletterIssue
-  | StaffReference
-  | Post
   | SectionPreset
   | LegalPage
   | SchoolYearEvent
   | FaqItem
   | Testimonial
+  | StaffReference
   | Class
-  | Staff
   | PresidentNote
   | ClosureAlert
   | Navigation
@@ -3301,9 +3678,7 @@ export type AllSanitySchemaTypes =
   | LinkHealth
   | HubHints
   | HubTour
-  | HubPageReference
   | HubNavMenu
-  | HubPage
   | SiteMicrocopy
   | CoopGuidance
   | OperatingBudget
@@ -3344,7 +3719,6 @@ export type AllSanitySchemaTypes =
   | TuitionTableSection
   | SchoolYearSection
   | FaqSection
-  | ClassReference
   | ClassCardsSection
   | TeacherSection
   | TestimonialReference
@@ -3358,16 +3732,21 @@ export type AllSanitySchemaTypes =
   | NavLink
   | Callout
   | ActionButton
-  | Page
+  | FormField
   | SectionHeader
+  | IconCard
   | EmphasisText
   | InlineText
-  | FormField
-  | IconCard
+  | Page
+  | Post
   | VenueReference
   | Event
   | Venue
   | SignupSheet
+  | Staff
+  | HubPage
+  | MediaFolderReference
+  | MediaFolder
   | MediaTag
   | SanityImagePaletteSwatch
   | SanityImagePalette

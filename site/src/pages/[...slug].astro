@@ -93,11 +93,31 @@ const faqJsonLd =
       }
     : null;
 
-// Class pages own their brand color (matches class.color in Sanity; the two
-// Pre-K sessions share the /classes/pre-k page, which leads AM-orange).
+// Class pages own their brand color — DERIVED from the class documents
+// (their own `color` field), matched by the same longest-prefix rule the hub
+// uses, so a class the Board adds gets its accent with no code edit. Falls
+// back to the shipped map for the four originals when the read fails.
 const footerSeam = finalBandBg((page?.sections ?? []) as never, slug) as never;
-const classAccent =
+let classAccent: string =
   slug === 'classes/twos' ? 'amber' : slug === 'classes/threes' ? 'green' : 'orange';
+if (slug.startsWith('classes/')) {
+  try {
+    const rows = await cmsFetch<{ slug?: string; color?: string }[]>(
+      `*[_type == "class" && defined(slug.current)]{ "slug": slug.current, color }`,
+      {},
+      [],
+    );
+    const pageLeaf = slug.slice('classes/'.length);
+    // Longest class slug that this page's leaf is a prefix of (pre-k covers
+    // pre-k-am/pm; exact match wins for twos/threes).
+    const match = (rows ?? [])
+      .filter((r) => r.slug && (r.slug === pageLeaf || r.slug.startsWith(`${pageLeaf}-`)))
+      .sort((a, b) => (a.slug === pageLeaf ? -1 : 1) - (b.slug === pageLeaf ? -1 : 1))[0];
+    if (match?.color) classAccent = match.color;
+  } catch {
+    /* fallback map stands */
+  }
+}
 
 // Notice → hero (2026-07-19). The `noticeBarSection` used to render as a thin
 // cream strip under the hero, where it read as system chrome. It now rides

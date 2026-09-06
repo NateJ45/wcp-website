@@ -1,4 +1,5 @@
 import { defineType, defineField, defineArrayMember } from 'sanity';
+import { ClassroomPickInput } from '../../components/ClassSelectInput';
 
 // =============================================================================
 // curriculumGuide — the class Curriculum Guide PDFs, Board-editable
@@ -18,17 +19,16 @@ export const curriculumGuide = defineType({
   type: 'document',
   icon: () => '📚',
   fields: [
+    // The LIVE class pages, not a hardcoded three (see ClassroomPickInput):
+    // pick a whole page when one guide covers several classes (both Pre-K
+    // classes share one), or a single class when it has its own.
     defineField({
       name: 'class',
       title: 'Which class',
       type: 'string',
-      options: {
-        list: [
-          { title: 'Twos', value: 'twos' },
-          { title: 'Threes', value: 'threes' },
-          { title: 'Pre-K (both classes)', value: 'pre-k' },
-        ],
-      },
+      components: { input: ClassroomPickInput },
+      description:
+        'The class, or the class page when one guide covers more than one class. The PDF is published at /curriculum/<this value>-curriculum.pdf.',
       validation: (R) => R.required().error('Pick the class this guide belongs to.'),
     }),
     defineField({

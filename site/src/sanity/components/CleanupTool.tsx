@@ -1,17 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useClient } from 'sanity';
-import {
-  Box,
-  Button,
-  Card,
-  Flex,
-  Heading,
-  Radio,
-  Select,
-  Stack,
-  Text,
-  TextInput,
-} from '@sanity/ui';
+import { Box, Button, Card, Flex, Radio, Select, Stack, Text, TextInput } from '@sanity/ui';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // CleanupTool — clear out old inbox records, safely (Family Hub workspace)
@@ -127,9 +117,7 @@ export function CleanupTool() {
     <Box padding={4}>
       <Stack space={5} style={{ maxWidth: 620, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            🧹 Clean up old records
-          </Heading>
+          <ToolHeading>🧹 Clean up old records</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             Permanently remove old form messages and sign-up responses in one go. This can’t be
             undone, so it checks the count first and asks you to confirm.

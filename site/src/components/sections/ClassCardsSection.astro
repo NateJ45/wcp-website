@@ -12,7 +12,7 @@ import {
 } from './section-helpers';
 import { cmsFetch } from '@/lib/cms';
 import { FEE_SCHEDULE_QUERY } from '@/lib/queries';
-import { annualTuition, formatMoney } from '@/lib/tuition';
+import { DEPOSIT_NOTE_FALLBACK, annualTuition, formatMoney, schoolYearMonths } from '@/lib/tuition';
 
 interface FeeSchedule {
   registrationFee?: string;
@@ -28,6 +28,7 @@ interface ClassItem {
   age?: string;
   studentFee?: string;
   slug?: string;
+  publicSlug?: string;
 }
 interface Props {
   section: SectionData;
@@ -44,9 +45,12 @@ const classes = (section.classItems as ClassItem[] | undefined) ?? [];
 const cols =
   classes.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
 
-// AM and PM Pre-K classes share the one /classes/pre-k page.
-const pageSlugFor = (slug?: string) =>
-  slug === 'pre-k-am' || slug === 'pre-k-pm' ? 'pre-k' : slug;
+// Each card links to the class's PUBLIC page, resolved by the query with the
+// same longest-prefix rule the hub menu uses (pre-k-am/pm share classes/pre-k)
+// — so a new class links right without this file learning its name. The old
+// hand-map is the fallback for rows the query could not resolve.
+const pageSlugFor = (c: { slug?: string; publicSlug?: string }) =>
+  c.publicSlug ?? `classes/${c.slug === 'pre-k-am' || c.slug === 'pre-k-pm' ? 'pre-k' : c.slug}`;
 
 // ---------------------------------------------------------------------------
 // The real cost of a year (2026-07-19)
@@ -65,20 +69,30 @@ const pageSlugFor = (slug?: string) =>
 // Empty-object fallback, not null: cmsFetch's fallback is typed as the payload,
 // and an empty schedule degrades gracefully — feesFor() simply omits any fee it
 // has no value for, so a Sanity outage costs a line on the card, never a crash.
-const fees = showFees ? await cmsFetch<FeeSchedule>(FEE_SCHEDULE_QUERY, {}, {}) : {};
+// Prefer the fees the page query expanded (draft-aware in the preview); fall
+// back to the published fetch for renderers that skip PAGE_BY_SLUG_QUERY.
+const expandedFees = (section as unknown as { fees?: FeeSchedule }).fees;
+const fees = showFees
+  ? (expandedFees ?? (await cmsFetch<FeeSchedule>(FEE_SCHEDULE_QUERY, {}, {})))
+  : {};
 const registration = fees?.registrationFee;
 const deposit = fees?.participationFee;
+// Board overrides (Fee schedule): billed months drive the annual figure, and
+// the deposit phrase follows the refund policy instead of being frozen here.
+const months = schoolYearMonths((fees as { schoolYearMonths?: number })?.schoolYearMonths);
+const depositNote =
+  (fees as { depositNote?: string })?.depositNote?.trim() || DEPOSIT_NOTE_FALLBACK;
 
 function feesFor(c: ClassItem): string[] {
   if (!showFees) return c.studentFee ? [`Student fee ${c.studentFee}`] : [];
-  const annual = annualTuition(c.monthly);
+  const annual = annualTuition(c.monthly, months);
   return [
     annual > 0 ? `${formatMoney(annual)} for the school year` : '',
     c.studentFee ? `Student fee ${c.studentFee}` : '',
     registration ? `Registration ${registration}` : '',
     // Worth saying plainly: this one comes back, which makes the upfront number
     // read very differently to a family doing the maths.
-    deposit ? `Deposit ${deposit}, returned after your co-op hours` : '',
+    deposit ? `Deposit ${deposit}, ${depositNote}` : '',
   ].filter(Boolean);
 }
 ---
@@ -110,7 +124,7 @@ function feesFor(c: ClassItem): string[] {
           schedule={[c.days, c.time].filter(Boolean).join(' · ')}
           age={c.age}
           features={feesFor(c)}
-          href={c.slug ? slugHref(`classes/${pageSlugFor(c.slug)}`, linkBase) : undefined}
+          href={c.slug ? slugHref(pageSlugFor(c), linkBase) : undefined}
           ctaLabel={`See the ${c.name} class`}
           availabilitySlug={c.slug}
         />

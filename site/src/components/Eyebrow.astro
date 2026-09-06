@@ -22,7 +22,7 @@
 import { cn } from '@/lib/utils';
 
 interface Props {
-  tone?: 'sky' | 'amber' | 'orange' | 'white';
+  tone?: 'sky' | 'amber' | 'orange' | 'white' | 'heading';
   class?: string;
 }
 const { tone = 'sky', class: className } = Astro.props;
@@ -32,6 +32,10 @@ const toneClass: Record<string, string> = {
   amber: 'text-amber',
   orange: 'text-orange-ink',
   white: 'text-white',
+  // For the bold sunshine (brand-amber) band: sky-ink only measures ~2.9:1
+  // there, but the heading token is navy-on-amber 4.86:1 in light and flips
+  // light in dark mode with the band's dark twin (2026-09-01).
+  heading: 'text-heading',
 };
 ---
 

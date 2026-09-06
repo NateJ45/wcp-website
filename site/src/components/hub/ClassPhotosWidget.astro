@@ -2,53 +2,38 @@
 /* ============================================================================
    ClassPhotosWidget — this year's Google Photos album for each class
    ============================================================================
-   One tile per class. Album links are Board-editable on each `class` doc
-   (`photoAlbumUrl`), with the current working links as fallbacks
-   (src/data/hub/live-links.ts) so the tiles render even before the Studio
-   fields are filled in. Class color rides on the icon chip only — labels stay
-   neutral text (the dark-mode tint AA rule).
+   One tile per class, from the `class` documents (src/lib/hub-classrooms.ts),
+   so a class the Board adds gets a tile by itself. Album links are
+   Board-editable on each `class` doc (`photoAlbumUrl`); a class with no link
+   is left out rather than shown as a dead tile. Class color rides on the icon
+   chip only — labels stay neutral text (the dark-mode tint AA rule).
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import Icon from '@/components/Icon.astro';
-import { classStyles } from '@/lib/class-colors';
-import { sanityFetch } from '@/lib/sanity';
-import { photoAlbumFallback } from '@/data/hub/live-links';
+import { colorStyles } from '@/lib/class-colors';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classTiles } from '@/lib/hub-classrooms';
+import { hubEditAttr } from '@/lib/hub-preview';
 
-const CLASSES = [
-  { slug: 'twos', label: 'Twos', icon: 'blocks' },
-  { slug: 'threes', label: 'Threes', icon: 'sprout' },
-  { slug: 'pre-k-am', label: 'Pre-K AM', icon: 'sun' },
-  { slug: 'pre-k-pm', label: 'Pre-K PM', icon: 'moon' },
-] as const;
-
-interface ClassAlbumRow {
-  slug?: string;
-  photoAlbumUrl?: string;
-}
-let sanityAlbums: Record<string, string> = {};
-try {
-  const rows = await sanityFetch<ClassAlbumRow[]>(
-    `*[_type == "class"]{ "slug": slug.current, photoAlbumUrl }`,
-  );
-  for (const r of rows ?? []) if (r.slug && r.photoAlbumUrl) sanityAlbums[r.slug] = r.photoAlbumUrl;
-} catch {
-  sanityAlbums = {};
-}
-
-const albums = CLASSES.map((c) => ({
-  ...c,
-  href: sanityAlbums[c.slug] ?? photoAlbumFallback[c.slug],
-})).filter((a) => a.href);
+// One tile per CLASS, from the `class` documents — a class the Board adds gets
+// its album tile with no code change. A class with no album link is skipped.
+const albums = classTiles(await getHubClassrooms()).filter((c) => c.photoAlbumUrl);
 const empty = albums.length === 0;
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="camera"
-  title="Class Photos"
+  title={heading ?? 'Class Photos'}
   empty={empty}
   emptyText="Class photos will appear here once the photo gallery is set up."
 >
-  <p class="text-sm text-ink-muted">This year's album for each class, on Google Photos.</p>
+  <p class="text-sm text-ink-muted">This year's shared photo album for each class.</p>
   {
     /* Column count follows how wide the card actually is, so the class label
        never truncates: single column below 360px (two-up clips "Pre-K AM" at
@@ -61,14 +46,15 @@ const empty = albums.length === 0;
     {
       albums.map((a) => (
         <a
-          href={a.href}
+          href={a.photoAlbumUrl}
           target="_blank"
           rel="noopener"
           data-class-album={a.slug}
+          data-sanity={hubEditAttr(Astro.locals, a.docId, 'class', 'photoAlbumUrl')}
           class="flex items-center gap-2.5 rounded-lg bg-grey p-2.5 no-underline transition-colors hover:bg-navy/10 dark:hover:bg-white/10"
         >
           <span
-            class={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${classStyles(a.slug).iconChip}`}
+            class={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colorStyles(a.color).iconChip}`}
             aria-hidden="true"
           >
             <Icon name={a.icon} class="h-4 w-4" />

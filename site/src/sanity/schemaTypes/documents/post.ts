@@ -21,6 +21,10 @@ export const POST_CATEGORIES = [
 
 export const post = defineType({
   name: 'post',
+  __experimental_search: [
+    { path: 'title', weight: 5 },
+    { path: 'excerpt', weight: 3 },
+  ],
   title: 'News post',
   type: 'document',
   groups: [

@@ -1,5 +1,15 @@
 /// <reference types="astro/client" />
 
+// Set by src/middleware.ts on every /family-hub request: true only when the
+// request carries the fingerprint-verified Studio preview cookie. Widgets read
+// it to render `data-sanity` edit targets (src/lib/hub-preview.ts hubEditAttr)
+// — never on a family's render.
+declare namespace App {
+  interface Locals {
+    hubPreview?: boolean;
+  }
+}
+
 // =============================================================================
 // Environment variable types
 // =============================================================================

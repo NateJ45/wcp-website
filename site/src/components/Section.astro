@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import Seam from '@/components/Seam.astro';
 
 interface Props {
-  bg?: 'white' | 'grey' | 'cream' | 'navy';
+  bg?: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy';
   /** id of the heading that names this section (preferred). */
   labelledby?: string;
   /** literal accessible name, when there is no visible heading to point at. */
@@ -47,6 +47,11 @@ const bgClasses: Record<string, string> = {
   white: 'bg-white dark:bg-surface',
   grey: 'bg-grey',
   cream: 'bg-cream',
+  // The 2026-09-01 bold pass: two saturated bands so public pages stop being
+  // white/grey-dominant. Both carry dark ink text (AA-checked), grain, and
+  // the strata layer; sunshine also carries the doodles (a warm band).
+  sunshine: 'bg-sunshine',
+  sky: 'bg-sky-soft',
   // On navy: base text → white, and headings flipped from their default navy to
   // white. Everything else (leads, StatBlock) already inherits white or uses
   // light tones. A SectionHeader eyebrow is the one exception — it uses a dark
@@ -60,7 +65,7 @@ const pad = size === 'compact' ? 'py-[var(--wcp-space-xl)]' : 'py-[var(--wcp-spa
 ---
 
 <section
-  class={cn('wcp-section', seam && 'relative -mt-px', bgClasses[bg], className)}
+  class={cn('wcp-section', seam && 'wcp-seamed relative -mt-px', bgClasses[bg], className)}
   aria-labelledby={labelledby}
   aria-label={label}
 >

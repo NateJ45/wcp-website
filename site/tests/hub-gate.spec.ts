@@ -33,12 +33,17 @@ const HUB_PAGES = [
   '/family-hub/sign-ups',
   '/family-hub/hours',
   '/family-hub/celebrations',
+  // The CLASSROOM pages and the old per-class addresses that redirect into
+  // them. All six are served by the gated catch-all now, not by .astro files.
   '/family-hub/twos-threes',
   '/family-hub/pre-k',
   '/family-hub/twos',
   '/family-hub/threes',
   '/family-hub/pre-k-am',
   '/family-hub/pre-k-pm',
+  // A class address that does not exist either: the gate must answer before
+  // the classroom lookup, or a 404 would leak which classes the school runs.
+  '/family-hub/no-such-class',
   // Board-created pages (the gated catch-all). Both an EXISTING page and a
   // made-up address: the catch-all must send a signed-out visitor to the login
   // page either way. If it ever 404'd before the gate ran, the 404 itself would

@@ -33,12 +33,88 @@ const emoji =
   () =>
     glyph;
 
+// =============================================================================
+// Year-scoped lists (2026-08-31) — the decade-proofing for accumulating types
+// =============================================================================
+// Updates, events, celebrations, sign-up sheets, news, newsletters and the
+// hours ledger grow forever. A flat list means year-three volunteers scroll
+// past a hundred dead rows to find this week's — so each of those types opens
+// as "This school year" (the default view) plus one pane per past year, with
+// an Everything list at the bottom for searching across time. Nothing moves
+// or archives; this is presentation only. School years run Aug 1 – Jul 31 and
+// are named by their fall ("2026–27").
+const FIRST_CONTENT_YEAR = 2025; // the site's first posts (Sep 2025)
+
+const currentFallYear = (): number => {
+  const d = new Date();
+  return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; // Aug+ = this fall
+};
+const yearLabel = (y: number): string => `${y}–${String((y + 1) % 100).padStart(2, '0')}`;
+
+function yearScopedList(
+  S: StructureBuilder,
+  opts: {
+    type: string;
+    title: string;
+    icon: ComponentType;
+    /** The doc's own date field; undated docs fall back to _createdAt. */
+    dateField: string;
+    direction?: 'asc' | 'desc';
+  },
+) {
+  const { type, title, icon, dateField, direction = 'desc' } = opts;
+  const fall = currentFallYear();
+  const filter = `_type == $type && coalesce(${dateField}, _createdAt) >= $from && coalesce(${dateField}, _createdAt) < $to`;
+
+  const yearPane = (y: number, paneTitle: string) =>
+    S.listItem()
+      .id(`year-${y}`)
+      .title(paneTitle)
+      .icon(icon)
+      .child(
+        S.documentList()
+          .id(`year-${y}`)
+          .title(paneTitle)
+          .schemaType(type)
+          .filter(filter)
+          .params({ type, from: `${y}-08-01`, to: `${y + 1}-08-01` })
+          .defaultOrdering([{ field: dateField, direction }]),
+      );
+
+  const past: ReturnType<typeof yearPane>[] = [];
+  for (let y = fall - 1; y >= FIRST_CONTENT_YEAR; y--) past.push(yearPane(y, yearLabel(y)));
+
+  // .id(type) keeps the pane's address identical to the old flat list, so
+  // every guide link and bookmark still lands here.
+  return S.listItem()
+    .id(type)
+    .title(title)
+    .icon(icon)
+    .child(
+      S.list()
+        .id(type)
+        .title(title)
+        .items([
+          yearPane(fall, `This school year (${yearLabel(fall)})`),
+          ...(past.length > 0 ? [S.divider().title('Past years'), ...past] : []),
+          S.divider(),
+          S.listItem()
+            .id('everything')
+            .title('Everything (all years)')
+            .icon(emoji('🗂️'))
+            .child(S.documentTypeList(type).title(title)),
+        ]),
+    );
+}
+
 // The "Help & Guide" center — a folder of read-only walkthrough panes, built
 // from the guides data. Volunteers cannot edit or delete it. Grouped under
 // titled dividers by guide.category (~40 guides in one flat run was
-// overwhelming to scan). Both workspaces get EVERY guide, but the group order
-// is per-workspace (GUIDE_CATEGORY_ORDER): each side leads with its own work.
-// The GuideCategory union type stops a new guide from missing its group.
+// overwhelming to scan). Each workspace lists only ITS guides (per-guide `ws`
+// tag; untagged = both sides), in per-workspace group order
+// (GUIDE_CATEGORY_ORDER): each side leads with its own work, and a category
+// with no guides on a side does not render there. The GuideCategory union
+// type stops a new guide from missing its group.
 function howThisWorks(S: StructureBuilder, kind: 'public' | 'hub') {
   const guideItem = (g: (typeof guides)[number]) =>
     S.listItem()
@@ -60,10 +136,10 @@ function howThisWorks(S: StructureBuilder, kind: 'public' | 'hub') {
         .id('help-and-guide-list')
         .title('Help & Guide')
         .items(
-          GUIDE_CATEGORY_ORDER[kind].flatMap((category) => [
-            S.divider().title(category),
-            ...guides.filter((g) => g.category === category).map(guideItem),
-          ]),
+          GUIDE_CATEGORY_ORDER[kind].flatMap((category) => {
+            const mine = guides.filter((g) => g.category === category && (!g.ws || g.ws === kind));
+            return mine.length === 0 ? [] : [S.divider().title(category), ...mine.map(guideItem)];
+          }),
         ),
     );
 }
@@ -283,11 +359,25 @@ export const publicStructure: StructureResolver = (S, context) =>
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
       S.documentTypeListItem('announcement').title('Announcements').icon(emoji('📢')),
       moneyGroup(S),
-      S.documentTypeListItem('post').title('News').icon(emoji('📰')),
-      S.documentTypeListItem('newsletterIssue').title('Newsletter issues').icon(emoji('🗞️')),
-      S.documentTypeListItem('event').title('Events').icon(emoji('📅')),
+      yearScopedList(S, {
+        type: 'post',
+        title: 'News',
+        icon: emoji('📰'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'newsletterIssue',
+        title: 'Newsletter issues',
+        icon: emoji('🗞️'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'event',
+        title: 'Events',
+        icon: emoji('📅'),
+        dateField: 'startDate',
+      }),
       pagesGroup(S),
-      savedSectionsGroup(S),
 
       // ── School info ── the school facts that change a few times a year.
       S.divider().title('School info'),
@@ -301,7 +391,13 @@ export const publicStructure: StructureResolver = (S, context) =>
         title: 'Classes',
         icon: emoji('🎒'),
       }),
-      S.documentTypeListItem('staff').title('Staff').icon(emoji('👩‍🏫')),
+      orderableDocumentListDeskItem({
+        type: 'staff',
+        S,
+        context,
+        title: 'Staff',
+        icon: emoji('👩‍🏫'),
+      }),
       orderableDocumentListDeskItem({
         type: 'faqItem',
         S,
@@ -387,6 +483,9 @@ export const publicStructure: StructureResolver = (S, context) =>
       // ── Site setup ── set-up-once surfaces, out of the everyday eye-line.
       S.divider().title('Site setup'),
 
+      // Saved section presets live with setup: reached rarely, kept forever.
+      savedSectionsGroup(S),
+
       singleton(S, 'siteSettings', 'Site Settings', emoji('⚙️')),
       singleton(S, 'navigation', 'Menus (header & footer)', emoji('🧭')),
       // The thank-you page, "page not found", and footer sign-off wording.
@@ -429,14 +528,23 @@ export const hubStructure: StructureResolver = (S, context) =>
       // update, celebrate a family, open a sign-up, share a document.
       S.divider().title('Everyday edits'),
 
+      // Sequenced by real-world cadence: the alert stays first (a snow day
+      // must be findable in a panic), then the weekly rhythm (updates,
+      // sign-ups, documents), then money, then the occasional pieces.
       singleton(S, 'closureAlert', 'Alert banner', emoji('🚨')),
-      moneyGroup(S),
-      S.documentTypeListItem('update').title('Updates').icon(emoji('📣')),
-      S.documentTypeListItem('celebration').title('Celebrations').icon(emoji('🎉')),
-      singleton(S, 'presidentNote', "President's note", emoji('💌')),
-      S.documentTypeListItem('signupSheet')
-        .title('Sign-ups & RSVPs (create sheets)')
-        .icon(emoji('📝')),
+      yearScopedList(S, {
+        type: 'update',
+        title: 'Updates',
+        icon: emoji('📣'),
+        dateField: 'publishedAt',
+      }),
+      yearScopedList(S, {
+        type: 'signupSheet',
+        title: 'Sign-ups & RSVPs (create sheets)',
+        icon: emoji('📝'),
+        dateField: 'eventDate',
+        direction: 'asc',
+      }),
       orderableDocumentListDeskItem({
         type: 'hubDocument',
         S,
@@ -444,28 +552,99 @@ export const hubStructure: StructureResolver = (S, context) =>
         title: 'Documents & Forms',
         icon: emoji('📄'),
       }),
+      moneyGroup(S),
+      yearScopedList(S, {
+        type: 'celebration',
+        title: 'Celebrations',
+        icon: emoji('🎉'),
+        dateField: 'date',
+      }),
+      // The collection sibling of the President's note: several pop-ups a
+      // year, each greeting families once on any hub page. Drag to set which
+      // one wins when more than one is on.
+      orderableDocumentListDeskItem({
+        type: 'hubSpotlight',
+        S,
+        context,
+        title: 'Spotlight pop-ups',
+        icon: emoji('🔦'),
+      }),
+      singleton(S, 'presidentNote', "President's note", emoji('💌')),
 
       // ── Families & co-op ── who the families are and how the co-op runs.
       S.divider().title('Families & co-op'),
 
-      S.documentTypeListItem('directoryEntry').title('Family Directory').icon(emoji('👪')),
+      // Grouped by class, because that is how a class rep thinks ("my Twos
+      // families"). The panes DERIVE from the live class documents — a new
+      // class gets its pane with no code change — and a family whose children
+      // span classes shows up under each of them. "All families" keeps the
+      // full flat list. A directory child's class is stored as the class SLUG
+      // (see directoryEntry's ClassPickInput).
+      S.listItem()
+        .id('directoryEntry')
+        .title('Family Directory')
+        .icon(emoji('👪'))
+        .child(async () => {
+          const client = context.getClient({ apiVersion: '2025-01-01' });
+          // class.slug is Sanity's slug TYPE here (unlike page slugs, which
+          // are plain strings) — project .current or the pane id renders
+          // "[object Object]" and the whole structure errors.
+          const classes = await client.fetch<{ slug?: string; name?: string }[]>(
+            `*[_type == "class" && !(_id in path("drafts.**")) && defined(slug.current)] | order(name asc){ "slug": slug.current, name }`,
+          );
+          return S.list()
+            .id('directoryEntry')
+            .title('Family Directory')
+            .items([
+              S.listItem()
+                .id('directory-all')
+                .title('All families')
+                .icon(emoji('👪'))
+                .child(S.documentTypeList('directoryEntry').title('All families')),
+              S.divider().title('By class'),
+              ...classes.map((c) =>
+                S.listItem()
+                  .id(`directory-class-${c.slug}`)
+                  .title(c.name ?? c.slug ?? '')
+                  .icon(emoji('🎒'))
+                  .child(
+                    S.documentList()
+                      .id(`directory-class-${c.slug}`)
+                      .title(c.name ?? c.slug ?? '')
+                      .schemaType('directoryEntry')
+                      .filter('_type == "directoryEntry" && $slug in children[].class')
+                      .params({ slug: c.slug }),
+                  ),
+              ),
+            ]);
+        }),
       S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
+      // This list IS the org chart: each role says where it sits and who it
+      // reports to, and the chart on the Co-op Jobs page draws itself from
+      // that. Drag to reorder. It used to be a job-description list only, with
+      // the chart's shape locked in code.
       orderableDocumentListDeskItem({
         type: 'coopRole',
         S,
         context,
-        title: 'Co-op Roles',
+        title: 'Co-op roles & org chart',
         icon: emoji('🤝'),
       }),
-      // Sits directly under Co-op Roles on purpose: that list is what each
-      // job IS, the guidance is the rules families live by, and roleHolder is
-      // who HOLDS each job this year. The pairing is the whole mental model,
-      // and roleHolder is the list that changes every spring.
+      // Sits directly under Co-op roles on purpose: that list is what each
+      // job IS and where it sits, the guidance is the rules families live by,
+      // and roleHolder is who HOLDS each job this year. The pairing is the
+      // whole mental model, and roleHolder is the list that changes every
+      // spring while the roles themselves rarely do.
       singleton(S, 'coopGuidance', 'How the co-op works', emoji('🧭')),
       S.documentTypeListItem('roleHolder')
         .title('Who’s who this year (update each fall)')
         .icon(emoji('🪪')),
-      S.documentTypeListItem('hoursLog').title('Co-op hours (ledger)').icon(emoji('⏱️')),
+      yearScopedList(S, {
+        type: 'hoursLog',
+        title: 'Co-op hours (ledger)',
+        icon: emoji('⏱️'),
+        dateField: 'date',
+      }),
 
       // ── Hub pages & look ── the hub's own pages, menu, and app chrome.
       S.divider().title('Hub pages & look'),
@@ -476,15 +655,29 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.documentTypeListItem('hubPage')
         .title('Hub pages (edit content, or add a page)')
         .icon(emoji('🧱')),
-      // The rail menu, right under the pages it arranges (the public
-      // header/footer equivalent lives in the Public website workspace as
-      // "Menus").
-      singleton(S, 'hubNavMenu', 'Family Hub menu', emoji('🧭')),
-      singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
-      singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
-      singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
-      // The store card at the bottom of the hub home (link, headline, tiles).
-      singleton(S, 'hubStore', 'Merch store card', emoji('🛍️')),
+      // The menu + app-chrome singletons, folded into ONE folder (2026-08-31)
+      // so the rail stays scannable: five rows became one. Each pane keeps
+      // its own id, so old guide links still resolve.
+      S.listItem()
+        .id('hub-look')
+        .title('Hub look & feel')
+        .icon(emoji('🎨'))
+        .child(
+          S.list()
+            .id('hub-look')
+            .title('Hub look & feel')
+            .items([
+              // The rail menu, right beside the pages it arranges (the public
+              // header/footer equivalent lives in the Public website workspace
+              // as "Menus").
+              singleton(S, 'hubNavMenu', 'Family Hub menu (rail & phone bar)', emoji('🧭')),
+              singleton(S, 'hubTour', 'First-visit tour', emoji('🎈')),
+              singleton(S, 'hubHints', 'Feature hints', emoji('💡')),
+              singleton(S, 'hubDelights', 'Little delights', emoji('🎉')),
+              // The store card at the bottom of the hub home.
+              singleton(S, 'hubStore', 'Merch store card', emoji('🛍️')),
+            ]),
+        ),
 
       // ── Printables ── the two PDF sources: edits here regenerate the
       // branded PDFs on the next deploy (the publish webhook fires one).
@@ -506,7 +699,50 @@ export const hubStructure: StructureResolver = (S, context) =>
       S.divider().title('Inboxes'),
 
       S.documentTypeListItem('signupEntry').title('Sign-up responses (inbox)').icon(emoji('🙋')),
-      S.documentTypeListItem('photoSubmission').title('Family photos (review)').icon(emoji('📷')),
+      // The moderation queue leads: "Waiting for review" is the pane a board
+      // member actually works, and in a flat list it sank under months of
+      // approved history. Approved and Everything sit behind it.
+      S.listItem()
+        .id('photoSubmission')
+        .title('Family photos (review)')
+        .icon(emoji('📷'))
+        .child(
+          S.list()
+            .id('photoSubmission')
+            .title('Family photos')
+            .items([
+              S.listItem()
+                .id('photos-pending')
+                .title('Waiting for review')
+                .icon(emoji('🕒'))
+                .child(
+                  S.documentList()
+                    .id('photos-pending')
+                    .title('Waiting for review')
+                    .schemaType('photoSubmission')
+                    .filter('_type == "photoSubmission" && approved != true')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+              S.listItem()
+                .id('photos-approved')
+                .title('Approved (on the photo wall)')
+                .icon(emoji('✅'))
+                .child(
+                  S.documentList()
+                    .id('photos-approved')
+                    .title('Approved')
+                    .schemaType('photoSubmission')
+                    .filter('_type == "photoSubmission" && approved == true')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+              S.divider(),
+              S.listItem()
+                .id('photos-all')
+                .title('Everything')
+                .icon(emoji('🗂️'))
+                .child(S.documentTypeList('photoSubmission').title('Family photos')),
+            ]),
+        ),
       // Written by the weekly link-health workflow; a report, not a form.
       singleton(S, 'linkHealth', 'Link health (weekly check)', emoji('🩺')),
 

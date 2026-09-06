@@ -67,6 +67,11 @@ const NON_STEGA_FIELDS = new Set([
   // its section-level twin.
   'accentWord',
   'headingAccent',
+  // Widget switches (hubPage.hiddenWidgets): the page tests set membership
+  // (`shows(hidden, 'weather')`), so an encoded value keeps every widget on in
+  // the preview no matter what the Board switched off (bit 2026-08-30, the
+  // day the switches shipped).
+  'hiddenWidgets',
 ]);
 
 export function getPreviewClient(draftMode: boolean): SanityClient {
@@ -82,8 +87,13 @@ export function getPreviewClient(draftMode: boolean): SanityClient {
       studioUrl: '/studio',
       // Encode display strings (so they are click-to-edit) but skip the dropdown
       // fields above, whose exact values are used in rendering logic.
-      filter: (props) =>
-        NON_STEGA_FIELDS.has(String(props.sourcePath.at(-1))) ? false : props.filterDefault(props),
+      filter: (props) => {
+        // Array items end in an index (['hiddenWidgets', 0]), so an excluded
+        // ARRAY field is recognized by the segment before the index.
+        const last = props.sourcePath.at(-1);
+        const field = typeof last === 'number' ? props.sourcePath.at(-2) : last;
+        return NON_STEGA_FIELDS.has(String(field)) ? false : props.filterDefault(props);
+      },
     },
   });
 }

@@ -11,7 +11,7 @@ import Icon from '@/components/Icon.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import { cn } from '@/lib/utils';
 import type { ImageMetadata } from 'astro';
-import type { SanityImageSource } from '@/lib/image';
+import { imageDimensions, type SanityImageSource } from '@/lib/image';
 
 interface Props {
   /** Local asset photo (bespoke pages). */
@@ -24,6 +24,20 @@ interface Props {
   class?: string;
 }
 const { photo, sanityImage, name, role, email, class: className } = Astro.props;
+
+// The frame follows the PHOTO's orientation. A portrait headshot forced into
+// the old fixed 4/3 landscape frame lost almost half its height to
+// object-cover and cut the teacher's face at the eyes (found live
+// 2026-09-01). A portrait source now gets a portrait (3/4) frame — with the
+// arch, that is the proper doorway shape anyway — and a landscape source
+// keeps 4/3. Local-asset photos carry real dimensions; Sanity refs bake them
+// into the id (imageDimensions).
+const dims = sanityImage
+  ? imageDimensions(sanityImage)
+  : photo
+    ? { width: photo.width, height: photo.height }
+    : null;
+const portrait = dims !== null && dims.height > dims.width;
 ---
 
 {
@@ -45,13 +59,23 @@ const { photo, sanityImage, name, role, email, class: className } = Astro.props;
   )}
   data-reveal
 >
-  <div class="wcp-photo-print aspect-[4/3] overflow-hidden" style="--print-tilt: 0deg">
+  {
+    /* wcp-arch: the portrait sits behind an arched cut in the white mat — the
+      storybook doorway (globals.css). Static shape, no motion implications. */
+  }
+  <div
+    class={cn(
+      'wcp-photo-print wcp-arch overflow-hidden',
+      portrait ? 'aspect-[3/4]' : 'aspect-[4/3]',
+    )}
+    style="--print-tilt: 0deg"
+  >
     {
       sanityImage ? (
         <SanityImage
           source={sanityImage}
           alt={name}
-          class="h-full w-full object-cover"
+          class="h-full w-full object-cover object-[50%_30%]"
           sizes="(min-width: 1024px) 33vw, 50vw"
           widths={[320, 480, 640]}
         />
@@ -60,7 +84,7 @@ const { photo, sanityImage, name, role, email, class: className } = Astro.props;
           <Image
             src={photo}
             alt={name}
-            class="h-full w-full object-cover"
+            class="h-full w-full object-cover object-[50%_30%]"
             widths={[320, 480, 640]}
             sizes="(min-width: 1024px) 33vw, 50vw"
             loading="lazy"

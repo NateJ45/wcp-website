@@ -72,10 +72,16 @@ export const site = {
     treasurer: 'treasurer@westchesterpreschool.org', // donations / tax questions
   },
 
-  teachers: {
-    lisa: 'lisa@westchesterpreschool.org', // Mrs. Lisa Cortez, Pre-K
-    erin: 'erin@westchesterpreschool.org', // Mrs. Erin Schmerr, Threes/Twos
-  },
+  // (The per-teacher emails that lived here were dead config with zero
+  // consumers — teacher contact info lives on the staff / teacherNote docs.)
+
+  /** Whose building we are in — shown with the address (Site settings wins). */
+  venueNote: 'Inside Crestview Presbyterian Church',
+  /** Off-season tour line on the Visit block (Site settings wins). */
+  summerTourNote: 'Tours by appointment June to August.',
+  /** The secular / non-discrimination sentence (Site settings wins). */
+  secularLine:
+    'We are a secular, non-discriminatory cooperative preschool. We rent the space and have no religious affiliation.',
 
   // Ohio license. Regulated by ODJFS (Ohio Dept. of Job & Family Services)
   // under Day Care Licensing Code 5101:2-12. Secular, non-discriminatory.

@@ -86,13 +86,16 @@ const hasMeta = Boolean(readMinutes && readMinutes > 0) || Boolean(updated);
         {
           hasMeta && (
             <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
-              {readMinutes && readMinutes > 0 && (
+              {/* `(x ?? 0) > 0` on purpose: `{readMinutes && ...}` renders the
+                LITERAL 0 when the estimate is zero — a new page showed a stray
+                "00" in this row (one per condition), found 2026-08-29. */}
+              {(readMinutes ?? 0) > 0 && (
                 <span class="inline-flex items-center gap-1.5">
                   <Icon name="clock" class="h-4 w-4" aria-hidden="true" />
                   {readMinutes} min read
                 </span>
               )}
-              {readMinutes && readMinutes > 0 && updated && (
+              {(readMinutes ?? 0) > 0 && !!updated && (
                 <span aria-hidden="true" class="text-border">
                   •
                 </span>

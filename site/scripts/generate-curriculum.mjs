@@ -53,6 +53,10 @@ const THEMES = {
   amber: { bright: '#ffa334', ink: '#9e5c0a', tint: '#fff4e0', ring: '#f7d9a8' },
   green: { bright: '#22c55e', ink: '#0e7b2e', tint: '#e7f6ec', ring: '#bfe6cb' },
   orange: { bright: '#ff8c00', ink: '#a85300', tint: '#fff1e0', ring: '#f8d3ad' },
+  // The other two `class.color` values, so a guide for a class the Board adds
+  // renders in its own colour instead of failing on a missing theme.
+  sky: { bright: '#40aaed', ink: '#166fa8', tint: '#eaf6fd', ring: '#b9dff6' },
+  navy: { bright: '#01457e', ink: '#01457e', tint: '#e6eef6', ring: '#b3c9dd' },
 };
 
 // ---------------------------------------------------------------------------
@@ -581,7 +585,16 @@ async function fetchStudioCurricula() {
   const query = encodeURIComponent(
     // (standardsNote was projected here for a schema field that never
     // existed — removed 2026-08-23, see docs/FIELD_AUDIT.md.)
-    '*[_type == "curriculumGuide"]{ "slug": class, kicker, title, intro, sections, conceptual }',
+    // The guide's own words, plus the colour of the class it names (a guide can
+    // be filed against a whole class PAGE, in which case the first class on
+    // that page gives the colour).
+    `*[_type == "curriculumGuide" && defined(class)]{
+       "slug": class, kicker, title, intro, sections, conceptual,
+       "color": coalesce(
+         *[_type == "class" && slug.current == ^.class][0].color,
+         *[_type == "hubPage" && coalesce(hubKey, slug) == ^.class][0].classes[0]->color
+       )
+     }`,
   );
   const res = await fetch(
     `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,
@@ -592,10 +605,20 @@ async function fetchStudioCurricula() {
   return rows.length ? rows : null;
 }
 
-/** Committed entry overlaid with its Studio document, where one exists. */
+/**
+ * Committed entries overlaid with their Studio documents, PLUS a guide for any
+ * Studio document with no committed twin.
+ *
+ * That second half is what lets a class the Board adds have a curriculum guide:
+ * the list used to be exactly the three objects above, so a fourth document
+ * rendered nothing and the hub's "Curriculum guide (PDF)" pill would have
+ * pointed at a file that was never written. A new guide gets the same layout,
+ * its class's colour, and a file named after the value it is filed under —
+ * which is the URL the hub links (src/components/hub/HubClassroomBody.astro).
+ */
 function mergedCurricula(studioRows) {
   if (!studioRows) return CURRICULA;
-  return CURRICULA.map((base) => {
+  const merged = CURRICULA.map((base) => {
     const doc = studioRows.find((r) => r.slug === base.slug);
     if (!doc) return base;
     return {
@@ -607,6 +630,23 @@ function mergedCurricula(studioRows) {
       conceptual: doc.conceptual?.groups?.length ? doc.conceptual : base.conceptual,
     };
   });
+  const known = new Set(CURRICULA.map((c) => c.slug));
+  for (const doc of studioRows) {
+    // A guide with no words yet would render an empty booklet; skip it until
+    // someone writes at least one section.
+    if (!doc.slug || known.has(doc.slug) || !doc.sections?.length) continue;
+    merged.push({
+      slug: doc.slug,
+      file: `${doc.slug}-curriculum.pdf`,
+      color: THEMES[doc.color] ? doc.color : 'sky',
+      kicker: doc.kicker ?? '',
+      title: doc.title ?? `${doc.slug} Curriculum`,
+      intro: doc.intro ?? '',
+      sections: doc.sections,
+      conceptual: doc.conceptual?.groups?.length ? doc.conceptual : null,
+    });
+  }
+  return merged;
 }
 export { CURRICULA };
 
@@ -639,6 +679,8 @@ function renderSection(s) {
 }
 
 function renderConceptual(c) {
+  // A Board-made guide may have no conceptual-areas block at all.
+  if (!c?.groups?.length) return '';
   const groups = c.groups
     .map((g) => {
       const subs = g.subgroups
@@ -702,7 +744,15 @@ export function html(data) {
        column, so a short card no longer inherits the row height of a tall
        neighbour. break-inside:avoid keeps each card (and each bullet) whole
        across column AND page fragmentation. */
-    .grid{column-count:2;column-gap:9px}
+    /* READABILITY PASS (2026-08-29, Nathan): the guide used to print at a
+       10.2px body in two columns - accurate, but small for a kitchen-counter
+       read. CSS zoom scales the WHOLE design uniformly (type, chips, paddings,
+       borders - like printing at 200%) and Chromium's print pipeline reflows
+       and repaginates around it, so the layout language survives while every
+       size doubles. One column instead of two, because a doubled type size in
+       a half-width column leaves four words a line. */
+    body{zoom:2}
+    .grid{column-count:1;column-gap:9px}
     /* Full-width masthead inside the column flow (anchors columns to page 1). */
     .spanhead{column-span:all;break-after:avoid}
     .card{break-inside:avoid;margin:0 0 9px;background:#fff;border:1px solid #e7e3da;border-radius:11px;padding:10px 12px 11px;box-shadow:0 1px 0 rgba(1,69,126,.04)}

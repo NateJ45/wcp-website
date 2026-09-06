@@ -104,7 +104,11 @@ const metaLine = (item: BellItem) =>
                   </span>
                   {item.highlight && <HubPill kind="important">Important</HubPill>}
                 </span>
-                <span class="mt-0.5 block text-xs text-ink-muted">{metaLine(item)}</span>
+                {/* data-bell-meta names the FEED this row came from. The hub
+                  suite reads it to prove no feed takes more than its cap. */}
+                <span data-bell-meta={item.meta ?? ''} class="mt-0.5 block text-xs text-ink-muted">
+                  {metaLine(item)}
+                </span>
               </a>
             </li>
           ))}

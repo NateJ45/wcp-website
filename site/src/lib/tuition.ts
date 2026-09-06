@@ -21,6 +21,15 @@
  */
 export const SCHOOL_YEAR_MONTHS = 9;
 
+/** The Board's override (Fee schedule → "Billed months per school year"),
+ *  clamped to sanity; anything unusable keeps the shipped 9. */
+export function schoolYearMonths(stored: unknown): number {
+  const n = typeof stored === 'number' ? stored : Number(stored);
+  return Number.isFinite(n) && n >= 1 && n <= 12 ? Math.round(n) : SCHOOL_YEAR_MONTHS;
+}
+
+export const DEPOSIT_NOTE_FALLBACK = 'returned after your co-op hours';
+
 /**
  * "$1,350" -> 1350. Returns 0 for anything unparseable.
  *
@@ -39,9 +48,13 @@ export function formatMoney(amount: number): string {
   return `$${Math.round(amount).toLocaleString('en-US')}`;
 }
 
-/** Tuition for the whole school year, before any fees. */
-export function annualTuition(monthly: string | number | null | undefined): number {
-  return parseMoney(monthly) * SCHOOL_YEAR_MONTHS;
+/** Tuition for the whole school year, before any fees. `months` is the
+ *  Board's Fee-schedule value when set (see schoolYearMonths). */
+export function annualTuition(
+  monthly: string | number | null | undefined,
+  months: number = SCHOOL_YEAR_MONTHS,
+): number {
+  return parseMoney(monthly) * months;
 }
 
 export interface YearCostInput {
@@ -74,8 +87,11 @@ export interface YearCost {
  * the real cost of the year by the deposit, which is the opposite of the
  * "our tuition is public" promise.
  */
-export function yearCost({ monthly, studentFee, registration, deposit }: YearCostInput): YearCost {
-  const tuition = monthly * SCHOOL_YEAR_MONTHS;
+export function yearCost(
+  { monthly, studentFee, registration, deposit }: YearCostInput,
+  months: number = SCHOOL_YEAR_MONTHS,
+): YearCost {
+  const tuition = monthly * months;
   const total = tuition + studentFee + registration + deposit;
   return { tuition, total, refundable: deposit, net: total - deposit };
 }

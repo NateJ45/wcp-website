@@ -15,10 +15,10 @@
 // footer, which remains the full sitemap). The Family Hub link lives in the
 // header utility row + footer, not the funnel nav.
 //
-// OWNERSHIP: resolveNavigation (src/lib/nav.ts) currently serves THIS file and
-// bypasses the Sanity Menus doc — the funnel architecture is a design decision
-// (like the computed seams), and the Menus doc can't be patched while writes
-// are quota-frozen. The reconcile path is registered in docs/PENDING.md.
+// OWNERSHIP (updated 2026-08-31): the 2026-07-17 doctrine bypass is GONE —
+// the Menus doc is the source of truth again (patch-menus-doctrine.mjs wrote
+// the funnel into it on 2026-08-04; see resolveNavigation in src/lib/nav.ts).
+// THIS file only renders when that document is missing or empty.
 // Groups with `children` render as a dropdown in the header and a labeled
 // section in the mobile menu. `external: true` links open in a new tab.
 // =============================================================================
@@ -91,7 +91,8 @@ export const footerNav: NavGroup[] = [
       // work and are still in the sitemap, so nothing 404s and no shared link
       // breaks — restoring it is uncommenting this line. The home-page teaser
       // is hidden alongside it via SECTION_DROP.home in src/lib/page-doctrine.ts.
-      // { label: 'News', href: '/news' },
+      // { label: 'News', href: '/news' } — restoring News is a MENUS-DOC edit
+      //   in the Studio first; only add it back here if the fallback should match.,
       { label: 'Events', href: '/events' },
     ],
   },
@@ -102,7 +103,7 @@ export const footerNav: NavGroup[] = [
       // Deep link to the tour-request form: `sec-` + the section's stable
       // Sanity _key (see titleIdFor in section-helpers.ts) — the tour ask
       // lands ON the form, not on /enroll.
-      { label: 'Schedule a Tour', href: '/virtual-tour#sec-pp-tour-form' },
+      { label: 'Schedule a Tour', href: '/virtual-tour#tour-form' },
       { label: 'Visit Us', href: '/virtual-tour' },
       { label: 'Enroll', href: '/enroll' },
     ],

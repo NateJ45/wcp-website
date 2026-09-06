@@ -35,18 +35,33 @@ const { steps, footnote, class: className } = Astro.props;
 const longFootnote = (footnote?.trim().length ?? 0) > 70;
 ---
 
-<ol class={cn('relative mx-auto max-w-2xl', className)}>
+{
+  /* The handwritten "start here!" beside the path's first step — the first
+     real use of the .wcp-annotation register (it writes itself in on
+     scroll-driven browsers; see globals). Decorative, so aria-hidden. */
+}
+<p class="mx-auto mb-1 max-w-2xl overflow-x-clip" aria-hidden="true">
+  <span class="wcp-annotation inline-block -rotate-6">start here!</span>
+</p>
+{
+  /* overflow-x-clip (CI catch 2026-09-01): the settle reveal holds each li at
+     a slight rotation until it scrolls into view, and a rotated full-width
+     box EXTENDS the scrollable area — /enroll measured 324px in a 320px
+     viewport. Clip sideways only; the tape chips overhang vertically and
+     are untouched. */
+}
+<ol class={cn('relative mx-auto max-w-2xl overflow-x-clip', className)}>
   {
     steps.map((s, i) => (
       <li
-        class="relative flex gap-5 pb-8 last:pb-0"
-        data-reveal
-        style={`--reveal-delay:${i * 70}ms`}
+        class="relative flex gap-5 pb-6 last:pb-0"
+        data-reveal="settle"
+        style={`--reveal-delay:${i * 70}ms; --print-tilt:${i % 2 === 0 ? '-1deg' : '1deg'}`}
       >
         {/* Dashed connector — drawn between badges, not after the last one. */}
         {i !== steps.length - 1 && (
           <span
-            class="absolute top-11 left-5 h-[calc(100%-1.75rem)] w-px border-l-2 border-dashed border-navy/40 dark:border-white/20"
+            class="absolute top-11 left-5 h-[calc(100%-1.25rem)] w-px border-l-2 border-dashed border-navy/40 dark:border-white/20"
             aria-hidden="true"
           />
         )}
@@ -56,7 +71,16 @@ const longFootnote = (footnote?.trim().length ?? 0) > 70;
         >
           {i + 1}
         </span>
-        <div class="min-w-0 pt-1">
+        {/* Each step is a dealt paper card (the Aardvark move, 2026-09-01):
+            settle reveal arcs it in from a slight rotation, and a faint
+            resting tilt alternates per card. The tilt lives on THIS inner
+            node because data-reveal on the li animates transform and would
+            cancel a resting rotate there (the ChooserRows lesson). Tape
+            chip pins it to the page. */}
+        <div
+          class="wcp-tape-tr relative min-w-0 flex-1 rounded-xl bg-white p-4 shadow-md sm:p-5 dark:bg-surface"
+          style={`transform: rotate(${i % 2 === 0 ? '-0.5deg' : '0.5deg'})`}
+        >
           <h3 class="text-lg break-words text-heading">{s.title}</h3>
           {s.bodyHtml ? (
             <p class="mt-1 leading-relaxed break-words text-ink" set:html={s.bodyHtml} />

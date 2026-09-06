@@ -24,6 +24,7 @@ export const TYPE_LABELS: Record<string, string> = {
   photoAlbum: 'Photo album',
   hubPage: 'Family Hub page',
   update: 'Hub update',
+  hubSpotlight: 'Spotlight pop-up',
   hubDocument: 'Document / form',
   teacherNote: 'Teacher welcome note',
   directoryEntry: 'Family (directory)',

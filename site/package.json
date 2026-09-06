@@ -24,6 +24,7 @@
     "test:ui": "playwright test --ui",
     "test:unit": "vitest run",
     "test:hub": "playwright test -c playwright.hub.config.ts",
+    "test:visual": "playwright test -c playwright.visual.config.ts",
     "serve:dist": "http-server dist/client -p 4321 -s -c-1 --silent",
     "check:links": "linkinator ./dist/client --recurse --skip \"^(?!http://localhost)\" --skip \"wcp-hero[.](mp4|webm)\" --skip \"/family-hub\"",
     "encode:hero": "node scripts/encode-hero.mjs",
@@ -32,60 +33,93 @@
     "studio-thumbs": "node scripts/studio-thumbs.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^14.1.2",
+    "@astrojs/cloudflare": "^14.2.6",
     "@astrojs/partytown": "^2.1.7",
-    "@astrojs/react": "^6.0.1",
+    "@astrojs/react": "^6.0.5",
     "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.3",
-    "@fontsource-variable/quicksand": "^5.2.10",
-    "@fontsource/great-vibes": "^5.2.8",
-    "@portabletext/to-html": "^5.0.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/quicksand": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@portabletext/to-html": "^6.0.0",
     "@sanity/astro": "^3.4.2",
     "@sanity/client": "^7.23.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/orderable-document-list": "^2.0.9",
     "@sanity/preview-url-secret": "^4.0.8",
     "@sanity/visual-editing": "^5.4.5",
-    "@tailwindcss/vite": "^4.3.2",
+    "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.0.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
-    "lucide-react": "^1.24.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "lucide-react": "^1.39.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-is": "^19.2.7",
     "sanity": "^6.4.0",
     "sanity-plugin-documents-pane": "^4.1.8",
     "sanity-plugin-link-checker": "^0.3.2",
-    "sanity-plugin-media": "^5.0.11",
-    "sharp": "^0.35.3",
-    "styled-components": "^6.4.3",
+    "sanity-plugin-media": "^6.1.7",
+    "sharp": "^0.35.4",
+    "styled-components": "^6.5.3",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@axe-core/playwright": "^4.12.1",
-    "@iconify-json/lucide": "^1.2.116",
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@iconify-json/lucide": "^1.2.128",
     "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.1",
     "@resvg/resvg-js": "^2.6.2",
-    "@types/leaflet": "^1.9.21",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/leaflet": "^1.9.22",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
     "ffmpeg-static": "^5.3.0",
     "http-server": "^14.1.1",
-    "linkinator": "^7.6.1",
-    "oxlint": "^1.73.0",
+    "linkinator": "^8.1.0",
+    "oxlint": "^1.81.0",
     "pagefind": "^1.5.2",
-    "prettier": "^3.9.5",
+    "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.8.0",
-    "satori": "^0.26.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "satori": "^0.33.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "wawoff2": "^2.0.1",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.129.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.23",
+    "tar": "^7.5.21",
+    "fast-xml-parser": "^5.10.1",
+    "svgo": "^4.0.2",
+    "undici": "^7.29.0",
+    "js-yaml": "^4.3.1",
+    "adm-zip": "^0.6.0",
+    "tmp": "^0.2.6",
+    "qs": "^6.16.0",
+    "@lhci/utils": {
+      "js-yaml": "^3.15.1"
+    },
+    "@vercel/frameworks": {
+      "js-yaml": "^3.15.1",
+      "smol-toml": "^1.6.1"
+    },
+    "@actions/github": {
+      "undici": "^6.28.0"
+    },
+    "@actions/http-client": {
+      "undici": "^6.28.0"
+    },
+    "minimatch": {
+      "brace-expansion": "^1.1.18"
+    },
+    "@module-federation/vite": {
+      "adm-zip": "^0.6.0"
+    },
+    "external-editor": {
+      "tmp": "^0.2.6"
+    }
   }
 }

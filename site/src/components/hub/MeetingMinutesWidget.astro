@@ -10,22 +10,29 @@
    where minute posts live alongside announcements.
    ============================================================================ */
 import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
+import { hubEditAttr } from '@/lib/hub-preview';
 import Icon from '@/components/Icon.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { EVENT_TZ } from '@/lib/events';
 import { formatShortDate } from '@/lib/hub-dashboard-dates';
 
 interface MinuteRow {
+  docId?: string;
+  docType?: string;
   title: string;
   href?: string;
   dateLabel?: string;
 }
 let minutes: MinuteRow[] = [];
 try {
-  const posts = await sanityFetch<{ title: string; publishedAt?: string; slug?: string }[]>(
-    `*[_type == "update" && category == "minutes"] | order(publishedAt desc)[0...3]{ title, publishedAt, "slug": slug.current }`,
+  const posts = await sanityFetch<
+    { _id: string; title: string; publishedAt?: string; slug?: string }[]
+  >(
+    `*[_type == "update" && category == "minutes"] | order(publishedAt desc)[0...3]{ _id, title, publishedAt, "slug": slug.current }`,
   );
   minutes = (posts ?? []).map((p) => ({
+    docId: p._id,
+    docType: 'update',
     title: p.title,
     href: p.slug ? `/family-hub/updates/${p.slug}` : undefined,
     dateLabel: p.publishedAt ? formatShortDate(p.publishedAt, EVENT_TZ) : undefined,
@@ -47,11 +54,17 @@ if (minutes.length === 0) {
     minutes = [];
   }
 }
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+}
+const { heading } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="file-text"
-  title="Meeting Minutes"
+  title={heading ?? 'Meeting Minutes'}
   seeAllHref="/family-hub/updates"
   postit
   empty={minutes.length === 0}
@@ -61,7 +74,10 @@ if (minutes.length === 0) {
     {
       minutes.map((m) => (
         /* data-published feeds the "new" pills (src/scripts/hub-fresh.ts). */
-        <li data-published={('publishedAt' in m && m.publishedAt) || undefined}>
+        <li
+          data-published={('publishedAt' in m && m.publishedAt) || undefined}
+          data-sanity={hubEditAttr(Astro.locals, m.docId, m.docType ?? 'update', 'title')}
+        >
           {m.href ? (
             <a
               href={m.href}

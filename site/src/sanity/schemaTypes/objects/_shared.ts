@@ -1,4 +1,5 @@
 import { defineField } from 'sanity';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 // =============================================================================
 // Shared schema building blocks for the page builder
@@ -184,20 +185,29 @@ export function iconField(
     options: {
       list: ICON_OPTIONS,
     },
+    // Show the icons themselves, not just their names (2026-08-30).
+    components: { input: IconPickerInput },
   });
 }
 
-// The four background bands a section can sit on — the ONLY styling lever an
+// The background bands a section can sit on — the ONLY styling lever an
 // editor gets, matching Section.astro's `bg` prop. No custom colours.
+// Sunshine + Sky joined 2026-09-01 (the bold pass): saturated brand tints,
+// AA-checked with the default ink text, so a volunteer still cannot ship a
+// contrast failure whichever radio they pick.
 export const BACKGROUND_OPTIONS = [
   { title: 'White', value: 'white' },
   { title: 'Light grey', value: 'grey' },
   { title: 'Warm cream', value: 'cream' },
+  { title: 'Sunshine (bold warm)', value: 'sunshine' },
+  { title: 'Sky (soft blue)', value: 'sky' },
   { title: 'Navy (dark band)', value: 'navy' },
 ];
 
 /** The band-appearance fields every content section shares (→ Section.astro). */
-export function bandFields(defaultBackground: 'white' | 'grey' | 'cream' | 'navy' = 'white') {
+export function bandFields(
+  defaultBackground: 'white' | 'grey' | 'cream' | 'sunshine' | 'sky' | 'navy' = 'white',
+) {
   return [
     defineField({
       name: 'background',

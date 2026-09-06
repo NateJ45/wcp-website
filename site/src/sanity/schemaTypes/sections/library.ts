@@ -120,6 +120,29 @@ export const teacherSection = defineType({
       type: 'sectionHeader',
       group: 'content',
     }),
+    // Which teachers the cards show (2026-08-29, same move as the class
+    // cards). "all" keeps the whole-staff walls (Why WCP, Visit) current by
+    // themselves when someone is hired or leaves. "classTeacher" is for a
+    // CLASS page's "Meet the teacher" card: it derives this page's class's
+    // teacher through the class doc, so replacing a teacher on the class
+    // updates the card with no page edit - the propagation gap found in the
+    // 2026-08-29 teacher-replacement walkthrough. Manual still exists for a
+    // genuinely curated pick.
+    defineField({
+      name: 'source',
+      title: 'Which teachers?',
+      type: 'string',
+      group: 'content',
+      options: {
+        layout: 'radio',
+        list: [
+          { title: 'All teachers, automatically (updates itself)', value: 'all' },
+          { title: "This page's class teacher, automatically", value: 'classTeacher' },
+          { title: 'Only the ones I pick below', value: 'manual' },
+        ],
+      },
+      initialValue: 'manual',
+    }),
     defineField({
       name: 'staff',
       title: 'Teachers',
@@ -127,7 +150,17 @@ export const teacherSection = defineType({
       group: 'content',
       of: [defineArrayMember({ type: 'reference', to: [{ type: 'staff' }] })],
       description: 'Pick from Staff — their name, photo, and bio come from there.',
-      validation: (R) => R.min(1).error('Pick at least one teacher, or remove this section.'),
+      hidden: ({ parent }) =>
+        (parent as { source?: string } | undefined)?.source === 'all' ||
+        (parent as { source?: string } | undefined)?.source === 'classTeacher',
+      validation: (R) =>
+        R.custom((value, context) => {
+          const source = (context.parent as { source?: string } | undefined)?.source;
+          if (source === 'all' || source === 'classTeacher') return true;
+          return Array.isArray(value) && value.length > 0
+            ? true
+            : 'Pick at least one teacher, switch to an automatic option, or remove this section.';
+        }),
     }),
     defineField({
       name: 'callout',
@@ -138,9 +171,13 @@ export const teacherSection = defineType({
     ...bandFields('white'),
   ],
   preview: {
-    select: { title: 'header.title' },
-    prepare({ title }) {
-      return { title: title || 'Teachers', subtitle: 'Teacher cards' };
+    select: { title: 'header.title', source: 'source' },
+    prepare({ title, source }) {
+      const labels: Record<string, string> = {
+        all: 'All teachers (automatic)',
+        classTeacher: "This class's teacher (automatic)",
+      };
+      return { title: title || 'Teachers', subtitle: labels[source as string] ?? 'Teacher cards' };
     },
   },
 });
@@ -160,6 +197,27 @@ export const classCardsSection = defineType({
       type: 'sectionHeader',
       group: 'content',
     }),
+    // Which classes the row shows (2026-08-29). "all" is the answer to the
+    // stale-grid problem found in the add-a-class walkthrough: the featured
+    // rows on Home / Enroll / Visit each hand-picked every class, so a new
+    // class silently missed all three. In "all" mode the row derives from the
+    // Classes list itself (same drag order), and a new class appears the
+    // moment it publishes. Manual stays for rows that genuinely curate - the
+    // Pre-K page shows only its own two classes.
+    defineField({
+      name: 'source',
+      title: 'Which classes?',
+      type: 'string',
+      group: 'content',
+      options: {
+        layout: 'radio',
+        list: [
+          { title: 'All classes, automatically (updates itself)', value: 'all' },
+          { title: 'Only the ones I pick below', value: 'manual' },
+        ],
+      },
+      initialValue: 'manual',
+    }),
     defineField({
       name: 'classes',
       title: 'Classes',
@@ -167,7 +225,15 @@ export const classCardsSection = defineType({
       group: 'content',
       of: [defineArrayMember({ type: 'reference', to: [{ type: 'class' }] })],
       description: 'Pick from Classes — schedule, ages, and price come from there.',
-      validation: (R) => R.min(1).error('Pick at least one class, or remove this section.'),
+      hidden: ({ parent }) => (parent as { source?: string } | undefined)?.source === 'all',
+      validation: (R) =>
+        R.custom((value, context) => {
+          const source = (context.parent as { source?: string } | undefined)?.source;
+          if (source === 'all') return true;
+          return Array.isArray(value) && value.length > 0
+            ? true
+            : 'Pick at least one class, switch to "All classes", or remove this section.';
+        }),
     }),
     ...bandFields('white'),
   ],

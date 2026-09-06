@@ -8,6 +8,7 @@
    keeps in-section links inside preview mode; `site` feeds the contact block.
    ============================================================================ */
 import type { SectionData } from './section-helpers';
+import { TOUR_FORM_ANCHOR } from '@/lib/tour-cta';
 import { effectiveBg, wantsSeam } from './section-helpers';
 import { sectionEditAttr, sectionFieldEditAttr, type EditDoc } from '@/lib/preview-edit-attr';
 import { sectionCoach } from '@/lib/section-coach';
@@ -22,7 +23,7 @@ import SeptembersWall from '@/components/SeptembersWall.astro';
 import ChooserRows from '@/components/ChooserRows.astro';
 import VisitBlock from '@/components/VisitBlock.astro';
 import { PHOTO_MOMENTS, type PhotoMoment } from '@/lib/photo-moments';
-import { applyDoctrine, CARDGRID_KEEP_CARDS } from '@/lib/page-doctrine';
+import { applyDoctrine, CARDGRID_KEEP_CARDS, warnMissingDoctrineKeys } from '@/lib/page-doctrine';
 import ProseSection from './ProseSection.astro';
 import CardGridSection from './CardGridSection.astro';
 import StatBandSection from './StatBandSection.astro';
@@ -114,6 +115,7 @@ let sections = rawSections.map((s) => deEmDashDeep(s));
 // applyDoctrine).
 if (pageSlug) {
   sections = applyDoctrine(sections, pageSlug);
+  warnMissingDoctrineKeys(pageSlug, sections ?? []);
 }
 
 // The code-owned photo moments for this page (empty for hub/preview surfaces
@@ -159,11 +161,20 @@ const momentBg = (m: PhotoMoment): string =>
 // Seed with the hero boundary (the sweep divider lands under every hero, like
 // the old site), then a leading moment's colour when one renders first.
 let prevBg: string | null = afterHero ? 'hero' : null;
-for (const m of momentsAfter.get(-1) ?? []) prevBg = momentBg(m);
-// Band-color adjacency (Nathan 2026-07-19): a navy band never follows a navy
-// band (the drench hero counts as navy). When two navys would touch, the
-// non-closer of the pair flips — the closing CTA keeps its identity, everything
-// else goes white (a mid-page ctaSection goes cream, its own light tone).
+for (const m of momentsAfter.get(-1) ?? []) {
+  m.seam = wantsSeam(momentBg(m), prevBg);
+  prevBg = momentBg(m);
+}
+// Band-color adjacency (Nathan 2026-07-19, widened 2026-09-01): a band never
+// follows a band of the SAME non-white color — navy-navy was the original
+// rule; with the bold palette, cream-cream (the heritage strip into the
+// schedule band, found live) and the other tints read just as flat. Navy
+// pairs keep their careful closer logic; any other same-color pair flips the
+// later band to white (the resting paper, and the change makes the sweep
+// seam appear between them). Moments now CARRY their color into the chain
+// instead of resetting it — the reset was exactly how the cream pair
+// slipped through. White may follow white: identical paper reads as one
+// page, not a mistake.
 // PUBLIC-ONLY, like the rest of the doctrine: hub/preview surfaces omit
 // pageSlug and keep their stored colors untouched (the hub-unchanged rule).
 if (pageSlug) {
@@ -171,8 +182,13 @@ if (pageSlug) {
   for (let i = 0; i < sections.length; i++) {
     const s = sections[i];
     if (s._type === 'noticeBarSection') continue;
-    if (momentsAfter.has(i - 1) || (i === 0 && momentsAfter.has(-1))) prev = null; // a moment breaks adjacency
+    const priorMoments = momentsAfter.get(i - 1) ?? (i === 0 ? momentsAfter.get(-1) : undefined);
+    if (priorMoments?.length) prev = momentBg(priorMoments[priorMoments.length - 1]);
     let bg = effectiveBg(s);
+    if (bg !== 'navy' && bg !== 'white' && bg === prev) {
+      s.background = 'white';
+      bg = 'white';
+    }
     if (bg === 'navy' && prev === 'navy') {
       if (s._type === 'ctaSection' && i === lastBandIndex) {
         // keep the closer navy; flip the PREVIOUS navy band instead. A stored
@@ -211,7 +227,7 @@ for (const [i, section] of sections.entries()) {
   }
   const bg = effectiveBg(section);
   section.seam = wantsSeam(bg, prevBg);
-  const doodleEligible = bg === 'navy' || bg === 'cream';
+  const doodleEligible = bg !== 'white';
   if (doodleEligible && prevDoodled) {
     section.noDoodle = true;
     prevDoodled = false;
@@ -221,8 +237,9 @@ for (const [i, section] of sections.entries()) {
   prevBg = bg;
   // A moment after this section becomes the band the NEXT section sits under.
   for (const m of momentsAfter.get(i) ?? []) {
+    m.seam = wantsSeam(momentBg(m), prevBg);
     prevBg = momentBg(m);
-    prevDoodled = prevBg === 'cream';
+    prevDoodled = prevBg !== 'white';
   }
 }
 
@@ -278,15 +295,15 @@ const MAP: Record<string, any> = {
     ) : m.kind === 'tuition-opener' ? (
       <TuitionOpener />
     ) : m.kind === 'heritage' ? (
-      <HeritageStrip slot={m.slot} />
+      <HeritageStrip slot={m.slot} seam={m.seam} />
     ) : m.kind === 'chooser' ? (
       <ChooserRows />
     ) : m.kind === 'septembers' ? (
-      <SeptembersWall />
+      <SeptembersWall seam={m.seam} />
     ) : m.kind === 'visit' ? (
       <VisitBlock />
     ) : (
-      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+      <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} seam={m.seam} />
     ),
   )
 }
@@ -354,13 +371,25 @@ const MAP: Record<string, any> = {
     // The grammar wrapper stays `display: contents` (a zero box, CSS hooks
     // only). The edit wrapper must be a REAL block box: the overlay outlines
     // the element's rect, and a `contents` element has no rect.
+    // STABLE TOUR ANCHOR (W3, 2026-08-31): the first form section on a page
+    // carries #tour-form regardless of its Sanity _key, so every tour CTA in
+    // code (src/lib/tour-cta.ts) survives a volunteer deleting and re-adding
+    // the form. Zero-height marker, not an id on the section itself, so the
+    // key-derived id keeps working for any old links.
+    const isFirstForm =
+      section._type === 'formSection' &&
+      sections.findIndex((x) => x?._type === 'formSection') === i;
     const grammarWrapped =
       rendered && grammarAttrs ? (
         <div class="contents" {...grammarAttrs}>
+          {isFirstForm && <span id={TOUR_FORM_ANCHOR} aria-hidden="true" />}
           {rendered}
         </div>
       ) : (
-        rendered
+        <>
+          {isFirstForm && rendered && <span id={TOUR_FORM_ANCHOR} aria-hidden="true" />}
+          {rendered}
+        </>
       );
     // -------------------------------------------------------------------
     // The band handle (2026-08-28, card 28) — PREVIEW ONLY, same editDoc gate
@@ -413,15 +442,15 @@ const MAP: Record<string, any> = {
           ) : m.kind === 'tuition-opener' ? (
             <TuitionOpener />
           ) : m.kind === 'heritage' ? (
-            <HeritageStrip slot={m.slot} />
+            <HeritageStrip slot={m.slot} seam={m.seam} />
           ) : m.kind === 'chooser' ? (
             <ChooserRows />
           ) : m.kind === 'septembers' ? (
-            <SeptembersWall />
+            <SeptembersWall seam={m.seam} />
           ) : m.kind === 'visit' ? (
             <VisitBlock />
           ) : (
-            <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} />
+            <PhotoStrip slot={m.slot} bg={m.bg} captions={m.captions} seam={m.seam} />
           ),
         )}
       </>

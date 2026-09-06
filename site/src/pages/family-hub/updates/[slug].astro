@@ -17,7 +17,7 @@ import SanityImage from '@/components/SanityImage.astro';
 import { sanityFetch } from '@/lib/sanity';
 import { POST_BODY_PROJECTION } from '@/lib/queries';
 import { classLabel } from '@/lib/class-colors';
-import { renderPostBody } from '@/lib/portable-text';
+import { ensureInternalRouteMap, renderPostBody } from '@/lib/portable-text';
 import type { PortableTextBlock } from '@portabletext/types';
 import type { SanityImageValue } from '@/lib/image';
 
@@ -49,6 +49,8 @@ const fmtDate = (iso: string) =>
 // h1 -> h3 trips WCAG heading-order. See src/lib/portable-text.ts.
 // The same renderer News uses: text, inline pictures, attachments.
 // It normalizes heading levels unconditionally, as this call did before.
+// Page frontmatter runs before BaseLayout primes the link map — prime here.
+await ensureInternalRouteMap();
 const bodyHtml = renderPostBody(post.body);
 ---
 

@@ -61,7 +61,7 @@ at build time, hiding the whole band when there's nothing to show.
 | `ctaSection`               | `CtaBanner.astro`                 | every call-to-action banner                                                                                                   |
 | `testimonialSection`       | `Testimonial` / `TestimonialWall` | quotes (source: featured / tag / all / manual refs)                                                                           |
 | `teacherSection`           | `TeacherCard.astro`               | staff (refs `staff` docs, or inline)                                                                                          |
-| `classCardsSection`        | `ClassCard.astro`                 | class cards (refs `class` docs, or inline)                                                                                    |
+| `classCardsSection`        | `ClassCard.astro`                 | class cards (source: all classes automatically, or picked `class` refs)                                                       |
 | `faqSection`               | `Faq` / `FaqItem.astro`           | FAQ groups (by category, or inline)                                                                                           |
 | `schoolYearSection`        | `SchoolYear.astro`                | school-year timeline                                                                                                          |
 | `tuitionTableSection`      | `TuitionTable.astro`              | tuition (auto from class/feeSchedule docs, or inline)                                                                         |
@@ -196,7 +196,7 @@ this repo with "Secrets: write" and "Actions: write" permissions.
 
 Shared building blocks live in
 [`src/sanity/schemaTypes/objects/_shared.ts`](../src/sanity/schemaTypes/objects/_shared.ts):
-`bandFields()` (background `white|grey|cream|navy` + compact only — the divider/"seam"
+`bandFields()` (background `white|grey|cream|sunshine|sky|navy` + compact only — the divider/"seam"
 between bands is placed automatically by the renderer from adjacent band colours, not a
 volunteer toggle, since 2026-07-17), `iconField()` (a **validated dropdown** of allowed
 icon names, so a typo can never break the build), required `alt` on every image, and
@@ -504,8 +504,10 @@ and `node scripts/page-parity.mjs compare` must stay at 27/27.
 is one (the newest words), regenerates every nested `_key` (two array members with one
 key is a Studio-level error), strips `_id`/`_rev`/`_createdAt`/`_updatedAt`, titles the
 copy "… copy", and takes the first free `<slug>-copy`, `<slug>-copy-2`, … A hub copy
-also drops `hubKey`: two documents claiming one built-in hub page would make the page
-a coin toss. The copy is created as `drafts.<uuid>` and opened in the edit panel.
+also drops `hubKey` and "Classes on this page": two documents claiming one built-in hub
+page would make the page a coin toss, and a class belongs to exactly one classroom page
+(`src/lib/hub-classrooms.ts`), so a copy claiming the same classes would leave one of the
+two pages rendering to nobody. The copy is created as `drafts.<uuid>` and opened in the edit panel.
 
 **2. Archive & restore** — a real trash, and NOT the same thing as "Recently deleted".
 

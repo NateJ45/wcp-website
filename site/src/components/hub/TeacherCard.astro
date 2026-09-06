@@ -9,19 +9,25 @@
    the note has no headshot the card shows a class-colored icon instead.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
+import { TEACHER_NOTE_CARD_QUERY, pickNote, telHref as toTel } from '@/lib/hub-teacher-note';
 import { teacherPhoneFallback } from '@/data/hub/live-links';
+import { hubEditAttr } from '@/lib/hub-preview';
 
 interface Props {
-  /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
-  slug: string;
+  /** Note keys for this classroom, most specific first (teacherNoteKeys()). */
+  keys: string[];
+  /** The classroom's brand colour, from the class document. */
+  color?: string;
 }
-const { slug } = Astro.props;
-const noteClass = slug.startsWith('pre-k') ? 'pre-k' : slug;
+const { keys, color } = Astro.props;
 
 interface TeacherDoc {
+  _id?: string;
+  key?: string;
   signName?: string;
   signRole?: string;
   email?: string;
@@ -30,45 +36,64 @@ interface TeacherDoc {
 }
 let teacher: TeacherDoc | null = null;
 try {
-  teacher = await sanityFetch<TeacherDoc | null>(
-    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, phone, photo }`,
-    { cls: noteClass },
-    { cache: BOARD_CONTENT_CACHE },
+  teacher = pickNote(
+    await sanityFetch<TeacherDoc[]>(
+      TEACHER_NOTE_CARD_QUERY,
+      { keys },
+      { cache: BOARD_CONTENT_CACHE },
+    ),
+    keys,
   );
 } catch {
   teacher = null;
 }
 
-const cc = classStyles(slug);
+const cc = colorStyles(color);
 // Portrait-preserving (no forced square crop): the browser crops the circle
 // with `object-top`, so a head sitting high in the frame is never sliced off.
 // The card renders an 80px (h-20 w-20) circle, so 160px covers 2x/retina.
 // Portrait-preserving (width only), then object-cover crops it to the circle.
+// SQUARE hotspot-aware crop (2026-09-01, round three): the Sanity CDN crops
+// to the face when the photo's hotspot is set in the Studio (drag the circle
+// in the image editor), and center otherwise. This replaced two rounds of
+// CSS zoom guesswork — no transform can center every face, because faces sit
+// in different places per photo. The hotspot is board-editable truth.
 const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
       .width(160)
+      .height(160)
+      .fit('crop')
       .url()
   : null;
 // Studio value wins; fall back to the committed number until the field is set.
-const phone = teacher?.phone || teacherPhoneFallback[noteClass];
-// A tel: href from any human-typed phone (keep a leading +, drop other symbols).
-const telHref = phone
-  ? `tel:${phone.trim().startsWith('+') ? '+' : ''}${phone.replace(/[^\d]/g, '')}`
-  : null;
+const phone = teacher?.phone || keys.map((k) => teacherPhoneFallback[k]).find(Boolean);
+const telHref = toTel(phone);
+// Studio preview only: clicking this card opens the teacher's own note doc —
+// the same place the name, photo and contacts are edited.
+const editAttr = hubEditAttr(Astro.locals, teacher?._id, 'teacherNote', 'signName');
 ---
 
 {
   teacher?.signName && (
-    <div class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface">
+    <div
+      class="hub-note flex h-full items-center gap-4 rounded-[var(--radius)] border border-border bg-white p-6 shadow-sm dark:bg-surface"
+      data-sanity={editAttr}
+    >
       {photoUrl ? (
-        <img
-          src={photoUrl}
-          alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
-          width="80"
-          height="80"
-          loading="lazy"
-          class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-        />
+        <span
+          class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
+        >
+          {/* Zoomed 1.5x about the face line (30% down) so the FACE fills the little circle —
+              a half-body shot read as a speck at 80px (Nathan, 2026-09-01). */}
+          <img
+            src={photoUrl}
+            alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+            width="80"
+            height="80"
+            loading="lazy"
+            class="h-full w-full object-cover"
+          />
+        </span>
       ) : (
         <span
           class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full ${cc.iconChip}`}
@@ -78,7 +103,9 @@ const telHref = phone
         </span>
       )}
       <div class="min-w-0">
-        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">Your teacher</p>
+        <p class="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          {CONTACT_LABELS.yourTeacher}
+        </p>
         <p class="font-display text-xl text-heading">{teacher.signName}</p>
         {teacher.signRole && <p class="text-sm text-ink-muted">{teacher.signRole}</p>}
         <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -88,7 +115,7 @@ const telHref = phone
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="mail" class="h-3.5 w-3.5" aria-hidden="true" />
-              Say hi
+              {CONTACT_LABELS.email}
             </a>
           )}
           {telHref && (
@@ -97,7 +124,7 @@ const telHref = phone
               class="inline-flex items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
             >
               <Icon name="phone" class="h-3.5 w-3.5" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
           {/* Reopen pill for the teacher's welcome letter (note-modal.ts
@@ -110,7 +137,7 @@ const telHref = phone
             class="inline-flex cursor-pointer items-center gap-1.5 text-sm font-bold text-sky-ink hover:underline"
           >
             <Icon name="newspaper" class="h-3.5 w-3.5" aria-hidden="true" />
-            Welcome letter
+            {CONTACT_LABELS.welcomeLetter}
           </button>
         </div>
       </div>

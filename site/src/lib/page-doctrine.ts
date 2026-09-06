@@ -73,6 +73,33 @@ export const CARDGRID_KEEP_CARDS: Record<string, string[]> = {
   'co-op-life': ['k157'],
 };
 
+/**
+ * MAGIC-KEY TRIPWIRE (W3, 2026-08-31). The keys above are hand-written Sanity
+ * section `_key`s: if a volunteer deletes and re-adds one of those sections,
+ * the key changes and the special treatment silently stops. This makes it
+ * LOUD at build time instead — the deploy log names the page and the missing
+ * key, so the fix (update the key here) is a one-line diagnosis rather than a
+ * mystery layout regression.
+ */
+export function warnMissingDoctrineKeys(
+  pageSlug: string | undefined,
+  sections: { _key?: string }[],
+): void {
+  if (!pageSlug) return;
+  const wanted = CARDGRID_KEEP_CARDS[pageSlug];
+  if (!wanted?.length) return;
+  const present = new Set(sections.map((s) => s._key));
+  for (const key of wanted) {
+    if (!present.has(key)) {
+      console.warn(
+        `[page-doctrine] ${pageSlug}: section _key "${key}" (CARDGRID_KEEP_CARDS) is gone — ` +
+          'the special card treatment no longer applies. If the section was re-created, ' +
+          'update the key in src/lib/page-doctrine.ts.',
+      );
+    }
+  }
+}
+
 import { effectiveBg } from '@/components/sections/section-helpers';
 
 /**

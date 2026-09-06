@@ -1,0 +1,50 @@
+# =============================================================================
+# Dependabot — grouped weekly dependency PRs, validated by the existing gates
+# =============================================================================
+# One PR per week per ecosystem, minor+patch grouped so a Monday merge is one
+# green-CI review, not twelve. Majors arrive as their own PRs (they deserve
+# individual attention on this stack — Astro/Sanity/wrangler majors have
+# real migration notes). CI + Lighthouse + the Playwright suites are the
+# safety net that makes auto-updates sane on a solo project.
+# (Dependabot over Renovate: no app install needed — config-only, so it
+# ships from a session without account-owner clicks. Same idea, less setup.)
+# =============================================================================
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/New_York
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    # The Sanity stack moves by hand, as a set. 2026-09-04 the grouped PR bumped
+    # @sanity/client 7.23 -> 7.26 while sanity 6.4.0 kept its own nested copy,
+    # and astro check failed with two incompatible SanityClient types
+    # (UndoRedo.tsx, shareDraftLink.tsx). This repo is where the next proven set
+    # is worked out, then copied to presacademy (which pins the same set).
+    ignore:
+      - dependency-name: "sanity"
+      - dependency-name: "@sanity/*"
+      - dependency-name: "sanity-plugin-*"
+      # oxlint ships new default rules with minor releases (1.73 -> 1.81 turned on
+      # refs-during-render, setState-in-effect and empty-export checks and failed
+      # the Lint step on the 2026-09-04 grouped PR). Bump it on purpose, with the
+      # lint fixes in the same PR, not inside the weekly group.
+      - dependency-name: "oxlint"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/New_York
+    groups:
+      actions:
+        update-types: ["major", "minor", "patch"]

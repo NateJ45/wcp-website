@@ -15,10 +15,10 @@
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import type { OrgPerson } from '@/data/hub/org-holders';
+import type { OrgPerson } from '@/lib/hub-org';
 
 interface Props {
-  person: OrgPerson & { sanityPhoto?: { asset?: unknown; alt?: string } | null };
+  person: OrgPerson;
   /** Ring/role tint classes, e.g. { ring: 'border-[#ffa334]', role: 'text-amber-ink' }. */
   ring: string;
   role: string;

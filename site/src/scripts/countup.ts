@@ -115,5 +115,3 @@ onBeforeSwap(() => {
   mo?.disconnect();
   mo = null;
 });
-
-export {};

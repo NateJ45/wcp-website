@@ -72,9 +72,28 @@ export default function HeadingAccentPicker(props: OverlayComponentProps): React
     };
   }, [read, node.path, element]);
 
+  // Our own outside-press close, so the host's blur cannot strand an open card
+  // (same pattern as SectionStyleCard - this picker has no save-on-blur to
+  // fall back on).
+  useEffect(() => {
+    if (!open) return undefined;
+    const doc = element.ownerDocument;
+    const onPointerDown = (event: Event) => {
+      const pressed = event.target as Node | null;
+      if (!pressed) return;
+      if (cardRef.current?.contains(pressed) || triggerRef.current?.contains(pressed)) return;
+      setOpen(false);
+    };
+    doc.addEventListener('pointerdown', onPointerDown, true);
+    return () => doc.removeEventListener('pointerdown', onPointerDown, true);
+  }, [open, element]);
+
   // Selected, not merely on screen: `activated` in this host means "in the
-  // viewport", so an ungated control would appear on every heading at once.
-  if (!focused || !loaded) return null;
+  // viewport", so an ungated control would appear on every heading at once. But
+  // an OPEN card must outlive `focused`, which the host clears on any blur and
+  // recomputes on every `presentation/focus` (see SectionStyleCard's note) -
+  // gated on `focused` alone it vanishes the moment the cursor wanders.
+  if (!loaded || (!focused && !open)) return null;
 
   const tokens = splitHeadingWords(loaded.heading);
   if (!tokens.some((t) => t.word)) return null;

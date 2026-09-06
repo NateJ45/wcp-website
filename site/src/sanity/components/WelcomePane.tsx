@@ -1,7 +1,9 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import { useClient, useWorkspace } from 'sanity';
 import { IntentLink, useRouter } from 'sanity/router';
-import { Box, Card, Stack, Text, Heading, Flex, Spinner } from '@sanity/ui';
+import { Box, Button, Card, Stack, Text, Flex, Spinner } from '@sanity/ui';
+import { ToolHeading } from './ToolHeading';
+import { OPEN_EVENT as TOUR_OPEN_EVENT } from './StudioTour';
 
 // =============================================================================
 // WelcomePane — the Studio landing screen, in the Family Hub's card language
@@ -57,44 +59,57 @@ const TYPE_LABELS: Record<string, string> = {
   partner: 'Partner / sponsor',
   credential: 'Accreditation',
   campaign: 'Fundraising campaign',
+  celebration: 'Celebration',
+  hubSpotlight: 'Spotlight pop-up',
+  operatingBudget: 'Operating budget',
   jobPosting: 'Job posting',
   resource: 'Download / resource',
   photoAlbum: 'Photo album',
 };
 
-// Everything a human edits (machine-made inbox types are left out on purpose).
-const RECENT_TYPES = [
-  'page',
-  'post',
-  'newsletterIssue',
-  'event',
-  'legalPage',
-  'class',
-  'staff',
-  'faqItem',
-  'testimonial',
-  'siteSettings',
-  'navigation',
-  'feeSchedule',
-  'schoolYearEvent',
-  'closureAlert',
-  'hubPage',
-  'update',
-  'hubDocument',
-  'teacherNote',
-  'presidentNote',
-  'directoryEntry',
-  'signupSheet',
-  'coopRole',
-  'program',
-  'boardMember',
-  'partner',
-  'credential',
-  'campaign',
-  'jobPosting',
-  'resource',
-  'photoAlbum',
-];
+// Everything a human edits (machine-made inbox types are left out on purpose),
+// split by WORKSPACE so the hub Welcome resumes hub work and the public
+// Welcome resumes public work — a "Recently edited" full of the other side's
+// pages reads as a bug (Nathan spotted exactly that, 2026-08-30). The types
+// both sides edit (money, the alert, classes) appear in both lists, matching
+// the shared rows in structure.ts.
+const SHARED_RECENT_TYPES = ['closureAlert', 'feeSchedule', 'operatingBudget', 'class', 'campaign'];
+const RECENT_TYPES: Record<'public' | 'hub', string[]> = {
+  public: [
+    ...SHARED_RECENT_TYPES,
+    'page',
+    'post',
+    'newsletterIssue',
+    'event',
+    'legalPage',
+    'staff',
+    'faqItem',
+    'testimonial',
+    'siteSettings',
+    'navigation',
+    'schoolYearEvent',
+    'program',
+    'boardMember',
+    'partner',
+    'credential',
+    'jobPosting',
+    'resource',
+    'photoAlbum',
+  ],
+  hub: [
+    ...SHARED_RECENT_TYPES,
+    'hubPage',
+    'update',
+    'hubDocument',
+    'teacherNote',
+    'presidentNote',
+    'directoryEntry',
+    'signupSheet',
+    'coopRole',
+    'celebration',
+    'hubSpotlight',
+  ],
+};
 
 const RECENT_QUERY = `*[
   _type in $types && !(_id in path("drafts.**"))
@@ -219,13 +234,13 @@ export function WelcomePane() {
   useEffect(() => {
     let alive = true;
     client
-      .fetch<RecentDoc[]>(RECENT_QUERY, { types: RECENT_TYPES })
+      .fetch<RecentDoc[]>(RECENT_QUERY, { types: RECENT_TYPES[isHubWorkspace ? 'hub' : 'public'] })
       .then((docs) => alive && setRecent(docs))
       .catch(() => alive && setRecent([]));
     return () => {
       alive = false;
     };
-  }, [client]);
+  }, [client, isHubWorkspace]);
 
   return (
     <Box padding={4}>
@@ -238,19 +253,37 @@ export function WelcomePane() {
       `}</style>
       <Stack space={5} style={{ maxWidth: 680, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            👋 Welcome to the West Chester Preschool control room
-          </Heading>
+          <ToolHeading>👋 Welcome to the West Chester Preschool control room</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
-            This is where you edit the website. Nothing goes live until you click{' '}
-            <strong>Publish</strong>, so click around and explore. New here? Open{' '}
-            <strong>Help &amp; Guide</strong> in the left menu for step-by-step walkthroughs.
+            {isHubWorkspace ? (
+              <>
+                This is where you edit the <strong>Family Hub</strong> — the private area behind the
+                family password: updates, sign-ups, the directory, celebrations.
+              </>
+            ) : (
+              <>
+                This is where you edit the <strong>public website</strong> — what visiting parents
+                and the whole world see: pages, news, events, tuition.
+              </>
+            )}{' '}
+            Nothing goes live until you click <strong>Publish</strong>, so click around and explore.
+            New here? Open <strong>Help &amp; Guide</strong> in the left menu for step-by-step
+            walkthroughs.
           </Text>
           <Text size={1} muted style={{ lineHeight: 1.5 }}>
             You are in the <strong>{workspaceTitle}</strong> view. Looking for the{' '}
             <strong>{otherWorkspace}</strong>? Click the workspace name in the top-left corner to
             switch — both edit the same website.
           </Text>
+          <Box>
+            {/* Replays the first-visit tour (StudioTour.tsx listens). */}
+            <Button
+              mode="bleed"
+              padding={2}
+              text="Show the welcome tour again"
+              onClick={() => window.dispatchEvent(new CustomEvent(TOUR_OPEN_EVENT))}
+            />
+          </Box>
         </Stack>
 
         <Stack space={3}>

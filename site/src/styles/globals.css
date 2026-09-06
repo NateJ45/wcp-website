@@ -211,6 +211,10 @@
   --color-amber: #ffa334; /* Amber. Stars, Twos class color. */
   --color-green: #22c55e; /* Green. Threes class color (decorative). */
   --color-grey: #eff0f1; /* Light grey. Alternating section backgrounds. */
+  --color-sunshine: #ffa334; /* THE bold warm band (2026-09-01, Nathan:
+     "our bold orange and navy" — the old site's confidence). This IS brand
+     amber as a field. Navy text on it measures 4.86:1 and the body ink
+     darker still, so AA holds; eyebrows on it use the 'heading' tone. */
 
   /* ---- INK tier: any TEXT or interactive label (WCAG AA verified) ----
      Contrast ratios measured against white (#fff) and grey (#EFF0F1):
@@ -1331,6 +1335,8 @@ li:nth-child(4n + 4) > .hub-note {
 }
 .wcp-site-paper section.bg-grey,
 .wcp-site-paper section.bg-cream,
+.wcp-site-paper section.bg-sunshine,
+.wcp-site-paper section.bg-sky-soft,
 .wcp-site-paper section.bg-navy {
   position: relative;
   isolation: isolate;
@@ -1338,27 +1344,14 @@ li:nth-child(4n + 4) > .hub-note {
 }
 .wcp-site-paper section.bg-grey::before,
 .wcp-site-paper section.bg-cream::before,
+.wcp-site-paper section.bg-sunshine::before,
+.wcp-site-paper section.bg-sky-soft::before,
 .wcp-site-paper section.bg-navy::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* Eased, not linear. A straight ramp still has a perceptible "front" moving
-     across the icons; the extra stops weight the fade toward the edge so the
-     texture is already almost gone by the time it reaches the seam, and the
-     approach to full strength is gentle. */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    rgba(0, 0, 0, 0.12) calc(var(--wcp-texture-fade) * 0.35),
-    rgba(0, 0, 0, 0.55) calc(var(--wcp-texture-fade) * 0.68),
-    #000 var(--wcp-texture-fade),
-    #000 calc(100% - var(--wcp-texture-fade)),
-    rgba(0, 0, 0, 0.55) calc(100% - var(--wcp-texture-fade) * 0.68),
-    rgba(0, 0, 0, 0.12) calc(100% - var(--wcp-texture-fade) * 0.35),
-    transparent 100%
-  );
   mask-image: linear-gradient(
     to bottom,
     transparent 0,
@@ -1371,11 +1364,55 @@ li:nth-child(4n + 4) > .hub-note {
     transparent 100%
   );
 }
+/* 2026-09-01 (Nathan): the doodles cover the WHOLE band — every band, at
+   double size. Layer order matters: first listed paints on TOP, so each
+   stack reads grain → doodles → strata, and the strata arcs can never blank
+   the icons out again (they did, as a separate ::after painting over this
+   layer — that block is gone). background-size is per-layer stays at its intrinsic tile size (Nathan tried 2x and reverted). */
 .wcp-site-paper section.bg-grey::before {
-  background-image: var(--wcp-grain);
+  background-image: var(--wcp-grain), var(--wcp-doodles);
 }
 .wcp-site-paper section.bg-cream::before {
-  background-image: var(--wcp-grain), var(--wcp-doodles);
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      120% 42% at 16% 109%,
+      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      95% 34% at 82% 112%,
+      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper section.bg-sunshine::before {
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      120% 42% at 20% 109%,
+      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 32% at 80% 112%,
+      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper section.bg-sky-soft::before {
+  background-image:
+    var(--wcp-grain), var(--wcp-doodles),
+    radial-gradient(
+      115% 40% at 18% 109%,
+      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 30% at 84% 112%,
+      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
+      transparent 100%
+    );
 }
 .wcp-site-paper section.bg-navy::before {
   background-image: var(--wcp-doodles-dark);
@@ -1401,7 +1438,10 @@ li:nth-child(4n + 4) > .hub-note {
       rgba(1, 32, 58, 0.5)
     );
 }
-.dark .wcp-site-paper section.bg-cream {
+.dark .wcp-site-paper section.bg-grey::before,
+.dark .wcp-site-paper section.bg-cream::before,
+.dark .wcp-site-paper section.bg-sunshine::before,
+.dark .wcp-site-paper section.bg-sky-soft::before {
   background-image: var(--wcp-grain), var(--wcp-doodles-dark);
 }
 
@@ -1450,7 +1490,12 @@ li:nth-child(4n + 4) > .hub-note {
   font-weight: 400;
 }
 .wcp-annotation {
-  color: var(--color-amber);
+  /* orange-INK, not bright amber (CI catch 2026-09-01): the note is real
+     visible text and aria-hidden does not exempt it from WCAG contrast —
+     #ffa334 on white measured 1.99:1 and failed axe + the Lighthouse gate.
+     The ink token holds AA-large on every light band and flips to the bright
+     tier on dark pages, like every other ink. */
+  color: var(--color-orange-ink);
   font-size: 1.55rem;
   line-height: 1.1;
 }
@@ -2150,8 +2195,51 @@ body.wcp-hub-paper .wcp-photo-print > * {
 .wcp-site-paper [data-nodoodle] > section.bg-navy::before {
   background-image: none;
 }
-.wcp-site-paper [data-nodoodle] > section.bg-cream::before {
+.wcp-site-paper [data-nodoodle] > section.bg-grey::before {
   background-image: var(--wcp-grain);
+}
+/* The tinted bands keep grain AND their strata arcs — only the icons rest. */
+.wcp-site-paper [data-nodoodle] > section.bg-cream::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      120% 42% at 16% 109%,
+      color-mix(in oklab, var(--color-cream) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      95% 34% at 82% 112%,
+      color-mix(in oklab, var(--color-cream) 96.5%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper [data-nodoodle] > section.bg-sunshine::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      120% 42% at 20% 109%,
+      color-mix(in oklab, var(--color-sunshine) 93%, var(--color-orange)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 32% at 80% 112%,
+      color-mix(in oklab, var(--color-sunshine) 95%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    );
+}
+.wcp-site-paper [data-nodoodle] > section.bg-sky-soft::before {
+  background-image:
+    var(--wcp-grain),
+    radial-gradient(
+      115% 40% at 18% 109%,
+      color-mix(in oklab, var(--color-sky-soft) 94%, var(--color-navy)) 0 99.5%,
+      transparent 100%
+    ),
+    radial-gradient(
+      90% 30% at 84% 112%,
+      color-mix(in oklab, var(--color-sky-soft) 95%, var(--color-sky)) 0 99.5%,
+      transparent 100%
+    );
 }
 
 /* -- Header treatment: TAPED LABEL (left-anchored data sections) ------------ */
@@ -2396,6 +2484,156 @@ body.wcp-hub-paper .wcp-photo-print > * {
   }
 }
 
+/* -- Scroll-drift photos: the frame holds, the photo breathes inside it.
+   (2026-08-31, from the scroll-site study — the one idea from that world that
+   fits the paper doctrine.) The IMAGE inside a .wcp-scroll-drift frame
+   overscans slightly and drifts upward as its frame crosses the viewport, so
+   the page feels alive on scroll while nothing changes position or layout.
+   Transform-only (compositor cheap); the frame's own overflow-hidden clips
+   the overscan. Same gates as the crayon spine above: scroll-driven CSS only,
+   so Safari/Firefox and reduced-motion visitors get today's exact still photo
+   (the overscan scale lives INSIDE the gate, so the fallback is scale 1).
+   Rules: the class goes on the overflow-hidden FRAME, never on a node that
+   carries data-reveal or a resting tilt (reveal animates transform and would
+   cancel it — the ChooserRows lesson), and never on an img that has its own
+   hover transform (the gallery's hover-zoom imgs keep their move). ------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper .wcp-scroll-drift img {
+      animation: wcp-photo-drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}
+@keyframes wcp-photo-drift {
+  from {
+    transform: scale(1.12) translateY(3.5%);
+  }
+  to {
+    transform: scale(1.12) translateY(-3.5%);
+  }
+}
+
+/* -- Annotations write themselves (2026-09-01, from the Aardvark study).
+   .wcp-annotation is the Great Vibes margin-note register; on scroll-driven
+   browsers the note now REVEALS left-to-right as it scrolls into view, like
+   a hand writing it in. clip-path only (no layout, no opacity), applied in
+   the element's own coordinates so a rotated note writes along its own
+   baseline. The vertical insets are negative so ascenders/descenders never
+   clip. Same double gate as every scroll-scrub: everyone else gets the full
+   note, still. --------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wcp-site-paper .wcp-annotation {
+      animation: wcp-annotation-write linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 45%;
+    }
+  }
+}
+@keyframes wcp-annotation-write {
+  from {
+    clip-path: inset(-30% 100% -30% -10%);
+  }
+  to {
+    clip-path: inset(-30% -10% -30% -10%);
+  }
+}
+
+/* -- One mischievous letter (2026-09-01, same study). displayTitleHtml wraps
+   a single deterministic letter of an occasional display heading in this
+   span; the tilt is static (no motion doctrine implications) and scoped to
+   the public paper layer, so the same shared component renders it inert on
+   the hub. The angle rides a custom property so typography.ts can vary it
+   per heading without new classes. --------------------------------------- */
+.wcp-site-paper .wcp-tilt-letter {
+  display: inline-block;
+  transform: rotate(var(--tilt-letter, -3deg));
+}
+
+/* -- Band strata: the torn-paper depth inside a warm band (Aardvark's
+   in-band waves, at Construction Paper volume). Two big hard-stop radial
+   arcs sit along a cream band's bottom edge, a few percent darker than the
+   band — enough that the band reads as layered paper, never enough to touch
+   text contrast (content sits above on its own layer). color-mix keeps the
+   step relative to the cream token, so dark mode derives its own quiet
+   version. Public layer only; the hub keeps its flat canvas. ------------- */
+/* Seam variety (2026-09-01 bold pass): alternate sections mirror their sweep
+   horizontally, so the one divider language stops reading as one repeated
+   stamp. Tailwind v4's translate/scale are independent CSS properties, so
+   this composes with the seam's own -translate-y-full. */
+.wcp-site-paper section:nth-of-type(even) > .wcp-seam {
+  scale: -1 1;
+}
+
+/* -- Icons flow THROUGH the curved rim (2026-09-01, Nathan: "have the icon
+   layer on top of both the section bg and the outer curve"). The seam svg's
+   flat fill used to cap the band with an icon-less curve. Now, on seamed
+   tinted bands: the seam svg drops to z:-2 (still above the band's own
+   background inside the isolated context, but UNDER the icon layer), and
+   the band's ::before EXTENDS UP by the seam height with its top strip
+   masked to the SAME sweep path — same element, same tile origin, so the
+   doodles/grain/strata run continuously from the curve's crest to the
+   band's bottom. The mask is the seam's own path (mirrored on even
+   sections, matching the svg's flip); the +1px overlaps kill hairlines.
+   Every seamed section isolates so the negative-z pair can never sink
+   below the page. */
+.wcp-site-paper {
+  --wcp-seam-h: 2rem;
+  --wcp-sweep-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cpath d='M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z' fill='%23000'/%3E%3C/svg%3E");
+  --wcp-sweep-mask-flip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cg transform='translate(1440 0) scale(-1 1)'%3E%3Cpath d='M0,14 C300,52 700,58 1000,40 C1180,29 1330,16 1440,10 L1440,60 L0,60 Z' fill='%23000'/%3E%3C/g%3E%3C/svg%3E");
+}
+@media (min-width: 640px) {
+  .wcp-site-paper {
+    --wcp-seam-h: 3rem;
+  }
+}
+.wcp-site-paper section.wcp-seamed {
+  isolation: isolate;
+}
+.wcp-site-paper section.wcp-seamed > .wcp-seam {
+  z-index: -2;
+}
+.wcp-site-paper
+  section.wcp-seamed:is(.bg-grey, .bg-cream, .bg-sunshine, .bg-sky-soft, .bg-navy)::before {
+  top: calc(-1 * var(--wcp-seam-h) + 1px);
+  -webkit-mask-image: var(--wcp-sweep-mask), linear-gradient(#000, #000);
+  mask-image: var(--wcp-sweep-mask), linear-gradient(#000, #000);
+  -webkit-mask-size:
+    100% var(--wcp-seam-h),
+    100% calc(100% - var(--wcp-seam-h) + 2px);
+  mask-size:
+    100% var(--wcp-seam-h),
+    100% calc(100% - var(--wcp-seam-h) + 2px);
+  -webkit-mask-position: top, bottom;
+  mask-position: top, bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.wcp-site-paper
+  section.wcp-seamed:nth-of-type(even):is(
+    .bg-grey,
+    .bg-cream,
+    .bg-sunshine,
+    .bg-sky-soft,
+    .bg-navy
+  )::before {
+  -webkit-mask-image: var(--wcp-sweep-mask-flip), linear-gradient(#000, #000);
+  mask-image: var(--wcp-sweep-mask-flip), linear-gradient(#000, #000);
+}
+
+/* -- The arch window: a photo matted behind an arched cut, the storybook
+   doorway. Sits INSIDE a .wcp-photo-print mat (the white paper stays a
+   rectangle — a real matted arch print), so it composes with the print frame
+   rather than replacing it. Static shape, no motion, both themes. Applied to
+   the teacher portraits (a named person framed in a doorway reads as "come
+   meet them"); use sparingly elsewhere — every photo arched reads as a
+   template, one arched portrait row reads as a choice. ------------------- */
+.wcp-site-paper .wcp-arch img {
+  border-radius: 50% 50% 10px 10px / 42% 42% 10px 10px;
+}
+
 /* -- Schedule timelines ------------------------------------------------------
    This was `columns: 2` on wide screens, to stop a 7-step single column leaving
    ~55% of a 1440 band empty. It cost more than it bought: CSS multi-column
@@ -2607,6 +2845,11 @@ li:nth-child(3n + 3) .wcp-testi {
 }
 .wcp-glow-sky {
   background: radial-gradient(closest-side, var(--color-sky), transparent 70%);
+}
+/* Navy completes the set: `class.color` offers five colours, so a class the
+   Board tints navy needs its own wash like the other four. */
+.wcp-glow-navy {
+  background: radial-gradient(closest-side, var(--color-navy), transparent 70%);
 }
 
 /* 5. Scroll-reveal system ----------------------------------------------------
@@ -3161,6 +3404,9 @@ li:nth-child(3n + 3) .wcp-testi {
                                 composite light enough that muted meta text dropped
                                 under AA — keep the fill dark, lean on the border) */
   --color-cream: #241a12; /* dark warm-tint surface (was the pale orange tint) */
+  --color-sunshine: #3b2a0d; /* dark sunshine band — a real amber-brown, a
+                                clear step above cream's dark twin so the bold
+                                band stays bold in dark mode */
   --color-sky-soft: #10222c; /* dark soft-sky tint */
 
   /* Shadcn-style semantic aliases (not consumed by hand-authored components
@@ -3258,6 +3504,16 @@ html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+}
+/* Follow WCP! — the label hides with every [data-rail-label]; the two brand
+   icons stack so they fit the icon-wide column. */
+html[data-rail-collapsed] .hub-rail-aside [data-rail-social] {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+html[data-rail-collapsed] .hub-rail-aside [data-rail-social-icons] {
+  flex-direction: column;
 }
 html[data-rail-collapsed] .hub-rail-aside [data-rail-footer] > form {
   flex: 0 0 auto;

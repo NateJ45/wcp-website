@@ -18,6 +18,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createClient } from '@sanity/client';
 import { projectId, dataset, apiVersion } from '@/sanity/env';
+import { readForm } from '@/lib/read-form';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -57,8 +58,17 @@ function sniffImageType(bytes: Uint8Array): string | null {
 }
 
 export const POST: APIRoute = async (context) => {
-  const form = await context.request.formData();
   const wantsJson = (context.request.headers.get('accept') ?? '').includes('application/json');
+  // A non-form body used to crash formData() with a 500; reject it cleanly.
+  const form = await readForm(context.request);
+  if (!form) {
+    return wantsJson
+      ? new Response(JSON.stringify({ ok: false, error: 'Bad request.' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        })
+      : context.redirect('/family-hub', 303);
+  }
 
   const submittedBy = clip(form.get('submittedBy'), 120);
   const caption = clip(form.get('caption'), 200);

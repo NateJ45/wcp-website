@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { resolveNavigation } from './nav';
+import { groupChildren, resolveNavigation } from './nav';
 import { mainNav as mainNavFallback } from '@/data/nav';
 
 // =============================================================================
@@ -132,5 +132,54 @@ describe('resolveNavigation', () => {
       legalNav: [pageLink('Privacy', null)],
     });
     expect(warn).toHaveBeenCalledTimes(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The self-maintaining Classes dropdown (2026-08-29)
+// ---------------------------------------------------------------------------
+describe('groupChildren', () => {
+  const auto = [
+    { label: 'Twos Class', linkType: 'page' as const, pageSlug: 'classes/twos' },
+    { label: 'Threes Class', linkType: 'page' as const, pageSlug: 'classes/threes' },
+    // Pre-K AM and PM share ONE page, so the query yields the same page twice.
+    { label: 'Pre-K Class', linkType: 'page' as const, pageSlug: 'classes/pre-k' },
+    { label: 'Pre-K Class', linkType: 'page' as const, pageSlug: 'classes/pre-k' },
+  ];
+  const extra = { label: 'A Day at WCP', linkType: 'page' as const, pageSlug: 'a-day-at-wcp' };
+
+  it('is a pass-through when the toggle is off', () => {
+    expect(groupChildren({ children: [extra] })).toEqual([extra]);
+    expect(groupChildren({ autoClasses: false, autoChildren: auto, children: [extra] })).toEqual([
+      extra,
+    ]);
+  });
+
+  it('puts the class links first and the hand-written ones after', () => {
+    const merged = groupChildren({ autoClasses: true, autoChildren: auto, children: [extra] });
+    expect(merged.map((l) => l.label)).toEqual([
+      'Twos Class',
+      'Threes Class',
+      'Pre-K Class',
+      'A Day at WCP',
+    ]);
+  });
+
+  it('collapses two classes sharing one page into a single link', () => {
+    const merged = groupChildren({ autoClasses: true, autoChildren: auto, children: [] });
+    expect(merged.filter((l) => l.pageSlug === 'classes/pre-k')).toHaveLength(1);
+  });
+
+  it('skips a hand-written link the automatic list already covers', () => {
+    const dupe = { label: 'Twos (old link)', linkType: 'page' as const, pageSlug: 'classes/twos' };
+    const merged = groupChildren({ autoClasses: true, autoChildren: auto, children: [dupe] });
+    expect(merged.filter((l) => l.pageSlug === 'classes/twos')).toHaveLength(1);
+    expect(merged[0]?.label).toBe('Twos Class');
+  });
+
+  it('survives a class list with no pages at all', () => {
+    expect(groupChildren({ autoClasses: true, autoChildren: [], children: [extra] })).toEqual([
+      extra,
+    ]);
   });
 });

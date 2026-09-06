@@ -22,6 +22,8 @@ import { SetupWizard } from './src/sanity/components/SetupWizard';
 import { StatsTool } from './src/sanity/components/StatsTool';
 import { makePreviewNavigator } from './src/sanity/components/PreviewNavigator';
 import { ApproveTestimonialAction } from './src/sanity/actions/approveTestimonial';
+import { CreateClassPageAction } from './src/sanity/actions/createClassPage';
+import { CreateClassHubPageAction } from './src/sanity/actions/createClassHubPage';
 import { ArchiveAction, RestoreAction, DeleteForeverAction } from './src/sanity/actions/archive';
 import { withSlugRedirect, SLUG_REDIRECT_TYPES } from './src/sanity/actions/slugRedirect';
 import { shareDraftLinkAction } from './src/sanity/components/shareDraftLink';
@@ -32,9 +34,11 @@ import { PAGE_BUILDER_TYPES } from './src/sanity/pageBuilderConfig';
 import { schemaTypes, SINGLETON_TYPES, ARCHIVABLE_TYPES } from './src/sanity/schemaTypes';
 import { ANNOUNCEMENT_TEMPLATES } from './src/sanity/announcementTemplates';
 import { PAGE_TEMPLATES } from './src/sanity/pageTemplates';
+import { HUB_TEMPLATES } from './src/sanity/hubTemplates';
+import { resolveBadges } from './src/sanity/badges';
 import { publicStructure, hubStructure } from './src/sanity/structure';
 import { resolve } from './src/sanity/resolve';
-import { wcpStudioTheme } from './src/sanity/theme';
+import { wcpStudioTheme, wcpHubStudioTheme } from './src/sanity/theme';
 import { projectId, dataset } from './src/sanity/env';
 
 // =============================================================================
@@ -77,8 +81,10 @@ import { projectId, dataset } from './src/sanity/env';
 // - scheduledDrafts.enabled: false — per-document scheduled publishing is a
 //   Growth-plan feature. We keep it OFF on purpose: it was briefly on during the
 //   trial, but a "Schedule" button that disappears when the trial ends would
-//   leave the board confused, so publishing is always immediate. (Same story for
-//   Comments/Tasks and AI Assist, which we deliberately have NOT added.)
+//   leave the board confused, so publishing is always immediate. (Same story
+//   for AI Assist, deliberately not added. COMMENTS turned out to be core and
+//   free — they work today and the volunteer guide teaches them, 2026-08-31;
+//   Tasks are not present in this Studio version and stay un-taught.)
 // - releases.enabled: false — the "Content Releases" bundle tool is also a paid
 //   feature and more than the board needs, so we keep it off too.
 // =============================================================================
@@ -123,6 +129,23 @@ const defaultDocumentNode: DefaultDocumentNodeResolver = (S, { schemaType }) => 
   if (USED_ON_TYPES.includes(schemaType)) {
     return S.document().views([S.view.form(), usedOnView(S)]);
   }
+  // A sign-up sheet answers "who's coming?" on the sheet itself: a Responses
+  // tab listing every signupEntry that references it, newest first. Before
+  // this the sheet and its responses lived in two unrelated lists.
+  if (schemaType === 'signupSheet') {
+    return S.document().views([
+      S.view.form(),
+      S.view
+        .component(DocumentsPane)
+        .options({
+          query: `*[_type == "signupEntry" && sheet._ref == $id] | order(_createdAt desc)`,
+          params: { id: `_id` },
+          options: { perspective: 'previewDrafts' },
+        })
+        .title('Responses')
+        .icon(() => '🙋'),
+    ]);
+  }
   return S.document().views([S.view.form()]);
 };
 
@@ -152,6 +175,10 @@ function workspace(opts: {
   /** Which page list the Presentation navigator (the Squarespace-style side
       panel) shows: public `page` docs or hub `hubPage` docs. */
   navigatorKind?: 'public' | 'hub';
+  /** Workspace chrome theme; defaults to the navy/blue brand theme. The hub
+      workspace passes the WARM twin so the two doors look different at a
+      glance (see src/sanity/theme.ts). */
+  theme?: typeof wcpStudioTheme;
   extraPlugins?: PluginOptions[];
   /** Extra Studio tools (navbar entries), e.g. the CSV export tool. */
   extraTools?: Tool[];
@@ -166,7 +193,7 @@ function workspace(opts: {
     icon: opts.icon ?? WcpWorkspaceIcon,
     projectId,
     dataset,
-    theme: wcpStudioTheme,
+    theme: opts.theme ?? wcpStudioTheme,
     releases: { enabled: false },
     // Sanity's own scheduled publishing is a paid (Growth) feature. We keep it
     // OFF so the board never builds a habit around a "Schedule" button that
@@ -217,7 +244,12 @@ function workspace(opts: {
       types: schemaTypes,
       // Pre-filled "＋ New" starting points: announcement bars/popups and the
       // page layout templates (the blank "Page" option stays available too).
-      templates: (prev) => [...prev, ...ANNOUNCEMENT_TEMPLATES, ...PAGE_TEMPLATES],
+      templates: (prev) => [
+        ...prev,
+        ...ANNOUNCEMENT_TEMPLATES,
+        ...PAGE_TEMPLATES,
+        ...HUB_TEMPLATES,
+      ],
     },
     document: {
       // Action wiring, in priority order:
@@ -243,6 +275,9 @@ function workspace(opts: {
       // cookie, which is all the gated hub preview asks for, so a hub link
       // would hand family content to whoever holds it. The reasoning lives in
       // src/sanity/urls.ts — read it before adding hubPage there.
+      // Status chips on lists/headers — expired spotlights, past events,
+      // self-publishing drafts, pinned updates (src/sanity/badges.ts).
+      badges: resolveBadges,
       actions: (prev, { schemaType }) => {
         const base = SLUG_REDIRECT_TYPES.has(schemaType)
           ? prev.map((a) => (a.action === 'publish' ? withSlugRedirect(a) : a))
@@ -276,11 +311,21 @@ function workspace(opts: {
             shareDraftLinkAction,
           ];
         }
+        // One-click page scaffolding for a class (2026-08-29): every
+        // mechanical step of "give this class its own page" on a button, so
+        // the four-step add-a-class checklist loses its fiddliest step. Two
+        // buttons, one per side of the site — the public detail page, and the
+        // gated hub handbook. The hub CLASS PAGE itself needs no button: it
+        // exists as soon as the class is published.
+        const classHelpers =
+          schemaType === 'class' ? [CreateClassPageAction, CreateClassHubPageAction] : [];
+
         if (ARCHIVABLE_TYPES.has(schemaType)) {
           return [
             ...base.filter(({ action }) => action !== 'delete'),
             ...undoRedo,
             ...pageHelpers,
+            ...classHelpers,
             ArchiveAction,
             shareDraftLinkAction,
           ];
@@ -375,6 +420,7 @@ export default defineConfig([
     subtitle: 'Behind the family password',
     structure: hubStructure,
     icon: WcpHubWorkspaceIcon,
+    theme: wcpHubStudioTheme,
     previewInitial: '/preview/family-hub/home',
     navigatorKind: 'hub',
     // Clean up sits on the hub side: its biggest bulk-deletes are past RSVPs

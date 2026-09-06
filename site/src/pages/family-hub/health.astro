@@ -10,6 +10,7 @@
 export const prerender = false;
 
 import HubShell from '@/layouts/HubShell.astro';
+import { WEATHER_CLOSURE_QUERY } from '@/lib/queries';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
@@ -18,20 +19,28 @@ import Button from '@/components/ui/Button.astro';
 import HubSectionedBody from '@/components/hub/HubSectionedBody.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
+
+// One source with the calendar page: Site settings' weather-closure statement.
+const closureStatement =
+  (await readHubPageDoc<string>(draftMode, WEATHER_CLOSURE_QUERY, {}).catch(() => null))?.trim() ||
+  'WCP follows Lakota Local Schools for weather closures — if Lakota closes, WCP closes.';
 let doc: HubPageDoc | null = null;
 try {
-  doc = await sanityFetch<HubPageDoc | null>(
-    HUB_PAGE_QUERY,
-    { key: 'health' },
-    { cache: BOARD_CONTENT_CACHE },
-  );
+  doc = await readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, { key: 'health' });
 } catch {
   doc = null;
 }
@@ -88,7 +97,12 @@ const keepHome = [
 ];
 ---
 
-<HubShell title={title} bare pageTitle="Health & Safety — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Health & Safety — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="heart-pulse" />
@@ -160,9 +174,8 @@ const keepHome = [
               </span>
               <h2 class="text-lg font-bold text-white">Closures & the full policy</h2>
               <p class="mt-2 max-w-xl leading-relaxed text-white/85">
-                WCP follows <span class="font-semibold">Lakota Local Schools</span> for weather
-                closures — if Lakota closes, WCP closes. The complete health policy lives in the
-                Family Handbook, and Ohio licensing requirements always apply.
+                {closureStatement} The complete health policy lives in the Family Handbook, and Ohio
+                licensing requirements always apply.
               </p>
               <div class="mt-6 flex flex-wrap gap-3">
                 <Button href="/family-hub/documents" variant="outline-white" size="md">

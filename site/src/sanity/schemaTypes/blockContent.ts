@@ -31,6 +31,24 @@ export const blockContent = defineType({
         ],
         annotations: [
           {
+            name: 'internalLink',
+            type: 'object',
+            title: 'Page link',
+            // A REFERENCE, not a pasted URL: rename the target page and every
+            // link written this way keeps working (resolved at render by
+            // src/lib/portable-text.ts). Prefer this over the raw-URL link
+            // for anything on this site.
+            fields: [
+              {
+                name: 'reference',
+                type: 'reference',
+                title: 'Page',
+                to: [{ type: 'page' }, { type: 'post' }, { type: 'hubPage' }],
+                validation: (R) => R.required(),
+              },
+            ],
+          },
+          {
             name: 'link',
             type: 'object',
             title: 'Link',

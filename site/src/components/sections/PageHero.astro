@@ -2,6 +2,7 @@
 /* Renders a page's hero object through Hero.astro, including the optional
    crayon-underlined accent word and the action buttons. */
 import Hero from '@/components/Hero.astro';
+import { TOUR_HREF } from '@/lib/tour-cta';
 import HeroFramed from '@/components/HeroFramed.astro';
 import Underline from '@/components/Underline.astro';
 import ActionButtons from './ActionButtons.astro';
@@ -81,7 +82,7 @@ const TOUR_ACTION: ActionData = {
   label: 'Schedule a Tour',
   style: 'accent',
   linkType: 'url',
-  url: '/virtual-tour#sec-pp-tour-form',
+  url: TOUR_HREF,
 };
 const isTourAction = (a: ActionData) =>
   /\btour\b/i.test(a.label) || (a.linkType === 'url' && /virtual-tour/.test(a.url ?? ''));

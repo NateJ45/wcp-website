@@ -21,7 +21,7 @@ import {
   type SectionData,
   headerLeadHtml,
 } from './section-helpers';
-import { SCHOOL_YEAR_MONTHS, formatMoney, parseMoney } from '@/lib/tuition';
+import { DEPOSIT_NOTE_FALLBACK, formatMoney, parseMoney, schoolYearMonths } from '@/lib/tuition';
 
 interface CalcClass {
   name?: string;
@@ -32,7 +32,12 @@ interface CalcClass {
 }
 interface CalcData {
   classes: CalcClass[];
-  fees?: { registrationFee?: string; participationFee?: string } | null;
+  fees?: {
+    registrationFee?: string;
+    participationFee?: string;
+    schoolYearMonths?: number;
+    depositNote?: string;
+  } | null;
 }
 
 const { section } = Astro.props as { section: SectionData };
@@ -40,13 +45,26 @@ const header = section.header;
 const titleId = titleIdFor(section);
 const note = section.note as string | undefined;
 
-const data = await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
+// Prefer the data the PAGE QUERY expanded (draft-aware in the preview, and
+// the reason a draft class shows here at the same moment it shows in the
+// tuition table). The component's own fetch survives only as the fallback for
+// renderers that do not come through PAGE_BY_SLUG_QUERY, like the hub body -
+// cmsFetch reads published content, which is correct on every live surface.
+const expanded = section as unknown as {
+  calcClasses?: CalcClass[];
+  calcFees?: CalcData['fees'];
+};
+const data: CalcData = expanded.calcClasses
+  ? { classes: expanded.calcClasses, fees: expanded.calcFees ?? null }
+  : await cmsFetch<CalcData>(TUITION_CALC_QUERY, {}, { classes: [], fees: null });
 // Shared with the class cards and the client script (src/lib/tuition.ts), so
 // the same price can never render differently on two surfaces.
 const money = parseMoney;
 const fmt = formatMoney;
 
 const classes = (data.classes ?? []).filter((c) => c.name && money(c.monthly) > 0);
+const months = schoolYearMonths(data.fees?.schoolYearMonths);
+const depositNote = data.fees?.depositNote?.trim() || DEPOSIT_NOTE_FALLBACK;
 const reg = money(data.fees?.registrationFee);
 const participation = money(data.fees?.participationFee);
 const oneTime = reg + participation;
@@ -74,6 +92,7 @@ const oneTime = reg + participation;
       <div
         class="mx-auto mt-8 max-w-3xl"
         data-tuition-calc
+        data-calc-months={months}
         data-onetime={oneTime}
         data-reg={reg}
         data-participation={participation}
@@ -117,7 +136,7 @@ const oneTime = reg + participation;
                 </dd>
               </div>
               <div class="flex items-end justify-between gap-4">
-                <dt class="text-ink-muted">Tuition, {SCHOOL_YEAR_MONTHS} months</dt>
+                <dt class="text-ink-muted">Tuition, {months} months</dt>
                 <dd class="font-semibold text-heading" data-calc-tuition>
                   {fmt(0)}
                 </dd>
@@ -152,8 +171,8 @@ const oneTime = reg + participation;
                       the participation deposit comes back. Publishing only the
                       gross figure overstates the real cost of the year. */}
                   <dt class="text-ink-muted">
-                    Less your deposit, returned
-                    <span class="block text-xs">when your co-op hours are done</span>
+                    Less your deposit,
+                    <span class="block text-xs">{depositNote}</span>
                   </dt>
                   <dd class="font-semibold text-green-ink" data-calc-refund>
                     {fmt(0)}

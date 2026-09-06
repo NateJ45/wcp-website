@@ -50,7 +50,7 @@ When everything in a section is done, collapse the section to a one-line
       sits in the Pages folder and 3 orphan docs exist in the dataset. Retire:
       drop from structure + Pages folder, archive the 3 docs, mark the schema
       deprecated (keep registered so the orphans stay openable until emptied).
-- [x] (DONE 2026-08-23 — all 7 hidden; getClassFacts deleted) `class`: `icon`, `tagline`, `daysCount`, `classSizeCap`,
+- [x] (DONE 2026-08-23 — all 7 hidden; getClassFacts deleted. `class.icon` came BACK 2026-08-29: the hub used to read every class icon from src/data/classes.ts, which only knows the four classes the site shipped with, so a class the Board added had no icon anywhere. The Studio owns it again, as a validated dropdown; the committed icon is the fallback for the original four.) `class`: `icon`, `tagline`, `daysCount`, `classSizeCap`,
       `dailySchedule`, `heroImage`, `whatTheyLearn` (7 of 23 fields).
       `daysCount`/`classSizeCap` die via the caller-less `getClassFacts()`
       (cms.ts:133) — delete that function too.

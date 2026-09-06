@@ -37,15 +37,25 @@ const weekMax = days.length ? Math.max(...days.map((d) => d.high)) : 0;
 const weekMin = days.length ? Math.min(...days.map((d) => d.low)) : 0;
 const span = Math.max(1, weekMax - weekMin);
 const pctOf = (t: number) => ((t - weekMin) / span) * 100;
+interface Props {
+  /** Board wording override (hubPage.widgetText — see src/lib/hub-widgets.ts).
+      Undefined = the shipped title. */
+  heading?: string;
+  /** Board override for the line under the title. */
+  blurb?: string;
+}
+const { heading, blurb } = Astro.props;
 ---
 
 <HomeWidgetCard
   icon="cloud-sun"
-  title="Week ahead"
+  title={heading ?? 'Week ahead'}
   empty={empty}
   emptyText="The 7-day forecast isn't available right now."
 >
-  <p class="text-sm text-ink-muted">Plan ahead for outdoor play, coats, boots, and all.</p>
+  <p class="text-sm text-ink-muted">
+    {blurb ?? 'Plan ahead for outdoor play, coats, boots, and all.'}
+  </p>
   {
     /* Phone: a horizontal scroll strip (fixed-width tiles, shrink-0) so it
        stays clean down to 320px. sm+ (where this card is a full-width band):

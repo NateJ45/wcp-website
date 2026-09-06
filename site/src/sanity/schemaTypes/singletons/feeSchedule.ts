@@ -43,6 +43,27 @@ export const feeSchedule = defineType({
         'The payment link from the PayPal "registration fee" button — in PayPal, open the button and Copy link (it starts with paypal.com/ncp/payment/). Paste the whole link. Older buttons used a short code instead; a code still works until that button is replaced. Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
     }),
     defineField({
+      name: 'registrationTitle',
+      title: 'Registration fee — name',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Renames the first fee card. Empty keeps “Registration Fee”.',
+    }),
+    defineField({
+      name: 'registrationWhen',
+      title: 'Registration fee — due',
+      type: 'string',
+      group: 'enrollment',
+      description: 'The little line beside the amount, e.g. “due at enrollment”.',
+    }),
+    defineField({
+      name: 'registrationAction',
+      title: 'Registration fee — button label',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Empty keeps “Pay Registration Fee”.',
+    }),
+    defineField({
       name: 'participationFee',
       title: 'Participation deposit',
       type: 'string',
@@ -65,6 +86,28 @@ export const feeSchedule = defineType({
       group: 'enrollment',
       description:
         'The payment link from the PayPal "participation deposit" button (Copy link in PayPal; older buttons used a short code, which still works). Changing this changes where the money goes, so double-check it. Step-by-step help: Help & Guide → "Change tuition or fees".',
+    }),
+    defineField({
+      name: 'participationTitle',
+      title: 'Participation fee — name',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Renames the second fee card. Empty keeps “Participation Fee”.',
+    }),
+    defineField({
+      name: 'participationWhen',
+      title: 'Participation fee — due',
+      type: 'string',
+      group: 'enrollment',
+      description:
+        'e.g. “due at May Gathering” — update when the deadline or the event’s name changes.',
+    }),
+    defineField({
+      name: 'participationAction',
+      title: 'Participation fee — button label',
+      type: 'string',
+      group: 'enrollment',
+      description: 'Empty keeps “Pay Deposit”.',
     }),
     defineField({
       name: 'annualAdjustmentNote',
@@ -117,6 +160,31 @@ export const feeSchedule = defineType({
     }),
 
     // How payments work
+    defineField({
+      name: 'ageCutoffLabel',
+      title: 'Age-cutoff column label',
+      type: 'string',
+      group: 'payment',
+      description:
+        'The tuition table’s age column header, e.g. "Age by Sept 30". Update if the enrollment cutoff date changes.',
+    }),
+    defineField({
+      name: 'schoolYearMonths',
+      title: 'Billed months per school year',
+      type: 'number',
+      group: 'payment',
+      description:
+        'How many monthly payments a school year has (drives every annual total the site computes). Empty keeps 9 (September–May).',
+      validation: (R) => R.min(1).max(12).error('Between 1 and 12.'),
+    }),
+    defineField({
+      name: 'depositNote',
+      title: 'Deposit note',
+      type: 'string',
+      group: 'payment',
+      description:
+        'The phrase after the deposit amount on the public class cards and calculator, e.g. "returned after your co-op hours". Update it if the refund policy changes.',
+    }),
     defineField({
       name: 'paymentTerms',
       title: 'How payments work (FAQ)',

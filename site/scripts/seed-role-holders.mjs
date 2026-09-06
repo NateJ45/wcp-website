@@ -10,6 +10,13 @@
 // and phone come from the one place they are already stored and are never typed
 // twice. The link is resolved by matching her name to an adult on the entry.
 //
+// HISTORICAL (2026-08-29): the seats are `coopRole` documents now and a holder
+// points at its seat by REFERENCE (`seat`, plus `forClass` for a class rep). This
+// script still writes only the old `role` LABEL, which the reader accepts as a
+// second join key — so a re-run works but produces holders nobody has attached to
+// a seat. Do not re-run it to rebuild the list; add the cards in the Studio, or
+// re-run `scripts/patch-org-chart.mjs --apply` afterwards to attach them.
+//
 // Idempotent: documents use deterministic ids, and a re-run PATCHES rather than
 // overwrites — it only fills fields that are still empty, so a Board edit is
 // never clobbered. Run:

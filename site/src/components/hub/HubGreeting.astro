@@ -32,6 +32,7 @@
    ink on a tint, see the CLAUDE.md dark-tint gotcha).
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { hubEditAttr } from '@/lib/hub-preview';
 import HubWatermark from '@/components/hub/HubWatermark.astro';
 import HubProgress from '@/components/hub/HubProgress.astro';
 import HubStat from '@/components/hub/HubStat.astro';
@@ -61,8 +62,10 @@ interface Props {
   yearEnd?: string;
   firstDay?: string;
   familyCount?: number;
+  /** Hub settings -> "Hub welcome line". Empty = the shipped sentence. */
+  welcomeLine?: string;
 }
-const { yearStart, yearEnd, firstDay, familyCount } = Astro.props;
+const { yearStart, yearEnd, firstDay, familyCount, welcomeLine } = Astro.props;
 
 const now = new Date();
 // Greeting: Eastern wall-clock hour, not server UTC.
@@ -206,7 +209,12 @@ const firstDayLabel =
       <h1 id="hub-page-title" class="font-display text-3xl text-balance text-white sm:text-4xl">
         {greeting}, WCP family!
       </h1>
-      <p class="mt-2 max-w-xl text-white/90">Welcome to the WCP Family Hub!</p>
+      <p
+        class="mt-2 max-w-xl text-white/90"
+        data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'welcomeLine')}
+      >
+        {welcomeLine?.trim() || 'Welcome to the WCP Family Hub!'}
+      </p>
 
       {
         /* Active weather alert — the one thing on this tile urgent enough to
@@ -334,7 +342,11 @@ const firstDayLabel =
   <div class="mt-6 flex flex-wrap items-center gap-x-10 gap-y-5">
     {
       daysToFirstDay !== null && daysToFirstDay > 0 && (
-        <a href="/family-hub/calendar" class="wcp-strip-stat">
+        <a
+          href="/family-hub/calendar"
+          class="wcp-strip-stat"
+          data-sanity={hubEditAttr(Astro.locals, 'siteSettings', 'siteSettings', 'firstDay')}
+        >
           <HubStat
             tone="navy"
             countUp
@@ -356,7 +368,11 @@ const firstDayLabel =
     }
     {
       familyCount && familyCount > 0 ? (
-        <a href="/family-hub/directory" class="wcp-strip-stat">
+        <a
+          href="/family-hub/directory"
+          class="wcp-strip-stat"
+          data-sanity={hubEditAttr(Astro.locals, 'hubSettings', 'hubSettings', 'familyCount')}
+        >
           <HubStat
             tone="navy"
             countUp
@@ -385,7 +401,16 @@ const firstDayLabel =
           </span>
         </a>
       ) : goal > 0 && fundraisersComing > 0 ? (
-        <a href="/family-hub/fundraising" class="wcp-strip-stat">
+        <a
+          href="/family-hub/fundraising"
+          class="wcp-strip-stat"
+          data-sanity={hubEditAttr(
+            Astro.locals,
+            'hubSettings',
+            'hubSettings',
+            'pastFundraisingTotals',
+          )}
+        >
           <HubStat
             tone="navy"
             countUp

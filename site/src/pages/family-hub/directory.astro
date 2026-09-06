@@ -20,17 +20,26 @@ import HubEmptyState from '@/components/hub/HubEmptyState.astro';
 import SanityImage from '@/components/SanityImage.astro';
 import DirectoryMap from '@/components/hub/DirectoryMap.astro';
 import SectionRenderer from '@/components/sections/SectionRenderer.astro';
-import { classStyles, classLabel } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { classLookup } from '@/lib/hub-classrooms';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
+import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { site } from '@/data/site';
 
 interface HubPageDoc {
+  _id?: string;
   heading?: string;
   intro?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sections?: any[];
 }
+
+// Studio Presentation loads this REAL page as its preview (2026-08-30): the
+// verified preview cookie makes the hubPage read draft-aware (stega on) and
+// mounts the click-to-edit overlay via previewDocId. Families: unchanged.
+const draftMode = await hubDraftMode(Astro.cookies);
 
 // The preschool. Coordinates come from site.geo (the one place they live) so
 // the map pin, the JSON-LD, and the hub's weather lookups can never disagree.
@@ -60,11 +69,9 @@ interface DirEntry {
 }
 // Independent of the entries read — start now, await later (2026-07 hub-speed
 // pass).
-const hubDocPromise = sanityFetch<HubPageDoc | null>(
-  HUB_PAGE_QUERY,
-  { key: 'directory' },
-  { cache: BOARD_CONTENT_CACHE },
-).catch(() => null);
+const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
+  key: 'directory',
+}).catch(() => null);
 
 let entries: DirEntry[] = [];
 try {
@@ -94,12 +101,15 @@ try {
 // and the persistent-shell view transitions keep the reload feeling app-like.
 // Chips only render for classes that actually have opted-in families, and an
 // unknown/absent param falls back to everyone.
-const CLASS_ORDER = ['twos', 'threes', 'pre-k-am', 'pre-k-pm'];
+// The order, the names and the colours all come from the `class` documents, so
+// a class the Board adds filters, labels and tints itself (2026-08-29 — this
+// used to be a hardcoded list of the four 2026-27 slugs). A slug no class
+// matches still shows, titleized, rather than vanishing from the filter.
+const cls = classLookup(await getHubClassrooms());
 const classesPresent = [
   ...new Set(entries.flatMap((f) => (f.children ?? []).map((c) => c.class).filter(Boolean))),
 ].sort(
-  (a, b) =>
-    (CLASS_ORDER.indexOf(a as string) + 1 || 99) - (CLASS_ORDER.indexOf(b as string) + 1 || 99),
+  (a, b) => (cls.slugs.indexOf(a as string) + 1 || 99) - (cls.slugs.indexOf(b as string) + 1 || 99),
 ) as string[];
 const requestedClass = Astro.url.searchParams.get('class');
 const classFilter =
@@ -173,7 +183,12 @@ const intro =
   'Names, photos, and contact info for every WCP family this year. Built for connecting outside the classroom.';
 ---
 
-<HubShell title={title} bare pageTitle="Family Directory — WCP Family Hub">
+<HubShell
+  title={title}
+  bare
+  pageTitle="Family Directory — WCP Family Hub"
+  previewDocId={draftMode ? publishedId(doc?._id) : undefined}
+>
   <Section bg="grey" labelledby="hub-page-title">
     <div class="mx-auto max-w-6xl">
       <HubPageHeader title={title} subtitle={intro} icon="contact" />
@@ -256,10 +271,10 @@ const intro =
                     active={classFilter === slug}
                   >
                     <span
-                      class={`h-2 w-2 rounded-full ${classStyles(slug).dot}`}
+                      class={`h-2 w-2 rounded-full ${colorStyles(cls.color(slug)).dot}`}
                       aria-hidden="true"
                     />
-                    {classLabel(slug)}
+                    {cls.label(slug)}
                   </HubFilterChip>
                 ))}
               </nav>
@@ -310,17 +325,17 @@ const intro =
                            class-color RINGED initial avatar on the soft tint —
                            the panel keeps the photo slot's 3:4 rhythm, but the
                            avatar reads as a deliberate profile mark instead of
-                           an empty tile. Ring = classStyles border (AA-safe
+                           an empty tile. Ring = class colour border (AA-safe
                            theme-stable class shade). */
                         <div
-                          class={`flex h-full w-full items-center justify-center ${classStyles(kidClasses[0]).softBg}`}
+                          class={`flex h-full w-full items-center justify-center ${colorStyles(cls.color(kidClasses[0])).softBg}`}
                           aria-hidden="true"
                         >
                           <span
-                            class={`flex h-24 w-24 items-center justify-center rounded-full border-4 bg-white shadow-sm dark:bg-surface ${classStyles(kidClasses[0]).border}`}
+                            class={`flex h-24 w-24 items-center justify-center rounded-full border-4 bg-white shadow-sm dark:bg-surface ${colorStyles(cls.color(kidClasses[0])).border}`}
                           >
                             <span
-                              class={`font-display text-4xl ${classStyles(kidClasses[0]).text}`}
+                              class={`font-display text-4xl ${colorStyles(cls.color(kidClasses[0])).text}`}
                             >
                               {f.familyName.charAt(0)}
                             </span>
@@ -329,11 +344,11 @@ const intro =
                       )}
                       {kidClasses.length > 0 && (
                         <div class="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
-                          {kidClasses.map((cls) => (
+                          {kidClasses.map((kidClass) => (
                             <span
-                              class={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${classStyles(cls).badge}`}
+                              class={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${colorStyles(cls.color(kidClass)).badge}`}
                             >
-                              {classLabel(cls)}
+                              {cls.label(kidClass)}
                             </span>
                           ))}
                         </div>
@@ -379,9 +394,11 @@ const intro =
                             <li>
                               <span class="font-semibold text-heading">{ch.name}</span>
                               {ch.class && (
-                                <span class={`font-semibold ${classStyles(ch.class).text}`}>
+                                <span
+                                  class={`font-semibold ${colorStyles(cls.color(ch.class)).text}`}
+                                >
                                   {' · '}
-                                  {classLabel(ch.class)}
+                                  {cls.label(ch.class)}
                                 </span>
                               )}
                             </li>

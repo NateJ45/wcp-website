@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useClient } from 'sanity';
-import { Box, Button, Card, Flex, Heading, Radio, Stack, Text } from '@sanity/ui';
+import { Box, Button, Card, Flex, Radio, Stack, Text } from '@sanity/ui';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // ExportTool — download your lists as a spreadsheet (CSV), no developer needed
@@ -157,9 +158,7 @@ export function ExportTool() {
     <Box padding={4}>
       <Stack space={5} style={{ maxWidth: 620, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            📤 Export a list
-          </Heading>
+          <ToolHeading>📤 Export a list</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             Download one of your lists as a spreadsheet file (CSV) you can open in Excel or Google
             Sheets, import into a new email tool, or just keep a copy of. It opens the file right in

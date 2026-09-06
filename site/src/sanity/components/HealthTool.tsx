@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useClient } from 'sanity';
-import { Badge, Box, Button, Card, Flex, Heading, Spinner, Stack, Text } from '@sanity/ui';
+import { Badge, Box, Button, Card, Flex, Spinner, Stack, Text } from '@sanity/ui';
 import { computeReminders, type UpcomingItem } from '../../lib/reminders';
+import { ToolHeading } from './ToolHeading';
 
 // =============================================================================
 // HealthTool — a plain-language "what needs attention?" check (Everything ws)
@@ -62,6 +63,26 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // The hub-side twin of ann-expired: a Family Hub spotlight pop-up whose
+    // end date has passed while its master switch is still on. It shows
+    // nothing to families, but the Board should retire it rather than leave a
+    // stale row switched on for a year.
+    id: 'spotlight-expired',
+    run: async (c) => {
+      const n = await c.fetch<number>(
+        'count(*[_type == "hubSpotlight" && active == true && defined(showUntil) && showUntil < now()])',
+      );
+      return n > 0
+        ? {
+            severity: 'warn',
+            label: `${n} spotlight pop-up${n === 1 ? '' : 's'} past its end date but still on`,
+            detail:
+              'Worth a look: turn it off, or clear its "Stop showing" date. (It already stopped showing to families on its own.)',
+          }
+        : null;
+    },
+  },
+  {
     id: 'unanswered',
     run: async (c) => {
       const cutoff = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
@@ -115,6 +136,141 @@ const CHECKS: Check[] = [
     },
   },
   {
+    // Slug drift — the silent breakage behind everything a class touches.
+    // The whole hub joins on the class SLUG (directory children, teacher
+    // notes, curriculum guides, supply lists, families' "my classes" picks).
+    // The slug field warns on rename, but if a volunteer renames one anyway
+    // the joins break with NO error anywhere: a family quietly drops off its
+    // class list, a welcome note stops showing. This check finds every stored
+    // class key that matches no live class (or class page) and names the
+    // document to fix.
+    id: 'class-slug-drift',
+    run: async (c) => {
+      const snap = await c.fetch<{
+        slugs: (string | null)[];
+        pageKeys: (string | null)[];
+        families: { family?: string; classes?: (string | null)[] }[];
+        notes: { key?: string | null }[];
+        guides: { key?: string | null; title?: string | null }[];
+      }>(`{
+        "slugs": *[_type == "class" && !(_id in path("drafts.**"))].slug.current,
+        "pageKeys": *[_type == "hubPage" && !(_id in path("drafts.**")) && count(classes) > 0].hubKey,
+        "families": *[_type == "directoryEntry" && count(children[defined(class)]) > 0]{
+          "family": familyName, "classes": children[].class
+        },
+        "notes": *[_type == "teacherNote" && !(_id in path("drafts.**")) && defined(class)]{ "key": class },
+        "guides": *[_type == "curriculumGuide" && !(_id in path("drafts.**")) && defined(class)]{ "key": class, title }
+      }`);
+      const slugs = new Set((snap?.slugs ?? []).filter(Boolean));
+      if (slugs.size === 0) return null; // an unreachable class list would flag everything
+      // Teacher notes and curriculum guides may name a class PAGE instead of
+      // a single class (Twos + Threes share one page), so their key-space is
+      // slugs plus the hub pages that name classes.
+      const pageOrSlug = new Set([...slugs, ...(snap?.pageKeys ?? []).filter(Boolean)]);
+      const broken: string[] = [];
+      for (const f of snap?.families ?? []) {
+        const bad = (f.classes ?? []).filter((k) => k && !slugs.has(k));
+        if (bad.length) broken.push(`the ${f.family ?? '?'} family lists "${bad[0]}"`);
+      }
+      for (const n of snap?.notes ?? []) {
+        if (n.key && !pageOrSlug.has(n.key))
+          broken.push(`a teacher note is filed under "${n.key}"`);
+      }
+      for (const g of snap?.guides ?? []) {
+        if (g.key && !pageOrSlug.has(g.key))
+          broken.push(`the curriculum guide "${g.title ?? g.key}" points at "${g.key}"`);
+      }
+      return broken.length
+        ? {
+            severity: 'alert',
+            label: `${broken.length} thing${broken.length === 1 ? '' : 's'} pointing at a class that no longer exists`,
+            detail: `A class web address probably changed. ${broken
+              .slice(0, 4)
+              .join(
+                '; ',
+              )}${broken.length > 4 ? '…' : ''}. Open each document and re-pick the class, or change the class address back.`,
+          }
+        : null;
+    },
+  },
+  {
+    // A teacher swap that nobody finished. The hub's teacher card follows the
+    // WELCOME NOTE, not the class's Teacher field, so after a swap the class
+    // page keeps showing the old teacher's letter, photo and email until
+    // somebody rewrites the note — and nothing said so. This check says so.
+    //
+    // The match is deliberately loose: the note is signed "Erin Schmerr" while
+    // Staff holds "Mrs. Erin Schmerr", so a shared word is enough. Only a note
+    // that names NOBODY from the teacher's name is reported, which is what
+    // makes a real swap stand out and a formatting difference stay quiet.
+    id: 'teacher-note-stale',
+    run: async (c) => {
+      // Two flat reads, matched in JS. A note is filed under a class page's
+      // ADDRESS or a class SLUG (see teacherNoteKeys in hub-classrooms.ts), so
+      // the pages that name each class come back too.
+      const snap = await c.fetch<{
+        classes: { id: string; name?: string; slug?: string; teacher?: string }[];
+        pages: { key?: string; classIds?: string[] }[];
+        notes: { key?: string; signName?: string }[];
+      }>(`{
+        "classes": *[_type == "class" && !(_id in path("drafts.**")) && defined(teacher)]{
+          "id": _id, name, "slug": slug.current, "teacher": teacher->name
+        },
+        "pages": *[_type == "hubPage" && !(_id in path("drafts.**")) && count(classes) > 0]{
+          "key": coalesce(hubKey, slug), "classIds": classes[]._ref
+        },
+        "notes": *[_type == "teacherNote" && !(_id in path("drafts.**")) && active == true]{
+          "key": class, signName
+        }
+      }`);
+      const rows = (snap?.classes ?? []).map((cls) => {
+        const keys = [
+          cls.slug,
+          ...(snap.pages ?? []).filter((p) => p.classIds?.includes(cls.id)).map((p) => p.key),
+        ].filter(Boolean);
+        return {
+          class: cls.name,
+          teacher: cls.teacher,
+          keys: (snap.notes ?? [])
+            .filter((n) => n.key && keys.includes(n.key))
+            .map((n) => n.signName)
+            .filter(Boolean) as string[],
+        };
+      });
+      // A word from the teacher's name, ignoring the titles a school writes.
+      const words = (name: string) =>
+        new Set(
+          name
+            .toLowerCase()
+            .replace(/\b(mr|mrs|ms|miss|dr)\.?\b/g, '')
+            .split(/[^a-z]+/)
+            .filter((w) => w.length > 2),
+        );
+      const stale = rows.filter((r) => {
+        if (!r.teacher || !r.keys?.length) return false;
+        const mine = words(r.teacher);
+        // Every active note for this class names somebody else entirely.
+        return r.keys.every((signed) => {
+          if (!signed) return false;
+          const theirs = words(signed);
+          return ![...mine].some((w) => theirs.has(w));
+        });
+      });
+      return stale.length
+        ? {
+            severity: 'warn',
+            label: `${stale.length} class${stale.length === 1 ? '' : 'es'} whose welcome note is signed by someone else`,
+            detail: `The Family Hub shows the teacher from the WELCOME NOTE, so ${stale
+              .map((r) => `${r.class} still shows ${r.keys?.[0]}`)
+              .slice(0, 4)
+              .join(
+                ', ',
+              )}. Open Teacher welcome notes, rewrite it for the new teacher, and give it a new version stamp.`,
+          }
+        : null;
+    },
+  },
+  {
     // "Waiting to publish" — the WordPress drafts-pile answer. Every BOARD
     // document with unpublished edits, by name, oldest first. Machine/inbox
     // types are excluded (they are never published by hand), everything else
@@ -123,7 +279,12 @@ const CHECKS: Check[] = [
     id: 'drafts',
     run: async (c) => {
       const drafts = await c.fetch<{ _type: string; label?: string; _updatedAt: string }[]>(
-        `*[_id in path("drafts.**") && !(_type in [
+        // `sanity.*` is excluded as a PATTERN, not by name: the Presentation
+        // preview mints `sanity.previewUrlSecret` DRAFTS on every session, and
+        // this check once told a volunteer "4 edits waiting to publish" about
+        // internal secrets no Studio pane can open (found 2026-08-29). Any
+        // future system type the platform adds stays excluded too.
+        `*[_id in path("drafts.**") && !(_type match "sanity.*") && !(_type in [
           "trashedItem","submission","testimonialSubmission","subscriber",
           "signupEntry","photoSubmission","hoursLog","linkHealth"
         ])] | order(_updatedAt asc) {
@@ -171,6 +332,7 @@ const CHECKS: Check[] = [
         now,
         bannerOn: false,
         expiredAnnouncements: 0,
+        expiredSpotlights: 0,
         oldUnanswered: 0,
         drafts: 0,
         enrollmentDeadline: snap.enrollmentDeadline ?? null,
@@ -225,16 +387,23 @@ export function HealthTool() {
   }, [client]);
 
   useEffect(() => {
-    void runAll();
+    // load() sets busy synchronously; kick it off after the effect body so React does not
+    // see a setState inside the effect itself (react/set-state-in-effect), and drop the call
+    // if the component unmounts or `load` changes before the microtask runs.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void runAll();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [runAll]);
 
   return (
     <Box padding={4}>
       <Stack space={5} style={{ maxWidth: 640, margin: '0 auto' }}>
         <Stack space={3}>
-          <Heading size={3} className="wcp-display">
-            🩺 Site checkup
-          </Heading>
+          <ToolHeading>🩺 Site checkup</ToolHeading>
           <Text size={2} muted style={{ lineHeight: 1.5 }}>
             A quick look for things worth fixing: a banner left on, old messages, pages gone stale,
             and gaps in your classes — plus what's coming up in the next two weeks. Nothing is

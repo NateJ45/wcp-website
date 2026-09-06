@@ -60,6 +60,9 @@ const THEMES = {
   green: { bright: '#22c55e', ink: '#0e7b2e', tint: '#e7f6ec', ring: '#bfe6cb' },
   orange: { bright: '#ff8c00', ink: '#a85300', tint: '#fff1e0', ring: '#f8d3ad' },
   sky: { bright: '#40aaed', ink: '#166fa8', tint: '#e8f3fc', ring: '#bddef4' },
+  // The fifth `class.color` value, so a class the Board tints navy still gets
+  // a card instead of failing on a missing theme.
+  navy: { bright: '#01457e', ink: '#01457e', tint: '#e6eef6', ring: '#b3c9dd' },
 };
 
 // ---------------------------------------------------------------------------
@@ -193,7 +196,14 @@ export function pdfHtml() {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
     ${FONT_FACES}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Quicksand',system-ui,sans-serif;color:#1a1a1a;font-size:10.6px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    /* READABILITY PASS (2026-08-29, Nathan): the print list rendered at a
+       10.6px body across a 2-up card grid - small for a fridge-door read. CSS
+       zoom scales the whole design uniformly and Chromium repaginates around
+       it, so every size doubles with the layout language intact. The card
+       grid goes 1-up, because doubled type in a half-width card leaves four
+       words a line. The social carousel below has its own fixed 1080x1350
+       canvas and is NOT scaled. */
+    body{font-family:'Quicksand',system-ui,sans-serif;color:#1a1a1a;font-size:10.6px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact;zoom:2}
     h1,h2,.wordmark,.badge{font-family:'Captain Comic',system-ui,sans-serif}
 
     .masthead{display:flex;align-items:center;gap:14px;padding-bottom:11px;border-bottom:3px solid #ffa334;margin-bottom:12px}
@@ -213,7 +223,7 @@ export function pdfHtml() {
     .backpack p{font-size:10.6px;font-weight:600;color:#2b2f38;line-height:1.4}
     .backpack strong{color:#a85300}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .grid{display:grid;grid-template-columns:1fr;gap:9px}
     .card{background:#fff;border:1px solid #e7e3da;border-radius:11px;padding:10px 12px 11px;box-shadow:0 1px 0 rgba(1,69,126,.04);border-top:3px solid var(--bright)}
     .card-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
     .chip{width:23px;height:23px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--tint);border-radius:7px}
@@ -408,9 +418,15 @@ async function fetchStudioSupplies() {
       return null;
     })();
   if (!token) return null;
-  const query = encodeURIComponent(
-    '*[_type == "supplyList"][0]{ year, backpackNote, dueNote, waterNote, lists, wishList }',
-  );
+  // The classes ride along: a card for a class the Board added needs that
+  // class's NAME and COLOUR, and this file only knows the four the site shipped
+  // with. Same reason the hub reads them (src/lib/hub-classrooms.ts).
+  const query = encodeURIComponent(`{
+    "doc": *[_type == "supplyList"][0]{ year, backpackNote, dueNote, waterNote, lists, wishList },
+    "classes": *[_type == "class" && defined(slug.current)] | order(orderRank){
+      "slug": slug.current, name, color
+    }
+  }`);
   const res = await fetch(
     `https://niemhgev.api.sanity.io/v2025-01-01/data/query/production?query=${query}`,
     { headers: { Authorization: `Bearer ${token}` } },
@@ -419,8 +435,19 @@ async function fetchStudioSupplies() {
   return (await res.json()).result ?? null;
 }
 
-/** The committed values, overlaid with the Studio document where set. */
-function mergedContent(doc) {
+/**
+ * The committed values, overlaid with the Studio document where set — PLUS a
+ * card for any class the Board added.
+ *
+ * The committed LISTS know only the four classes the site shipped with, so a
+ * fifth class used to be missing from the printed list entirely, with nothing
+ * to say so. A Studio row whose class has no committed twin now becomes its own
+ * card, in that class's own colour and icon.
+ */
+function mergedContent(result) {
+  const doc = result?.doc ?? null;
+  const classes = result?.classes ?? [];
+  const known = new Set(LISTS.map((l) => l.slug));
   const lists = doc?.lists?.length
     ? LISTS.map((base) => {
         const row = doc.lists.find((l) => l.slug === base.slug);
@@ -428,6 +455,20 @@ function mergedContent(doc) {
         return { ...base, items: row.items?.length ? row.items : base.items };
       })
     : LISTS;
+  for (const row of doc?.lists ?? []) {
+    if (!row?.slug || known.has(row.slug) || !row.items?.length) continue;
+    const cls = classes.find((c) => c.slug === row.slug);
+    lists.push({
+      slug: row.slug,
+      name: cls?.name ?? row.slug,
+      color: THEMES[cls?.color] ? cls.color : 'sky',
+      // The card icons here are EMOJI, not the lucide names the site uses, so
+      // a derived card takes a neutral school emoji rather than the class's
+      // own icon name (which would print as the word "graduation-cap").
+      icon: '🎒',
+      items: row.items,
+    });
+  }
   return {
     year: doc?.year ?? YEAR,
     backpackNote: doc?.backpackNote ?? BACKPACK_NOTE,
@@ -448,9 +489,10 @@ function mergedContent(doc) {
 }
 
 async function main() {
-  const doc = await fetchStudioSupplies();
-  if (doc) {
-    const merged = mergedContent(doc);
+  // One read: the supply-list document AND the classes (see fetchStudioSupplies).
+  const studio = await fetchStudioSupplies();
+  if (studio) {
+    const merged = mergedContent(studio);
     ({
       year: YEAR,
       backpackNote: BACKPACK_NOTE,
@@ -462,7 +504,7 @@ async function main() {
     );
     WISH_LIST = merged.wishList;
   }
-  console.log(doc ? 'Supply content: Studio' : 'Supply content: committed fallback');
+  console.log(studio ? 'Supply content: Studio' : 'Supply content: committed fallback');
   mkdirSync(SOCIAL_DIR, { recursive: true });
   const browser = await chromium.launch();
   try {

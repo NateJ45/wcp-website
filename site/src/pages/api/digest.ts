@@ -16,6 +16,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { site } from '@/data/site';
 import { env } from 'cloudflare:workers';
 import { sanityFetch } from '@/lib/sanity';
 import { getUpcomingEvents, eventDate, fmtEventTime, type HubEvent } from '@/lib/hub-calendar';
@@ -78,7 +79,7 @@ export const GET: APIRoute = async (context) => {
       announcements: announcements.map((a) => ({
         title: a.title ?? '',
         excerpt: a.excerpt ?? '',
-        url: a.slug ? `https://www.westchesterpreschool.org/family-hub/updates/${a.slug}` : '',
+        url: a.slug ? `${site.url}/family-hub/updates/${a.slug}` : '',
       })),
       events,
     }),

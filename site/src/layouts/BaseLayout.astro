@@ -16,6 +16,9 @@ import HubRail from '@/components/hub/HubRail.astro';
 import HubTopBar from '@/components/hub/HubTopBar.astro';
 import HubTabBar from '@/components/hub/HubTabBar.astro';
 import HubSearch from '@/components/hub/HubSearch.astro';
+import HubSpotlightModal from '@/components/hub/HubSpotlightModal.astro';
+import VisualEditingOverlay from '@/components/preview/VisualEditingOverlay.tsx';
+import { ensureInternalRouteMap } from '@/lib/portable-text';
 import ClosureBanner from '@/components/ClosureBanner.astro';
 import AnnouncementBars from '@/components/AnnouncementBars.astro';
 import AnnouncementModal from '@/components/AnnouncementModal.astro';
@@ -54,6 +57,14 @@ interface Props {
   /** Current page title, shown in the mobile HubTopBar when chrome='hub'. */
   hubTitle?: string;
   /**
+   * Studio Presentation preview (2026-08-30): the PUBLISHED id of the hubPage
+   * doc this hub page renders. Only ever set behind the verified preview
+   * cookie (src/lib/hub-preview.ts). Mounts the same click-to-edit overlay
+   * PreviewLayout uses — OUTSIDE #main, because the overlay's soft refresh
+   * morphs #main and must not morph itself away.
+   */
+  hubPreviewDocId?: string;
+  /**
    * Emit <meta name="robots" content="noindex"> — for public utility pages
    * (/search) that crawlers can reach but should never rank. The preview
    * surfaces carry their own tag (PreviewLayout) and the gated hub is covered
@@ -76,6 +87,19 @@ interface Props {
   rssFeed?: { href: string; title: string };
 }
 
+// THE HUB SOFT-REFRESH IS A CHEAPER RENDER (2026-08-30) — the same deal
+// PreviewLayout documents. The overlay's reconcile refetch reads exactly one
+// thing from the response: #main. On the hub, everything around it is the
+// EXPENSIVE part — the rail renders twice (menu + classroom reads), the top
+// bar assembles seven bell feeds, the spotlight modal reads its docs — and a
+// burst of edit-driven refetches ran all of it per keystroke, which is how an
+// idle preview tab drove the Worker into Error 1102. Only ever true behind
+// the verified preview cookie (hubPreviewDocId), so families cannot request a
+// chrome-less page.
+const hubSoftRefresh =
+  Astro.props.hubPreviewDocId !== undefined &&
+  Astro.request.headers.get('x-preview-soft-refresh') === '1';
+
 const {
   footerSeam = 'white',
   title,
@@ -84,10 +108,15 @@ const {
   ogType = 'website',
   chrome = 'site',
   hubTitle = 'Family Hub',
+  hubPreviewDocId,
   noindex = false,
   nofollow = false,
   rssFeed,
 } = Astro.props;
+
+// Prime the internal-link route map (reference-based links in rich text —
+// src/lib/portable-text.ts). Once per render, ~5-min memo, degrades silently.
+await ensureInternalRouteMap();
 
 // Absolute canonical + OG URLs (Astro.url resolves per-page at build time).
 // Every page gets a share card: the page's own og image (a post's cover, a
@@ -298,6 +327,13 @@ const currentPath = Astro.url.pathname;
               `@view-transition { navigation: auto }`, so `none` wins here;
               public pages (no override) keep their cross-fade. */}
           <style is:inline set:html="@view-transition { navigation: none; }" />
+          {/* The classes and the page each one lives on, for the device-local
+              my-classes personalization (src/scripts/my-class.ts). It is here,
+              once per hub page, because that script runs on EVERY hub page —
+              the class list used to be hardcoded in the script, which is what
+              made the hub blind to a class the Board added. Derived from the
+              `class` documents; the read is the one the rail already paid for
+              (board-content cache, in-isolate). */}
           {/* The rail floats as a lifted panel: the aside carries a small
               gutter (p-2) on the grey canvas, and the inner wrapper rounds +
               shadows the navy so it reads as separated from the content (and no
@@ -309,11 +345,15 @@ const currentPath = Astro.url.pathname;
               shadow reads as a hard black halo around the panel (there's nothing
               lighter for it to lift OFF of), so drop it there — the navy sits
               flush and blends with the dark dashboard bg. */}
-          <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 p-2 lg:block">
-            <div class="h-full overflow-hidden rounded-2xl shadow-xl dark:shadow-none">
-              <HubRail collapsible />
-            </div>
-          </aside>
+          {/* Skipped on a hub soft refresh (see hubSoftRefresh above): the
+              reconcile only reads #main, and the rail is the expensive part. */}
+          {!hubSoftRefresh && (
+            <aside class="hub-rail-aside sticky top-0 hidden h-screen shrink-0 p-2 lg:block">
+              <div class="h-full overflow-hidden rounded-2xl shadow-xl dark:shadow-none">
+                <HubRail collapsible />
+              </div>
+            </aside>
+          )}
 
           {/* Mobile off-canvas drawer + backdrop (hidden ≥ lg). */}
           <div id="hub-drawer-backdrop" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden" />
@@ -322,14 +362,16 @@ const currentPath = Astro.url.pathname;
               aria-hidden container with focusable links fails axe
               (aria-hidden-focus) — inert removes them from the focus order.
               hub-drawer.ts toggles both attributes together. */}
-          <aside
-            id="hub-drawer"
-            aria-hidden="true"
-            inert
-            class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
-          >
-            <HubRail />
-          </aside>
+          {!hubSoftRefresh && (
+            <aside
+              id="hub-drawer"
+              aria-hidden="true"
+              inert
+              class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto shadow-xl transition-transform duration-200 motion-reduce:transition-none lg:hidden"
+            >
+              <HubRail />
+            </aside>
+          )}
 
           {/* Content column IS the app canvas: bg-grey plus the construction-
               paper texture (grain + hand-drawn doodles — see globals.css
@@ -359,7 +401,8 @@ const currentPath = Astro.url.pathname;
               style={`background-image: url('${wcpEmblem.src}')`}
               aria-hidden="true"
             />
-            <HubTopBar title={hubTitle} />
+            {/* Seven bell feeds live in here — skipped on a soft refresh. */}
+            {!hubSoftRefresh && <HubTopBar title={hubTitle} />}
             {/* data-pagefind-body: site search (Pagefind) indexes only the main
                 content of real pages, not the header/footer chrome — and because
                 the marker exists, pages without it (the Studio SPA shell) are
@@ -373,9 +416,35 @@ const currentPath = Astro.url.pathname;
             >
               <slot />
             </main>
-            <HubTabBar />
-            <HubSearch />
-            <BackToTop surface="hub" />
+            {!hubSoftRefresh && (
+              <>
+                <HubTabBar />
+                <HubSearch />
+                <BackToTop surface="hub" />
+              </>
+            )}
+            {/* Board spotlight pop-ups. Here, in the hub branch, because a
+                spotlight greets a family on ANY hub page — unlike the
+                President's note, which is the hub home only. It renders
+                nothing when no spotlight is switched on and in its dates. */}
+            {!hubSoftRefresh && <HubSpotlightModal />}
+            {/* Studio Presentation only (see the prop's note): click-to-edit +
+                live refresh over the REAL hub page. The style forces every
+                scroll-reveal to its end state — the soft refresh morphs #main
+                and the fresh nodes never meet the IntersectionObserver, so
+                without this the whole dashboard fades to the pre-reveal
+                opacity:0 after the first edit ("the widgets disappear",
+                2026-08-30). Same trick PreviewLayout documents for the public
+                preview. */}
+            {hubPreviewDocId && (
+              <>
+                <style
+                  is:inline
+                  set:html={`.js [data-reveal]{opacity:1 !important;transform:none !important;filter:none !important;animation:none !important}`}
+                />
+                <VisualEditingOverlay client:only="react" pageId={hubPreviewDocId} />
+              </>
+            )}
           </div>
         </div>
       ) : chrome === 'bare' ? (

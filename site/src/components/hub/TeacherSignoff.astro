@@ -11,19 +11,23 @@
    has no name.
    ============================================================================ */
 import Icon from '@/components/Icon.astro';
+import { CONTACT_LABELS } from '@/data/hub/microcopy';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
-import { classStyles } from '@/lib/class-colors';
+import { colorStyles } from '@/lib/class-colors';
+import { TEACHER_NOTE_CARD_QUERY, pickNote, telHref as toTel } from '@/lib/hub-teacher-note';
 import { teacherPhoneFallback } from '@/data/hub/live-links';
 
 interface Props {
-  /** Class page slug (pre-k-am / pre-k-pm share the 'pre-k' note). */
-  slug: string;
+  /** Note keys for this classroom, most specific first (teacherNoteKeys()). */
+  keys: string[];
+  /** The classroom's brand colour, from the class document. */
+  color?: string;
 }
-const { slug } = Astro.props;
-const noteClass = slug.startsWith('pre-k') ? 'pre-k' : slug;
+const { keys, color } = Astro.props;
 
 interface TeacherDoc {
+  key?: string;
   signName?: string;
   signRole?: string;
   email?: string;
@@ -32,28 +36,35 @@ interface TeacherDoc {
 }
 let teacher: TeacherDoc | null = null;
 try {
-  teacher = await sanityFetch<TeacherDoc | null>(
-    `*[_type == "teacherNote" && class == $cls][0]{ signName, signRole, email, phone, photo }`,
-    { cls: noteClass },
-    { cache: BOARD_CONTENT_CACHE },
+  teacher = pickNote(
+    await sanityFetch<TeacherDoc[]>(
+      TEACHER_NOTE_CARD_QUERY,
+      { keys },
+      { cache: BOARD_CONTENT_CACHE },
+    ),
+    keys,
   );
 } catch {
   teacher = null;
 }
 
-const cc = classStyles(slug);
+const cc = colorStyles(color);
 // 160px covers the 80px (h-20 w-20) circle at 2x; portrait-preserving crop.
+// SQUARE hotspot-aware crop (2026-09-01, round three): the Sanity CDN crops
+// to the face when the photo's hotspot is set in the Studio (drag the circle
+// in the image editor), and center otherwise. This replaced two rounds of
+// CSS zoom guesswork — no transform can center every face, because faces sit
+// in different places per photo. The hotspot is board-editable truth.
 const photoUrl = teacher?.photo?.asset
   ? urlForImage(teacher.photo as SanityImageSource)
       .width(160)
+      .height(160)
+      .fit('crop')
       .url()
   : null;
 // Studio value wins; fall back to the committed number until the field is set.
-const phone = teacher?.phone || teacherPhoneFallback[noteClass];
-// A tel: href from any human-typed phone (keep a leading +, drop other symbols).
-const telHref = phone
-  ? `tel:${phone.trim().startsWith('+') ? '+' : ''}${phone.replace(/[^\d]/g, '')}`
-  : null;
+const phone = teacher?.phone || keys.map((k) => teacherPhoneFallback[k]).find(Boolean);
+const telHref = toTel(phone);
 ---
 
 {
@@ -61,15 +72,20 @@ const telHref = phone
     <div class="mx-auto flex max-w-2xl flex-col items-center gap-5 border-t border-white/15 pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-6">
       <div class="flex items-center gap-4">
         {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
-            width="80"
-            height="80"
-            loading="lazy"
-            decoding="async"
-            class={`h-20 w-20 shrink-0 rounded-full border-4 object-cover object-top ${cc.border}`}
-          />
+          <span
+            class={`inline-block h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 ${cc.border}`}
+          >
+            {/* Zoomed 1.5x about the face line — see TeacherCard. */}
+            <img
+              src={photoUrl}
+              alt={teacher.photo?.alt || `${teacher.signName}, teacher`}
+              width="80"
+              height="80"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          </span>
         ) : (
           <span
             class={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-white/10 ${cc.border}`}
@@ -79,7 +95,9 @@ const telHref = phone
           </span>
         )}
         <div class="text-left">
-          <p class="text-xs font-semibold tracking-wide text-white/70 uppercase">Your teacher</p>
+          <p class="text-xs font-semibold tracking-wide text-white/70 uppercase">
+            {CONTACT_LABELS.yourTeacher}
+          </p>
           <p class="font-display text-xl text-white">{teacher.signName}</p>
           {teacher.signRole && <p class="text-sm text-white/70">{teacher.signRole}</p>}
         </div>
@@ -93,7 +111,7 @@ const telHref = phone
               class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
               <Icon name="mail" class="h-4 w-4" aria-hidden="true" />
-              Email
+              {CONTACT_LABELS.email}
             </a>
           )}
           {telHref && (
@@ -102,7 +120,7 @@ const telHref = phone
               class="inline-flex items-center gap-2 rounded-pill border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
               <Icon name="phone" class="h-4 w-4" aria-hidden="true" />
-              Call or text
+              {CONTACT_LABELS.phone}
             </a>
           )}
         </div>

@@ -3,6 +3,7 @@ import type { LayoutProps } from 'sanity';
 // public site uses, so Vite bundles the exact same files for the Studio.
 import '@fontsource-variable/quicksand/index.css';
 import emblem from '../../assets/brand/wcp-emblem.png';
+import { StudioTour } from './StudioTour';
 
 // =============================================================================
 // StudioLayout — loads the brand fonts into the Studio
@@ -40,6 +41,9 @@ export function StudioLayout(props: LayoutProps) {
     <>
       <style>{fontCss}</style>
       {props.renderDefault(props)}
+      {/* First-visit welcome tour (see StudioTour.tsx). After the default
+          layout so it stacks above the Studio chrome. */}
+      <StudioTour />
     </>
   );
 }

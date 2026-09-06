@@ -3,8 +3,8 @@
 // =============================================================================
 // A school-run Google Apps Script (source committed at
 // scripts/apps-script/calendar-feed.gs) serves the Google Calendar as a JSON
-// array of { title, start, allDay, end?, location?, description? } covering a
-// rolling 12 months. Erin/admins edit the calendar in Google; the hub picks
+// array of { title, start, allDay, end?, location?, description?, created? }
+// covering a rolling 12 months. Erin/admins edit the calendar in Google; the hub picks
 // changes up automatically — no duplicate data entry in Sanity. Fetched
 // SERVER-SIDE behind the hub gate.
 //
@@ -35,6 +35,28 @@ export interface HubEvent {
   location?: string;
   /** Long text (Sanity events + the feed since 2026-07-17, plain-text capped). */
   description?: string;
+  /**
+   * When the event was PUT ON the calendar (ISO datetime), not when it happens.
+   * The what's-new bell announces an event added in the last two weeks.
+   *
+   * OPTIONAL, and it must stay optional: the committed Apps Script emits it
+   * (`created`, from CalendarEvent#getDateCreated) only since 2026-08-29, and
+   * the deployed copy carries it from the next redeploy (docs/PENDING.md). Until
+   * then every feed event simply has no `created` and the bell announces none of
+   * them. The Sanity fallback events never carry it — they announce themselves
+   * through their own `_createdAt`, read straight from the document.
+   */
+  created?: string;
+  /** When the event last CHANGED on the calendar (Apps Script getLastUpdated).
+      Same deal as `created`: optional until the deployed script carries it,
+      and the bell's "Updated on the calendar" rows simply need it. */
+  updated?: string;
+  /** Stable calendar event id (Apps Script getId). Dedupe + future per-event
+      features; carries no meaning to the renderer today. */
+  id?: string;
+  /** True on an instance of a repeating series. The bell skips these - a
+      weekly snack rotation must not announce itself every week. */
+  recurring?: boolean;
 }
 
 /** Parse feed/Sanity start strings safely (see DATE HANDLING above). */
@@ -275,7 +297,12 @@ export function toEventDetail(e: HubEvent): EventDetail {
 async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
   try {
     const raw = await cached(
-      `calfeed:${feedUrl}`,
+      // v3 (2026-08-29): the envelope gained `created`, then `updated`/`id`/`recurring`. The caching rules
+      // (CLAUDE.md, "cache the RAW reading") require a key bump on any shape
+      // change - without it, envelopes cached before the Apps Script redeploy
+      // keep serving from L1/KV for up to the TTL and the bell's
+      // "Added to the calendar" rows never appear on some isolates.
+      `calfeed:v3:${feedUrl}`,
       43_200_000, // 12h fresh — the school calendar is set weeks ahead; ~2 KV writes/day
       async () => {
         const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
