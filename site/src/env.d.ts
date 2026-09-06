@@ -58,9 +58,21 @@ declare namespace Cloudflare {
       get(key: string, type: 'text'): Promise<string | null>;
       put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
     };
+    /** Family directory KV. The families' personal data lives HERE, not in
+     *  Sanity: the Sanity dataset is public on the free plan, so anything
+     *  modelled there is world readable whatever the hub gate does. KV has no
+     *  public read surface — reachable only from inside the Worker, on a request
+     *  that has already passed src/middleware.ts. See src/lib/hub-directory.ts. */
+    DIRECTORY?: {
+      get(key: string, type: 'text'): Promise<string | null>;
+      put(key: string, value: string): Promise<void>;
+    };
     /** Shared password for the gated Family Hub (Cloudflare secret in prod). */
     FAMILY_HUB_PASSWORD: string;
-    /** Sanity Editor token — server-only reads of the private (PII) dataset. */
+    /** Sanity Editor token — server-side reads, and draft reads for Studio
+     *  Presentation. NOTE: it is NOT what keeps anything private. The dataset is
+     *  PUBLIC (free plan = "public only"). This comment used to say "the private
+     *  (PII) dataset" and the directory was designed on that error. */
     SANITY_TOKEN: string;
     /** Fourthwall Storefront API token (read-only catalog). Optional — the
      *  store card falls back to its Board-curated tiles when unset. */

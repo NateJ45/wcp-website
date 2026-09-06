@@ -9,3 +9,7 @@ src/assets/*.pdf
 # (kit-the-kat-sm.webp) is committed. Keep the original locally if you need to
 # regenerate at another size.
 src/assets/photos/3L7A7778.jpg
+
+# Real family data, produced by scripts/migrate-directory-to-kv.mjs.
+# This repo is PUBLIC - committing it would be the same leak in a new store.
+directory.json

@@ -24,6 +24,7 @@ import { colorStyles } from '@/lib/class-colors';
 import { getHubClassrooms } from '@/lib/hub-classes';
 import { classLookup } from '@/lib/hub-classrooms';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
+import { getDirectoryEntries, type DirEntry } from '@/lib/hub-directory';
 import { HUB_PAGE_QUERY } from '@/lib/queries';
 import { hubDraftMode, readHubPageDoc, publishedId } from '@/lib/hub-preview';
 import { site } from '@/data/site';
@@ -45,42 +46,18 @@ const draftMode = await hubDraftMode(Astro.cookies);
 // the map pin, the JSON-LD, and the hub's weather lookups can never disagree.
 const PRESCHOOL = { lat: site.geo.lat, lng: site.geo.lng, label: site.name };
 
-interface DirChild {
-  name?: string;
-  class?: string;
-}
-interface DirParent {
-  name?: string;
-  role?: string;
-  email?: string;
-  phone?: string;
-}
-interface DirEntry {
-  _id: string;
-  familyName: string;
-  parents?: DirParent[];
-  children?: DirChild[];
-  photo?: { asset?: unknown; alt?: string } | null;
-  location?: { lat?: number; lng?: number } | null;
-  notes?: string;
-  neighborhood?: string;
-  carpoolInterest?: boolean;
-  playdateInterest?: boolean;
-}
 // Independent of the entries read — start now, await later (2026-07 hub-speed
 // pass).
 const hubDocPromise = readHubPageDoc<HubPageDoc>(draftMode, HUB_PAGE_QUERY, {
   key: 'directory',
 }).catch(() => null);
 
-let entries: DirEntry[] = [];
-try {
-  entries = await sanityFetch<DirEntry[]>(
-    `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, role, email, phone }, children, photo, location, notes, neighborhood, carpoolInterest, playdateInterest }`,
-  );
-} catch {
-  entries = [];
-}
+// Families come from KV, NOT Sanity. The Sanity dataset is public on the free
+// plan, so `directoryEntry` documents were readable by anyone with the project
+// id — 37 families, 40 children, 33 home addresses — straight past this page's
+// gate (2026-09-06). Do not "restore" a Sanity fallback here: it would quietly
+// republish the lot. See src/lib/hub-directory.ts.
+const entries: DirEntry[] = await getDirectoryEntries();
 
 // Map tab is a Board on/off switch (Hub settings → Google connections). Off by
 // default: no Map tab, and the Leaflet map never loads.

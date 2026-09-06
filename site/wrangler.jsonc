@@ -40,6 +40,20 @@
       "binding": "CACHE",
       "id": "022e00789a4448a79c352a2bb309415b",
     },
+    // The family directory. Families' personal data — names, children, contact
+    // details, home addresses — lives HERE rather than in Sanity, because the
+    // Sanity dataset is PUBLIC (free plan = "2 datasets, public only"), so
+    // anything modelled there is readable by anyone holding the project id, no
+    // matter what the Family Hub gate does. KV has no public read surface: only
+    // the Worker reaches it, on a request that has already passed
+    // src/middleware.ts. See src/lib/hub-directory.ts.
+    //
+    // Create with `npx wrangler kv namespace create DIRECTORY`, paste the id
+    // here, then populate with scripts/migrate-directory-to-kv.mjs.
+    {
+      "binding": "DIRECTORY",
+      "id": "REPLACE_WITH_DIRECTORY_NAMESPACE_ID",
+    },
   ],
   // Plain (non-secret) runtime values. The account id only NAMES which
   // Cloudflare account /api/stats asks about; it grants nothing on its own and
