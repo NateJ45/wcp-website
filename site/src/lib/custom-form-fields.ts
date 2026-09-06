@@ -1,18 +1,27 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
-// custom-form-fields — editor-defined form questions
+// custom-form-fields - editor-defined form questions
 // =============================================================================
-// A "Contact form" section normally asks a fixed variant of questions (see the
-// VARIANTS map in ContactForm.astro). A board member can also write their own
-// questions in the Studio: the section's `fields` array. This module holds the
-// two pure functions that path needs, so both sides agree and both are tested:
+// A form section normally asks a fixed set of questions that a developer wrote.
+// An editor can also write their own questions in the Studio: the section's
+// `fields` array (schemaTypes/formQuestion.ts). This module holds the two pure
+// functions that path needs, so the renderer and the submit path agree, and so
+// both are tested:
 //
 //   normalizeCustomFields()   Sanity value  -> the list the renderer draws
 //   parseCustomFieldEntries() posted fields -> the "Label: answer" lines
 //
 // The renderer posts each answer as `custom_<n>`, with the question text in a
 // hidden `custom_<n>_label` and a "1" in `custom_<n>_req` when the question is
-// required. The server never trusts those markers for anything but the caps and
-// the message it builds. It NEVER logs an answer.
+// required. The submit path never trusts those markers for anything but the
+// caps and the message it builds. It NEVER logs an answer.
+//
+// The answers become plain lines of text that are folded into the message the
+// site already sends. That is the whole design: a new question needs no code
+// change, no schema change, and no change to whatever receives the submission.
+//
+// This file is deliberately dependency-free and framework-free. It must stay
+// that way: every repo in the family shares the same byte-identical copy.
 // =============================================================================
 
 /** The most questions one form can ask. The Studio also validates this. */

@@ -1,16 +1,18 @@
+// PORTABLE: canonical copy - ncs-astro-sanity-starter is the library of record for this file
 // =============================================================================
 // Contrast math (WCAG 2.x relative luminance)
 // =============================================================================
-// Exists so the theme tokens can be checked in a unit test. The whole class of
-// dark-mode bug found in the 2026-07-19 audit — an invisible focus ring, a
-// card border below the 3:1 UI threshold, a solid button with no visible edge
-// — is invisible to the existing gate: axe has no rule for focus-indicator or
-// custom-border contrast, and the dark axe suite audits the resting DOM only.
-// So they all shipped with a green build and a Lighthouse 100.
+// Exists so the theme tokens can be checked in a unit test
+// (theme-tokens.test.ts). The class of contrast bug this guards against - an
+// invisible focus ring, a border below the 3:1 UI threshold, a button with no
+// visible edge, an eyebrow that vanishes on its own surface - is invisible to
+// every other gate: axe has no rule for focus-indicator or custom-border
+// contrast, and an axe sweep audits the resting DOM only. In the WCP repo
+// those bugs all shipped on a green build with Lighthouse at 100.
 //
 // Deliberately WCAG 2.x, not APCA. APCA models near-black pairs better and is
-// worth a sanity check by eye, but 2.2 AA is the actual conformance target and
-// the thing CI has to hold.
+// worth a sanity check by eye, but 2.2 AA is the actual conformance target
+// and the thing CI has to hold.
 // =============================================================================
 
 export interface Rgb {
@@ -52,9 +54,9 @@ export function contrastRatio(a: string, b: string): number {
 /**
  * Flatten a semi-transparent colour over an opaque backdrop.
  *
- * Needed because several of this site's borders are `rgba(255,255,255,0.2)`
- * over a dark surface: the ratio that matters is the COMPOSITE against what is
- * actually behind it, not the raw white.
+ * Needed because a dark theme's borders are typically white-at-low-alpha over
+ * a dark surface (`--border: oklch(1 0 0 / 12%)`): the ratio that matters is
+ * the COMPOSITE against what is actually behind it, not the raw white.
  */
 export function flatten(fg: Rgb, alpha: number, bg: Rgb): Rgb {
   const mix = (f: number, b: number) => Math.round(f * alpha + b * (1 - alpha));
