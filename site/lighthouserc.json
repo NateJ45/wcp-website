@@ -1,5 +1,5 @@
 {
-  "//": "Lighthouse CI runs against the built static output (dist/client) so dev-server quirks never affect scores. The url list is EXPLICIT on purpose: with staticDistDir alone, lhci auto-discovers pages but caps at 5, testing a near-random subset. Listing URLs covers every distinct template and skips non-page stubs. Accessibility is a HARD gate (must hold 100); performance / best-practices / SEO are warnings so normal CI variance doesn't block a PR. Add a representative URL per template as pages are built. Every Family Hub route (including /family-hub itself) is SSR-only (`export const prerender = false`, session-gated) and is never emitted into dist/client, so none belong in this list — see tests/routes.ts, which excludes them for the same reason. Run locally: npm run build && npx lhci autorun",
+  "//": "Lighthouse CI runs against the built static output (dist/client) so dev-server quirks never affect scores. The url list is EXPLICIT on purpose: with staticDistDir alone, lhci auto-discovers pages but caps at 5, testing a near-random subset. Listing URLs covers every distinct template and skips non-page stubs. Accessibility is a HARD gate (must hold 100); performance / best-practices / SEO are warnings so normal CI variance doesn't block a PR. Add a representative URL per template as pages are built. Every Family Hub route (including /family-hub itself) is SSR-only (`export const prerender = false`, session-gated) and is never emitted into dist/client, so none belong in this list \u2014 see tests/routes.ts, which excludes them for the same reason. Run locally: npm run build && npx lhci autorun",
   "ci": {
     "collect": {
       "staticDistDir": "./dist/client",
@@ -23,20 +23,60 @@
         "http://localhost/events/index.html",
         "http://localhost/404.html"
       ],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
-        "skipAudits": ["uses-http2", "canonical"]
+        "skipAudits": [
+          "uses-http2",
+          "canonical"
+        ]
       }
     },
     "assert": {
+      "//": "numberOfRuns is 3 and assertions use the MEDIAN, not a single sample. With one run, largest-contentful-paint as a hard error measures the CI runner as much as the site: on 2026-09-06 the identical commit passed on staging and failed on main at 6779ms against a 4500 budget, on a commit that only touched a workflow file. A gate that cries wolf gets ignored, and an ignored gate is worse than none. Three runs cost roughly 3x the job time, which is the price of the timing assertions being trustworthy.",
+      "aggregationMethod": "median",
       "assertions": {
-        "categories:accessibility": ["error", { "minScore": 1 }],
-        "categories:best-practices": ["warn", { "minScore": 0.95 }],
-        "categories:seo": ["warn", { "minScore": 0.95 }],
-        "categories:performance": ["warn", { "minScore": 0.85 }],
-        "largest-contentful-paint": ["error", { "maxNumericValue": 4500 }],
-        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
-        "total-byte-weight": ["warn", { "maxNumericValue": 3000000 }]
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "categories:best-practices": [
+          "warn",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:seo": [
+          "warn",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.85
+          }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          {
+            "maxNumericValue": 4500
+          }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.1
+          }
+        ],
+        "total-byte-weight": [
+          "warn",
+          {
+            "maxNumericValue": 3000000
+          }
+        ]
       }
     },
     "upload": {
