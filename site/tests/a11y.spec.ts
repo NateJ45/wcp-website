@@ -24,7 +24,10 @@ import { settle } from './helpers';
 test.describe('Accessibility — no axe violations', () => {
   for (const route of routes) {
     test(`${route} passes axe`, async ({ page }) => {
-      await page.goto(route, { waitUntil: 'domcontentloaded' }); // not 'load': WebKit stalls on the gitignored hero <video> — settle() covers real readiness
+      // not 'load': WebKit parks forever on the hero <video>'s VP9 WebM source
+      // and never clears the delay-load flag (mechanism proven in
+      // a11y-dark.spec.ts). settle() covers real readiness.
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
       // Settle fonts + reveal content (no half-faded text) so axe audits the
       // real, fully-rendered page — otherwise mid-transition opacity produces
       // false color-contrast violations.

@@ -13,8 +13,9 @@ import type { Page } from '@playwright/test';
 // [data-reveal] element to its visible end-state.
 // =============================================================================
 export async function settle(page: Page): Promise<void> {
-  // Race the font wait: WebKit can leave fonts.ready pending while heavy
-  // resources (the gitignored hero video) never finish loading.
+  // Race the font wait: WebKit can leave fonts.ready pending while the hero
+  // video's VP9 WebM source, which it cannot decode but still selects, never
+  // finishes loading (mechanism proven in a11y-dark.spec.ts).
   await page.evaluate(() =>
     Promise.race([
       document.fonts.ready.then(() => true),

@@ -72,7 +72,12 @@ export default defineConfig({
     {
       name: 'webkit-iphone',
       use: { ...devices['iPhone 14'] },
-      testMatch: /(smoke|a11y)\.spec\.ts$/,
+      // a11y-dark must be listed explicitly: `a11y\.spec\.ts$` does NOT match
+      // `a11y-dark.spec.ts`, so from the day the dark suite landed until
+      // 2026-09-06 its axe sweep and focus-indicator check never ran on WebKit
+      // at all. WebKit is exactly the engine that drops box-shadow rings on
+      // native form controls, which is what that focus check is for.
+      testMatch: /(smoke|a11y|a11y-dark)\.spec\.ts$/,
     },
   ],
   webServer: {
