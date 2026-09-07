@@ -49,7 +49,12 @@ const EXPLAIN = process.argv.includes('--explain');
 // the alternative is skipping - and a check that skips reports success. This one
 // skipped on wcp-website and printed a pass over 37 exposed families.
 const fromSource = () => {
-  for (const rel of ['src/sanity/env.ts', 'sanity.cli.ts', 'sanity.config.ts', 'astro.config.mjs']) {
+  for (const rel of [
+    'src/sanity/env.ts',
+    'sanity.cli.ts',
+    'sanity.config.ts',
+    'astro.config.mjs',
+  ]) {
     const p = resolve(process.cwd(), rel);
     if (!existsSync(p)) continue;
     const m = readFileSync(p, 'utf8').match(/projectId\s*[:=]\s*['"]([a-z0-9]{6,})['"]/i);
@@ -125,7 +130,17 @@ const PERSONAL_FIELDS = [
 // submenus, and actual children all use it. Flag it only when the contents look
 // like people - a bare list of names, or objects carrying person-ish fields.
 // Portable Text spans (text/_type span) and nav items (title/href) are not.
-const PERSONISH = ['name', 'firstname', 'lastname', 'age', 'grade', 'dob', 'birthday', 'classroom', 'class'];
+const PERSONISH = [
+  'name',
+  'firstname',
+  'lastname',
+  'age',
+  'grade',
+  'dob',
+  'birthday',
+  'classroom',
+  'class',
+];
 const looksLikePeople = (value) => {
   if (!Array.isArray(value) || value.length === 0) return false;
   return value.some((v) => {
@@ -189,22 +204,42 @@ const walk = (node, path, hits) => {
 const main = async () => {
   const probe = await query('count(*)');
   if (probe.private) {
-    console.log(`public-data-audit: ${PROJECT}/${DATASET} is NOT publicly readable. Nothing to audit.`);
+    console.log(
+      `public-data-audit: ${PROJECT}/${DATASET} is NOT publicly readable. Nothing to audit.`,
+    );
     return 0;
   }
 
   const total = probe.result ?? 0;
   const types = (await query('array::unique(*._type)')).result || [];
-  console.log(`public-data-audit: ${PROJECT}/${DATASET} is PUBLIC - ${total} documents readable by anyone.`);
+  console.log(
+    `public-data-audit: ${PROJECT}/${DATASET} is PUBLIC - ${total} documents readable by anyone.`,
+  );
 
   const violations = [];
   const notices = [];
   const allowed = [];
 
-  for (const type of types.filter((t) => !String(t).startsWith('sanity.') && !String(t).startsWith('system.'))) {
+  for (const type of types.filter(
+    (t) => !String(t).startsWith('sanity.') && !String(t).startsWith('system.'),
+  )) {
     if (policy.blockedTypes?.includes(type)) {
-      const n = (await query(`count(*[_type=="${type}"])`)).result ?? 0;
-      if (n > 0) violations.push({ type, count: n, why: 'type is listed in blockedTypes and must never be public' });
+      // Count documents that actually CARRY something, not documents that
+      // exist. After wcp-website's directory moved to KV its 37 documents were
+      // emptied rather than deleted (four roleHolder references would have
+      // blocked a delete), leaving shells with no fields at all. Failing on
+      // those would be measuring the schema instead of the exposure - and a
+      // gate that stays red after the fix is a gate people learn to ignore.
+      const docs = (await query(`*[_type=="${type}"][0..99]`)).result || [];
+      const carrying = docs.filter((d) =>
+        Object.keys(d || {}).some((k) => !k.startsWith('_')),
+      ).length;
+      if (carrying > 0)
+        violations.push({
+          type,
+          count: `${carrying} of ${docs.length} documents still carry fields`,
+          why: 'type is listed in blockedTypes and must never be public',
+        });
       continue;
     }
 
@@ -225,10 +260,16 @@ const main = async () => {
     // in a privacy policy is intentional publishing, and failing builds over it
     // teaches everyone to add blanket allows - which is how this check would
     // quietly stop protecting anything.
-    const badValues = [...hits.values].map((v) => `<${v}>`).filter((v) => !allowedFields.includes(v));
+    const badValues = [...hits.values]
+      .map((v) => `<${v}>`)
+      .filter((v) => !allowedFields.includes(v));
 
     if (badFields.length) {
-      violations.push({ type, found: badFields, why: 'personal field names on a publicly readable type' });
+      violations.push({
+        type,
+        found: badFields,
+        why: 'personal field names on a publicly readable type',
+      });
     } else if (allowList) {
       allowed.push({ type, found: [...hits.fields, ...badValues], reason: allowList.reason });
     }
@@ -253,7 +294,7 @@ const main = async () => {
 
   console.log('\n::error::public-data-audit: personal data is readable by anyone, with no token.');
   for (const v of violations) {
-    const what = v.count !== undefined ? `${v.count} documents` : v.found.join(', ');
+    const what = v.count !== undefined ? String(v.count) : v.found.join(', ');
     console.log(`  ${v.type}: ${what}  (${v.why})`);
   }
   console.log(
