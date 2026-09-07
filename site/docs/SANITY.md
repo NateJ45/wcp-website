@@ -366,9 +366,28 @@ Facts:
 - It also needs `secrets.BACKUP_PASSPHRASE` — the encryption key. The same
   value must live in the school records (and in `site/.dev.vars` locally):
   GitHub can never show a secret again, and a backup nobody can decrypt is no
-  backup. Create it once with
-  `openssl rand -base64 32 | gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website`
-  (and store the value before piping it away).
+  backup.
+
+  **Generate it and SAVE it before setting it. Two steps, never one.** This
+  file used to give a one-liner that piped `openssl rand` straight into
+  `gh secret set`, with the parenthetical "store the value before piping it
+  away" — which that command makes impossible. Following it produced exactly
+  the failure the sentence warns about: on 2026-09-07 every encrypted backup
+  since 09-05 turned out to be undecryptable, because the passphrase had gone
+  into GitHub without ever being displayed. Thirty green runs and an off-site
+  copy in R2, none of it recoverable. Found by attempting the restore drill.
+
+  ```powershell
+  # 1. generate AND READ it, then put it in the password manager
+  [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+
+  # 2. only then set it — the prompt keeps it out of shell history
+  gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website
+  ```
+
+  A backup is only as good as the last time someone restored it; see
+  `scripts/restore-dataset.mjs`.
+
 - A gate job checks both secrets first: a missing secret gives a WARNING and
   skips, it never fails the run — and never uploads plaintext.
 
