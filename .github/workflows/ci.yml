@@ -120,6 +120,19 @@ jobs:
       # dumped)" (exit 134) on the hosted runners — twice on 2026-09-03 alone,
       # both times passing on a plain re-run. It is runner flake, not a
       # schema problem, so retry up to three times before calling it red.
+      # What can a stranger read out of this site's dataset? Sanity's free plan
+      # is "2 datasets (public only)", so a public dataset is world readable over
+      # a plain URL with no token, and the project id ships in the page source.
+      # A login in front of a page does not protect the API behind it: this repo
+      # had 37 family directory entries - children's names and home addresses -
+      # readable by anyone, behind a Family Hub gate that was correctly built.
+      #
+      # Runs anonymously on purpose and needs no secrets. Exceptions live in
+      # public-data-policy.json, each with a reason.
+      - name: No personal data is publicly readable
+        working-directory: site
+        run: node scripts/public-data-audit.mjs
+
       - name: Generate Sanity types
         env:
           NODE_OPTIONS: --max-old-space-size=4096

@@ -37,18 +37,19 @@ export const helperScheduleFallback: Record<string, string> = {
   'pre-k-pm': '',
 };
 
-/** Per-teacher "call or text" number, keyed by teacherNote class (twos/threes/
- *  pre-k). This is the teacher's OWN published contact — already shown in each
- *  handbook's closing note (patch-contact-notes.mjs, committed) and on the live
- *  hub — NOT a share-by-link secret, so unlike the Google links above it's a
- *  real fallback value, not redacted. It backs `teacherNote.phone` so the class
- *  sign-off card + teacher card "Call or text" pills work before the Studio
- *  field is filled in; the Studio value wins once set. */
-export const teacherPhoneFallback: Record<string, string> = {
-  twos: '513-543-4824',
-  threes: '513-543-4824',
-  'pre-k': '503-201-4775',
-};
+/** REMOVED 2026-09-06. Three teachers' numbers were committed here, in a PUBLIC
+ *  repository, and two of them are personal mobiles rather than the school's
+ *  published line. The comment that used to sit here reasoned they were "the
+ *  teacher's OWN published contact ... already shown on the live hub" - true of
+ *  the hub, which is gated, and not true of this repo or of the public Sanity
+ *  dataset they were also sitting in.
+ *
+ *  They now live in the DIRECTORY KV namespace, read server-side behind the hub
+ *  gate: src/lib/hub-teacher-phones.ts. There is deliberately NO committed
+ *  fallback - a fallback is what put them here.
+ *
+ *  The git history of this file still contains them; removing them from HEAD
+ *  does not remove them from a public repo's history. */
 
 /** Treasurer's Budget Sheet ID. REDACTED: set in Sanity (hubSettings.budgetSheetId). */
 export const budgetSheetIdFallback = '';

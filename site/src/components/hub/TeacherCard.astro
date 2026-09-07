@@ -14,7 +14,7 @@ import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
 import { urlForImage, type SanityImageSource } from '@/lib/image';
 import { colorStyles } from '@/lib/class-colors';
 import { TEACHER_NOTE_CARD_QUERY, pickNote, telHref as toTel } from '@/lib/hub-teacher-note';
-import { teacherPhoneFallback } from '@/data/hub/live-links';
+import { teacherPhoneFor } from '@/lib/hub-teacher-phones';
 import { hubEditAttr } from '@/lib/hub-preview';
 
 interface Props {
@@ -65,8 +65,10 @@ const photoUrl = teacher?.photo?.asset
       .fit('crop')
       .url()
   : null;
-// Studio value wins; fall back to the committed number until the field is set.
-const phone = teacher?.phone || keys.map((k) => teacherPhoneFallback[k]).find(Boolean);
+// From KV, server-side. This used to read `teacher?.phone` (a PUBLIC Sanity
+// dataset) and fall back to a number committed to this PUBLIC repo. Two of the
+// three were personal mobiles. See src/lib/hub-teacher-phones.ts.
+const phone = await teacherPhoneFor(keys);
 const telHref = toTel(phone);
 // Studio preview only: clicking this card opens the teacher's own note doc —
 // the same place the name, photo and contacts are edited.
