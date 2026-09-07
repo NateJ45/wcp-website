@@ -301,6 +301,38 @@ jobs:
           FAMILY_HUB_PASSWORD: ${{ secrets.FAMILY_HUB_PASSWORD }}
           FAMILY_HUB_ADMIN_PASSWORD: ${{ secrets.FAMILY_HUB_ADMIN_PASSWORD }}
 
+      # The hub suite's server has now died mid-run twice in about a dozen CI
+      # runs (2026-09-07). workerd prints an EMPTY "✘ [ERROR]", writes its own
+      # log somewhere on the runner, and exits 1; preview-foreground reports the
+      # exit and every test after it fails with "Connection refused". A re-run of
+      # the same commit passed both times, so it is intermittent rather than a
+      # regression — and `retries: 1` cannot rescue it, because the SERVER is
+      # gone, not the test.
+      #
+      # Each occurrence has so far told us exactly nothing, because the only
+      # detailed record is that wrangler log and the runner is discarded with it.
+      # Keep it when the step fails, so the next occurrence arrives with evidence
+      # instead of an empty error.
+      #
+      # if: failure() so it only runs when there is something to explain, and
+      # if-no-files-found: ignore because a failure with no wrangler log (an
+      # ordinary assertion failure) is the common case and must not add a second
+      # red X on top of the real one.
+      - name: Keep the wrangler log when the hub suite fails
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wrangler-logs
+          # The literal path from the log line wrangler prints on exit. NOT
+          # "~/.config/..." — upload-artifact does not expand `~`, so that would
+          # match nothing and silently upload an empty artifact, which is the
+          # exact failure this step exists to stop us repeating.
+          path: |
+            /home/runner/.config/.wrangler/logs/
+            ${{ github.workspace }}/site/.wrangler/logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
       # Pixel-diffs /styleguide (light + dark) against the committed Linux
       # baselines. Reuses the dist the step above built (reuseExistingServer
       # is CI-disabled, so this rebuilds — the token stays required). A red
