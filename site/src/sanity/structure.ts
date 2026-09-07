@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list';
 import { guides, GUIDE_CATEGORY_ORDER } from './guides/content';
 import { makeGuideView } from './components/GuideView';
+import DirectoryMoved from './components/DirectoryMoved';
 import { WelcomePane } from './components/WelcomePane';
 
 // =============================================================================
@@ -574,50 +575,29 @@ export const hubStructure: StructureResolver = (S, context) =>
       // ── Families & co-op ── who the families are and how the co-op runs.
       S.divider().title('Families & co-op'),
 
-      // Grouped by class, because that is how a class rep thinks ("my Twos
-      // families"). The panes DERIVE from the live class documents — a new
-      // class gets its pane with no code change — and a family whose children
-      // span classes shows up under each of them. "All families" keeps the
-      // full flat list. A directory child's class is stored as the class SLUG
-      // (see directoryEntry's ClassPickInput).
+      // The Family Directory USED to be edited here. It is not any more, and
+      // this pane is the signpost rather than a leftover.
+      //
+      // Families' personal data left Sanity on 2026-09-06: this dataset is
+      // PUBLIC on the free plan, so an anonymous query with no token returned
+      // all 37 entries - 40 children's names, 71 parents, 33 home addresses -
+      // straight past the Family Hub gate. It lives in Cloudflare KV now, which
+      // has no public read surface, and is edited at /family-hub/admin behind a
+      // second, board-only password.
+      //
+      // Leaving the old pane in place would have shown 37 blank documents and
+      // invited someone to "fix" them by retyping the data back into a public
+      // dataset. See docs/FAMILY_HUB.md.
       S.listItem()
-        .id('directoryEntry')
-        .title('Family Directory')
+        .id('directoryMoved')
+        .title('Family Directory — moved')
         .icon(emoji('👪'))
-        .child(async () => {
-          const client = context.getClient({ apiVersion: '2025-01-01' });
-          // class.slug is Sanity's slug TYPE here (unlike page slugs, which
-          // are plain strings) — project .current or the pane id renders
-          // "[object Object]" and the whole structure errors.
-          const classes = await client.fetch<{ slug?: string; name?: string }[]>(
-            `*[_type == "class" && !(_id in path("drafts.**")) && defined(slug.current)] | order(name asc){ "slug": slug.current, name }`,
-          );
-          return S.list()
-            .id('directoryEntry')
-            .title('Family Directory')
-            .items([
-              S.listItem()
-                .id('directory-all')
-                .title('All families')
-                .icon(emoji('👪'))
-                .child(S.documentTypeList('directoryEntry').title('All families')),
-              S.divider().title('By class'),
-              ...classes.map((c) =>
-                S.listItem()
-                  .id(`directory-class-${c.slug}`)
-                  .title(c.name ?? c.slug ?? '')
-                  .icon(emoji('🎒'))
-                  .child(
-                    S.documentList()
-                      .id(`directory-class-${c.slug}`)
-                      .title(c.name ?? c.slug ?? '')
-                      .schemaType('directoryEntry')
-                      .filter('_type == "directoryEntry" && $slug in children[].class')
-                      .params({ slug: c.slug }),
-                  ),
-              ),
-            ]);
-        }),
+        .child(
+          S.component()
+            .id('directoryMoved')
+            .title('Family Directory has moved')
+            .component(DirectoryMoved),
+        ),
       S.documentTypeListItem('teacherNote').title('Teacher welcome notes').icon(emoji('💌')),
       // This list IS the org chart: each role says where it sits and who it
       // reports to, and the chart on the Co-op Jobs page draws itself from

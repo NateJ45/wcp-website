@@ -91,15 +91,15 @@ export const roleHolder = defineType({
       description:
         'The role’s OWN mailbox where there is one, e.g. president@westchesterpreschool.org. Leave blank for a role with no mailbox — for a class rep, use the Directory link below instead so her details are only ever typed in one place.',
     }),
-    defineField({
-      name: 'contactFrom',
-      title: 'Their family in the Directory',
-      type: 'reference',
-      group: 'contact',
-      to: [{ type: 'directoryEntry' }],
-      description:
-        'Link a class rep to her Directory entry and her card picks up the email and phone already stored there, so you never type them twice. It uses the adult whose name matches "Who holds it". A family who has opted out of the Directory is skipped, and the card simply shows no contact links.',
-    }),
+    // `contactFrom` (a reference to a Directory entry) was removed 2026-09-06.
+    // The Directory left Sanity because this dataset is PUBLIC on the free
+    // plan, and the old inline join served parents' emails and phone numbers
+    // out of it. Which family a role is reached through is now set at
+    // /family-hub/admin, behind the board password, and stored in KV alongside
+    // the family it points at — so the board edits people in one place instead
+    // of splitting the job between here and there.
+    //
+    // The existing links were copied into KV before this field was removed.
     defineField({
       name: 'note',
       title: 'Note to the Board (not shown to families)',
