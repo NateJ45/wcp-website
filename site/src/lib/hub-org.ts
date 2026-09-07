@@ -147,6 +147,13 @@ export interface RoleHolderRow {
   person?: string | null;
   email?: string | null;
   photo?: { asset?: unknown; alt?: string } | null;
+  /** The linked family's document id — all the query returns now. The personal
+   *  half is filled in server-side from KV by `attachDirectoryContacts`
+   *  (src/lib/hub-directory.ts): the Sanity dataset is public, and the inline
+   *  join this replaced was publishing parents' emails and phone numbers. */
+  contactFamilyId?: string | null;
+  /** Populated by `attachDirectoryContacts`, never by the query. Same shape the
+   *  old `contactFrom->` join produced, so `contactFor` did not have to change. */
   contact?: {
     optedIn?: boolean | null;
     parents?: { name?: string | null; email?: string | null; phone?: string | null }[] | null;

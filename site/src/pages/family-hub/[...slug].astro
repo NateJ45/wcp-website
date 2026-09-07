@@ -47,6 +47,7 @@ import {
   ROLE_HOLDERS_QUERY,
   ORG_SEATS_QUERY,
 } from '@/lib/queries';
+import { attachDirectoryContacts } from '@/lib/hub-directory';
 import { estimateReadMinutes } from '@/lib/hub-reading-time';
 import { formatMonthYear } from '@/lib/hub-dashboard-dates';
 import { isUsableHubSlug } from '@/lib/hub-pages';
@@ -119,7 +120,9 @@ if (room) {
   ]);
 
   classroomDocId = publishedId(page?._id);
-  repHolders = toHolderMap(holders ?? []);
+  // Contacts come from KV, not from the query: the inline GROQ join this
+  // replaced served parents' emails and phones out of a PUBLIC dataset.
+  repHolders = toHolderMap(await attachDirectoryContacts(holders ?? []));
   if (seatRows?.length) repSeats = toSeats(seatRows);
   // The classroom carries the page's METADATA from the light query already;
   // this fills in the parts only the full read has (intro, handbook, sections).

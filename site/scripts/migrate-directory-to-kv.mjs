@@ -76,12 +76,16 @@ const entries = (await res.json()).result || [];
 if (!entries.length) {
   // Refuse to write an empty directory over a populated one. A migration that
   // "succeeds" by emptying the hub is the failure mode worth guarding.
-  console.error('migrate: Sanity returned 0 opted-in entries. Refusing to write an empty directory.');
+  console.error(
+    'migrate: Sanity returned 0 opted-in entries. Refusing to write an empty directory.',
+  );
   process.exit(1);
 }
 
 writeFileSync(OUT, JSON.stringify(entries));
-console.log(`migrate: wrote ${entries.length} families to ${OUT} (${JSON.stringify(entries).length} bytes)`);
+console.log(
+  `migrate: wrote ${entries.length} families to ${OUT} (${JSON.stringify(entries).length} bytes)`,
+);
 console.log(
   `migrate: ${entries.filter((e) => e.optedIn === true).length} opted in, ` +
     `${entries.reduce((n, e) => n + (e.children?.length || 0), 0)} children, ` +
@@ -95,11 +99,18 @@ console.log(
 const fieldsHere = new Set(entries.flatMap((e) => Object.keys(e)));
 for (const expected of ['familyName', 'optedIn', 'address', 'parents', 'children', 'location']) {
   if (!fieldsHere.has(expected)) {
-    console.error(`migrate: expected field "${expected}" is missing from the export. Refusing to continue.`);
+    console.error(
+      `migrate: expected field "${expected}" is missing from the export. Refusing to continue.`,
+    );
     process.exit(1);
   }
 }
-console.log(`migrate: fields carried: ${[...fieldsHere].filter((f) => !f.startsWith('_')).sort().join(', ')}`);
+console.log(
+  `migrate: fields carried: ${[...fieldsHere]
+    .filter((f) => !f.startsWith('_'))
+    .sort()
+    .join(', ')}`,
+);
 
 if (!PUT) {
   console.log('\nmigrate: dry run. Re-run with --put to upload, or inspect the file first.');
@@ -111,20 +122,33 @@ if (!PUT) {
 }
 
 if (PUT) {
-const args = ['wrangler', 'kv', 'key', 'put', KEY, `--path=${OUT}`, '--binding=DIRECTORY', '--remote'];
-if (TARGET_ENV) args.push('--env', TARGET_ENV);
-console.log(`\nmigrate: npx ${args.join(' ')}`);
-const r = spawnSync('npx', args, { stdio: 'inherit', shell: process.platform === 'win32' });
+  const args = [
+    'wrangler',
+    'kv',
+    'key',
+    'put',
+    KEY,
+    `--path=${OUT}`,
+    '--binding=DIRECTORY',
+    '--remote',
+  ];
+  if (TARGET_ENV) args.push('--env', TARGET_ENV);
+  console.log(`\nmigrate: npx ${args.join(' ')}`);
+  const r = spawnSync('npx', args, { stdio: 'inherit', shell: process.platform === 'win32' });
 
-if (r.status !== 0) {
-  console.error('\nmigrate: the upload failed. directory.json has been LEFT IN PLACE so you can retry.');
-  console.error('migrate: delete it by hand once you are done - it is real family data in a public repo.');
-  process.exit(1);
-}
+  if (r.status !== 0) {
+    console.error(
+      '\nmigrate: the upload failed. directory.json has been LEFT IN PLACE so you can retry.',
+    );
+    console.error(
+      'migrate: delete it by hand once you are done - it is real family data in a public repo.',
+    );
+    process.exit(1);
+  }
 
-rmSync(OUT);
-console.log(`\nmigrate: uploaded and removed ${OUT}.`);
-console.log('migrate: now open /family-hub/directory and confirm the families render,');
-console.log('migrate: THEN remove the personal fields from Sanity as a separate step.');
-if (existsSync(OUT)) console.error('migrate: WARNING - could not remove ' + OUT);
+  rmSync(OUT);
+  console.log(`\nmigrate: uploaded and removed ${OUT}.`);
+  console.log('migrate: now open /family-hub/directory and confirm the families render,');
+  console.log('migrate: THEN remove the personal fields from Sanity as a separate step.');
+  if (existsSync(OUT)) console.error('migrate: WARNING - could not remove ' + OUT);
 }

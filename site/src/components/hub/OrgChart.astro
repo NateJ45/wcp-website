@@ -25,6 +25,7 @@ import OrgPersonCard from '@/components/hub/OrgPersonCard.astro';
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { sanityFetch } from '@/lib/sanity';
 import { DIRECTORY_FAMILY_COUNT_QUERY, ROLE_HOLDERS_QUERY, ORG_SEATS_QUERY } from '@/lib/queries';
+import { attachDirectoryContacts } from '@/lib/hub-directory';
 import {
   toHolderMap,
   toSeats,
@@ -74,7 +75,12 @@ const familyCount = await countPromise;
 // open role, which reads as "the whole board resigned".
 const seatRows = await seatsPromise;
 const seats = seatRows?.length ? toSeats(seatRows) : seatsFallback;
-const holderRows = await holdersPromise;
+// The query now returns only each rep's family ID; her email and phone are
+// looked up server-side from KV, because the inline GROQ join this replaced was
+// serving parents' contact details out of a PUBLIC dataset. Null stays null, so
+// the CMS-outage fallback below still works.
+const rawHolders = await holdersPromise;
+const holderRows = rawHolders ? await attachDirectoryContacts(rawHolders) : null;
 const holders = holderRows ? toHolderMap(holderRows) : fallbackHolders;
 
 const classes: OrgClass[] = (await classesPromise).map((c) => ({

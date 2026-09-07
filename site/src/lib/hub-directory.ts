@@ -96,3 +96,43 @@ export async function getDirectoryEntries(): Promise<DirEntry[]> {
     .filter((e) => e.optedIn === true)
     .sort((a, b) => (a.familyName || '').localeCompare(b.familyName || ''));
 }
+
+/**
+ * Fill in each role holder's contact details from the KV directory.
+ *
+ * A class rep's email and phone are typed once, in the Directory, and reused on
+ * her card — that has not changed. What changed is where the join happens: it
+ * used to be `contactFrom->{ parents[]{...} }` inside the GROQ query, which
+ * meant a parent's email and phone were served out of a PUBLIC dataset. Now the
+ * document stores only the family's id, and the personal half is looked up here,
+ * server-side, from KV.
+ *
+ * The row shape it produces is deliberately identical to what the old join
+ * returned, so `contactFor` and everything downstream is untouched.
+ *
+ * Rows come back unchanged when KV is unavailable: the cards then show a name
+ * and no contact links, which is the same degradation as an unlinked rep.
+ */
+export async function attachDirectoryContacts<
+  T extends { contactFamilyId?: string | null; contact?: unknown },
+>(rows: T[] | null | undefined): Promise<T[]> {
+  const list = rows ?? [];
+  if (!list.some((r) => r?.contactFamilyId)) return list;
+
+  const byId = new Map((await readAll()).map((e) => [e._id, e]));
+  return list.map((row) => {
+    const entry = row?.contactFamilyId ? byId.get(row.contactFamilyId) : undefined;
+    if (!entry) return row;
+    return {
+      ...row,
+      contact: {
+        optedIn: entry.optedIn ?? null,
+        parents: (entry.parents ?? []).map((p) => ({
+          name: p.name ?? null,
+          email: p.email ?? null,
+          phone: p.phone ?? null,
+        })),
+      },
+    };
+  });
+}

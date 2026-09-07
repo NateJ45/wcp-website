@@ -586,12 +586,19 @@ export const ORG_SEATS_QUERY = `*[_type == "coopRole"] | order(orderRank){
  * them all. `role` is the label these documents stored before the seats became
  * documents, kept as a second join key so an unmigrated row still resolves.
  *
- * `contactFrom` resolves the linked Directory entry inline, so a class rep's
- * email and phone are typed once (in the Directory) and reused here. The
- * `optedIn` guard is applied to the JOINED entry: a family who opted out of the
- * Directory resolves to null and the card shows no contact links.
+ * `contactFrom` used to be RESOLVED INLINE here — `contactFrom->{ parents[]{
+ * name, email, phone } }` — so a class rep's email and phone were typed once in
+ * the Directory and reused on her card. The idea was right; the storage was not.
+ * This dataset is PUBLIC (Sanity free plan), so that join served parents'
+ * personal contact details to anyone who asked (2026-09-06).
  *
- * CONTAINS PII once a rep is linked — never cache this result.
+ * Now the query returns only the family's ID, and the personal half is looked up
+ * server-side from KV by `attachDirectoryContacts` in src/lib/hub-directory.ts,
+ * which rebuilds exactly the `contact` shape this join used to produce. Every
+ * consumer downstream is unchanged.
+ *
+ * This result no longer contains PII — that is the point — but the ENRICHED rows
+ * do, so it is still the enriched value that must never be cached.
  */
 export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && (defined(seat) || defined(role))]{
   _id,
@@ -601,7 +608,7 @@ export const ROLE_HOLDERS_QUERY = `*[_type == "roleHolder" && (defined(seat) || 
   person,
   email,
   photo,
-  "contact": contactFrom->{ optedIn, "parents": parents[]{ name, email, phone } }
+  "contactFamilyId": contactFrom._ref
 }`;
 
 /** The site-wide alert banner (only meaningful when active). */
