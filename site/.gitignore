@@ -12,10 +12,26 @@ src/assets/photos/3L7A7778.jpg
 
 # Real family data, produced by scripts/migrate-directory-to-kv.mjs.
 # This repo is PUBLIC - committing it would be the same leak in a new store.
+# Deliberately UNANCHORED: it matches a directory.json at any depth, so the
+# rule still holds if someone runs the migration from another folder.
 directory.json
 
 # Real phone numbers, produced by scripts/migrate-teacher-phones-to-kv.mjs.
 teacher-phones.json
+
+# ...with one exception each, for the OBVIOUSLY FAKE test fixtures.
+#
+# The unanchored rules above silently swallowed these, and it went unnoticed
+# because nothing ran the hub suite. seed-test-kv.mjs even claims in its header
+# that the fixtures are "committed on purpose" — they were not committed at all,
+# so the CI run would have had no directory to seed and every hub test would
+# have failed against an empty one (found 2026-09-07).
+#
+# A negation weakens a rule that exists to stop a PII leak, so it does not stand
+# alone: tests/fixtures.test.ts fails the build if either file grows anything
+# that looks like a real address, phone number or email.
+!tests/fixtures/directory.json
+!tests/fixtures/teacher-phones.json
 
 # Scratch dir for scripts/migrate-photos-to-r2.mjs. Holds real family photos.
 .photo-migration/

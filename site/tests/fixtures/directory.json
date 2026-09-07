@@ -1,0 +1,96 @@
+{
+  "_comment": [
+    "Obviously-fake families for the local/CI hub suite. Nothing here is real: every",
+    "address is a nonsense street, every email is on example.invalid (an RFC 6761",
+    "reserved TLD that can never resolve) and every number is in the 555-01xx block",
+    "reserved for fiction. The real directory lives in the DIRECTORY KV namespace and",
+    "never comes near the repo.",
+    "",
+    "The SHAPE matters as much as the content. The first version had two families, one",
+    "opted in, in a single class -- and directory.astro only renders the class filter",
+    "nav when classesPresent.length > 1, so hub-hints.spec.ts failed: the hint anchors",
+    "to that nav, the nav was not there, and the hint never appeared. The test was",
+    "right and the fixture was starving it.",
+    "",
+    "So: keep at least three OPTED-IN families spanning at least two classes, and keep",
+    "one opted-out family, which is the case the directory has to actively hide."
+  ],
+  "version": 0,
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "entries": [
+    {
+      "_id": "directoryEntry-example",
+      "familyName": "Example",
+      "optedIn": true,
+      "address": "1 Example Way, Exampleton",
+      "parents": [
+        {
+          "name": "Alex Example",
+          "role": "Parent",
+          "email": "alex@example.invalid",
+          "phone": "555-0100"
+        },
+        {
+          "name": "Sam Example",
+          "role": "Parent",
+          "email": "sam@example.invalid",
+          "phone": "555-0101"
+        }
+      ],
+      "children": [{ "name": "Robin Example", "class": "twos" }]
+    },
+    {
+      "_id": "directoryEntry-specimen",
+      "familyName": "Specimen",
+      "optedIn": true,
+      "address": "2 Specimen Street, Exampleton",
+      "parents": [
+        {
+          "name": "Casey Specimen",
+          "role": "Parent",
+          "email": "casey@example.invalid",
+          "phone": "555-0103"
+        }
+      ],
+      "children": [{ "name": "Frankie Specimen", "class": "pre-k-am" }]
+    },
+    {
+      "_id": "directoryEntry-placeholder",
+      "familyName": "Placeholder",
+      "optedIn": true,
+      "address": "3 Placeholder Place, Exampleton",
+      "parents": [
+        {
+          "name": "Morgan Placeholder",
+          "role": "Parent",
+          "email": "morgan@example.invalid",
+          "phone": "555-0104"
+        },
+        {
+          "name": "Riley Placeholder",
+          "role": "Parent",
+          "email": "riley@example.invalid",
+          "phone": "555-0105"
+        }
+      ],
+      "children": [
+        { "name": "Quinn Placeholder", "class": "pre-k-pm" },
+        { "name": "Sage Placeholder", "class": "twos" }
+      ]
+    },
+    {
+      "_id": "directoryEntry-sample",
+      "familyName": "Sample",
+      "optedIn": false,
+      "parents": [
+        {
+          "name": "Jo Sample",
+          "role": "Parent",
+          "email": "jo@example.invalid",
+          "phone": "555-0102"
+        }
+      ],
+      "children": [{ "name": "Kit Sample", "class": "pre-k-am" }]
+    }
+  ]
+}

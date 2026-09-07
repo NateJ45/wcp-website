@@ -12,6 +12,14 @@
 // purpose: seeding from the real directory would put families' contact details
 // into a public repo, which is the mistake this whole area was rebuilt to undo.
 //
+// "Committed on purpose" was WRONG when first written — .gitignore ignores
+// `directory.json` and `teacher-phones.json` at any depth (that is what the
+// migration scripts emit, holding real family data), so it silently swallowed
+// these two as well. CI would have had nothing to seed. Both are negated back in
+// now, and tests/fixtures.test.ts fails the build if either ever grows something
+// that looks like a real address, phone number or email — a negated PII rule
+// should not be load-bearing on its own.
+//
 // LOCAL ONLY. Never pass --remote here.
 // =============================================================================
 import { spawnSync } from 'node:child_process';
