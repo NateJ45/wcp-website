@@ -28,7 +28,14 @@ export default defineConfig({
   // tests/visual/ belongs to playwright.visual.config.ts — run here, these
   // specs lose their snapshot paths and reduced-motion setup and fail with
   // "snapshot doesn't exist" (bit the first styleguide CI run, 2026-09-03).
-  testIgnore: [/hub-.*\.(spec|setup)\.ts$/, /visual[\\/].*\.spec\.ts$/],
+  // `*.test.ts` is VITEST's, not Playwright's. Playwright's default testMatch
+  // claims both `.spec.ts` and `.test.ts`, so tests/fixtures.test.ts — a unit
+  // test that happens to live beside the fixtures it guards — was picked up
+  // here and died on `describe()` with "Cannot read properties of undefined
+  // (reading 'config')", taking the whole step down (2026-09-07). The
+  // convention across this repo is now explicit: .spec.ts is a browser test,
+  // .test.ts is a unit test, and neither runner touches the other's files.
+  testIgnore: [/hub-.*\.(spec|setup)\.ts$/, /visual[\\/].*\.spec\.ts$/, /\.test\.ts$/],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
