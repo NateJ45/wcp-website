@@ -308,10 +308,10 @@ jobs:
       # them fail, and when one of those "Network connection lost" errors
       # surfaces on the ProxyWorker's loopback path, wrangler's ProxyController
       # treats it as fatal and exits. Upstream, so preview-foreground.mjs now
-      # supervises wrangler and restarts it, which `retries: 1` can then ride
-      # out. Keep the log anyway — it is the only detailed record, the runner is
-      # discarded with it, and the next variant of this will need the same
-      # evidence.
+      # restarts wrangler AND fronts it with a proxy, so the ~3s gap costs a
+      # held request instead of a refused one. Keep the log anyway — it is the
+      # only detailed record, the runner is discarded with it, and the next
+      # variant of this will need the same evidence.
       #
       # if: failure() so it only runs when there is something to explain, and
       # if-no-files-found: ignore because a failure with no wrangler log (an

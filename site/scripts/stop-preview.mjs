@@ -23,6 +23,15 @@
 // =============================================================================
 import { spawnSync } from 'node:child_process';
 
+// Still ONE port, deliberately. preview-foreground.mjs now runs wrangler on a
+// private upstream port behind this one, and it would be easy to "free that too"
+// by sweeping the range it searches — don't. This script kills whatever holds a
+// port, and the range holds other people's software: on the maintainer's machine
+// an unrelated service listens on 4322. Killing a stranger's process to speed up
+// our build is not a trade worth making, and it costs nothing to skip: the
+// wrapper SEARCHES for a free upstream, so a leftover is stepped over rather than
+// collided with, and on Windows the tree-kill below already takes the wrangler
+// child with its parent.
 const PORT = process.env.PREVIEW_PORT ?? '4321';
 const sh = (cmd, args) =>
   spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32' });
@@ -59,7 +68,9 @@ for (const pid of pids) {
     process.platform === 'win32'
       ? sh('taskkill', ['/F', '/T', '/PID', pid])
       : sh('kill', ['-9', pid]);
-  if (killed.status === 0) console.log(`stop-preview: freed port ${PORT} (pid ${pid}).`);
+  if (killed.status === 0) {
+    console.log(`stop-preview: freed port ${PORT} (pid ${pid}).`);
+  }
 }
 
 // Windows releases file handles a moment after the process dies; building

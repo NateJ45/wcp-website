@@ -20,10 +20,15 @@ executes twice, and genuine Safari-engine breakage surfaces locally.
 
 ## The gotchas (each has cost real time)
 
-- **`test:hub` boots `npm run build && npm run preview` (wrangler), never
-  `astro dev`.** On this Astro 7 + Cloudflare stack, `astro dev` daemonizes to
-  a detached process and the launching command exits, which Playwright's
-  `webServer` reads as a startup failure.
+- **`test:hub` boots `scripts/preview-foreground.mjs` (wrangler), never
+  `astro dev` and no longer `npm run preview`.** On this Astro 7 + Cloudflare
+  stack BOTH of those daemonize, and the launching command exits, which
+  Playwright's `webServer` reads as a startup failure — and `astro preview`
+  serves only static `dist/client`, so every SSR hub route 404s while looking
+  alive. The wrapper also SUPERVISES wrangler and fronts it with a proxy on
+  4321, because `wrangler dev` dies mid-run on CI (see the wrangler-dies gotcha
+  in CLAUDE.md). Two lines to know in a log: `wrangler exited (1).` and
+  `back up after Ns down.`
 - **`playwright.hub.config.ts`'s `testMatch` is an ALLOW-LIST.** A new spec file
   under `tests/` silently does not run until its name is added to BOTH the
   top-level `testMatch` and the `chromium` project's.
@@ -256,7 +261,8 @@ Diagnosed properly 2026-08-17 (two earlier versions of this note blamed the Play
 webServer lifecycle, then "the local server degrades with request volume" — both wrong, and
 both cost hours). The real cause: `playwright.hub.config.ts` has
 
-    webServer: { command: 'npm run build && npm run preview', reuseExistingServer: !CI }
+    webServer: { command: 'npm run build && ... && node scripts/preview-foreground.mjs',
+                 reuseExistingServer: !CI }
 
 When nothing is listening on 4321, Playwright runs that command — a FULL rebuild, which now
 also runs the two PDF generators in postbuild and launches Chromium twice more. The rebuild
@@ -275,9 +281,11 @@ every time. So the working recipe is per-RUN, not per-session:
 The recipe, and it is quick:
 
 1. `npm run build` (add `WCP_INSECURE_COOKIES=1` so the WebKit project can send its cookie).
-2. Start the server yourself: `WCP_INSECURE_COOKIES=1 npm run preview` — leave it running.
+2. Start the server yourself: `WCP_INSECURE_COOKIES=1 node scripts/preview-foreground.mjs`
+   — leave it running. (NOT `npm run preview`: that serves static `dist/client` only, so
+   every hub route 404s.)
 3. Run the suite immediately. `reuseExistingServer` picks the server up.
-4. Between runs, restart the server (kill the PID on 4321, `npm run preview` again). A
+4. Between runs, restart the server (kill the PID on 4321, run the wrapper again). A
    degraded server shows the same mass-timeout shape as the rebuild trap.
 
 Diagnosing, in order:
