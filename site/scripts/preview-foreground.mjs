@@ -83,13 +83,22 @@ function onWranglerExit(child, code) {
   }
   restartsLeft -= 1;
   console.error(`preview-foreground: restarting it (${restartsLeft} restart(s) left after this).`);
+  const downSince = Date.now();
   server = startWrangler();
   // Re-probe. If it will not come back, there is nothing left to serve, so
   // exit and let Playwright report the webServer failure rather than run the
   // rest of the suite against a dead port.
   waitUntilReady().then((back) => {
     if (back) {
-      console.log(`preview-foreground: back up at ${PROBE}.`);
+      // console.ERROR, not log: Playwright pipes a webServer's stderr into the
+      // run output and DISCARDS its stdout, so a console.log here is invisible
+      // in CI — which is how the first supervised run (34150362973) recorded
+      // the crash and the restart but not the recovery or how long the port was
+      // dead. The outage length is the number that says whether `retries` can
+      // cover it, so it has to reach the log.
+      console.error(
+        `preview-foreground: back up at ${PROBE} after ${Math.round((Date.now() - downSince) / 1000)}s down.`,
+      );
     } else if (!shuttingDown) {
       console.error('preview-foreground: it did not come back.');
       stop();
