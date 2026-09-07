@@ -48,11 +48,11 @@
     // the Worker reaches it, on a request that has already passed
     // src/middleware.ts. See src/lib/hub-directory.ts.
     //
-    // Create with `npx wrangler kv namespace create DIRECTORY`, paste the id
-    // here, then populate with scripts/migrate-directory-to-kv.mjs.
+    // Namespace created 2026-09-06 via `wrangler kv namespace create DIRECTORY`;
+    // populated with scripts/migrate-directory-to-kv.mjs.
     {
       "binding": "DIRECTORY",
-      "id": "REPLACE_WITH_DIRECTORY_NAMESPACE_ID",
+      "id": "6b7d362da417420c80c2dca2cba5b5f4",
     },
   ],
   // Plain (non-secret) runtime values. The account id only NAMES which

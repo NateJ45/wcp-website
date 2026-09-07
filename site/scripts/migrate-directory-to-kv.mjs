@@ -83,9 +83,13 @@ console.log(`migrate: ${entries.reduce((n, e) => n + (e.children?.length || 0), 
 if (!PUT) {
   console.log('\nmigrate: dry run. Re-run with --put to upload, or inspect the file first.');
   console.log('migrate: remember to delete it afterwards - it is real family data.');
-  process.exit(0);
+  // process.exitCode, not process.exit(): calling exit() here with the fetch's
+  // handles still closing trips a libuv assertion on Windows and returns a
+  // huge negative code, so a SUCCESSFUL dry run looks like a crash.
+  process.exitCode = 0;
 }
 
+if (PUT) {
 const args = ['wrangler', 'kv', 'key', 'put', KEY, `--path=${OUT}`, '--binding=DIRECTORY', '--remote'];
 if (TARGET_ENV) args.push('--env', TARGET_ENV);
 console.log(`\nmigrate: npx ${args.join(' ')}`);
@@ -102,3 +106,4 @@ console.log(`\nmigrate: uploaded and removed ${OUT}.`);
 console.log('migrate: now open /family-hub/directory and confirm the families render,');
 console.log('migrate: THEN remove the personal fields from Sanity as a separate step.');
 if (existsSync(OUT)) console.error('migrate: WARNING - could not remove ' + OUT);
+}
