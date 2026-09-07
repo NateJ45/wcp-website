@@ -378,8 +378,13 @@ Facts:
   copy in R2, none of it recoverable. Found by attempting the restore drill.
 
   ```powershell
-  # 1. generate AND READ it, then put it in the password manager
-  [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+  # 1. generate AND READ it, then put it in the password manager.
+  #    RNGCryptoServiceProvider, not RandomNumberGenerator::GetBytes(int):
+  #    that static overload is .NET Core only and fails on Windows
+  #    PowerShell 5.1 with "does not contain a method named 'GetBytes'".
+  $b = New-Object byte[] 32
+  (New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes($b)
+  [Convert]::ToBase64String($b)
 
   # 2. only then set it — the prompt keeps it out of shell history
   gh secret set BACKUP_PASSPHRASE --repo NateJ45/wcp-website
