@@ -130,7 +130,13 @@ jobs:
       # Runs anonymously on purpose and needs no secrets. Exceptions live in
       # public-data-policy.json, each with a reason.
       - name: No personal data is publicly readable
+        # wcp-website hardcodes its project id in src/sanity/env.ts, so this one
+        # resolves without a variable - but pass them anyway so every repo's
+        # step is identical and a future config change cannot silently blind it.
         working-directory: site
+        env:
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.PUBLIC_SANITY_PROJECT_ID }}
+          PUBLIC_SANITY_DATASET: ${{ vars.PUBLIC_SANITY_DATASET }}
         run: node scripts/public-data-audit.mjs
 
       - name: Generate Sanity types
