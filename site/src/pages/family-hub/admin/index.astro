@@ -52,15 +52,23 @@ try {
 }
 holders = holders.filter((h) => h?._id).sort((a, b) => (a.role ?? '').localeCompare(b.role ?? ''));
 
-// Class keys teacherNote uses, so a class the board adds shows up by itself.
-let classKeys: string[] = [];
+// ONE ROW PER CLASSROOM, not per class. Twos and Threes share a page and a
+// teacher, so listing classes produced two boxes for one person - and they held
+// the same number, which is the tell. `teacherPhoneFor` already tries the
+// classroom key before the class slugs, so keying on the room is what the
+// lookup wanted all along.
+let rooms: { key: string; label: string }[] = [];
 try {
-  classKeys = (await getHubClassrooms()).map((c) => c.key).filter(Boolean) as string[];
+  rooms = (await getHubClassrooms()).map((r) => ({ key: r.key, label: r.label }));
 } catch {
-  classKeys = [];
+  rooms = [];
 }
-for (const k of ['twos', 'threes', 'pre-k']) if (!classKeys.includes(k)) classKeys.push(k);
-for (const k of Object.keys(phones)) if (!classKeys.includes(k)) classKeys.push(k);
+// Anything stored under a key no room matches still shows, so a number can
+// never be stranded somewhere the board cannot see or clear it.
+for (const k of Object.keys(phones)) {
+  if (!rooms.some((r) => r.key === k))
+    rooms.push({ key: k, label: `${k} (no longer a class page)` });
+}
 
 const saved = Astro.url.searchParams.get('saved') === '1';
 const conflict = Astro.url.searchParams.get('conflict') === '1';
@@ -98,7 +106,7 @@ const btn =
       <h2 class="mt-2 mb-3 text-xl font-semibold">Families</h2>
       <HubCard>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p class="text-sm text-muted">
+          <p class="text-sm text-muted-foreground">
             {families.length} on file, {optedIn} showing in the directory. “Showing” means the family
             ticked include us — unticking hides them without deleting anything.
           </p>
@@ -108,7 +116,7 @@ const btn =
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm">
             <thead>
-              <tr class="border-b border-border text-muted">
+              <tr class="border-b border-border text-muted-foreground">
                 <th class="py-2 pr-3 font-medium">Family</th>
                 <th class="py-2 pr-3 font-medium">Grown-ups</th>
                 <th class="py-2 pr-3 font-medium">Children</th>
@@ -121,13 +129,13 @@ const btn =
                 families.map((f) => (
                   <tr class="border-b border-border/60">
                     <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
-                    <td class="py-2 pr-3 text-muted">
+                    <td class="py-2 pr-3">
                       {(f.parents ?? [])
                         .map((p) => p.name)
                         .filter(Boolean)
                         .join(', ') || '—'}
                     </td>
-                    <td class="py-2 pr-3 text-muted">
+                    <td class="py-2 pr-3">
                       {(f.children ?? [])
                         .map((c) => c.name)
                         .filter(Boolean)
@@ -151,7 +159,7 @@ const btn =
 
         {
           families.length === 0 && (
-            <p class="py-6 text-sm text-muted">
+            <p class="py-6 text-sm text-muted-foreground">
               No families on file. That is not normal — if it is unexpected, do not retype them: a
               backup of the previous version is written before every save, so restoring one is
               quicker and safer.
@@ -162,22 +170,22 @@ const btn =
 
       <h2 class="mt-8 mb-3 text-xl font-semibold">Teachers' phone numbers</h2>
       <HubCard>
-        <p class="mb-4 text-sm text-muted">
+        <p class="mb-4 text-sm text-muted-foreground">
           The “Call or text” number on each class's teacher card, private to signed-in families.
           Teachers' names, photos, notes and school email addresses are still edited in the Studio —
           those appear on the public website. Emptying a box removes the number and its link.
         </p>
         <form method="POST" action="/api/hub-admin/teachers" class="flex flex-col gap-3">
           {
-            classKeys.map((k) => (
-              <div class="grid gap-2 sm:grid-cols-[10rem_1fr] sm:items-center">
-                <label class="text-sm font-medium" for={`phone-${k}`}>
-                  {k}
+            rooms.map((r) => (
+              <div class="grid gap-2 sm:grid-cols-[14rem_1fr] sm:items-center">
+                <label class="text-sm font-medium" for={`phone-${r.key}`}>
+                  {r.label}
                 </label>
                 <input
-                  id={`phone-${k}`}
-                  name={`phone-${k}`}
-                  value={phones[k] ?? ''}
+                  id={`phone-${r.key}`}
+                  name={`phone-${r.key}`}
+                  value={phones[r.key] ?? ''}
                   class={input}
                 />
               </div>
@@ -189,7 +197,7 @@ const btn =
 
       <h2 class="mt-8 mb-3 text-xl font-semibold">Role contacts</h2>
       <HubCard>
-        <p class="mb-4 text-sm text-muted">
+        <p class="mb-4 text-sm text-muted-foreground">
           Which family each role is reached through. Their email and phone come from the directory
           above, so updating them in one place updates the card too. A role mailbox typed on the
           Sanity document (like president@…) still wins — an address that outlives whoever holds the
@@ -197,7 +205,7 @@ const btn =
         </p>
         {
           holders.length === 0 ? (
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted-foreground">
               No role holders found. They are created in the Studio under Family Hub → Who's who.
             </p>
           ) : (
@@ -206,7 +214,9 @@ const btn =
                 <div class="grid gap-2 sm:grid-cols-[16rem_1fr] sm:items-center">
                   <label class="text-sm font-medium" for={`rep-${h._id}`}>
                     {h.role || h._id}
-                    {h.person ? <span class="font-normal text-muted"> — {h.person}</span> : null}
+                    {h.person ? (
+                      <span class="font-normal text-muted-foreground"> — {h.person}</span>
+                    ) : null}
                   </label>
                   <select id={`rep-${h._id}`} name={`rep-${h._id}`} class={input}>
                     <option value="">No contact</option>

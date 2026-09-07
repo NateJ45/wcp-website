@@ -177,7 +177,7 @@ const btnRemoveRow =
             <button type="button" class={`mt-3 ${btnGhost}`} data-add="children">
               + Add another child
             </button>
-            <p class="mt-2 text-xs text-muted">
+            <p class="mt-2 text-xs text-muted-foreground">
               Class comes from the hub's own class list, so the directory's filter always matches.
               Typing it by hand is what used to break it.
             </p>
@@ -196,7 +196,7 @@ const btnRemoveRow =
                     class="h-48 w-48 rounded-full border border-border object-cover"
                   />
                 ) : (
-                  <div class="flex h-48 w-48 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted">
+                  <div class="flex h-48 w-48 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted-foreground">
                     No photo yet
                   </div>
                 )
@@ -206,7 +206,8 @@ const btnRemoveRow =
                   Choose a photo…
                   <input id="photo" name="photo" type="file" accept="image/*" class="sr-only" />
                 </label>
-                <span id="photo-name" class="text-xs text-muted">No new file chosen</span>
+                <span id="photo-name" class="text-xs text-muted-foreground">No new file chosen</span
+                >
                 {
                   family.photoKey && (
                     <label class="mt-1 flex items-center gap-2 text-sm">
@@ -217,7 +218,7 @@ const btnRemoveRow =
                 }
               </div>
             </div>
-            <p class="mt-2 text-xs text-muted">
+            <p class="mt-2 text-xs text-muted-foreground">
               Only signed-in families can see it. A new file replaces the old one.
             </p>
           </div>
@@ -230,7 +231,7 @@ const btnRemoveRow =
           <div>
             <label class="mb-1 block text-sm font-semibold" for="address">Address</label>
             <input id="address" name="address" value={family.address ?? ''} class={input} />
-            <p class="mt-1 text-xs text-muted">
+            <p class="mt-1 text-xs text-muted-foreground">
               Used for the directory map. Leave blank if the family would rather not share it.
             </p>
           </div>
