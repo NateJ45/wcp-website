@@ -29,7 +29,7 @@ import { ADMIN_AUTH_FILE, AUTH_FILE } from './tests/auth-file';
 export default defineConfig({
   testDir: './tests',
   testMatch:
-    /(hub-(shell|home|sections|gate|pages|tour|hints|spotlight|classroom|org-chart|a11y)\.spec|hub-(auth|admin)\.setup)\.ts$/,
+    /(hub-(shell|home|sections|gate|pages|tour|hints|spotlight|classroom|org-chart|a11y|admin-write)\.spec|hub-(auth|admin)\.setup)\.ts$/,
   // 60s, not the usual 30s. The hub HOME page fans out to several external
   // origins server-side (Apps Script calendar, two gviz sheets, the store),
   // each with its own 8s timeout, and `cached()` cannot help on the first hit
@@ -134,6 +134,15 @@ export default defineConfig({
       name: 'admin-setup',
       testMatch: /hub-admin\.setup\.ts$/,
       use: { ...devices['Desktop Chrome'] },
+    },
+    // The board's WRITE paths — add, photo, bulk remove. Same admin session as
+    // the sweep below; serial within the file because the three steps are one
+    // story against a single directory document.
+    {
+      name: 'admin-write',
+      testMatch: /hub-admin-write\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'], storageState: ADMIN_AUTH_FILE },
+      dependencies: ['admin-setup'],
     },
     {
       name: 'a11y-admin',
