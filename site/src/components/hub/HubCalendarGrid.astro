@@ -28,6 +28,7 @@ import {
   easternYMD,
   dayKeyOf,
   EVENT_TYPE_META,
+  CHIP_LABEL_TEXT,
   type HubEvent,
 } from '@/lib/hub-calendar';
 import { deEmDash } from '@/lib/portable-text';
@@ -241,7 +242,8 @@ const single = months.length <= 1;
                                 // accent dot for the type: the -ink-on-tint combo
                                 // fails AA in dark mode (CLAUDE.md), so the colour
                                 // lives only in the dot, the label stays neutral.
-                                'flex items-center gap-1 rounded px-1 py-0.5 text-[0.7rem] leading-tight text-heading',
+                                'flex items-center gap-1 rounded px-1 py-0.5 text-[0.7rem] leading-tight',
+                                CHIP_LABEL_TEXT,
                                 meta.chipBg,
                               ]}
                               title={`${deEmDash(e.title)} · ${fmtEventTime(e)}`}

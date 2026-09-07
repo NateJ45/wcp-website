@@ -17,6 +17,7 @@ import {
   eventId,
   toEventDetail,
   EVENT_TYPE_META,
+  CHIP_LABEL_TEXT,
   fmtEventMonth,
   fmtEventDay,
   fmtEventWeekday,
@@ -94,7 +95,7 @@ const { heading } = Astro.props;
               <span
                 class={`flex w-11 shrink-0 flex-col items-center rounded-lg py-1.5 ${meta.chipBg}`}
               >
-                <span class={`text-[0.62rem] font-bold uppercase ${meta.chipText}`}>
+                <span class={`text-[0.62rem] font-bold uppercase ${CHIP_LABEL_TEXT}`}>
                   {fmtEventMonth(e)}
                 </span>
                 <span class="text-lg leading-tight font-extrabold text-heading">
