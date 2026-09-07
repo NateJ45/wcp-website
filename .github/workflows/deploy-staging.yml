@@ -79,6 +79,20 @@ jobs:
           echo '--- staging robots.txt ---'
           cat dist/client/robots.txt
 
+      # `--name` alone made this "staging" site read and WRITE the live family
+      # directory and the real bucket of children's photographs: the emitted
+      # config carries production's binding IDs, and only the Worker name was
+      # being changed. Isolated at the code layer, shared at the data layer.
+      # Found 2026-09-07 while about to exercise the board admin's add / upload
+      # / bulk-remove paths here — all three would have hit real families.
+      #
+      # wrangler has no flag to override a namespace id, so the emitted config
+      # is rewritten in place first. The script exits non-zero rather than
+      # deploying a staging Worker still wired to production.
+      - name: Point staging at staging data
+        working-directory: site
+        run: node scripts/stage-bindings.mjs
+
       # The adapter-generated config, NOT the source wrangler.jsonc — a plain
       # `wrangler deploy` 404s every sub-route on this hybrid static+SSR build.
       # `--name` then points that config at the staging Worker.
