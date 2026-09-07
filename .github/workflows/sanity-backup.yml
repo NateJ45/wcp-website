@@ -148,4 +148,11 @@ jobs:
             # copy from the week before.
             KEY="sanity/${GITHUB_REPOSITORY##*/}/$f"
             echo "uploading $f -> $BUCKET/$KEY"
-            npx wrangler r2 object put "$BUCKET/$KEY" --file "$f" --remote
+            # `|| echo ::warning::` because the header of this step promises
+            # "a missing off-site copy must never fail the backup that is
+            # otherwise working", and a bare command does not honour that. The
+            # realistic failure is CLOUDFLARE_API_TOKEN lacking "Workers R2
+            # Storage: Edit". The artifact is uploaded before this step, so the
+            # backup still exists; only the off-site COPY is lost.
+            npx wrangler r2 object put "$BUCKET/$KEY" --file "$f" --remote \n              || echo "::warning::off-site copy of $f failed - the 90-day GitHub artifact is still the backup. Check CLOUDFLARE_API_TOKEN carries 'Workers R2 Storage: Edit'."
+          done
