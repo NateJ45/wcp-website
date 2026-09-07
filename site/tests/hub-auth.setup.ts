@@ -61,6 +61,26 @@ setup('sign in to the family hub', async ({ page, context }) => {
         el.getAttribute('data-spotlight-version') ?? '';
     }
     localStorage.setItem('wcp-spotlights-seen', JSON.stringify(seen));
+
+    // And the President's letter, which was MISSED when this block was written.
+    // note-modal.ts opens it 700ms after load on a first visit and it covers the
+    // whole shell, so any suite that clicks shell chrome was racing that timer:
+    // settle() waits on document.fonts.ready behind a 5s cap, so whether the
+    // click landed first was luck. It cost hub-shell's drawer test (flaky, passed
+    // on retry) and the desktop-rail test (failed outright) in CI on 2026-09-07,
+    // both with "<div ...> from <main> subtree intercepts pointer events".
+    //
+    // Seeding it here rather than dismissing it per-test keeps ONE mechanism for
+    // one-shot overlays, the same as the tour and the spotlight above — and it
+    // covers tests nobody has written yet. tests/hub-tour.spec.ts clears these
+    // on purpose and handles the note explicitly, so it is unaffected.
+    const note = document.querySelector('[data-note-modal]');
+    if (note) {
+      localStorage.setItem(
+        note.getAttribute('data-storage-key') ?? 'wcp-note-seen',
+        note.getAttribute('data-version') ?? '',
+      );
+    }
   });
 
   await context.storageState({ path: AUTH_FILE });
