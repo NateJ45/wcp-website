@@ -34,45 +34,103 @@ if (!existsSync(CONFIG)) {
   process.exit(1);
 }
 
-const server = spawn('npx', ['wrangler', 'dev', '-c', CONFIG, '--port', PORT], {
-  stdio: ['ignore', 'pipe', 'pipe'],
-  shell: process.platform === 'win32',
-});
-// Drain both streams. Left unread they fill and block the child mid-request.
-server.stdout.on('data', (d) => process.stdout.write(`[wrangler] ${d}`));
-server.stderr.on('data', (d) => process.stderr.write(`[wrangler] ${d}`));
-server.on('exit', (code) => {
+// -----------------------------------------------------------------------------
+// Supervise wrangler, do not merely launch it.
+// -----------------------------------------------------------------------------
+// `wrangler dev` dies mid-suite on CI. Evidenced 2026-09-07 from the kept
+// wrangler log (run 34149137652): the hosts file points the hub's external
+// origins at 127.0.0.1, so every server-side fetch to them is refused, and the
+// run is a continuous storm of workerd "Network connection lost" / "Connection
+// reset by peer". Almost all of it is harmless and handled inside the worker.
+// But when one of those surfaces on the ProxyWorker's loopback path,
+// wrangler's ProxyController treats ANY ProxyWorker error as fatal: it prints
+// an empty `✘ [ERROR]` and exits 1. 66s into that run it did, and the
+// remaining 66 tests failed on "Connection refused" with the code healthy.
+//
+// The fatal-ness is upstream and not ours to fix, so absorb it: restart the
+// server and wait for it to answer again. `retries: 1` then rescues the tests
+// that were in flight, because the SERVER is back rather than gone.
+//
+// Deliberately NOT restarted: a first start that never becomes ready. That is
+// a broken build and must fail fast instead of looping.
+const MAX_RESTARTS = 3;
+
+let server = null;
+let ready = false;
+let shuttingDown = false;
+let restartsLeft = MAX_RESTARTS;
+
+function startWrangler() {
+  const child = spawn('npx', ['wrangler', 'dev', '-c', CONFIG, '--port', PORT], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: process.platform === 'win32',
+  });
+  // Drain both streams. Left unread they fill and block the child mid-request.
+  child.stdout.on('data', (d) => process.stdout.write(`[wrangler] ${d}`));
+  child.stderr.on('data', (d) => process.stderr.write(`[wrangler] ${d}`));
+  child.on('exit', (code) => onWranglerExit(child, code));
+  return child;
+}
+
+function onWranglerExit(child, code) {
+  if (shuttingDown || child !== server) return;
   console.error(`preview-foreground: wrangler exited (${code}).`);
-  process.exit(code ?? 1);
-});
+  if (!ready || restartsLeft <= 0) {
+    if (ready) {
+      console.error(`preview-foreground: already restarted ${MAX_RESTARTS} times; giving up.`);
+    }
+    process.exit(code ?? 1);
+  }
+  restartsLeft -= 1;
+  console.error(`preview-foreground: restarting it (${restartsLeft} restart(s) left after this).`);
+  server = startWrangler();
+  // Re-probe. If it will not come back, there is nothing left to serve, so
+  // exit and let Playwright report the webServer failure rather than run the
+  // rest of the suite against a dead port.
+  waitUntilReady().then((back) => {
+    if (back) {
+      console.log(`preview-foreground: back up at ${PROBE}.`);
+    } else if (!shuttingDown) {
+      console.error('preview-foreground: it did not come back.');
+      stop();
+      process.exit(1);
+    }
+  });
+}
 
 const stop = () => {
-  if (!server.killed) server.kill();
+  shuttingDown = true;
+  if (server && !server.killed) server.kill();
 };
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => (stop(), process.exit(0)));
 process.on('exit', stop);
+
+server = startWrangler();
 
 // Require a REAL answer, not merely an answer. The earlier version treated any
 // HTTP status as ready, so `astro preview`'s 404 on every SSR route looked
 // healthy and the failure surfaced 420 seconds later as an unexplained
 // Playwright timeout.
-const deadline = Date.now() + READY_TIMEOUT_MS;
-let ready = false;
-while (Date.now() < deadline) {
-  try {
-    const res = await fetch(PROBE, { redirect: 'manual' });
-    if (res.status < 400) {
-      ready = true;
-      break;
+async function waitUntilReady() {
+  ready = false;
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  while (Date.now() < deadline && !shuttingDown) {
+    try {
+      const res = await fetch(PROBE, { redirect: 'manual' });
+      if (res.status < 400) {
+        ready = true;
+        return true;
+      }
+      console.log(`preview-foreground: ${PROBE} answered ${res.status}; still waiting…`);
+    } catch {
+      /* not listening yet */
     }
-    console.log(`preview-foreground: ${PROBE} answered ${res.status}; still waiting…`);
-  } catch {
-    /* not listening yet */
+    await new Promise((r) => setTimeout(r, 1000));
   }
-  await new Promise((r) => setTimeout(r, 1000));
+  return false;
 }
 
-if (!ready) {
+if (!(await waitUntilReady())) {
   console.error(`preview-foreground: ${PROBE} never returned < 400 within ${READY_TIMEOUT_MS}ms.`);
   stop();
   process.exit(1);

@@ -301,18 +301,17 @@ jobs:
           FAMILY_HUB_PASSWORD: ${{ secrets.FAMILY_HUB_PASSWORD }}
           FAMILY_HUB_ADMIN_PASSWORD: ${{ secrets.FAMILY_HUB_ADMIN_PASSWORD }}
 
-      # The hub suite's server has now died mid-run twice in about a dozen CI
-      # runs (2026-09-07). workerd prints an EMPTY "✘ [ERROR]", writes its own
-      # log somewhere on the runner, and exits 1; preview-foreground reports the
-      # exit and every test after it fails with "Connection refused". A re-run of
-      # the same commit passed both times, so it is intermittent rather than a
-      # regression — and `retries: 1` cannot rescue it, because the SERVER is
-      # gone, not the test.
-      #
-      # Each occurrence has so far told us exactly nothing, because the only
-      # detailed record is that wrangler log and the runner is discarded with it.
-      # Keep it when the step fails, so the next occurrence arrives with evidence
-      # instead of an empty error.
+      # The hub suite's server dies mid-run: an EMPTY "✘ [ERROR]", exit 1, and
+      # every test after it failing on "Connection refused". Third occurrence
+      # (run 34149137652) was the first with the wrangler log kept, and it named
+      # the cause: the blackholed origins above make every server-side fetch to
+      # them fail, and when one of those "Network connection lost" errors
+      # surfaces on the ProxyWorker's loopback path, wrangler's ProxyController
+      # treats it as fatal and exits. Upstream, so preview-foreground.mjs now
+      # supervises wrangler and restarts it, which `retries: 1` can then ride
+      # out. Keep the log anyway — it is the only detailed record, the runner is
+      # discarded with it, and the next variant of this will need the same
+      # evidence.
       #
       # if: failure() so it only runs when there is something to explain, and
       # if-no-files-found: ignore because a failure with no wrangler log (an
