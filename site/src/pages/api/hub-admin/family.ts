@@ -59,8 +59,11 @@ export const POST: APIRoute = async (context) => {
 
   // Blank rows are simply dropped, which is what makes "add a person" work with
   // no JavaScript: the form always renders a spare row.
+  // 30, not 12: the form can add rows client-side and renumbers them from 0, so
+  // the ceiling only has to exceed any plausible family. A row past the end
+  // would be dropped silently, which is the wrong way for this to fail.
   const parents = [];
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 30; i++) {
     const name = str(`parent${i}Name`);
     const email = str(`parent${i}Email`);
     const phone = str(`parent${i}Phone`);
@@ -68,7 +71,7 @@ export const POST: APIRoute = async (context) => {
     if (name || email || phone) parents.push({ name, role, email, phone });
   }
   const children = [];
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 30; i++) {
     const name = str(`child${i}Name`);
     const cls = str(`child${i}Class`);
     if (name) children.push({ name, class: cls });

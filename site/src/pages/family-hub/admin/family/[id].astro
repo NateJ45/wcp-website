@@ -2,11 +2,18 @@
 /* ============================================================================
    Family Hub — admin: edit one family (GATED, board only)
    ============================================================================
-   One family per page rather than one giant form. Two reasons: the blast radius
-   of a mistaken save is a single family, and it needs almost no JavaScript —
-   the board can edit this on a phone with a flaky signal and it still works.
+   One family per page rather than one giant form: the blast radius of a
+   mistaken save is a single family, and it works on a phone with a flaky signal.
 
    `new` as the id adds a family.
+
+   CLASS IS A SELECT, NOT A TEXT BOX, and that is load-bearing. The directory
+   filters families by matching `child.class` against the class slugs, so
+   "Pre-K", "pre k" or a trailing space would silently drop a family out of the
+   filter with nothing to show anyone why. The options come from
+   getHubClasses() — the same source the filter itself reads — so the two cannot
+   drift apart. A stored value that is no longer an offered class is kept as an
+   option rather than being quietly rewritten.
    ============================================================================ */
 export const prerender = false;
 
@@ -15,6 +22,7 @@ import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
 import { readDirectoryDoc, type DirEntry } from '@/lib/hub-directory';
+import { getHubClasses } from '@/lib/hub-classes';
 
 const { id } = Astro.params;
 const doc = await readDirectoryDoc();
@@ -25,16 +33,32 @@ const family: DirEntry | undefined = isNew
 
 if (!family) return Astro.redirect('/family-hub/admin');
 
-// Always render a few blank rows so adding a person needs no JavaScript.
-const parents = [...(family.parents ?? []), {}, {}].slice(
-  0,
-  Math.max(3, (family.parents ?? []).length + 1),
-);
-const children = [...(family.children ?? []), {}, {}].slice(
-  0,
-  Math.max(3, (family.children ?? []).length + 1),
-);
-const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg-surface';
+// The classes the hub knows about — the same list the directory filter uses.
+let classes: { slug: string; name: string }[] = [];
+try {
+  classes = (await getHubClasses()).map((c) => ({ slug: c.slug, name: c.name }));
+} catch {
+  classes = [];
+}
+// Keep a stored value that is no longer offered, so editing a family never
+// silently rewrites a child's class to something else.
+for (const c of family.children ?? []) {
+  if (c.class && !classes.some((x) => x.slug === c.class)) {
+    classes.push({ slug: c.class, name: `${c.class} (no longer offered)` });
+  }
+}
+
+const parents = [...(family.parents ?? []), {}];
+const children = [...(family.children ?? []), {}];
+
+const input =
+  'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg-surface dark:text-white';
+const btn =
+  'inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 dark:bg-white dark:text-navy';
+const btnGhost =
+  'inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10';
+const btnRemoveRow =
+  'admin-remove rounded-full border border-border px-3 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10';
 ---
 
 <HubShell title="Edit family" bare pageTitle="Edit family — WCP Family Hub">
@@ -53,13 +77,13 @@ const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg
           method="POST"
           action="/api/hub-admin/family"
           enctype="multipart/form-data"
-          class="flex flex-col gap-6"
+          class="flex flex-col gap-7"
         >
           <input type="hidden" name="version" value={doc.version} />
           <input type="hidden" name="_id" value={family._id} />
 
           <div>
-            <label class="mb-1 block text-sm font-medium" for="familyName">Family name</label>
+            <label class="mb-1 block text-sm font-semibold" for="familyName">Family name</label>
             <input
               id="familyName"
               name="familyName"
@@ -69,117 +93,151 @@ const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg
             />
           </div>
 
-          <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="optedIn" value="yes" checked={family.optedIn === true} />
+          <label class="flex items-center gap-3 text-sm font-medium">
+            <input
+              type="checkbox"
+              name="optedIn"
+              value="yes"
+              checked={family.optedIn === true}
+              class="h-5 w-5 rounded border-border"
+            />
             Show this family in the directory
           </label>
 
-          <fieldset class="flex flex-col gap-3">
-            <legend class="text-sm font-medium">Grown-ups</legend>
-            {
-              parents.map((p, i) => (
-                <div class="grid gap-2 sm:grid-cols-4">
-                  <input
-                    name={`parent${i}Name`}
-                    value={p.name ?? ''}
-                    placeholder="Name"
-                    class={input}
-                  />
-                  <input
-                    name={`parent${i}Role`}
-                    value={p.role ?? ''}
-                    placeholder="Role (e.g. Mum)"
-                    class={input}
-                  />
-                  <input
-                    name={`parent${i}Email`}
-                    type="email"
-                    value={p.email ?? ''}
-                    placeholder="Email"
-                    class={input}
-                  />
-                  <input
-                    name={`parent${i}Phone`}
-                    value={p.phone ?? ''}
-                    placeholder="Phone"
-                    class={input}
-                  />
-                </div>
-              ))
-            }
+          <fieldset>
+            <legend class="mb-2 text-sm font-semibold">Grown-ups</legend>
+            <div id="parents" class="flex flex-col gap-2">
+              {
+                parents.map((p, i) => (
+                  <div class="admin-row grid gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+                    <input
+                      name={`parent${i}Name`}
+                      value={p.name ?? ''}
+                      placeholder="Name"
+                      class={input}
+                    />
+                    <input
+                      name={`parent${i}Role`}
+                      value={p.role ?? ''}
+                      placeholder="Role (e.g. Mum)"
+                      class={input}
+                    />
+                    <input
+                      name={`parent${i}Email`}
+                      type="email"
+                      value={p.email ?? ''}
+                      placeholder="Email"
+                      class={input}
+                    />
+                    <input
+                      name={`parent${i}Phone`}
+                      value={p.phone ?? ''}
+                      placeholder="Phone"
+                      class={input}
+                    />
+                    <button type="button" class={btnRemoveRow} aria-label="Remove this grown-up">
+                      Remove
+                    </button>
+                  </div>
+                ))
+              }
+            </div>
+            <button type="button" class={`mt-3 ${btnGhost}`} data-add="parents">
+              + Add another grown-up
+            </button>
           </fieldset>
 
-          <fieldset class="flex flex-col gap-3">
-            <legend class="text-sm font-medium">Children</legend>
-            {
-              children.map((c, i) => (
-                <div class="grid gap-2 sm:grid-cols-2">
-                  <input
-                    name={`child${i}Name`}
-                    value={c.name ?? ''}
-                    placeholder="Name"
-                    class={input}
-                  />
-                  <input
-                    name={`child${i}Class`}
-                    value={c.class ?? ''}
-                    placeholder="Class (twos, threes, pre-k)"
-                    class={input}
-                  />
-                </div>
-              ))
-            }
+          <fieldset>
+            <legend class="mb-2 text-sm font-semibold">Children</legend>
+            <div id="children" class="flex flex-col gap-2">
+              {
+                children.map((c, i) => (
+                  <div class="admin-row grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <input
+                      name={`child${i}Name`}
+                      value={c.name ?? ''}
+                      placeholder="Name"
+                      class={input}
+                    />
+                    <select name={`child${i}Class`} class={input}>
+                      <option value="">Class…</option>
+                      {classes.map((cl) => (
+                        <option value={cl.slug} selected={c.class === cl.slug}>
+                          {cl.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="button" class={btnRemoveRow} aria-label="Remove this child">
+                      Remove
+                    </button>
+                  </div>
+                ))
+              }
+            </div>
+            <button type="button" class={`mt-3 ${btnGhost}`} data-add="children">
+              + Add another child
+            </button>
+            <p class="mt-2 text-xs text-muted">
+              Class comes from the hub's own class list, so the directory's filter always matches.
+              Typing it by hand is what used to break it.
+            </p>
           </fieldset>
 
           <div>
-            <label class="mb-1 block text-sm font-medium" for="address">Address</label>
+            <span class="mb-2 block text-sm font-semibold">Family photo</span>
+            <div class="flex flex-wrap items-center gap-5">
+              {
+                family.photoKey ? (
+                  <img
+                    src={`/family-hub/photo/${family.photoKey}`}
+                    alt=""
+                    width="192"
+                    height="192"
+                    class="h-48 w-48 rounded-full border border-border object-cover"
+                  />
+                ) : (
+                  <div class="flex h-48 w-48 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted">
+                    No photo yet
+                  </div>
+                )
+              }
+              <div class="flex flex-col gap-2">
+                <label class={`cursor-pointer ${btnGhost}`}>
+                  Choose a photo…
+                  <input id="photo" name="photo" type="file" accept="image/*" class="sr-only" />
+                </label>
+                <span id="photo-name" class="text-xs text-muted">No new file chosen</span>
+                {
+                  family.photoKey && (
+                    <label class="mt-1 flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="removePhoto" value="yes" class="h-4 w-4" />
+                      Remove the photo
+                    </label>
+                  )
+                }
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-muted">
+              Only signed-in families can see it. A new file replaces the old one.
+            </p>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="2" class={input}>{family.notes ?? ''}</textarea>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="address">Address</label>
             <input id="address" name="address" value={family.address ?? ''} class={input} />
             <p class="mt-1 text-xs text-muted">
               Used for the directory map. Leave blank if the family would rather not share it.
             </p>
           </div>
 
-          <div>
-            <label class="mb-1 block text-sm font-medium" for="photo">Family photo</label>
-            {
-              family.photoKey ? (
-                <img
-                  src={`/family-hub/photo/${family.photoKey}`}
-                  alt=""
-                  width="96"
-                  height="96"
-                  class="mb-2 h-24 w-24 rounded-full object-cover"
-                />
-              ) : null
-            }
-            <input id="photo" name="photo" type="file" accept="image/*" class="text-sm" />
-            <p class="mt-1 text-xs text-muted">
-              Only signed-in families can see it. Choosing a new file replaces the old one; tick
-              below to remove it entirely.
-            </p>
-            {
-              family.photoKey ? (
-                <label class="mt-1 flex items-center gap-2 text-xs">
-                  <input type="checkbox" name="removePhoto" value="yes" />
-                  Remove the photo
-                </label>
-              ) : null
-            }
-          </div>
-
-          <div>
-            <label class="mb-1 block text-sm font-medium" for="notes">Notes</label>
-            <textarea id="notes" name="notes" rows="2" class={input}>{family.notes ?? ''}</textarea>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <button
-              type="submit"
-              class="rounded-full bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 dark:bg-white dark:text-navy"
-            >
-              Save
-            </button>
-            <a class="text-sm underline" href="/family-hub/admin">Cancel</a>
+          <div class="flex flex-wrap items-center gap-4 border-t border-border pt-5">
+            <button type="submit" class={btn}>Save changes</button>
+            <a class={btnGhost} href="/family-hub/admin">Cancel</a>
             {
               !isNew && (
                 <button
@@ -187,7 +245,7 @@ const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg
                   name="remove"
                   value="yes"
                   formnovalidate
-                  class="ml-auto text-sm text-red-700 underline"
+                  class="ml-auto inline-flex items-center rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
                   onclick="return confirm('Remove this family from the directory entirely?')"
                 >
                   Remove this family
@@ -200,3 +258,59 @@ const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg
     </div>
   </Section>
 </HubShell>
+
+<script>
+  // Progressive enhancement only. With JS off the form still renders one spare
+  // row of each kind and the server drops blank ones, so adding a person works
+  // either way — this just makes it quicker than one-at-a-time saves.
+  const renumber = (wrap: HTMLElement, prefix: string) => {
+    wrap.querySelectorAll<HTMLElement>('.admin-row').forEach((row, i) => {
+      row.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[name]').forEach((field) => {
+        field.name = field.name.replace(new RegExp(`^${prefix}\\d+`), `${prefix}${i}`);
+      });
+    });
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-add]').forEach((add) => {
+    add.addEventListener('click', () => {
+      const which = add.dataset.add;
+      if (!which) return;
+      const wrap = document.getElementById(which);
+      if (!wrap) return;
+      const rows = wrap.querySelectorAll<HTMLElement>('.admin-row');
+      const last = rows[rows.length - 1];
+      if (!last) return;
+      const copy = last.cloneNode(true) as HTMLElement;
+      copy.querySelectorAll<HTMLInputElement>('input').forEach((f) => (f.value = ''));
+      copy.querySelectorAll<HTMLSelectElement>('select').forEach((f) => (f.selectedIndex = 0));
+      wrap.appendChild(copy);
+      renumber(wrap, which === 'parents' ? 'parent' : 'child');
+      copy.querySelector<HTMLInputElement>('input')?.focus();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement | null)?.closest('.admin-remove');
+    if (!target) return;
+    const row = target.closest<HTMLElement>('.admin-row');
+    const wrap = row?.parentElement;
+    if (!row || !wrap) return;
+    // Never remove the last row, or the board is left with nowhere to type and
+    // has to reload to get a field back.
+    if (wrap.querySelectorAll('.admin-row').length <= 1) {
+      row.querySelectorAll<HTMLInputElement>('input').forEach((f) => (f.value = ''));
+      row.querySelectorAll<HTMLSelectElement>('select').forEach((f) => (f.selectedIndex = 0));
+      return;
+    }
+    row.remove();
+    renumber(wrap, wrap.id === 'parents' ? 'parent' : 'child');
+  });
+
+  // The native file input is hidden behind a styled label, so echo the chosen
+  // filename — without it there is no sign a photo was picked at all.
+  const file = document.getElementById('photo') as HTMLInputElement | null;
+  const label = document.getElementById('photo-name');
+  file?.addEventListener('change', () => {
+    if (label) label.textContent = file.files?.[0]?.name ?? 'No new file chosen';
+  });
+</script>
