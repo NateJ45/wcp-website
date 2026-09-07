@@ -35,15 +35,18 @@ setup('sign in to the board admin', async ({ page, context }) => {
   await page.goto('/family-hub/login');
   await page.getByLabel('Family password').fill(secret('FAMILY_HUB_PASSWORD'));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page).toHaveURL(/\/family-hub\/?$/);
+  // 30s, not the 5s default: signing in lands on the hub HOME, which fans out
+  // to several external origins server-side on a cold build. The same wait in
+  // playwright.hub.config.ts's `timeout` note is why that file uses 60s.
+  await expect(page).toHaveURL(/\/family-hub\/?$/, { timeout: 30_000 });
 
   await page.goto('/family-hub/admin');
   // The middleware bounces an unauthorised visitor to the admin login.
-  await expect(page).toHaveURL(/\/family-hub\/admin\/login/);
+  await expect(page).toHaveURL(/\/family-hub\/admin\/login/, { timeout: 30_000 });
   await page.getByLabel('Board password').fill(secret('FAMILY_HUB_ADMIN_PASSWORD'));
   await page.getByRole('button', { name: 'Sign in' }).click();
 
   // Landing on the admin, not back on its login form, is the proof.
-  await expect(page).toHaveURL(/\/family-hub\/admin\/?$/);
+  await expect(page).toHaveURL(/\/family-hub\/admin\/?$/, { timeout: 30_000 });
   await context.storageState({ path: ADMIN_AUTH_FILE });
 });

@@ -47,7 +47,8 @@ export default defineConfig({
   // keeps the wall clock close while staying under the collapse point.
   workers: 4,
   webServer: {
-    command: 'npm run build && node scripts/preview-foreground.mjs --no-build',
+    command:
+      'npm run build && node scripts/seed-test-kv.mjs && node scripts/preview-foreground.mjs',
     // The login page is the one hub route reachable without a session, so it is
     // the only safe readiness probe now the gate is closed.
     url: 'http://localhost:4321/family-hub/login',

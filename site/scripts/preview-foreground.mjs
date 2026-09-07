@@ -1,117 +1,81 @@
 #!/usr/bin/env node
 // =============================================================================
-// preview-foreground.mjs — keep `astro preview` in the foreground for Playwright
+// preview-foreground.mjs — serve the SSR build for Playwright, in the foreground
 // =============================================================================
-// playwright.hub.config.ts used `npm run preview` directly, on the stated
-// grounds that "astro preview runs wrangler in the foreground". That was true
-// when it was written and is not any more: this Astro version DAEMONIZES the
-// preview server and the launching command exits 0 immediately —
+// playwright.hub.config.ts used `npm run preview`, on the stated grounds that
+// "astro preview runs wrangler in the foreground and serves the same SSR
+// build". BOTH halves of that stopped being true:
 //
-//     Preview server running at http://localhost:4321 (pid 51100)
-//     preview exited with: 0
+//   1. It daemonizes. The launching command prints "Preview server running at
+//      …" and exits 0, which Playwright reads as "webServer exited early".
+//   2. It only serves STATIC dist/client. Its own --help says "serve your
+//      static dist/ directory", so every SSR route — the whole gated hub —
+//      answers 404. A server that is up and 404s on the route under test is
+//      worse than one that is down, because it looks alive.
 //
-// Playwright reads that exit as a startup failure ("Process from
-// config.webServer exited early") and never runs a single test. The whole gated
-// hub suite has therefore been unrunnable, and because CI never invoked it,
-// nothing said so.
+// The consequence: the hub suite could not run, and because CI never invoked it
+// either (`test:hub` existed and no workflow called it), nothing said so. Eleven
+// specs, including the one asserting a stranger is locked out, were green by
+// absence.
 //
-// This starts the same server, waits until it actually answers, then stays
-// alive so Playwright sees a healthy long-running process — and stops the
-// daemon again on the way out, so a killed test run does not leave a stale
-// server serving an old build to the next one. That happened during this
-// session and cost a confusing round of "the fix did not take".
+// `wrangler dev` on the emitted worker config serves the real SSR build, in the
+// foreground, which is what Playwright's webServer contract wants.
 // =============================================================================
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
-const URL_TO_PROBE = process.env.PREVIEW_URL ?? 'http://localhost:4321/family-hub/login';
-const READY_TIMEOUT_MS = 120_000;
+const CONFIG = 'dist/server/wrangler.json';
+const PORT = process.env.PREVIEW_PORT ?? '4321';
+const PROBE = `http://localhost:${PORT}/family-hub/login`;
+const READY_TIMEOUT_MS = 180_000;
 
-const run = (args) =>
-  spawnSync('npx', ['astro', 'preview', ...args], {
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-  });
-
-const stop = () => {
-  const r = run(['stop']);
-  if (r.status === 0) console.log('preview-foreground: stopped the preview server.');
-};
-
-// Never inherit a server from a previous run. Two reasons, both seen tonight:
-// it would serve the PREVIOUS build so every later failure points at the wrong
-// thing, and on Windows it holds a handle on dist/ so the rebuild dies with
-// "EPERM ... dist\client" before a single test runs.
-//
-// This is also why the BUILD happens here rather than ahead of this script in
-// the webServer command: the server has to be stopped first, and only this
-// process knows to do that.
-stop();
-
-if (!process.argv.includes('--no-build')) {
-  console.log('preview-foreground: building…');
-  // CAPTURE the build's output rather than inheriting it. Playwright reads this
-  // process's stdout through a pipe, and handing that same pipe to a chatty
-  // child (pagefind, the OG image generator) deadlocked the build partway
-  // through postbuild — the run then died on the webServer timeout with no clue
-  // which step had stalled. Captured, it cannot block; only the tail is printed,
-  // and the whole log on failure.
-  const built = spawnSync('npm', ['run', 'build'], {
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-    shell: process.platform === 'win32',
-  });
-  if (built.status !== 0) {
-    console.error('preview-foreground: the build failed; not starting a server.');
-    console.error((built.stdout || '') + (built.stderr || ''));
-    process.exit(1);
-  }
-  console.log('preview-foreground: build ok.');
-}
-
-const started = run([]);
-if (started.status !== 0) {
-  console.error('preview-foreground: could not start the preview server.');
-  console.error((started.stdout || '') + (started.stderr || ''));
+if (!existsSync(CONFIG)) {
+  console.error(`preview-foreground: ${CONFIG} is missing — run \`npm run build\` first.`);
   process.exit(1);
 }
-console.log('preview-foreground: started; waiting for it to answer…');
 
+const server = spawn('npx', ['wrangler', 'dev', '-c', CONFIG, '--port', PORT], {
+  stdio: ['ignore', 'pipe', 'pipe'],
+  shell: process.platform === 'win32',
+});
+// Drain both streams. Left unread they fill and block the child mid-request.
+server.stdout.on('data', (d) => process.stdout.write(`[wrangler] ${d}`));
+server.stderr.on('data', (d) => process.stderr.write(`[wrangler] ${d}`));
+server.on('exit', (code) => {
+  console.error(`preview-foreground: wrangler exited (${code}).`);
+  process.exit(code ?? 1);
+});
+
+const stop = () => {
+  if (!server.killed) server.kill();
+};
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => (stop(), process.exit(0)));
+process.on('exit', stop);
+
+// Require a REAL answer, not merely an answer. The earlier version treated any
+// HTTP status as ready, so `astro preview`'s 404 on every SSR route looked
+// healthy and the failure surfaced 420 seconds later as an unexplained
+// Playwright timeout.
 const deadline = Date.now() + READY_TIMEOUT_MS;
 let ready = false;
 while (Date.now() < deadline) {
   try {
-    const res = await fetch(URL_TO_PROBE, { redirect: 'manual' });
-    // Any HTTP answer means the server is up. The login page is 200, but a
-    // redirect is just as good a proof of life — only a refused connection is
-    // "not ready".
-    if (res.status > 0) {
+    const res = await fetch(PROBE, { redirect: 'manual' });
+    if (res.status < 400) {
       ready = true;
       break;
     }
+    console.log(`preview-foreground: ${PROBE} answered ${res.status}; still waiting…`);
   } catch {
-    await new Promise((r) => setTimeout(r, 500));
+    /* not listening yet */
   }
+  await new Promise((r) => setTimeout(r, 1000));
 }
 
 if (!ready) {
-  console.error(`preview-foreground: ${URL_TO_PROBE} never answered within ${READY_TIMEOUT_MS}ms.`);
+  console.error(`preview-foreground: ${PROBE} never returned < 400 within ${READY_TIMEOUT_MS}ms.`);
   stop();
   process.exit(1);
 }
-
-console.log(`preview-foreground: ready at ${URL_TO_PROBE}. Holding the process open.`);
-
-for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
-  process.on(signal, () => {
-    stop();
-    process.exit(0);
-  });
-}
-// Playwright kills this process when the run ends; the handlers above stop the
-// daemon. Until then, hold the event loop open with a REAL handle.
-//
-// `await new Promise(() => {})` looks like the obvious way to wait forever and
-// is not: with nothing else pending, Node calls that an unsettled top-level
-// await and exits 13, which Playwright reports as the server failing to start.
-// A long interval is an actual libuv handle, so the loop stays alive.
-setInterval(() => {}, 1 << 30);
+console.log(`preview-foreground: ready at ${PROBE}.`);
+// wrangler keeps this process alive; no artificial handle needed.

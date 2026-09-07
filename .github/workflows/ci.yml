@@ -222,6 +222,21 @@ jobs:
       # is CI-disabled, so this rebuilds — the token stays required). A red
       # diff means the design system moved: look at the diff artifact; if
       # the change is INTENDED, dispatch update-visual-baselines.yml.
+      # The gated Family Hub. This suite existed since July and NOTHING RAN IT:
+      # `test:hub` was in package.json and no workflow called it, so eleven
+      # specs — including hub-gate.spec.ts, which asserts a stranger is locked
+      # out of every hub surface — were green by absence (found 2026-09-07).
+      #
+      # It could not run even locally: the config booted `astro preview`, which
+      # now daemonizes AND serves only static dist/client, so every SSR route
+      # 404'd. It serves the real worker through `wrangler dev` now.
+      - name: Gated hub tests
+        working-directory: site
+        env:
+          FAMILY_HUB_PASSWORD: ${{ secrets.FAMILY_HUB_PASSWORD }}
+          FAMILY_HUB_ADMIN_PASSWORD: ${{ secrets.FAMILY_HUB_ADMIN_PASSWORD }}
+        run: npm run test:hub
+
       - name: Visual regression (styleguide)
         id: visual
         run: npm run test:visual

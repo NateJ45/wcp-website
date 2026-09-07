@@ -159,7 +159,11 @@ const btnRemoveRow =
                       placeholder="Name"
                       class={input}
                     />
-                    <select name={`child${i}Class`} class={input}>
+                    <select
+                      name={`child${i}Class`}
+                      aria-label={`Class for child ${i + 1}`}
+                      class={input}
+                    >
                       <option value="">Class…</option>
                       {classes.map((cl) => (
                         <option value={cl.slug} selected={c.class === cl.slug}>
