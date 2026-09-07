@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { HUB_SESSION_KEY, isFamilyAuthed, passwordFingerprint, safeEqual } from './hub-auth';
+import {
+  ADMIN_SESSION_KEY,
+  HUB_SESSION_KEY,
+  adminFingerprint,
+  isFamilyAuthed,
+  isHubAdmin,
+  passwordFingerprint,
+  safeEqual,
+} from './hub-auth';
 
 describe('passwordFingerprint', () => {
   it('is stable for the same password', async () => {
@@ -97,5 +105,68 @@ describe('HUB_SESSION_KEY', () => {
   // The middleware, the login handler and the login page must agree on this.
   it('is the key all three call sites share', () => {
     expect(HUB_SESSION_KEY).toBe('familyAuthed');
+  });
+});
+
+// =============================================================================
+// Admin gate
+// =============================================================================
+// Directory editing takes a SECOND password, held by the board. The family
+// password is shared with every enrolled family, so if these two ever became
+// interchangeable any parent could rewrite another family's address.
+describe('the admin gate is genuinely separate from the family gate', () => {
+  it('fingerprints the SAME password differently from the family gate', async () => {
+    // The scope strings differ, so a session minted by one gate is meaningless
+    // to the other even when the board reuses the family password.
+    expect(await adminFingerprint('same-password')).not.toBe(
+      await passwordFingerprint('same-password'),
+    );
+  });
+
+  it('refuses a family fingerprint, even for the same password', async () => {
+    const familyToken = await passwordFingerprint('same-password');
+    expect(await isHubAdmin(familyToken, 'same-password')).toBe(false);
+  });
+
+  it('refuses an admin fingerprint at the family gate', async () => {
+    const adminToken = await adminFingerprint('same-password');
+    expect(await isFamilyAuthed(adminToken, 'same-password')).toBe(false);
+  });
+
+  it('accepts a matching admin fingerprint', async () => {
+    expect(await isHubAdmin(await adminFingerprint('board-secret'), 'board-secret')).toBe(true);
+  });
+
+  it('uses its own session key', () => {
+    expect(ADMIN_SESSION_KEY).not.toBe(HUB_SESSION_KEY);
+  });
+});
+
+describe('isHubAdmin fails closed', () => {
+  it('refuses when the secret is unset', async () => {
+    // A deploy that forgets FAMILY_HUB_ADMIN_PASSWORD must LOCK editing, not
+    // open it to every signed-in family.
+    expect(await isHubAdmin(await adminFingerprint('x'), undefined)).toBe(false);
+  });
+
+  it('refuses when the secret is blank or whitespace', async () => {
+    expect(await isHubAdmin(await adminFingerprint('x'), '   ')).toBe(false);
+  });
+
+  it('refuses a missing or non-string session value', async () => {
+    expect(await isHubAdmin(undefined, 'board-secret')).toBe(false);
+    expect(await isHubAdmin('', 'board-secret')).toBe(false);
+    expect(await isHubAdmin(true, 'board-secret')).toBe(false);
+    expect(await isHubAdmin({ ok: true }, 'board-secret')).toBe(false);
+  });
+
+  it('refuses the wrong password', async () => {
+    expect(await isHubAdmin(await adminFingerprint('old'), 'rotated')).toBe(false);
+  });
+
+  it('rotating the password invalidates existing admin sessions', async () => {
+    const before = await adminFingerprint('spring');
+    expect(await isHubAdmin(before, 'spring')).toBe(true);
+    expect(await isHubAdmin(before, 'autumn')).toBe(false);
   });
 });

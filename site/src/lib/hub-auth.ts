@@ -70,3 +70,44 @@ export async function isFamilyAuthed(
   if (typeof stored !== 'string' || stored.length === 0) return false;
   return safeEqual(stored, await passwordFingerprint(password));
 }
+
+// =============================================================================
+// Admin — a SECOND, separate credential
+// =============================================================================
+// The family password above is shared with every enrolled family, so it must
+// not gate EDITING: that would let any parent rewrite another family's address
+// and phone number. Directory editing takes its own password, held by the board.
+//
+// Same construction as the family gate, with its own scope string, so a
+// fingerprint from one can never satisfy the other even if both passwords were
+// ever set to the same value.
+//
+// Admin does not imply family-authed or vice versa. The middleware runs the
+// family check for /family-hub and ADDITIONALLY the admin check for
+// /family-hub/admin: two independent gates, both failing closed.
+
+/** Session key holding the ADMIN password fingerprint. */
+export const ADMIN_SESSION_KEY = 'hubAdmin';
+
+const ADMIN_FINGERPRINT_SCOPE = 'wcp-family-hub-admin:v1:';
+
+/** SHA-256 fingerprint of the admin password, hex encoded. */
+export async function adminFingerprint(password: string): Promise<string> {
+  const bytes = new TextEncoder().encode(`${ADMIN_FINGERPRINT_SCOPE}${password.trim()}`);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Does this session hold a fingerprint matching the CURRENT admin password?
+ *
+ * Fails CLOSED on a missing/blank secret, like the family gate: an unset
+ * FAMILY_HUB_ADMIN_PASSWORD locks editing rather than opening it to every
+ * signed-in family.
+ */
+export async function isHubAdmin(stored: unknown, secret: string | undefined): Promise<boolean> {
+  const password = (secret ?? '').trim();
+  if (!password) return false;
+  if (typeof stored !== 'string' || stored.length === 0) return false;
+  return safeEqual(stored, await adminFingerprint(password));
+}

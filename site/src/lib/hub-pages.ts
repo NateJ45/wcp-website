@@ -37,6 +37,10 @@
  * (`classroomAddresses`) and the slug validation in hubPage.ts.
  */
 export const RESERVED_HUB_SLUGS: readonly string[] = [
+  // Board-only directory editing (2026-09-06). Reserved like any other real
+  // route: a hub page created with this slug would otherwise shadow the admin
+  // screens — or, read the other way round, be mistaken for them.
+  'admin',
   'api',
   'calendar',
   'celebrations',

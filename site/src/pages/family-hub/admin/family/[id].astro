@@ -1,0 +1,164 @@
+---
+/* ============================================================================
+   Family Hub — admin: edit one family (GATED, board only)
+   ============================================================================
+   One family per page rather than one giant form. Two reasons: the blast radius
+   of a mistaken save is a single family, and it needs almost no JavaScript —
+   the board can edit this on a phone with a flaky signal and it still works.
+
+   `new` as the id adds a family.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import { readDirectoryDoc, type DirEntry } from '@/lib/hub-directory';
+
+const { id } = Astro.params;
+const doc = await readDirectoryDoc();
+const isNew = id === 'new';
+const family: DirEntry | undefined = isNew
+  ? { _id: '', familyName: '', optedIn: true, parents: [], children: [] }
+  : doc.entries.find((e) => e._id === id);
+
+if (!family) return Astro.redirect('/family-hub/admin');
+
+// Always render a few blank rows so adding a person needs no JavaScript.
+const parents = [...(family.parents ?? []), {}, {}].slice(
+  0,
+  Math.max(3, (family.parents ?? []).length + 1),
+);
+const children = [...(family.children ?? []), {}, {}].slice(
+  0,
+  Math.max(3, (family.children ?? []).length + 1),
+);
+const input = 'w-full rounded-md border border-neutral-300 px-3 py-2';
+---
+
+<HubShell title="Edit family" description="Board editing for one family.">
+  <Section>
+    <HubPageHeader
+      title={isNew ? 'Add a family' : `Edit ${family.familyName || 'family'}`}
+      subtitle="Only the board can see or change this. Blank rows are ignored."
+    />
+
+    <HubCard>
+      <form method="POST" action="/api/hub-admin/family" class="flex flex-col gap-6">
+        <input type="hidden" name="version" value={doc.version} />
+        <input type="hidden" name="_id" value={family._id} />
+
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="familyName">Family name</label>
+          <input
+            id="familyName"
+            name="familyName"
+            value={family.familyName ?? ''}
+            required
+            class={input}
+          />
+        </div>
+
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="optedIn" value="yes" checked={family.optedIn === true} />
+          Show this family in the directory
+        </label>
+
+        <fieldset class="flex flex-col gap-3">
+          <legend class="text-sm font-medium">Grown-ups</legend>
+          {
+            parents.map((p, i) => (
+              <div class="grid gap-2 sm:grid-cols-4">
+                <input
+                  name={`parent${i}Name`}
+                  value={p.name ?? ''}
+                  placeholder="Name"
+                  class={input}
+                />
+                <input
+                  name={`parent${i}Role`}
+                  value={p.role ?? ''}
+                  placeholder="Role (e.g. Mum)"
+                  class={input}
+                />
+                <input
+                  name={`parent${i}Email`}
+                  type="email"
+                  value={p.email ?? ''}
+                  placeholder="Email"
+                  class={input}
+                />
+                <input
+                  name={`parent${i}Phone`}
+                  value={p.phone ?? ''}
+                  placeholder="Phone"
+                  class={input}
+                />
+              </div>
+            ))
+          }
+        </fieldset>
+
+        <fieldset class="flex flex-col gap-3">
+          <legend class="text-sm font-medium">Children</legend>
+          {
+            children.map((c, i) => (
+              <div class="grid gap-2 sm:grid-cols-2">
+                <input
+                  name={`child${i}Name`}
+                  value={c.name ?? ''}
+                  placeholder="Name"
+                  class={input}
+                />
+                <input
+                  name={`child${i}Class`}
+                  value={c.class ?? ''}
+                  placeholder="Class (twos, threes, pre-k)"
+                  class={input}
+                />
+              </div>
+            ))
+          }
+        </fieldset>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="address">Address</label>
+          <input id="address" name="address" value={family.address ?? ''} class={input} />
+          <p class="mt-1 text-xs text-neutral-500">
+            Used for the directory map. Leave blank if the family would rather not share it.
+          </p>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="2" class={input}>{family.notes ?? ''}</textarea>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="submit"
+            class="rounded-md bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
+          >
+            Save
+          </button>
+          <a class="text-sm underline" href="/family-hub/admin">Cancel</a>
+          {
+            !isNew && (
+              <button
+                type="submit"
+                name="remove"
+                value="yes"
+                formnovalidate
+                class="ml-auto text-sm text-red-700 underline"
+                onclick="return confirm('Remove this family from the directory entirely?')"
+              >
+                Remove this family
+              </button>
+            )
+          }
+        </div>
+      </form>
+    </HubCard>
+  </Section>
+</HubShell>

@@ -53,6 +53,19 @@ export async function getTeacherPhones(): Promise<Record<string, string>> {
   }
 }
 
+/** Replace the whole map. Board editing only — see the admin pages. */
+export async function saveTeacherPhones(next: Record<string, string>): Promise<boolean> {
+  if (!env.DIRECTORY) return false;
+  const before = await env.DIRECTORY.get(TEACHER_PHONES_KEY, 'text');
+  if (before) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await env.DIRECTORY.put(`${TEACHER_PHONES_KEY}:backup:${stamp}`, before);
+  }
+  await env.DIRECTORY.put(TEACHER_PHONES_KEY, JSON.stringify(next));
+  cached = null; // this isolate would otherwise serve the old map until it recycles
+  return true;
+}
+
 /** The first number matching any of a class's note keys, or undefined. */
 export async function teacherPhoneFor(keys: string[]): Promise<string | undefined> {
   const phones = await getTeacherPhones();

@@ -1,0 +1,85 @@
+---
+/* ============================================================================
+   Family Hub — admin: teachers' phone numbers (GATED, board only)
+   ============================================================================
+   These numbers used to sit in TWO public places at once: `teacherNote.phone`
+   in the public Sanity dataset, and a `teacherPhoneFallback` constant committed
+   to a public repository. Two of the three are personal mobiles, not the
+   school's published line. They live in KV now (2026-09-06).
+
+   Teachers' names, photos, the note they write to families and their
+   @westchesterpreschool.org addresses are all still edited in the Studio: those
+   are published on the public site on purpose. Only the mobile numbers are
+   here.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import { getTeacherPhones } from '@/lib/hub-teacher-phones';
+import { getHubClassrooms } from '@/lib/hub-classes';
+
+const phones = await getTeacherPhones();
+// The class keys teacherNote uses. Read from the classrooms so a class the
+// board adds appears here by itself, with the shipped three as a floor.
+let keys: string[] = [];
+try {
+  keys = (await getHubClassrooms()).flatMap((c) => [c.key]).filter(Boolean) as string[];
+} catch {
+  keys = [];
+}
+for (const k of ['twos', 'threes', 'pre-k']) if (!keys.includes(k)) keys.push(k);
+for (const k of Object.keys(phones)) if (!keys.includes(k)) keys.push(k);
+
+const saved = Astro.url.searchParams.get('saved') === '1';
+const input = 'w-full rounded-md border border-neutral-300 px-3 py-2';
+---
+
+<HubShell title="Teachers' numbers" description="Board editing for teachers' phone numbers.">
+  <Section>
+    <HubPageHeader
+      title="Teachers' phone numbers"
+      subtitle="The “Call or text” number on each class's teacher card."
+    />
+
+    {
+      saved && (
+        <p class="mb-4 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-900">
+          Saved.
+        </p>
+      )
+    }
+
+    <HubCard>
+      <p class="mb-4 text-sm text-neutral-600">
+        These are private to signed-in families. Teachers' names, photos, notes and school email
+        addresses are still edited in the Studio — those appear on the public website. Leave a box
+        empty to remove the number and the “Call or text” link with it.
+      </p>
+      <form method="POST" action="/api/hub-admin/teachers" class="flex flex-col gap-3">
+        {
+          keys.map((k) => (
+            <div class="grid gap-2 sm:grid-cols-[10rem_1fr] sm:items-center">
+              <label class="text-sm font-medium" for={`phone-${k}`}>
+                {k}
+              </label>
+              <input id={`phone-${k}`} name={`phone-${k}`} value={phones[k] ?? ''} class={input} />
+            </div>
+          ))
+        }
+        <button
+          type="submit"
+          class="mt-2 self-start rounded-md bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
+        >
+          Save
+        </button>
+      </form>
+    </HubCard>
+
+    <p class="mt-4 text-sm text-neutral-600">
+      <a class="underline" href="/family-hub/admin">Back to the directory</a>
+    </p>
+  </Section>
+</HubShell>

@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { HUB_SESSION_KEY, isFamilyAuthed } from './lib/hub-auth';
+import { ADMIN_SESSION_KEY, HUB_SESSION_KEY, isFamilyAuthed, isHubAdmin } from './lib/hub-auth';
 
 // =============================================================================
 // Family Hub gate
@@ -34,6 +34,14 @@ import { HUB_SESSION_KEY, isFamilyAuthed } from './lib/hub-auth';
 
 const HUB_PREFIX = '/family-hub';
 const PUBLIC_HUB_PATHS = new Set(['/family-hub/login']);
+
+// Directory EDITING sits behind a second, board-held password. The family
+// password is shared with every enrolled family, so gating edits on it would
+// let any parent rewrite another family's address. `/family-hub/admin/login`
+// is inside the family gate but outside the admin one, so a signed-in family
+// member can reach the admin sign-in form and no further.
+const ADMIN_PREFIX = '/family-hub/admin';
+const ADMIN_LOGIN = '/family-hub/admin/login';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname.replace(/\/+$/, '') || '/';
@@ -76,6 +84,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
       // Remember where they were headed so we can return them after sign-in.
       const to = encodeURIComponent(context.url.pathname);
       return context.redirect(`/family-hub/login?to=${to}`);
+    }
+
+    // Directory editing: a SECOND gate on top of the family one, never instead
+    // of it. Checked here so a new admin route is protected the moment it lives
+    // under /family-hub/admin, exactly as the family gate works for the hub.
+    //
+    // The Studio-preview credential deliberately does NOT satisfy this: it
+    // proves a Sanity editor is previewing content, not that the board
+    // authorised someone to rewrite families' contact details.
+    if (path === ADMIN_PREFIX || path.startsWith(`${ADMIN_PREFIX}/`)) {
+      if (path !== ADMIN_LOGIN) {
+        const adminStored = await context.session?.get(ADMIN_SESSION_KEY);
+        if (!(await isHubAdmin(adminStored, env.FAMILY_HUB_ADMIN_PASSWORD))) {
+          const to = encodeURIComponent(context.url.pathname);
+          return context.redirect(`${ADMIN_LOGIN}?to=${to}`);
+        }
+      }
+      // Never cache an admin screen: it renders every family's contact details
+      // and the responses are per-session by definition.
+      const response = await next();
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
     }
 
     // Widgets deep in the tree check this instead of re-verifying the cookie:

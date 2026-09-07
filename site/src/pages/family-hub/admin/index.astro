@@ -1,0 +1,131 @@
+---
+/* ============================================================================
+   Family Hub — admin: the directory (GATED, board only)
+   ============================================================================
+   The board's replacement for editing the directory in the Studio. The families'
+   personal data left Sanity on 2026-09-06 because that dataset is PUBLIC on the
+   free plan — 37 families, children's names and home addresses were readable by
+   anyone with the project id. It lives in the DIRECTORY KV namespace now, which
+   has no public read surface at all.
+
+   That fix removed the board's editing surface, so this replaces it. The line to
+   hold: ANYTHING ABOUT A PERSON is edited here; anything published on the public
+   site is edited in the Studio.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import { readDirectoryDoc } from '@/lib/hub-directory';
+
+const doc = await readDirectoryDoc();
+const families = [...doc.entries].sort((a, b) =>
+  (a.familyName || '').localeCompare(b.familyName || ''),
+);
+const saved = Astro.url.searchParams.get('saved') === '1';
+const conflict = Astro.url.searchParams.get('conflict') === '1';
+const optedIn = families.filter((f) => f.optedIn === true).length;
+---
+
+<HubShell title="Directory admin" description="Board editing for the family directory.">
+  <Section>
+    <HubPageHeader
+      title="Family directory"
+      subtitle={`${families.length} families on file, ${optedIn} showing in the directory.`}
+    />
+
+    {
+      saved && (
+        <p class="mb-4 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-900">
+          Saved.
+        </p>
+      )
+    }
+    {
+      conflict && (
+        <p class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Someone else changed the directory since this page was opened, so nothing was saved.
+          Reload and make the change again — this is deliberate, so an old open tab cannot quietly
+          undo someone else's edit.
+        </p>
+      )
+    }
+
+    <HubCard>
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <p class="text-sm text-neutral-600">
+          Showing in the directory means the family ticked “include us”. Unticking hides them
+          without deleting anything.
+        </p>
+        <a
+          href="/family-hub/admin/family/new"
+          class="shrink-0 rounded-md bg-neutral-900 px-3 py-2 text-sm text-white hover:bg-neutral-700"
+        >
+          Add a family
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200 text-neutral-600">
+              <th class="py-2 pr-3">Family</th>
+              <th class="py-2 pr-3">Grown-ups</th>
+              <th class="py-2 pr-3">Children</th>
+              <th class="py-2 pr-3">In directory</th>
+              <th class="py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              families.map((f) => (
+                <tr class="border-b border-neutral-100">
+                  <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
+                  <td class="py-2 pr-3 text-neutral-700">
+                    {(f.parents ?? [])
+                      .map((p) => p.name)
+                      .filter(Boolean)
+                      .join(', ') || '—'}
+                  </td>
+                  <td class="py-2 pr-3 text-neutral-700">
+                    {(f.children ?? [])
+                      .map((c) => c.name)
+                      .filter(Boolean)
+                      .join(', ') || '—'}
+                  </td>
+                  <td class="py-2 pr-3">{f.optedIn === true ? 'Yes' : 'No'}</td>
+                  <td class="py-2 text-right">
+                    <a
+                      class="text-neutral-900 underline"
+                      href={`/family-hub/admin/family/${encodeURIComponent(f._id)}`}
+                    >
+                      Edit
+                    </a>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      {
+        families.length === 0 && (
+          <p class="py-6 text-sm text-neutral-600">
+            No families on file. That is not normal — if this is unexpected, do not add families
+            over the top: tell Nathan, because a backup of the previous version is kept on every
+            save and restoring it is quicker than retyping.
+          </p>
+        )
+      }
+    </HubCard>
+
+    <p class="mt-4 text-sm text-neutral-600">
+      Teachers' phone numbers are on the <a class="underline" href="/family-hub/admin/teachers">
+        teachers page</a
+      >. Everything published on the public website is still edited in the Studio.
+    </p>
+  </Section>
+</HubShell>

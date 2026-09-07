@@ -65,16 +65,84 @@ export interface DirEntry {
  *  JSON blob; splitting it per family would buy nothing but round trips. */
 export const DIRECTORY_KEY = 'directory:v1';
 
-/** Every family KV holds, opted in or not. Use `getDirectoryEntries` to render. */
-async function readAll(): Promise<DirEntry[]> {
+/**
+ * The stored shape. Older writes were a bare array; a `version` was added when
+ * editing arrived, so reads accept both and writes always produce the envelope.
+ */
+export interface DirectoryDoc {
+  /** Bumped on every save. The editor posts back the version it loaded, and a
+   *  mismatch is refused — an admin tab left open for a week would otherwise
+   *  save stale data over someone else's edit without anyone noticing. */
+  version: number;
+  updatedAt: string;
+  entries: DirEntry[];
+}
+
+/** Every family KV holds, opted in or not, with the version that produced it. */
+export async function readDirectoryDoc(): Promise<DirectoryDoc> {
+  const empty: DirectoryDoc = { version: 0, updatedAt: '', entries: [] };
   try {
     const raw = await env.DIRECTORY?.get(DIRECTORY_KEY, 'text');
-    if (!raw) return [];
+    if (!raw) return empty;
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as DirEntry[]) : [];
+    // The pre-editor format: a bare array, version 0.
+    if (Array.isArray(parsed)) return { ...empty, entries: parsed as DirEntry[] };
+    const doc = parsed as Partial<DirectoryDoc>;
+    return {
+      version: typeof doc.version === 'number' ? doc.version : 0,
+      updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : '',
+      entries: Array.isArray(doc.entries) ? doc.entries : [],
+    };
   } catch {
-    return [];
+    return empty;
   }
+}
+
+/** Every family KV holds, opted in or not. Use `getDirectoryEntries` to render. */
+async function readAll(): Promise<DirEntry[]> {
+  return (await readDirectoryDoc()).entries;
+}
+
+/** Outcome of a save. `conflict` means the editor was working from stale data. */
+export type SaveResult =
+  | { ok: true; version: number }
+  | { ok: false; reason: 'conflict' | 'no-binding' | 'refused-empty'; current?: DirectoryDoc };
+
+/**
+ * Replace the directory.
+ *
+ * Three guards, each earned:
+ *   - VERSION. The caller passes the version it loaded; a mismatch is refused
+ *     rather than merged. Two people editing at once is unlikely here, but a
+ *     tab left open for a week is not, and both look identical to the data.
+ *   - NEVER EMPTY. A save that would wipe every family is refused outright.
+ *     KV is the only copy now; "the form posted nothing" must not be able to
+ *     destroy 37 families.
+ *   - BACKUP FIRST. The previous value is copied to a timestamped key before
+ *     the write, so a bad edit is one `wrangler kv key get` from recovery.
+ */
+export async function saveDirectory(
+  entries: DirEntry[],
+  expectedVersion: number,
+): Promise<SaveResult> {
+  if (!env.DIRECTORY) return { ok: false, reason: 'no-binding' };
+
+  const current = await readDirectoryDoc();
+  if (current.version !== expectedVersion) return { ok: false, reason: 'conflict', current };
+  if (!entries.length && current.entries.length) return { ok: false, reason: 'refused-empty' };
+
+  if (current.entries.length) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await env.DIRECTORY.put(`${DIRECTORY_KEY}:backup:${stamp}`, JSON.stringify(current));
+  }
+
+  const next: DirectoryDoc = {
+    version: current.version + 1,
+    updatedAt: new Date().toISOString(),
+    entries,
+  };
+  await env.DIRECTORY.put(DIRECTORY_KEY, JSON.stringify(next));
+  return { ok: true, version: next.version };
 }
 
 /**

@@ -1,0 +1,63 @@
+---
+/* ============================================================================
+   Family Hub — admin sign-in (inside the family gate, outside the admin one)
+   ============================================================================
+   Directory editing takes a SECOND password, held by the board. The ordinary
+   hub password is shared with every enrolled family, so gating edits on it
+   would let any parent rewrite another family's address and phone number.
+
+   The middleware has already required a valid family session to reach this
+   page, and lets this one path through the admin check so a board member can
+   actually see the form. Everything else under /family-hub/admin requires the
+   admin session.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+
+const failed = Astro.url.searchParams.get('error') === '1';
+const to = Astro.url.searchParams.get('to') ?? '/family-hub/admin';
+---
+
+<HubShell title="Board sign-in" description="Sign in to edit the family directory.">
+  <Section>
+    <HubPageHeader
+      title="Board sign-in"
+      subtitle="Editing the directory needs the board password — the one that is NOT shared with families."
+    />
+    <HubCard>
+      {
+        failed && (
+          <p class="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+            That password was not right. Try again.
+          </p>
+        )
+      }
+      <form method="POST" action="/api/hub-admin-login" class="flex flex-col gap-3">
+        <input type="hidden" name="to" value={to} />
+        <label class="text-sm font-medium" for="password">Board password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          class="rounded-md border border-neutral-300 px-3 py-2"
+        />
+        <button
+          type="submit"
+          class="mt-1 self-start rounded-md bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
+        >
+          Sign in
+        </button>
+      </form>
+      <p class="mt-4 text-sm text-neutral-600">
+        Don't have it? Ask the board president. It is deliberately separate from the family password
+        so that only the board can change families' contact details.
+      </p>
+    </HubCard>
+  </Section>
+</HubShell>

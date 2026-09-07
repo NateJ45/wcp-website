@@ -69,6 +69,11 @@ declare namespace Cloudflare {
     };
     /** Shared password for the gated Family Hub (Cloudflare secret in prod). */
     FAMILY_HUB_PASSWORD: string;
+    /** SECOND password, held by the board, gating /family-hub/admin. Separate
+     *  from FAMILY_HUB_PASSWORD on purpose: that one is shared with every
+     *  enrolled family, so it must not authorise editing other families'
+     *  contact details. Unset = editing is locked (fails closed). */
+    FAMILY_HUB_ADMIN_PASSWORD: string;
     /** Sanity Editor token — server-side reads, and draft reads for Studio
      *  Presentation. NOTE: it is NOT what keeps anything private. The dataset is
      *  PUBLIC (free plan = "public only"). This comment used to say "the private
