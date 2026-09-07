@@ -247,8 +247,23 @@ const sized = (u?: string): string | undefined => {
                           </span>
                           <span class="flex items-center justify-between gap-2 px-3 py-2">
                             <span class="truncate text-xs font-bold">{p.title}</span>
+                            {/* Pinned #166fa8, NOT text-sky-ink. sky-ink is
+                                theme-reactive: .dark redefines it to
+                                var(--color-sky) (#40aaed). This tile is a
+                                theme-stable white card by design (see the note
+                                on the grey image well above), so in dark mode
+                                that put #40aaed on #ffffff — 2.56:1, against the
+                                4.5:1 this 12px bold text needs. #166fa8 is
+                                sky-ink's own light-theme value, 5.4:1 on white:
+                                identical in light mode, and it stops flipping in
+                                dark. A theme-reactive ink on a theme-stable
+                                surface is always this bug.
+                                Found by the gated hub axe sweep on its first CI
+                                run, 2026-09-07 — the static token test cannot
+                                see this one, because the token is legitimate and
+                                only the surface makes it wrong. */}
                             {p.price && (
-                              <span class="shrink-0 text-xs font-extrabold text-sky-ink">
+                              <span class="shrink-0 text-xs font-extrabold text-[#166fa8]">
                                 {p.price}
                               </span>
                             )}
