@@ -46,6 +46,22 @@ export default defineConfig({
   // suite failed on goto timeouts with the code healthy (2026-08-23). Four
   // keeps the wall clock close while staying under the collapse point.
   workers: 4,
+  // Both of these are in playwright.config.ts and were missing here — this
+  // config was written when nothing ran it, so the gap never showed.
+  //
+  // forbidOnly matters more than it looks. A stray `test.only` left in a hub
+  // spec would silently reduce this suite to that one test in CI, including
+  // hub-gate.spec.ts, which is the assertion that a stranger cannot reach any
+  // family's address. That is the same shape as the bug this whole config was
+  // just rescued from: a green tick over tests that did not run.
+  forbidOnly: !!process.env.CI,
+  // One retry in CI, matching playwright.config.ts. This is NOT here to paper
+  // over product flakiness: the documented failure above is contention for
+  // external origins (Apps Script, gviz, the store) on a cold build, which a
+  // retry legitimately clears. If a hub test starts needing its retry
+  // routinely, that is a signal to investigate, not to raise the number —
+  // check the run summary for "flaky" before trusting a green.
+  retries: process.env.CI ? 1 : 0,
   webServer: {
     // stage-dev-vars runs BETWEEN build and serve on purpose: wrangler resolves
     // `.dev.vars` next to the config it is given, so the worker cannot see
