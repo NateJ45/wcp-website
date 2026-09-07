@@ -8,3 +8,8 @@
 //
 // Gitignored — it holds a real session cookie. See .gitignore.
 export const AUTH_FILE = 'tests/.auth/family.json';
+
+// The BOARD session: family password plus the second, admin-only one. Separate
+// file so the ordinary hub suites never carry admin rights - a test that can
+// edit the directory by accident is a test that can destroy it.
+export const ADMIN_AUTH_FILE = 'tests/.auth/admin.json';

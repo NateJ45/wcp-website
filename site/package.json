@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/free-dist.mjs",
+    "prebuild": "node scripts/stop-preview.mjs && node scripts/free-dist.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist/client && node scripts/generate-og.mjs && node scripts/rehost-instagram.mjs && node scripts/generate-curriculum.mjs --dist && node scripts/generate-supplies.mjs --dist",
     "preview": "astro preview",

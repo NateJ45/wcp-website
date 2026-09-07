@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { AUTH_FILE } from './tests/auth-file';
+import { ADMIN_AUTH_FILE, AUTH_FILE } from './tests/auth-file';
 
 // SSR hub coverage. Unlike playwright.config.ts (which serves static
 // dist/client), this boots a server that renders the gated /family-hub pages.
@@ -12,17 +12,24 @@ import { AUTH_FILE } from './tests/auth-file';
 // (Before 2026-07-19 the middleware carried a HUB_OPEN bypass and these suites
 // browsed straight in. Restoring the gate is what made the split necessary.)
 //
-// Uses `npm run preview` (wrangler), NOT `astro dev`: on this Astro 7 /
-// Cloudflare stack `astro dev` always daemonizes to a detached background
-// process and the launching CLI command exits immediately — Playwright's
-// webServer reads that exit as a startup failure even though the server is
-// actually up. `astro preview` runs wrangler in the foreground and serves
-// the same SSR build, so it works as Playwright's webServer. Requires a
-// fresh `npm run build` first (bundled into the command below).
+// Serves the SSR build through scripts/preview-foreground.mjs.
+//
+// `astro dev` daemonizes, so Playwright's webServer reads its immediate exit as
+// a startup failure. This file used to say `astro preview` avoided that by
+// running wrangler in the foreground — TRUE WHEN WRITTEN, FALSE NOW: the
+// current Astro daemonizes preview too and returns 0 straight away. The result
+// was "Process from config.webServer exited early" and not one test running,
+// which nobody noticed because CI never invoked this config at all
+// (fixed 2026-09-06 — `npm run test:hub` is now a CI step).
+//
+// The wrapper starts the same server, waits for it to answer, holds the process
+// open for Playwright, and stops the daemon afterwards so a killed run cannot
+// leave a stale server feeding the next one an old build. Requires a fresh
+// `npm run build` first (bundled into the command below).
 export default defineConfig({
   testDir: './tests',
   testMatch:
-    /(hub-(shell|home|sections|gate|pages|tour|hints|spotlight|classroom|org-chart)\.spec|hub-auth\.setup)\.ts$/,
+    /(hub-(shell|home|sections|gate|pages|tour|hints|spotlight|classroom|org-chart|a11y)\.spec|hub-(auth|admin)\.setup)\.ts$/,
   // 60s, not the usual 30s. The hub HOME page fans out to several external
   // origins server-side (Apps Script calendar, two gviz sheets, the store),
   // each with its own 8s timeout, and `cached()` cannot help on the first hit
@@ -40,12 +47,18 @@ export default defineConfig({
   // keeps the wall clock close while staying under the collapse point.
   workers: 4,
   webServer: {
-    command: 'npm run build && npm run preview',
+    command: 'npm run build && node scripts/preview-foreground.mjs --no-build',
     // The login page is the one hub route reachable without a session, so it is
     // the only safe readiness probe now the gate is closed.
     url: 'http://localhost:4321/family-hub/login',
+    // The wrapper stops any stale server, runs a FULL production build
+    // (pagefind index, OG images, curriculum and supply PDFs) and only then
+    // starts serving, so the readiness clock covers the build too. 120s was
+    // enough when the build ran separately; it is not now, and the failure
+    // reads as "Timed out waiting for config.webServer" rather than anything
+    // about the build.
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 420_000,
     env: {
       ...(process.env as Record<string, string>),
       // Drops the Secure flag from the session cookie for THIS server only (see
@@ -83,6 +96,30 @@ export default defineConfig({
         /hub-(shell|home|sections|pages|tour|hints|spotlight|classroom|org-chart)\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
       dependencies: ['setup'],
+    },
+
+    // The gated hub's axe sweep. routes.ts covers the prerendered site only and
+    // said SSR coverage would land "when the hub pages get their real content";
+    // it has that content, and the gap let 1.14:1 text ship on 2026-09-06.
+    {
+      name: 'a11y-hub',
+      testMatch: /hub-a11y\.spec\.ts$/,
+      grep: /gated hub/,
+      use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
+      dependencies: ['setup'],
+    },
+    // Signs in a second time for the board-only screens.
+    {
+      name: 'admin-setup',
+      testMatch: /hub-admin\.setup\.ts$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'a11y-admin',
+      testMatch: /hub-a11y\.spec\.ts$/,
+      grep: /board admin/,
+      use: { ...devices['Desktop Chrome'], storageState: ADMIN_AUTH_FILE },
+      dependencies: ['admin-setup'],
     },
     {
       name: 'webkit-iphone',
