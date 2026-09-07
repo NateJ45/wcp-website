@@ -58,7 +58,9 @@ if (existsSync(SOURCE)) {
   mkdirSync(dirname(TARGET), { recursive: true });
   writeFileSync(TARGET, `${lines.join('\n')}\n`, 'utf8');
   // Names only. Never the values — this output lands in a public CI log.
-  console.log(`stage-dev-vars: wrote dist/server/.dev.vars from the environment (${present.join(', ') || 'nothing'})`);
+  console.log(
+    `stage-dev-vars: wrote dist/server/.dev.vars from the environment (${present.join(', ') || 'nothing'})`,
+  );
 
   // The two gate passwords are the ones whose absence produces a confusing
   // failure: the suite signs in with the right password and is refused, and the

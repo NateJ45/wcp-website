@@ -44,7 +44,10 @@ if (process.platform === 'win32') {
   }
 } else {
   const lsof = sh('lsof', ['-ti', `tcp:${PORT}`]);
-  for (const pid of (lsof.stdout ?? '').split('\n').map((p) => p.trim()).filter(Boolean)) {
+  for (const pid of (lsof.stdout ?? '')
+    .split('\n')
+    .map((p) => p.trim())
+    .filter(Boolean)) {
     pids.add(pid);
   }
 }

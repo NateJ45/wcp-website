@@ -26,7 +26,18 @@ if (!existsSync(CONFIG)) {
 const put = (key, file) => {
   const r = spawnSync(
     'npx',
-    ['wrangler', 'kv', 'key', 'put', key, `--path=${file}`, '--binding=DIRECTORY', '--local', '-c', CONFIG],
+    [
+      'wrangler',
+      'kv',
+      'key',
+      'put',
+      key,
+      `--path=${file}`,
+      '--binding=DIRECTORY',
+      '--local',
+      '-c',
+      CONFIG,
+    ],
     { encoding: 'utf8', shell: process.platform === 'win32' },
   );
   if (r.status !== 0) {

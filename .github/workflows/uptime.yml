@@ -6,10 +6,13 @@ name: Uptime check
 #
 # The schedule is ENABLED. This repo is PUBLIC, so Actions minutes are free.
 #
-# Set the SITE_URL repo variable to the live origin
-# (https://wcp-website.nathanjnixon86.workers.dev today; change it at the domain
-# cutover, see site/docs/LAUNCH_CHECKLIST.md). Without the variable the job
-# gives a WARNING and exits 0, so it never false-alarms.
+# The SITE_URL repo variable overrides the origin; without it the job uses the
+# live workers.dev origin baked in below. Set the variable at the domain cutover
+# (see site/docs/LAUNCH_CHECKLIST.md) rather than editing this file.
+#
+# It used to WARN and exit 0 when the variable was missing. Nobody ever set the
+# variable, so the job passed hourly without making a single request — see the
+# note on the fallback below.
 #
 # WARNING: keep the TRAILING SLASH on each path. This is a static build with
 # directory-format output, so /tuition answers 307 and only /tuition/ answers
@@ -31,11 +34,14 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
-          if [ -z "$SITE_URL" ]; then
-            echo "::warning::SITE_URL variable not set; skipping uptime check."
-            exit 0
-          fi
-          base="${SITE_URL%/}"
+          # Falls back to the live origin rather than skipping. The old version
+          # warned and exited 0 when SITE_URL was unset — and it was never set,
+          # so from 2026-08-27 to 2026-09-07 this job reported success every
+          # hour while checking nothing at all. A green tick for "did not run"
+          # is worse than no job, because it is indistinguishable from "passed".
+          base="${SITE_URL:-https://wcp-website.nathanjnixon86.workers.dev}"
+          base="${base%/}"
+          echo "checking ${base}"
           fail=0
           for path in "/" "/tuition/" "/enroll/" "/faq/"; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 "${base}${path}")

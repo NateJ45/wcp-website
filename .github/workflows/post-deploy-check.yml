@@ -1,0 +1,77 @@
+name: Post-deploy check
+
+# =============================================================================
+# The three things that can only be wrong in production
+# =============================================================================
+# Every other workflow here tests a BUILD. This one tests the deployed site:
+# security headers actually applied by Cloudflare, the Family Hub gate actually
+# closed to a stranger, and the directory actually still holding content.
+#
+# See site/scripts/post-deploy-check.mjs for why each one is here. The short
+# version: public/_headers is applied by Cloudflare rather than the build so no
+# CI run proves it took effect; hub-gate.spec.ts asserts the gate on a LOCAL
+# preview worker, which is a different claim from the deployed one; and the
+# directory is edited by board members through /family-hub/admin, outside the
+# repo, so no commit will ever notice it going empty — which it did, in
+# production, for about an hour on 2026-09-06.
+#
+# It runs on all three of:
+#   - a finished Deploy, so a bad deploy is caught within minutes;
+#   - a schedule, because content and Cloudflare-side config drift with no
+#     deploy involved at all;
+#   - manual dispatch.
+#
+# The script does NOT skip when something is unconfigured — it fails. uptime.yml
+# warns and exits 0 without the SITE_URL variable, and that variable was never
+# set, so it reported success while testing nothing from 2026-08-27 onward.
+# =============================================================================
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+  schedule:
+    - cron: '43 6,18 * * *' # twice a day, offset off the hour
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: site
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # A deploy that FAILED leaves the previous version live; re-checking it adds
+    # nothing and would report a second failure for the same event. The
+    # schedule and manual runs carry no conclusion and must always proceed.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Cloudflare serves the new version from the edge a few seconds after the
+      # upload returns. Without this the header check can read the old worker
+      # and pass on the version we just replaced.
+      - name: Let the deploy propagate
+        if: github.event_name == 'workflow_run'
+        run: sleep 30
+
+      # CLOUDFLARE_API_TOKEN is what wrangler reads to get at the DIRECTORY
+      # namespace. There is no public read surface for KV — that is the whole
+      # reason families' data lives there rather than in the public Sanity
+      # dataset — so this check cannot be done over HTTP.
+      - name: Check headers, gate and content
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 7e75a15ddc72aae04dca71aca5c7294b
+        run: node scripts/post-deploy-check.mjs
