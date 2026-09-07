@@ -72,9 +72,13 @@ for (const k of Object.keys(phones)) {
 
 const saved = Astro.url.searchParams.get('saved') === '1';
 const conflict = Astro.url.searchParams.get('conflict') === '1';
+const removed = Number(Astro.url.searchParams.get('removed') ?? '0');
+const refusedEmpty = Astro.url.searchParams.get('refused-empty') === '1';
 const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg-surface';
 const btn =
   'rounded-full bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 dark:bg-white dark:text-navy';
+const btnGhost =
+  'rounded-full border border-border px-4 py-2 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10';
 ---
 
 <HubShell title="Board admin" bare pageTitle="Board admin — WCP Family Hub">
@@ -103,6 +107,23 @@ const btn =
         )
       }
 
+      {
+        removed > 0 && (
+          <p class="mb-4 rounded-[var(--radius)] border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900">
+            Removed {removed} {removed === 1 ? 'family' : 'families'}. The previous version was
+            backed up first, so this can be undone if it was a mistake.
+          </p>
+        )
+      }
+      {
+        refusedEmpty && (
+          <p class="mb-4 rounded-[var(--radius)] border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            That would have removed every family, so nothing was changed. If you really do mean to
+            clear the whole directory, remove them in smaller batches.
+          </p>
+        )
+      }
+
       <h2 class="mt-2 mb-3 text-xl font-semibold">Families</h2>
       <HubCard>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -110,52 +131,90 @@ const btn =
             {families.length} on file, {optedIn} showing in the directory. “Showing” means the family
             ticked include us — unticking hides them without deleting anything.
           </p>
-          <a href="/family-hub/admin/family/new" class={`shrink-0 ${btn}`}>Add a family</a>
+          <div class="flex shrink-0 items-center gap-2">
+            <button type="button" id="bulk-toggle" class={btnGhost}>Select several…</button>
+            <a href="/family-hub/admin/family/new" class={btn}>Add a family</a>
+          </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-border text-muted-foreground">
-                <th class="py-2 pr-3 font-medium">Family</th>
-                <th class="py-2 pr-3 font-medium">Grown-ups</th>
-                <th class="py-2 pr-3 font-medium">Children</th>
-                <th class="py-2 pr-3 font-medium">In directory</th>
-                <th class="py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                families.map((f) => (
-                  <tr class="border-b border-border/60">
-                    <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
-                    <td class="py-2 pr-3">
-                      {(f.parents ?? [])
-                        .map((p) => p.name)
-                        .filter(Boolean)
-                        .join(', ') || '—'}
-                    </td>
-                    <td class="py-2 pr-3">
-                      {(f.children ?? [])
-                        .map((c) => c.name)
-                        .filter(Boolean)
-                        .join(', ') || '—'}
-                    </td>
-                    <td class="py-2 pr-3">{f.optedIn === true ? 'Yes' : 'No'}</td>
-                    <td class="py-2 text-right">
-                      <a
-                        class="font-medium underline"
-                        href={`/family-hub/admin/family/${encodeURIComponent(f._id)}`}
-                      >
-                        Edit
-                      </a>
-                    </td>
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
-        </div>
+        <form method="POST" action="/api/hub-admin/families-bulk" id="bulk-form">
+          <input type="hidden" name="version" value={doc.version} />
+          <div
+            id="bulk-bar"
+            hidden
+            class="mb-3 flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-border bg-white/60 px-4 py-3 dark:bg-white/5"
+          >
+            <label class="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" id="bulk-all" class="h-4 w-4" />
+              Select all
+            </label>
+            <span id="bulk-count" class="text-sm text-muted-foreground">0 selected</span>
+            <button
+              type="submit"
+              id="bulk-remove"
+              disabled
+              class="ml-auto inline-flex items-center rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40"
+            >
+              Remove selected
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-border text-muted-foreground">
+                  <th class="bulk-cell py-2 pr-3 font-medium" hidden
+                    ><span class="sr-only">Select</span></th
+                  >
+                  <th class="py-2 pr-3 font-medium">Family</th>
+                  <th class="py-2 pr-3 font-medium">Grown-ups</th>
+                  <th class="py-2 pr-3 font-medium">Children</th>
+                  <th class="py-2 pr-3 font-medium">In directory</th>
+                  <th class="py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  families.map((f) => (
+                    <tr class="border-b border-border/60">
+                      <td class="bulk-cell py-2 pr-3" hidden>
+                        <input
+                          type="checkbox"
+                          class="bulk-check h-4 w-4"
+                          name="remove"
+                          value={f._id}
+                          aria-label={`Select ${f.familyName}`}
+                        />
+                      </td>
+                      <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
+                      <td class="py-2 pr-3">
+                        {(f.parents ?? [])
+                          .map((p) => p.name)
+                          .filter(Boolean)
+                          .join(', ') || '—'}
+                      </td>
+                      <td class="py-2 pr-3">
+                        {(f.children ?? [])
+                          .map((c) => c.name)
+                          .filter(Boolean)
+                          .join(', ') || '—'}
+                      </td>
+                      <td class="py-2 pr-3">{f.optedIn === true ? 'Yes' : 'No'}</td>
+                      <td class="py-2 text-right">
+                        <a
+                          class="font-medium underline"
+                          href={`/family-hub/admin/family/${encodeURIComponent(f._id)}`}
+                        >
+                          Edit
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </form>
 
         {
           families.length === 0 && (
@@ -241,3 +300,73 @@ const btn =
     </div>
   </Section>
 </HubShell>
+
+<script>
+  // Bulk removal for the end-of-year clear-out. Hidden until asked for, so the
+  // everyday view stays a plain list and nobody deletes a family while meaning
+  // to edit one.
+  //
+  // Progressive enhancement: with JS off the checkboxes and the bar stay hidden
+  // and every family is still editable one at a time, which is what the board
+  // did before this existed.
+  const toggle = document.getElementById('bulk-toggle');
+  const bar = document.getElementById('bulk-bar');
+  const all = document.getElementById('bulk-all') as HTMLInputElement | null;
+  const count = document.getElementById('bulk-count');
+  const remove = document.getElementById('bulk-remove') as HTMLButtonElement | null;
+  const form = document.getElementById('bulk-form') as HTMLFormElement | null;
+  const boxes = () => Array.from(document.querySelectorAll<HTMLInputElement>('.bulk-check'));
+  const cells = () => Array.from(document.querySelectorAll<HTMLElement>('.bulk-cell'));
+
+  let on = false;
+  const refresh = () => {
+    const n = boxes().filter((b) => b.checked).length;
+    if (count) count.textContent = `${n} selected`;
+    if (remove) {
+      remove.disabled = n === 0;
+      remove.textContent = n ? `Remove ${n} ${n === 1 ? 'family' : 'families'}` : 'Remove selected';
+    }
+  };
+
+  toggle?.addEventListener('click', () => {
+    on = !on;
+    cells().forEach((c) => (c.hidden = !on));
+    if (bar) bar.hidden = !on;
+    toggle.textContent = on ? 'Done selecting' : 'Select several…';
+    if (!on) {
+      boxes().forEach((b) => (b.checked = false));
+      if (all) all.checked = false;
+    }
+    refresh();
+  });
+
+  all?.addEventListener('change', () => {
+    boxes().forEach((b) => (b.checked = all.checked));
+    refresh();
+  });
+  document.addEventListener('change', (e) => {
+    if ((e.target as HTMLElement)?.classList?.contains('bulk-check')) refresh();
+  });
+
+  // Name the families in the confirmation. "Remove 12 families?" is a number
+  // nobody checks; the names are what makes a wrong selection obvious.
+  form?.addEventListener('submit', (e) => {
+    const chosen = boxes().filter((b) => b.checked);
+    if (!chosen.length) {
+      e.preventDefault();
+      return;
+    }
+    const names = chosen
+      .map((b) => b.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim())
+      .filter(Boolean);
+    const shown =
+      names.slice(0, 12).join(', ') + (names.length > 12 ? `, and ${names.length - 12} more` : '');
+    if (
+      !confirm(`Remove these ${chosen.length} families from the directory?
+
+${shown}`)
+    ) {
+      e.preventDefault();
+    }
+  });
+</script>
