@@ -232,7 +232,53 @@ jobs:
       # project signs in with; they have to be the same value or the gate
       # rejects a correct password and the failure looks like a broken login.
       - name: Gated hub tests
-        run: npm run test:hub
+        # HERMETIC ON PURPOSE. The hub's server-side pages fan out to Google
+        # (the Apps Script calendar feed and two gviz sheets), Fourthwall, the
+        # store, AirNow and open-meteo. From a GitHub runner those connections
+        # do not merely fail, they HANG and then reset: the first CI run of this
+        # suite logged "Uncaught Error: Network connection lost" and
+        # "Connection reset by peer" out of workerd, then eleven
+        # `page.goto: Test timeout of 60000ms exceeded` failures across
+        # hub-home, hub-shell, hub-hints and the calendar/directory sections.
+        # A retry did not clear them, so it is systematic, not flake.
+        #
+        # Every one of those fetches already degrades correctly — each is
+        # `catch -> return [] / null` behind an 8s AbortSignal — and the specs
+        # assert on card HEADINGS, not on third-party content. The problem is
+        # purely that several 8s waits stack up per page and the resets surface
+        # as uncaught worker errors. Pointing the hosts at 127.0.0.1 turns each
+        # into an instant connection refusal, so the existing degraded path runs
+        # immediately and deterministically.
+        #
+        # Done in /etc/hosts rather than in the app deliberately: src/middleware.ts
+        # says "Do not add a bypass flag" because it once shipped with a
+        # HUB_OPEN preview switch that left the family directory and the
+        # children's photo wall open to the internet. A test-only switch inside
+        # the product is the same shape of mistake. This cannot reach production
+        # because it is not in the product at all.
+        #
+        # Sanity and Instagram are NOT blocked: the build reads page content from
+        # Sanity, and postbuild re-hosts the Instagram tiles.
+        #
+        # The trap restores /etc/hosts even when the tests fail, so the later
+        # visual-regression build in this same job is unaffected.
+        run: |
+          cp /etc/hosts /tmp/hosts.bak
+          trap 'sudo cp /tmp/hosts.bak /etc/hosts' EXIT
+          sudo tee -a /etc/hosts >/dev/null <<'HOSTS'
+          127.0.0.1 calendar.google.com
+          127.0.0.1 docs.google.com
+          127.0.0.1 script.google.com
+          127.0.0.1 script.googleusercontent.com
+          127.0.0.1 api.fourthwall.com
+          127.0.0.1 storefront-api.fourthwall.com
+          127.0.0.1 store.westchesterpreschool.org
+          127.0.0.1 www.airnowapi.org
+          127.0.0.1 api.open-meteo.com
+          127.0.0.1 air-quality-api.open-meteo.com
+          127.0.0.1 api.weather.gov
+          HOSTS
+          npm run test:hub
         env:
           SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
           INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
