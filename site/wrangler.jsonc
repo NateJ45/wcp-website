@@ -55,6 +55,17 @@
       "id": "6b7d362da417420c80c2dca2cba5b5f4",
     },
   ],
+  // Family photographs. These are pictures of children, so they do NOT go to
+  // Sanity's CDN: an asset URL there is public to anyone who has it, forever,
+  // with no gate in front of it. R2 has no public endpoint here — the only way
+  // in is /family-hub/photo/<key>, which the middleware has already gated.
+  // Bucket created 2026-09-06 via `wrangler r2 bucket create wcp-family-photos`.
+  "r2_buckets": [
+    {
+      "binding": "FAMILY_PHOTOS",
+      "bucket_name": "wcp-family-photos",
+    },
+  ],
   // Plain (non-secret) runtime values. The account id only NAMES which
   // Cloudflare account /api/stats asks about; it grants nothing on its own and
   // appears in every wrangler config, so it is safe in this public repo. The

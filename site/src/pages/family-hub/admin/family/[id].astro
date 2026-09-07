@@ -45,7 +45,12 @@ const input = 'w-full rounded-md border border-neutral-300 px-3 py-2';
     />
 
     <HubCard>
-      <form method="POST" action="/api/hub-admin/family" class="flex flex-col gap-6">
+      <form
+        method="POST"
+        action="/api/hub-admin/family"
+        enctype="multipart/form-data"
+        class="flex flex-col gap-6"
+      >
         <input type="hidden" name="version" value={doc.version} />
         <input type="hidden" name="_id" value={family._id} />
 
@@ -128,6 +133,34 @@ const input = 'w-full rounded-md border border-neutral-300 px-3 py-2';
           <p class="mt-1 text-xs text-neutral-500">
             Used for the directory map. Leave blank if the family would rather not share it.
           </p>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="photo">Family photo</label>
+          {
+            family.photoKey ? (
+              <img
+                src={`/family-hub/photo/${family.photoKey}`}
+                alt=""
+                width="96"
+                height="96"
+                class="mb-2 h-24 w-24 rounded-full object-cover"
+              />
+            ) : null
+          }
+          <input id="photo" name="photo" type="file" accept="image/*" class="text-sm" />
+          <p class="mt-1 text-xs text-neutral-500">
+            Only signed-in families can see it. Choosing a new file replaces the old one; tick below
+            to remove it entirely.
+          </p>
+          {
+            family.photoKey ? (
+              <label class="mt-1 flex items-center gap-2 text-xs">
+                <input type="checkbox" name="removePhoto" value="yes" />
+                Remove the photo
+              </label>
+            ) : null
+          }
         </div>
 
         <div>

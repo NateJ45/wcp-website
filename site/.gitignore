@@ -16,3 +16,6 @@ directory.json
 
 # Real phone numbers, produced by scripts/migrate-teacher-phones-to-kv.mjs.
 teacher-phones.json
+
+# Scratch dir for scripts/migrate-photos-to-r2.mjs. Holds real family photos.
+.photo-migration/

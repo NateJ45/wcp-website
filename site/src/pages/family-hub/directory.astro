@@ -289,7 +289,21 @@ const intro =
                   >
                     {/* Large portrait family photo with class overlay */}
                     <div class="relative aspect-[3/4] w-full overflow-hidden bg-navy/5 dark:bg-white/5">
-                      {f.photo?.asset ? (
+                      {/* R2 first (2026-09-06): family photos moved off Sanity's
+                          CDN, which serves an asset to anyone holding the URL
+                          with no gate and no expiry. This src is only reachable
+                          behind the hub gate. `f.photo` remains as the fallback
+                          for any family not yet migrated — see
+                          scripts/migrate-photos-to-r2.mjs. */}
+                      {f.photoKey ? (
+                        <img
+                          src={`/family-hub/photo/${f.photoKey}`}
+                          alt={`The ${f.familyName} family`}
+                          loading="lazy"
+                          decoding="async"
+                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : f.photo?.asset ? (
                         <SanityImage
                           source={f.photo as never}
                           alt={f.photo.alt ?? `The ${f.familyName} family`}

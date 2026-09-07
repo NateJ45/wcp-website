@@ -51,8 +51,14 @@ export interface DirEntry {
   address?: string;
   parents?: DirParent[];
   children?: DirChild[];
-  /** Sanity image ref, kept in Sanity: an asset URL is an opaque hash, not a
-   *  queryable record. Documented as a known residual in docs/FAMILY_HUB.md. */
+  /** R2 object key for the family photo, served ONLY through
+   *  /family-hub/photo/<key> behind the hub gate. This is the current home. */
+  photoKey?: string;
+  /** LEGACY: the old Sanity image reference. Sanity's CDN serves an asset to
+   *  anyone holding the URL, with no gate and no expiry, which is obscurity
+   *  rather than access control - and these are photographs of children. Kept
+   *  only so a family whose photo has not been migrated yet still shows one.
+   *  Remove once scripts/migrate-photos-to-r2.mjs reports nothing left. */
   photo?: { asset?: unknown; alt?: string } | null;
   location?: { lat?: number; lng?: number } | null;
   notes?: string;
@@ -166,6 +172,42 @@ export async function getDirectoryEntries(): Promise<DirEntry[]> {
 }
 
 /**
+ * Which family each role holder takes their contact details from.
+ *
+ * `{ "<roleHolder _id>": "<directoryEntry _id>" }`.
+ *
+ * This used to be a Sanity reference (`roleHolder.contactFrom`), which meant
+ * changing a class rep needed the Studio while changing her phone number needed
+ * this admin — the board would have had to know which tool a given edit lived
+ * in. Everything about a PERSON belongs in one place, so the link moved here
+ * too. What stays in Sanity is what the public site publishes: the seat, the
+ * role name, the photo.
+ */
+export const REP_LINKS_KEY = 'rep-links:v1';
+
+export async function readRepLinks(): Promise<Record<string, string>> {
+  try {
+    const raw = await env.DIRECTORY?.get(REP_LINKS_KEY, 'text');
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function saveRepLinks(next: Record<string, string>): Promise<boolean> {
+  if (!env.DIRECTORY) return false;
+  const before = await env.DIRECTORY.get(REP_LINKS_KEY, 'text');
+  if (before) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await env.DIRECTORY.put(`${REP_LINKS_KEY}:backup:${stamp}`, before);
+  }
+  await env.DIRECTORY.put(REP_LINKS_KEY, JSON.stringify(next));
+  return true;
+}
+
+/**
  * Fill in each role holder's contact details from the KV directory.
  *
  * A class rep's email and phone are typed once, in the Directory, and reused on
@@ -182,14 +224,23 @@ export async function getDirectoryEntries(): Promise<DirEntry[]> {
  * and no contact links, which is the same degradation as an unlinked rep.
  */
 export async function attachDirectoryContacts<
-  T extends { contactFamilyId?: string | null; contact?: unknown },
+  T extends { _id?: string | null; contactFamilyId?: string | null; contact?: unknown },
 >(rows: T[] | null | undefined): Promise<T[]> {
   const list = rows ?? [];
-  if (!list.some((r) => r?.contactFamilyId)) return list;
+  const links = await readRepLinks();
+  // The KV link wins; `contactFamilyId` (still returned by the query from the
+  // old Sanity reference) is the fallback, so nothing breaks in the window
+  // before the board has set a link here. Delete the fallback once every rep
+  // is linked in the admin.
+  const familyIdFor = (row: T) =>
+    (row?._id ? links[row._id] : undefined) || row?.contactFamilyId || undefined;
+
+  if (!list.some((r) => familyIdFor(r))) return list;
 
   const byId = new Map((await readAll()).map((e) => [e._id, e]));
   return list.map((row) => {
-    const entry = row?.contactFamilyId ? byId.get(row.contactFamilyId) : undefined;
+    const familyId = familyIdFor(row);
+    const entry = familyId ? byId.get(familyId) : undefined;
     if (!entry) return row;
     return {
       ...row,

@@ -67,6 +67,21 @@ declare namespace Cloudflare {
       get(key: string, type: 'text'): Promise<string | null>;
       put(key: string, value: string): Promise<void>;
     };
+    /** Family photographs. Pictures of children, so they are NOT on Sanity's
+     *  CDN: an asset URL there is public to anyone holding it, forever, with no
+     *  gate in front. R2 has no public endpoint here - the only way in is
+     *  /family-hub/photo/<key>, behind the hub gate. See hub-family-photos.ts. */
+    FAMILY_PHOTOS?: {
+      get(
+        key: string,
+      ): Promise<{ body: ReadableStream; httpMetadata?: { contentType?: string } } | null>;
+      put(
+        key: string,
+        value: ArrayBuffer,
+        opts?: { httpMetadata?: { contentType?: string } },
+      ): Promise<unknown>;
+      delete(key: string): Promise<void>;
+    };
     /** Shared password for the gated Family Hub (Cloudflare secret in prod). */
     FAMILY_HUB_PASSWORD: string;
     /** SECOND password, held by the board, gating /family-hub/admin. Separate

@@ -75,6 +75,38 @@ export const POST: APIRoute = async (context) => {
   }
 
   const previous = doc.entries.find((e) => e._id === id);
+
+  // Photos go to R2, never to Sanity's CDN: an asset URL there is public to
+  // anyone holding it, forever, and these are pictures of children. R2 has no
+  // public endpoint - /family-hub/photo/<key> is the only way in, and that path
+  // is already gated by the middleware.
+  let photoKey = previous?.photoKey;
+  if (str('removePhoto') === 'yes') {
+    if (photoKey) await env.FAMILY_PHOTOS?.delete(photoKey);
+    photoKey = undefined;
+  }
+  const upload = form.get('photo');
+  if (upload && typeof upload === 'object' && 'arrayBuffer' in upload) {
+    const file = upload as File;
+    if (file.size > 0) {
+      if (file.size > 8 * 1024 * 1024) {
+        return context.redirect('/family-hub/admin?error=photo-too-large');
+      }
+      if (!/^image\//.test(file.type)) {
+        return context.redirect('/family-hub/admin?error=photo-not-an-image');
+      }
+      // Key includes a timestamp so a replacement never collides with a copy
+      // still sitting in a browser cache under the old URL.
+      const ext = (file.type.split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '').slice(0, 5);
+      const next = `${id}-${Date.now()}.${ext}`;
+      await env.FAMILY_PHOTOS?.put(next, await file.arrayBuffer(), {
+        httpMetadata: { contentType: file.type },
+      });
+      if (photoKey && photoKey !== next) await env.FAMILY_PHOTOS?.delete(photoKey);
+      photoKey = next;
+    }
+  }
+
   const entry: DirEntry = {
     // Carry forward anything this form does not edit — the photo reference and
     // the geocoded location. Rebuilding the object from form fields alone would
@@ -85,6 +117,7 @@ export const POST: APIRoute = async (context) => {
     optedIn: str('optedIn') === 'yes',
     address: str('address') || undefined,
     notes: str('notes') || undefined,
+    photoKey,
     parents,
     children,
   };

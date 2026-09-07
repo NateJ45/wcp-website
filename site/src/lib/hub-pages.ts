@@ -53,6 +53,9 @@ export const RESERVED_HUB_SLUGS: readonly string[] = [
   'hours',
   'index',
   'login',
+  // Serves family photographs out of R2, behind this gate (2026-09-06). Note
+  // it is NOT the same as 'photos' below, which is the album page.
+  'photo',
   'photos',
   'sign-ups',
   'super-helper',

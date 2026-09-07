@@ -1,0 +1,112 @@
+---
+/* ============================================================================
+   Family Hub — admin: who each role holder is reached through (GATED, board)
+   ============================================================================
+   A class rep's email and phone are typed ONCE, in the directory, and reused on
+   her card. This page sets which family each role reads from.
+
+   The link used to be a Sanity reference (`roleHolder.contactFrom`), which split
+   the board's work in two: changing the rep needed the Studio, changing her
+   phone number needed this admin. Everything about a PERSON is edited here now.
+   What stays in the Studio is what the public site publishes — the seat, the
+   role name, the photo.
+   ============================================================================ */
+export const prerender = false;
+
+import HubShell from '@/layouts/HubShell.astro';
+import Section from '@/components/Section.astro';
+import HubPageHeader from '@/components/hub/HubPageHeader.astro';
+import HubCard from '@/components/hub/HubCard.astro';
+import { readDirectoryDoc, readRepLinks } from '@/lib/hub-directory';
+import { sanityFetch } from '@/lib/sanity';
+import { ROLE_HOLDERS_QUERY } from '@/lib/queries';
+import type { RoleHolderRow } from '@/lib/hub-org';
+
+const [doc, links] = await Promise.all([readDirectoryDoc(), readRepLinks()]);
+
+let holders: RoleHolderRow[] = [];
+try {
+  holders = (await sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY)) ?? [];
+} catch {
+  holders = [];
+}
+holders = holders.filter((h) => h?._id).sort((a, b) => (a.role ?? '').localeCompare(b.role ?? ''));
+
+const families = [...doc.entries].sort((a, b) =>
+  (a.familyName || '').localeCompare(b.familyName || ''),
+);
+const saved = Astro.url.searchParams.get('saved') === '1';
+---
+
+<HubShell title="Role contacts" description="Which family each role is reached through.">
+  <Section>
+    <HubPageHeader
+      title="Role contacts"
+      subtitle="Which family's details show on each role's card."
+    />
+
+    {
+      saved && (
+        <p class="mb-4 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-900">
+          Saved.
+        </p>
+      )
+    }
+
+    <HubCard>
+      <p class="mb-4 text-sm text-neutral-600">
+        Pick the family a role should be reached through. Their email and phone come from the
+        directory, so updating them in one place updates the card too. Choose “No contact” to show
+        the name with no links. A role mailbox typed on the Sanity document (like president@…) still
+        wins over this — that is deliberate: an address that outlives whoever holds the role is the
+        better one to publish.
+      </p>
+
+      {
+        holders.length === 0 ? (
+          <p class="py-4 text-sm text-neutral-600">
+            No role holders found. They are created in the Studio under Family Hub → Who's who.
+          </p>
+        ) : (
+          <form method="POST" action="/api/hub-admin/reps" class="flex flex-col gap-3">
+            {holders.map((h) => (
+              <div class="grid gap-2 sm:grid-cols-[16rem_1fr] sm:items-center">
+                <label class="text-sm font-medium" for={`rep-${h._id}`}>
+                  {h.role || h._id}
+                  {h.person ? (
+                    <span class="font-normal text-neutral-500"> — {h.person}</span>
+                  ) : null}
+                </label>
+                <select
+                  id={`rep-${h._id}`}
+                  name={`rep-${h._id}`}
+                  class="w-full rounded-md border border-neutral-300 px-3 py-2"
+                >
+                  <option value="">No contact</option>
+                  {families.map((f) => (
+                    <option
+                      value={f._id}
+                      selected={(links[h._id as string] || h.contactFamilyId) === f._id}
+                    >
+                      {f.familyName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+            <button
+              type="submit"
+              class="mt-2 self-start rounded-md bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
+            >
+              Save
+            </button>
+          </form>
+        )
+      }
+    </HubCard>
+
+    <p class="mt-4 text-sm text-neutral-600">
+      <a class="underline" href="/family-hub/admin">Back to the directory</a>
+    </p>
+  </Section>
+</HubShell>
