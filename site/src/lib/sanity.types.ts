@@ -333,6 +333,49 @@ export type PostBody = Array<
     }
 >;
 
+export type DirectoryEntry = {
+  _id: string;
+  _type: 'directoryEntry';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  familyName?: string;
+  optedIn?: boolean;
+  parents?: Array<{
+    name?: string;
+    role?: string;
+    email?: string;
+    phone?: string;
+    _key: string;
+  }>;
+  children?: Array<{
+    name?: string;
+    class?: string;
+    _key: string;
+  }>;
+  photo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: 'image';
+  };
+  address?: string;
+  location?: Geopoint;
+  notes?: string;
+  neighborhood?: string;
+  carpoolInterest?: boolean;
+  playdateInterest?: boolean;
+};
+
+export type Geopoint = {
+  _type: 'geopoint';
+  lat?: number;
+  lng?: number;
+  alt?: number;
+};
+
 export type TeacherNote = {
   _id: string;
   _type: 'teacherNote';
@@ -763,13 +806,6 @@ export type ClassReference = {
   [internalGroqTypeReferenceTo]?: 'class';
 };
 
-export type DirectoryEntryReference = {
-  _ref: string;
-  _type: 'reference';
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: 'directoryEntry';
-};
-
 export type RoleHolder = {
   _id: string;
   _type: 'roleHolder';
@@ -788,52 +824,8 @@ export type RoleHolder = {
     _type: 'image';
   };
   email?: string;
-  contactFrom?: DirectoryEntryReference;
   note?: string;
   role?: string;
-};
-
-export type DirectoryEntry = {
-  _id: string;
-  _type: 'directoryEntry';
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  familyName?: string;
-  optedIn?: boolean;
-  parents?: Array<{
-    name?: string;
-    role?: string;
-    email?: string;
-    phone?: string;
-    _key: string;
-  }>;
-  children?: Array<{
-    name?: string;
-    class?: string;
-    _key: string;
-  }>;
-  photo?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: 'image';
-  };
-  address?: string;
-  location?: Geopoint;
-  notes?: string;
-  neighborhood?: string;
-  carpoolInterest?: boolean;
-  playdateInterest?: boolean;
-};
-
-export type Geopoint = {
-  _type: 'geopoint';
-  lat?: number;
-  lng?: number;
-  alt?: number;
 };
 
 export type CoopRole = {
@@ -3629,6 +3621,8 @@ export type AllSanitySchemaTypes =
   | PostReference
   | EventReference
   | PostBody
+  | DirectoryEntry
+  | Geopoint
   | TeacherNote
   | BlockContent
   | HubDocument
@@ -3647,10 +3641,7 @@ export type AllSanitySchemaTypes =
   | HoursLog
   | CoopRoleReference
   | ClassReference
-  | DirectoryEntryReference
   | RoleHolder
-  | DirectoryEntry
-  | Geopoint
   | CoopRole
   | TrashedItem
   | PhotoSubmission
