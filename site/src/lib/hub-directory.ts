@@ -40,6 +40,15 @@ export interface DirEntry {
   /** Stable id carried over from the Sanity document, so photos still resolve. */
   _id: string;
   familyName: string;
+  /** Whether the family agreed to appear in the directory. KV holds EVERY
+   *  family, opted in or not, because it is now the only copy — the loader
+   *  filters for display. Storing only the opted-in ones would have quietly
+   *  destroyed the rest when Sanity was purged. */
+  optedIn?: boolean;
+  /** Postal address. The page never rendered it (the map uses `location`), but
+   *  it is what `location` was geocoded FROM, so losing it would mean nobody
+   *  could ever re-geocode. Carried for that reason alone. */
+  address?: string;
   parents?: DirParent[];
   children?: DirChild[];
   /** Sanity image ref, kept in Sanity: an asset URL is an opaque hash, not a
@@ -56,15 +65,8 @@ export interface DirEntry {
  *  JSON blob; splitting it per family would buy nothing but round trips. */
 export const DIRECTORY_KEY = 'directory:v1';
 
-/**
- * Every opted-in family, ordered by family name.
- *
- * Returns [] when the binding or the key is missing, which is what a fresh
- * environment looks like before the migration has run — the page then shows its
- * empty state rather than failing. It does NOT fall back to Sanity: a fallback
- * to the public dataset would silently undo the entire point of this file.
- */
-export async function getDirectoryEntries(): Promise<DirEntry[]> {
+/** Every family KV holds, opted in or not. Use `getDirectoryEntries` to render. */
+async function readAll(): Promise<DirEntry[]> {
   try {
     const raw = await env.DIRECTORY?.get(DIRECTORY_KEY, 'text');
     if (!raw) return [];
@@ -73,4 +75,24 @@ export async function getDirectoryEntries(): Promise<DirEntry[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Every OPTED-IN family, ordered by family name — what the hub displays.
+ *
+ * The opt-in filter lives here rather than in the stored data, because KV is now
+ * the only copy: storing just the opted-in families would have silently deleted
+ * the others the moment Sanity was purged. A family that opts back in is a flag
+ * change, not a re-entry.
+ *
+ * Returns [] when the binding or key is missing — a fresh environment before the
+ * migration — so the page shows its empty state rather than failing. It does NOT
+ * fall back to Sanity: that fallback would republish everything this file exists
+ * to keep out of a public dataset.
+ */
+export async function getDirectoryEntries(): Promise<DirEntry[]> {
+  const all = await readAll();
+  return all
+    .filter((e) => e.optedIn === true)
+    .sort((a, b) => (a.familyName || '').localeCompare(b.familyName || ''));
 }

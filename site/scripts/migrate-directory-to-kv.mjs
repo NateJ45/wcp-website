@@ -53,9 +53,14 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-// Only opted-in families, exactly as the page used to query them, so the hub
-// renders identically from the new source.
-const QUERY = `*[_type == "directoryEntry" && optedIn == true] | order(familyName asc){ _id, familyName, parents[]{ name, role, email, phone }, children, photo, location, notes, neighborhood, carpoolInterest, playdateInterest }`;
+// EVERY family and EVERY field, not just the opted-in ones the page renders.
+// The first run copied only what directory.astro queried, and left `address`
+// (33 of 37 documents) and `optedIn` behind. KV is about to become the only
+// copy, so anything not carried here would have been destroyed by the purge -
+// including the addresses that `location` was geocoded from, without which
+// nobody could ever re-geocode. The opt-in filter belongs in the reader, not in
+// what gets stored.
+const QUERY = `*[_type == "directoryEntry"] | order(familyName asc)`;
 
 const url =
   `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}` +
@@ -77,8 +82,24 @@ if (!entries.length) {
 
 writeFileSync(OUT, JSON.stringify(entries));
 console.log(`migrate: wrote ${entries.length} families to ${OUT} (${JSON.stringify(entries).length} bytes)`);
-console.log(`migrate: ${entries.reduce((n, e) => n + (e.children?.length || 0), 0)} children, ` +
-  `${entries.reduce((n, e) => n + (e.parents?.length || 0), 0)} parents`);
+console.log(
+  `migrate: ${entries.filter((e) => e.optedIn === true).length} opted in, ` +
+    `${entries.reduce((n, e) => n + (e.children?.length || 0), 0)} children, ` +
+    `${entries.reduce((n, e) => n + (e.parents?.length || 0), 0)} parents, ` +
+    `${entries.filter((e) => e.address).length} addresses`,
+);
+
+// KV is about to be the only copy. Every field that exists in Sanity must be in
+// what we are writing, or the purge will destroy it. Checked rather than
+// assumed, because the first run of this script silently dropped two.
+const fieldsHere = new Set(entries.flatMap((e) => Object.keys(e)));
+for (const expected of ['familyName', 'optedIn', 'address', 'parents', 'children', 'location']) {
+  if (!fieldsHere.has(expected)) {
+    console.error(`migrate: expected field "${expected}" is missing from the export. Refusing to continue.`);
+    process.exit(1);
+  }
+}
+console.log(`migrate: fields carried: ${[...fieldsHere].filter((f) => !f.startsWith('_')).sort().join(', ')}`);
 
 if (!PUT) {
   console.log('\nmigrate: dry run. Re-run with --put to upload, or inspect the file first.');
