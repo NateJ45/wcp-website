@@ -1,16 +1,24 @@
 ---
 /* ============================================================================
-   Family Hub — admin: the directory (GATED, board only)
+   Family Hub — admin (GATED, board only)
    ============================================================================
-   The board's replacement for editing the directory in the Studio. The families'
-   personal data left Sanity on 2026-09-06 because that dataset is PUBLIC on the
-   free plan — 37 families, children's names and home addresses were readable by
-   anyone with the project id. It lives in the DIRECTORY KV namespace now, which
-   has no public read surface at all.
+   The board's replacement for editing people in the Studio. The families' data
+   left Sanity on 2026-09-06 because that dataset is PUBLIC on the free plan —
+   37 families, children's names and home addresses were readable by anyone with
+   the project id. It lives in the DIRECTORY KV namespace now, which has no
+   public read surface at all.
 
-   That fix removed the board's editing surface, so this replaces it. The line to
-   hold: ANYTHING ABOUT A PERSON is edited here; anything published on the public
-   site is edited in the Studio.
+   ONE PAGE on purpose: families, teachers' numbers and role contacts together,
+   because a board member should never have to work out which sub-page an edit
+   lives on. The only separate screen is editing a single family, where a small
+   blast radius is worth the click.
+
+   The line to hold: ANYTHING ABOUT A PERSON is edited here; anything published
+   on the public site is edited in the Studio.
+
+   Chrome matches the rest of the hub — `bare` shell, grey Section, the same
+   HubPageHeader every other hub page uses — so this does not read as a
+   different application bolted on the side.
    ============================================================================ */
 export const prerender = false;
 
@@ -18,114 +26,208 @@ import HubShell from '@/layouts/HubShell.astro';
 import Section from '@/components/Section.astro';
 import HubPageHeader from '@/components/hub/HubPageHeader.astro';
 import HubCard from '@/components/hub/HubCard.astro';
-import { readDirectoryDoc } from '@/lib/hub-directory';
+import { readDirectoryDoc, readRepLinks } from '@/lib/hub-directory';
+import { getTeacherPhones } from '@/lib/hub-teacher-phones';
+import { getHubClassrooms } from '@/lib/hub-classes';
+import { sanityFetch } from '@/lib/sanity';
+import { ROLE_HOLDERS_QUERY } from '@/lib/queries';
+import type { RoleHolderRow } from '@/lib/hub-org';
 
-const doc = await readDirectoryDoc();
+const [doc, links, phones] = await Promise.all([
+  readDirectoryDoc(),
+  readRepLinks(),
+  getTeacherPhones(),
+]);
+
 const families = [...doc.entries].sort((a, b) =>
   (a.familyName || '').localeCompare(b.familyName || ''),
 );
+const optedIn = families.filter((f) => f.optedIn === true).length;
+
+let holders: RoleHolderRow[] = [];
+try {
+  holders = (await sanityFetch<RoleHolderRow[]>(ROLE_HOLDERS_QUERY)) ?? [];
+} catch {
+  holders = [];
+}
+holders = holders.filter((h) => h?._id).sort((a, b) => (a.role ?? '').localeCompare(b.role ?? ''));
+
+// Class keys teacherNote uses, so a class the board adds shows up by itself.
+let classKeys: string[] = [];
+try {
+  classKeys = (await getHubClassrooms()).map((c) => c.key).filter(Boolean) as string[];
+} catch {
+  classKeys = [];
+}
+for (const k of ['twos', 'threes', 'pre-k']) if (!classKeys.includes(k)) classKeys.push(k);
+for (const k of Object.keys(phones)) if (!classKeys.includes(k)) classKeys.push(k);
+
 const saved = Astro.url.searchParams.get('saved') === '1';
 const conflict = Astro.url.searchParams.get('conflict') === '1';
-const optedIn = families.filter((f) => f.optedIn === true).length;
+const input = 'w-full rounded-md border border-border bg-white px-3 py-2 dark:bg-surface';
+const btn =
+  'rounded-full bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 dark:bg-white dark:text-navy';
 ---
 
-<HubShell title="Directory admin" description="Board editing for the family directory.">
-  <Section>
-    <HubPageHeader
-      title="Family directory"
-      subtitle={`${families.length} families on file, ${optedIn} showing in the directory.`}
-    />
-
-    {
-      saved && (
-        <p class="mb-4 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-900">
-          Saved.
-        </p>
-      )
-    }
-    {
-      conflict && (
-        <p class="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Someone else changed the directory since this page was opened, so nothing was saved.
-          Reload and make the change again — this is deliberate, so an old open tab cannot quietly
-          undo someone else's edit.
-        </p>
-      )
-    }
-
-    <HubCard>
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <p class="text-sm text-neutral-600">
-          Showing in the directory means the family ticked “include us”. Unticking hides them
-          without deleting anything.
-        </p>
-        <a
-          href="/family-hub/admin/family/new"
-          class="shrink-0 rounded-md bg-neutral-900 px-3 py-2 text-sm text-white hover:bg-neutral-700"
-        >
-          Add a family
-        </a>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="border-b border-neutral-200 text-neutral-600">
-              <th class="py-2 pr-3">Family</th>
-              <th class="py-2 pr-3">Grown-ups</th>
-              <th class="py-2 pr-3">Children</th>
-              <th class="py-2 pr-3">In directory</th>
-              <th class="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              families.map((f) => (
-                <tr class="border-b border-neutral-100">
-                  <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
-                  <td class="py-2 pr-3 text-neutral-700">
-                    {(f.parents ?? [])
-                      .map((p) => p.name)
-                      .filter(Boolean)
-                      .join(', ') || '—'}
-                  </td>
-                  <td class="py-2 pr-3 text-neutral-700">
-                    {(f.children ?? [])
-                      .map((c) => c.name)
-                      .filter(Boolean)
-                      .join(', ') || '—'}
-                  </td>
-                  <td class="py-2 pr-3">{f.optedIn === true ? 'Yes' : 'No'}</td>
-                  <td class="py-2 text-right">
-                    <a
-                      class="text-neutral-900 underline"
-                      href={`/family-hub/admin/family/${encodeURIComponent(f._id)}`}
-                    >
-                      Edit
-                    </a>
-                  </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+<HubShell title="Board admin" bare pageTitle="Board admin — WCP Family Hub">
+  <Section bg="grey" labelledby="hub-page-title">
+    <div class="mx-auto max-w-6xl">
+      <HubPageHeader
+        title="Board admin"
+        subtitle="Families, teachers' numbers and role contacts. Only the board can open this."
+        icon="lock"
+      />
 
       {
-        families.length === 0 && (
-          <p class="py-6 text-sm text-neutral-600">
-            No families on file. That is not normal — if this is unexpected, do not add families
-            over the top: tell Nathan, because a backup of the previous version is kept on every
-            save and restoring it is quicker than retyping.
+        saved && (
+          <p class="mb-4 rounded-[var(--radius)] border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900">
+            Saved.
           </p>
         )
       }
-    </HubCard>
+      {
+        conflict && (
+          <p class="mb-4 rounded-[var(--radius)] border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Someone else changed the directory since this page was opened, so nothing was saved.
+            Reload and make the change again — this is deliberate, so an old open tab cannot quietly
+            undo someone else's edit.
+          </p>
+        )
+      }
 
-    <p class="mt-4 text-sm text-neutral-600">
-      Teachers' phone numbers are on the <a class="underline" href="/family-hub/admin/teachers">
-        teachers page</a
-      >. Everything published on the public website is still edited in the Studio.
-    </p>
+      <h2 class="mt-2 mb-3 text-xl font-semibold">Families</h2>
+      <HubCard>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p class="text-sm text-muted">
+            {families.length} on file, {optedIn} showing in the directory. “Showing” means the family
+            ticked include us — unticking hides them without deleting anything.
+          </p>
+          <a href="/family-hub/admin/family/new" class={`shrink-0 ${btn}`}>Add a family</a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-border text-muted">
+                <th class="py-2 pr-3 font-medium">Family</th>
+                <th class="py-2 pr-3 font-medium">Grown-ups</th>
+                <th class="py-2 pr-3 font-medium">Children</th>
+                <th class="py-2 pr-3 font-medium">In directory</th>
+                <th class="py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                families.map((f) => (
+                  <tr class="border-b border-border/60">
+                    <td class="py-2 pr-3 font-medium">{f.familyName || '(no name)'}</td>
+                    <td class="py-2 pr-3 text-muted">
+                      {(f.parents ?? [])
+                        .map((p) => p.name)
+                        .filter(Boolean)
+                        .join(', ') || '—'}
+                    </td>
+                    <td class="py-2 pr-3 text-muted">
+                      {(f.children ?? [])
+                        .map((c) => c.name)
+                        .filter(Boolean)
+                        .join(', ') || '—'}
+                    </td>
+                    <td class="py-2 pr-3">{f.optedIn === true ? 'Yes' : 'No'}</td>
+                    <td class="py-2 text-right">
+                      <a
+                        class="font-medium underline"
+                        href={`/family-hub/admin/family/${encodeURIComponent(f._id)}`}
+                      >
+                        Edit
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        {
+          families.length === 0 && (
+            <p class="py-6 text-sm text-muted">
+              No families on file. That is not normal — if it is unexpected, do not retype them: a
+              backup of the previous version is written before every save, so restoring one is
+              quicker and safer.
+            </p>
+          )
+        }
+      </HubCard>
+
+      <h2 class="mt-8 mb-3 text-xl font-semibold">Teachers' phone numbers</h2>
+      <HubCard>
+        <p class="mb-4 text-sm text-muted">
+          The “Call or text” number on each class's teacher card, private to signed-in families.
+          Teachers' names, photos, notes and school email addresses are still edited in the Studio —
+          those appear on the public website. Emptying a box removes the number and its link.
+        </p>
+        <form method="POST" action="/api/hub-admin/teachers" class="flex flex-col gap-3">
+          {
+            classKeys.map((k) => (
+              <div class="grid gap-2 sm:grid-cols-[10rem_1fr] sm:items-center">
+                <label class="text-sm font-medium" for={`phone-${k}`}>
+                  {k}
+                </label>
+                <input
+                  id={`phone-${k}`}
+                  name={`phone-${k}`}
+                  value={phones[k] ?? ''}
+                  class={input}
+                />
+              </div>
+            ))
+          }
+          <button type="submit" class={`mt-2 self-start ${btn}`}>Save numbers</button>
+        </form>
+      </HubCard>
+
+      <h2 class="mt-8 mb-3 text-xl font-semibold">Role contacts</h2>
+      <HubCard>
+        <p class="mb-4 text-sm text-muted">
+          Which family each role is reached through. Their email and phone come from the directory
+          above, so updating them in one place updates the card too. A role mailbox typed on the
+          Sanity document (like president@…) still wins — an address that outlives whoever holds the
+          role is the better one to publish.
+        </p>
+        {
+          holders.length === 0 ? (
+            <p class="text-sm text-muted">
+              No role holders found. They are created in the Studio under Family Hub → Who's who.
+            </p>
+          ) : (
+            <form method="POST" action="/api/hub-admin/reps" class="flex flex-col gap-3">
+              {holders.map((h) => (
+                <div class="grid gap-2 sm:grid-cols-[16rem_1fr] sm:items-center">
+                  <label class="text-sm font-medium" for={`rep-${h._id}`}>
+                    {h.role || h._id}
+                    {h.person ? <span class="font-normal text-muted"> — {h.person}</span> : null}
+                  </label>
+                  <select id={`rep-${h._id}`} name={`rep-${h._id}`} class={input}>
+                    <option value="">No contact</option>
+                    {families.map((f) => (
+                      <option
+                        value={f._id}
+                        selected={(links[h._id as string] || h.contactFamilyId) === f._id}
+                      >
+                        {f.familyName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+              <button type="submit" class={`mt-2 self-start ${btn}`}>
+                Save role contacts
+              </button>
+            </form>
+          )
+        }
+      </HubCard>
+    </div>
   </Section>
 </HubShell>
