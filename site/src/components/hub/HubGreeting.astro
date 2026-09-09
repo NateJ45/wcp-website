@@ -43,7 +43,7 @@ import HubRing from '@/components/hub/HubRing.astro';
 import wcpEmblem from '@/assets/brand/wcp-emblem-sm.webp';
 import { daysUntil, greetingForHour, nyHour, yearProgressPercent } from '@/lib/hub-dashboard-dates';
 import { getUpcomingEvents, eventDate, type HubEvent } from '@/lib/hub-calendar';
-import { getFundraisers } from '@/lib/gsheets';
+import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
 import { getWeather } from '@/lib/hub-weather';
 import { todaysFunDay, type FunDayRow } from '@/data/hub/fun-days';
 import { BOARD_CONTENT_CACHE } from '@/lib/sanity';
@@ -112,6 +112,12 @@ const yearPct = yearProgressPercent(yearStart, yearEnd, now);
 // Weather/air-quality/alert are independent of the Sanity read, so they run
 // concurrently with it — keeps this tile's "no new blocking reads on first
 // paint" promise even with three more external fetches.
+// EVERY read here carries a WAIT BUDGET (2026-09-09, src/lib/hub-cache.ts).
+// This tile is the first thing on the hub home, and it renders inline, so a
+// cold read of a slow origin delayed the whole page. Each value decorates the
+// greeting — a weather chip, an air-quality chip, a "next event" line — so a
+// late one now simply does not appear, and the background refresh warms it for
+// the next request.
 const [settings, weather, airQuality, alert] = await Promise.all([
   (async () => {
     try {
@@ -121,20 +127,28 @@ const [settings, weather, airQuality, alert] = await Promise.all([
         pastFundraisingTotals?: { yearLabel?: string; amount?: number }[] | null;
       } | null>(
         `*[_type == "hubSettings"][0]{ calendarFeedUrl, budgetSheetId, pastFundraisingTotals }`,
+        {},
+        { cache: BOARD_CONTENT_CACHE },
       );
     } catch {
       return null;
     }
   })(),
-  getWeather(),
-  getAirQuality(),
-  getActiveAlert(),
+  getWeather({ budget: true }),
+  getAirQuality({ budget: true }),
+  getActiveAlert({ budget: true }),
 ]);
 
-// Next school event (SWR-cached feed; the Upcoming Events widget re-uses it).
-const events: HubEvent[] = await getUpcomingEvents(
-  settings?.calendarFeedUrl || calendarFeedUrlFallback,
-);
+// The event feed and the fundraising sheet are independent of each other, so
+// they run CONCURRENTLY. Both are SWR-cached and shared with the widgets below.
+const [events, fundraisers] = await Promise.all([
+  getUpcomingEvents(settings?.calendarFeedUrl || calendarFeedUrlFallback, {
+    budget: true,
+  }).catch((): HubEvent[] => []),
+  getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback, { budget: true }).catch(
+    (): Fundraiser[] => [],
+  ),
+]);
 const nextEvent = events[0] ?? null;
 const nextEventDate = nextEvent
   ? eventDate(nextEvent.start).toLocaleDateString('en-US', {
@@ -144,8 +158,7 @@ const nextEventDate = nextEvent
     })
   : null;
 
-// Fundraising year total (SWR-cached sheet; the Fundraising widget re-uses it).
-const fundraisers = await getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback);
+// Fundraising year total (read above, alongside the events).
 const raised = fundraisers.reduce((s, f) => s + f.raised, 0);
 const goal = fundraisers.reduce((s, f) => s + f.goal, 0);
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;

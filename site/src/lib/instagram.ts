@@ -47,7 +47,9 @@ export async function fetchInstagram(
   try {
     const fields = 'id,media_type,media_url,thumbnail_url,permalink,caption';
     const url = `https://graph.instagram.com/me/media?fields=${fields}&limit=${limit}&access_token=${token}`;
-    const res = await fetch(url);
+    // 5s ceiling. Without it a stalled Instagram response held the whole hub
+    // home page open, because SocialWallWidget renders inline (2026-09-09).
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return [];
     const data = (await res.json()) as { data?: IgMediaItem[] };
     const items = Array.isArray(data.data) ? data.data : [];

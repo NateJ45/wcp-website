@@ -13,7 +13,7 @@
 // Google response from stalling hub SSR.
 // =============================================================================
 
-import { cached } from '@/lib/hub-cache';
+import { cached, cachedWithin } from '@/lib/hub-cache';
 
 interface GvizCell {
   v?: unknown;
@@ -32,21 +32,23 @@ export async function fetchSheetRows(
   tab: string,
   ttlMs = 21_600_000, // 6h default
   swrMs = 86_400_000, // 24h default
+  budget = false,
 ): Promise<GvizCell[][]> {
-  return cached(
-    `gviz:${sheetId}:${tab}`,
-    ttlMs,
-    async () => {
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) throw new Error(`gviz ${res.status}`);
-      const text = await res.text();
-      const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
-      const rows: { c?: (GvizCell | null)[] }[] = json?.table?.rows ?? [];
-      return rows.map((r) => (r.c ?? []).map((c) => c ?? {}));
-    },
-    { swrMs },
-  );
+  const key = `gviz:${sheetId}:${tab}`;
+  const load = async (): Promise<GvizCell[][]> => {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`gviz ${res.status}`);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+    const rows: { c?: (GvizCell | null)[] }[] = json?.table?.rows ?? [];
+    return rows.map((r) => (r.c ?? []).map((c) => c ?? {}));
+  };
+  // `budget` picks the read that never blocks a page for long — see the wait
+  // budget in src/lib/hub-cache.ts. A caller that only DECORATES a page (the
+  // topbar, the home greeting) passes it, and gets no rows when Google is slow.
+  if (budget) return (await cachedWithin(key, ttlMs, load, { swrMs })) ?? [];
+  return cached(key, ttlMs, load, { swrMs });
 }
 
 const cellStr = (c?: GvizCell): string => String(c?.v ?? c?.f ?? '').trim();
@@ -179,9 +181,12 @@ export async function getAvailability(sheetId: string): Promise<ClassAvailabilit
 }
 
 /** Read the Fundraising tab. Returns [] on any failure. */
-export async function getFundraisers(sheetId: string): Promise<Fundraiser[]> {
+export async function getFundraisers(
+  sheetId: string,
+  opts: { budget?: boolean } = {},
+): Promise<Fundraiser[]> {
   try {
-    const rows = await fetchSheetRows(sheetId, 'Fundraising');
+    const rows = await fetchSheetRows(sheetId, 'Fundraising', undefined, undefined, opts.budget);
     const items: Fundraiser[] = [];
     for (const r of rows) {
       const name = cellStr(r[0]);

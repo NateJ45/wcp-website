@@ -5,7 +5,14 @@ export default defineConfig({
   resolve: {
     // Mirror tsconfig's `@/*` → `src/*` path alias so modules under test that
     // import via `@/` (e.g. portable-text.ts) resolve outside Astro's build.
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    // `cloudflare:workers` is a Worker-runtime module with no Node resolution.
+    // The stub lets a unit test import hub-cache directly (see its header).
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'cloudflare:workers': fileURLToPath(
+        new URL('./src/lib/test-stubs/cloudflare-workers.ts', import.meta.url),
+      ),
+    },
   },
   test: {
     // `tests/` is Playwright's directory, but it uses `.spec.ts` exclusively —

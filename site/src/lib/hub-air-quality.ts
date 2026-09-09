@@ -36,7 +36,7 @@
 // docs/FAMILY_HUB.md.
 // =============================================================================
 import { env } from 'cloudflare:workers';
-import { cached } from '@/lib/hub-cache';
+import { cached, cachedWithin } from '@/lib/hub-cache';
 import { site } from '@/data/site';
 import { aqiFromPm25, describeAqi, type AqiIcon } from '@/lib/aqi-scale';
 
@@ -111,20 +111,26 @@ async function fetchOpenMeteo(): Promise<number> {
  * envelope and labelling it observed. L2 KV survives the isolate recycle a
  * deploy causes, so a shared key would do exactly that.
  */
-export async function getAirQuality(): Promise<HubAirQuality | null> {
+export async function getAirQuality(
+  opts: { budget?: boolean } = {},
+): Promise<HubAirQuality | null> {
   try {
     const observed = Boolean(env.AIRNOW_API_KEY);
-    const aqi = await cached(
-      // ":v2" — value shape changed (rendered object → raw number).
-      // ":v3" — coordinates moved to site.geo (the school, not a point 2.2mi away).
-      // ":v4" — reading comes from AirNow observations when a key is set, and
-      //         the Open-Meteo path now takes max(us_aqi, aqiFromPm25) instead
-      //         of trusting the model's own number.
-      `air-quality:west-chester-oh:${observed ? 'airnow' : 'model'}:v4`,
-      28_800_000, // 8h fresh — ~3 KV writes/day (see header)
-      async () => (await fetchAirNow()) ?? (await fetchOpenMeteo()),
-      { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
-    );
+    // ":v2" — value shape changed (rendered object → raw number).
+    // ":v3" — coordinates moved to site.geo (the school, not a point 2.2mi away).
+    // ":v4" — reading comes from AirNow observations when a key is set, and
+    //         the Open-Meteo path now takes max(us_aqi, aqiFromPm25) instead
+    //         of trusting the model's own number.
+    const key = `air-quality:west-chester-oh:${observed ? 'airnow' : 'model'}:v4`;
+    const ttlMs = 28_800_000; // 8h fresh — ~3 KV writes/day (see header)
+    const cacheOpts = { swrMs: 57_600_000 }; // +16h stale — 24h horizon, survives a quiet day
+    const load = async () => (await fetchAirNow()) ?? (await fetchOpenMeteo());
+    // `budget` picks the read that never blocks a page for long — see the wait
+    // budget in src/lib/hub-cache.ts. The chip hides when the reading is late.
+    const aqi = opts.budget
+      ? await cachedWithin(key, ttlMs, load, cacheOpts)
+      : await cached(key, ttlMs, load, cacheOpts);
+    if (aqi === undefined) return null;
     return { aqi, ...describeAqi(aqi), observed };
   } catch {
     return null;

@@ -20,7 +20,7 @@
 //      is 7/8am ET, so the calendar day survives the timezone conversion.
 // =============================================================================
 import { sanityFetch } from '@/lib/sanity';
-import { cached } from '@/lib/hub-cache';
+import { cached, cachedWithin } from '@/lib/hub-cache';
 import { UPCOMING_EVENTS_QUERY } from '@/lib/queries';
 import { EVENT_TZ, expandRecurring, eventPlace, type EventDoc } from '@/lib/events';
 import { deEmDash } from '@/lib/portable-text';
@@ -316,23 +316,27 @@ export function toEventDetail(e: HubEvent): EventDetail {
  * isolate. Returns null (not []) when the feed is unreachable or empty, so
  * callers know to fall back to Sanity.
  */
-async function fetchFeedEvents(feedUrl: string): Promise<HubEvent[] | null> {
+async function fetchFeedEvents(feedUrl: string, budget = false): Promise<HubEvent[] | null> {
   try {
-    const raw = await cached(
-      // v3 (2026-08-29): the envelope gained `created`, then `updated`/`id`/`recurring`. The caching rules
-      // (CLAUDE.md, "cache the RAW reading") require a key bump on any shape
-      // change - without it, envelopes cached before the Apps Script redeploy
-      // keep serving from L1/KV for up to the TTL and the bell's
-      // "Added to the calendar" rows never appear on some isolates.
-      `calfeed:v3:${feedUrl}`,
-      43_200_000, // 12h fresh — the school calendar is set weeks ahead; ~2 KV writes/day
-      async () => {
-        const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) throw new Error(`feed ${res.status}`);
-        return (await res.json()) as HubEvent[];
-      },
-      { swrMs: 86_400_000 }, // +24h stale — 36h horizon, survives a quiet weekend
-    );
+    // v3 (2026-08-29): the envelope gained `created`, then `updated`/`id`/`recurring`. The caching rules
+    // (CLAUDE.md, "cache the RAW reading") require a key bump on any shape
+    // change - without it, envelopes cached before the Apps Script redeploy
+    // keep serving from L1/KV for up to the TTL and the bell's
+    // "Added to the calendar" rows never appear on some isolates.
+    const key = `calfeed:v3:${feedUrl}`;
+    const ttlMs = 43_200_000; // 12h fresh — the school calendar is set weeks ahead; ~2 KV writes/day
+    const opts = { swrMs: 86_400_000 }; // +24h stale — 36h horizon, survives a quiet weekend
+    const load = async (): Promise<HubEvent[]> => {
+      const res = await fetch(feedUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`feed ${res.status}`);
+      return (await res.json()) as HubEvent[];
+    };
+    // `budget` picks the read that never blocks a page for long — see the wait
+    // budget in src/lib/hub-cache.ts. Callers that DECORATE a page pass it, and
+    // fall through to the Sanity events below when Google is slow.
+    const raw = budget
+      ? await cachedWithin(key, ttlMs, load, opts)
+      : await cached(key, ttlMs, load, opts);
     // The tour filter runs AFTER the cache on purpose: a pattern change takes
     // effect on deploy without needing a cache-key bump. (The committed Apps
     // Script drops them at the source too, once redeployed — docs/PENDING.md.)
@@ -372,9 +376,12 @@ async function fetchSanityEvents(): Promise<HubEvent[]> {
  * gone from "Next up" by the afternoon instead of lingering until tomorrow.
  * Returns [] only when both sources fail or are empty.
  */
-export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
+export async function getUpcomingEvents(
+  feedUrl: string,
+  opts: { budget?: boolean } = {},
+): Promise<HubEvent[]> {
   const now = Date.now();
-  const feed = await fetchFeedEvents(feedUrl);
+  const feed = await fetchFeedEvents(feedUrl, opts.budget);
   const upcoming = (feed ?? []).filter((e) => eventEndsAt(e) >= now);
   // Feed unreachable, or reachable but with nothing still upcoming → Sanity.
   return upcoming.length > 0 ? upcoming : fetchSanityEvents();
@@ -386,7 +393,10 @@ export async function getUpcomingEvents(feedUrl: string): Promise<HubEvent[]> {
  * of the current month, not just what's still upcoming. Shares the same cache
  * entry as getUpcomingEvents, so calling both on one page is a single fetch.
  */
-export async function getCalendarEvents(feedUrl: string): Promise<HubEvent[]> {
-  const feed = await fetchFeedEvents(feedUrl);
+export async function getCalendarEvents(
+  feedUrl: string,
+  opts: { budget?: boolean } = {},
+): Promise<HubEvent[]> {
+  const feed = await fetchFeedEvents(feedUrl, opts.budget);
   return feed && feed.length > 0 ? feed : fetchSanityEvents();
 }

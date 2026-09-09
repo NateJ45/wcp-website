@@ -15,7 +15,10 @@ import HomeWidgetCard from '@/components/hub/HomeWidgetCard.astro';
 import Icon from '@/components/Icon.astro';
 import { getWeekAheadForecast, type WeatherIcon } from '@/lib/hub-weather';
 
-const days = await getWeekAheadForecast();
+// `budget: true`: this card renders INLINE on the hub home, so a cold, slow
+// forecast read would delay the whole page (src/lib/hub-cache.ts). The card
+// already has a designed empty state, which is what a late read now shows.
+const days = await getWeekAheadForecast({ budget: true });
 const empty = days.length === 0;
 
 // Colour each condition icon by what it means (sun warm, rain sky-blue, storm

@@ -24,7 +24,7 @@ import { hubEditAttr } from '@/lib/hub-preview';
 import Icon from '@/components/Icon.astro';
 import HubWatermark from '@/components/hub/HubWatermark.astro';
 import { sanityFetch, BOARD_CONTENT_CACHE } from '@/lib/sanity';
-import { cached } from '@/lib/hub-cache';
+import { cachedWithin } from '@/lib/hub-cache';
 import { PHOTO_ALBUM_QUERY } from '@/lib/queries';
 import { fetchInstagram } from '@/lib/instagram';
 import { imageUrl, type SanityImageValue } from '@/lib/image';
@@ -62,15 +62,20 @@ let tiles: Tile[] = [];
 const igToken = env.INSTAGRAM_TOKEN;
 if (igToken) {
   try {
-    const live = await cached(
-      // ":v3" — tile shape gained `caption`+`isVideo` (v2), then `videoUrl` (v3).
-      // Bump the key on a shape change so a deploy fetches the new fields fresh
-      // instead of serving the old-shape envelope for up to the 24h fresh window.
-      'ig:feed:v3',
-      86_400_000, // 24h fresh — matches the Fourthwall store cadence
-      () => fetchInstagram(8, igToken),
-      { swrMs: 259_200_000 }, // serve stale up to 3 days while refreshing
-    );
+    // cachedWithin, not cached (2026-09-09): this board renders INLINE on the
+    // hub home, so a slow Instagram read held the page open. The wait now has a
+    // ceiling (src/lib/hub-cache.ts), and a late read falls through to the
+    // Board-curated album below — the same fallback a failed fetch already used.
+    const live =
+      (await cachedWithin(
+        // ":v3" — tile shape gained `caption`+`isVideo` (v2), then `videoUrl` (v3).
+        // Bump the key on a shape change so a deploy fetches the new fields fresh
+        // instead of serving the old-shape envelope for up to the 24h fresh window.
+        'ig:feed:v3',
+        86_400_000, // 24h fresh — matches the Fourthwall store cadence
+        () => fetchInstagram(8, igToken),
+        { swrMs: 259_200_000 }, // serve stale up to 3 days while refreshing
+      )) ?? [];
     tiles = live.map((t) => ({
       imgUrl: t.imgUrl,
       alt: t.alt,

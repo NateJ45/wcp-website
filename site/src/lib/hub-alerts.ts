@@ -17,7 +17,7 @@
 // specifically (the categories that actually risk a delay or closure).
 // "No relevant alert" is a normal, cacheable state — not a fetch failure.
 // =============================================================================
-import { cached } from '@/lib/hub-cache';
+import { cached, cachedWithin } from '@/lib/hub-cache';
 import { site } from '@/data/site';
 
 export interface HubAlert {
@@ -41,37 +41,42 @@ const SCHOOL_RELEVANT =
 
 /** The most urgent active NWS alert near the school, or null (banner hidden)
  *  when there's none or the fetch fails. */
-export async function getActiveAlert(): Promise<HubAlert | null> {
+export async function getActiveAlert(opts: { budget?: boolean } = {}): Promise<HubAlert | null> {
   try {
-    return await cached(
-      // ":v2" — the point moved to site.geo (the school, not a location 2.2
-      // miles away). Same NWS zone in practice, but the key tracks the input.
-      'nws-alert:west-chester-oh:v2',
-      3_600_000, // 1h fresh — sudden warnings must catch up fast (see header)
-      async () => {
-        const res = await fetch(
-          `https://api.weather.gov/alerts/active?point=${site.geo.lat},${site.geo.lng}`,
-          {
-            headers: { 'User-Agent': '(westchesterpreschool.org, wcp-website family hub)' },
-            signal: AbortSignal.timeout(5000),
-          },
-        );
-        if (!res.ok) throw new Error(`nws alerts ${res.status}`);
-        const data = (await res.json()) as NwsAlerts;
-        const features = Array.isArray(data.features) ? data.features : [];
-        const relevant = features.find((f) => {
-          const p = f.properties;
-          if (!p) return false;
-          if (p.severity === 'Severe' || p.severity === 'Extreme') return true;
-          return SCHOOL_RELEVANT.test(p.event ?? '') || SCHOOL_RELEVANT.test(p.headline ?? '');
-        });
-        if (!relevant?.properties?.headline) return null;
-        return {
-          headline: relevant.properties.headline,
-          severity: relevant.properties.severity ?? 'Moderate',
-        };
-      },
-      { swrMs: 10_800_000 }, // +3h stale — 4h horizon
+    // `budget` picks the read that never blocks a page for long — see the wait
+    // budget in src/lib/hub-cache.ts. The banner hides when the read is late.
+    const read = opts.budget ? cachedWithin : cached;
+    return (
+      (await read(
+        // ":v2" — the point moved to site.geo (the school, not a location 2.2
+        // miles away). Same NWS zone in practice, but the key tracks the input.
+        'nws-alert:west-chester-oh:v2',
+        3_600_000, // 1h fresh — sudden warnings must catch up fast (see header)
+        async () => {
+          const res = await fetch(
+            `https://api.weather.gov/alerts/active?point=${site.geo.lat},${site.geo.lng}`,
+            {
+              headers: { 'User-Agent': '(westchesterpreschool.org, wcp-website family hub)' },
+              signal: AbortSignal.timeout(5000),
+            },
+          );
+          if (!res.ok) throw new Error(`nws alerts ${res.status}`);
+          const data = (await res.json()) as NwsAlerts;
+          const features = Array.isArray(data.features) ? data.features : [];
+          const relevant = features.find((f) => {
+            const p = f.properties;
+            if (!p) return false;
+            if (p.severity === 'Severe' || p.severity === 'Extreme') return true;
+            return SCHOOL_RELEVANT.test(p.event ?? '') || SCHOOL_RELEVANT.test(p.headline ?? '');
+          });
+          if (!relevant?.properties?.headline) return null;
+          return {
+            headline: relevant.properties.headline,
+            severity: relevant.properties.severity ?? 'Moderate',
+          };
+        },
+        { swrMs: 10_800_000 }, // +3h stale — 4h horizon
+      )) ?? null
     );
   } catch {
     return null;

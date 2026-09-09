@@ -126,6 +126,18 @@ Every fetch is try/catch'd with a short timeout — a failed source degrades to 
 empty state, never a broken card. Seed/refresh the letter with
 `node scripts/seed-president-note.mjs`.
 
+**The wait budget (2026-09-09).** A cache HIT is instant, but the first request after a
+deploy or a quiet spell still has to run the origin. That cold read used to sit in the hub
+topbar (every page) and the home greeting, both of which render inline, so a slow Google
+round-trip delayed the whole page — and a failed read is never cached, so a dead origin cost
+its full 8s timeout on every request. Two of them in series was a browser that spun for 16
+seconds. Now those reads pass `{ budget: true }`, which caps the wait at 1.2s
+(`cachedWithin` in `src/lib/hub-cache.ts`). Past the budget the value is simply left out for
+that one request, the fetch still finishes in the background, and the next request finds it
+cached. So the worst a slow calendar feed can do is hide the topbar's "Next: ..." link for a
+moment. Pages whose whole subject IS the live data — the Calendar page, the Fundraising page
+— still wait, because an empty page there would be worse than a slow one.
+
 ### Home dashboard settings
 
 The greeting hero and progress bar read four optional `siteSettings` fields (Studio → **Site

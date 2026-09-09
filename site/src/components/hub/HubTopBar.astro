@@ -48,7 +48,7 @@ import {
   type BellFeedItem,
   calendarBellRows,
 } from '@/lib/hub-bell';
-import { getFundraisers } from '@/lib/gsheets';
+import { getFundraisers, type Fundraiser } from '@/lib/gsheets';
 import { calendarFeedUrlFallback, budgetSheetIdFallback } from '@/data/hub/live-links';
 import { payUrl } from '@/data/classes';
 import { getHubClassrooms } from '@/lib/hub-classes';
@@ -88,43 +88,49 @@ interface HubBarSettings {
   calendarFeedUrl?: string | null;
   budgetSheetId?: string | null;
 }
+// Cached like every other board-content read: this bar renders on EVERY hub
+// page, so an uncached read here cost a Sanity round-trip per navigation.
 let settings: HubBarSettings | null = null;
 try {
   settings = await sanityFetch<HubBarSettings | null>(
     `*[_type == "hubSettings"][0]{ calendarFeedUrl, budgetSheetId }`,
+    {},
+    { cache: BOARD_CONTENT_CACHE },
   );
 } catch {
   settings = null;
 }
 
-// The classrooms, from ONE cached read the rail has already paid for. The quick
-// links below build their per-class URLs from it, and the bell turns a teacher
-// note's class key into the classroom page the letter actually opens on.
-const classrooms = await getHubClassrooms();
-
-// Upcoming events, for the "Next: ..." quick link AND the bell's calendar feed.
-// Cached (shared with the home widget), so this is a cache hit on every page
-// after the first; degrades to no events on any failure.
-let events: HubEvent[] = [];
-try {
-  events = await getUpcomingEvents(settings?.calendarFeedUrl || calendarFeedUrlFallback);
-} catch {
-  events = [];
-}
+// THIS BAR MUST NEVER HOLD THE PAGE OPEN (2026-09-09).
+//
+// The three reads below are independent, so they run CONCURRENTLY rather than
+// in series. The two Google reads also pass `budget: true`, which caps how long
+// a visitor waits for a COLD read (src/lib/hub-cache.ts). Both feed decoration
+// only — the "Next: ..." quick link and two of the bell's nine rows — but they
+// sit in the chrome of every hub page, so before this they delayed the first
+// byte of HTML on every navigation. A slow feed now costs a missing quick link
+// for one request, not a page that will not open.
+const [classrooms, events, fundraisers] = await Promise.all([
+  // The classrooms, from ONE cached read the rail has already paid for. The
+  // quick links below build their per-class URLs from it, and the bell turns a
+  // teacher note's class key into the classroom page the letter opens on.
+  getHubClassrooms(),
+  // Upcoming events, for the "Next: ..." quick link AND the bell's calendar
+  // feed. Cached (shared with the home widget), so this is a cache hit on every
+  // page after the first; degrades to no events on any failure.
+  getUpcomingEvents(settings?.calendarFeedUrl || calendarFeedUrlFallback, {
+    budget: true,
+  }).catch((): HubEvent[] => []),
+  // The year's fundraising totals, from the SAME cached gviz read the
+  // Fundraising page and the home greeting use. No new external origin, no new
+  // KV key.
+  getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback, { budget: true }).catch(
+    (): Fundraiser[] => [],
+  ),
+]);
 const nextEvent: HubEvent | null = events[0] ?? null;
-
-// The year's fundraising totals, from the SAME cached gviz read the Fundraising
-// page and the home greeting use. No new external origin, no new KV key.
-let fundraisingRaised = 0;
-let fundraisingGoal = 0;
-try {
-  const fundraisers = await getFundraisers(settings?.budgetSheetId || budgetSheetIdFallback);
-  fundraisingRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
-  fundraisingGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
-} catch {
-  fundraisingRaised = 0;
-  fundraisingGoal = 0;
-}
+const fundraisingRaised = fundraisers.reduce((s, f) => s + f.raised, 0);
+const fundraisingGoal = fundraisers.reduce((s, f) => s + f.goal, 0);
 
 // What's-new feed: recent updates (with the Board's highlight flag) + the
 // latest documents. Board highlights are fetched separately so an important

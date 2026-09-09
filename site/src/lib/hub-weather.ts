@@ -26,7 +26,7 @@
 //   and coat (low <= 45°F) / rain-gear (>=50% precip) / sunscreen (UV >= 6)
 //   flags. All from ONE Open-Meteo daily call (no extra fetch or KV key).
 // =============================================================================
-import { cached } from '@/lib/hub-cache';
+import { cached, cachedWithin } from '@/lib/hub-cache';
 import { site } from '@/data/site';
 
 /** The weather icons this module can return (all live in lucide-icons.ts). */
@@ -123,8 +123,8 @@ function describe(tempF: number, code: number): Condition {
  * cache. Null (ribbon hidden) when the forecast is unavailable; the underlying
  * getWeekAheadForecast already swallows any failure and returns [].
  */
-export async function getWeather(): Promise<HubWeather | null> {
-  const today = (await getWeekAheadForecast())[0];
+export async function getWeather(opts: { budget?: boolean } = {}): Promise<HubWeather | null> {
+  const today = (await getWeekAheadForecast(opts))[0];
   if (!today) return null;
   const {
     high,
@@ -197,52 +197,60 @@ const dayName = (dateISO: string): string =>
   });
 
 /** The next 7 days at the school (today included), or [] on any failure. */
-export async function getWeekAheadForecast(): Promise<HubForecastDay[]> {
+export async function getWeekAheadForecast(
+  opts: { budget?: boolean } = {},
+): Promise<HubForecastDay[]> {
   try {
-    return await cached(
-      // ":v3" — the day shape gained `label`/`precipChance` (v2) then `uvMax`/
-      // `needsSunscreen` (v3). Bump the key on any shape change so a deploy
-      // fetches the new fields fresh instead of serving the old-shape envelope
-      // for up to the 8h fresh window. ":v4" — the coordinates moved to
-      // site.geo (the school, not a point 2.2 miles away).
-      'weather:west-chester-oh:week:v4',
-      28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
-      async () => {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${site.geo.lat}&longitude=${site.geo.lng}` +
-            '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max' +
-            '&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7',
-          { signal: AbortSignal.timeout(5000) },
-        );
-        if (!res.ok) throw new Error(`open-meteo forecast ${res.status}`);
-        const daily = ((await res.json()) as OpenMeteoForecast).daily;
-        const dates = daily?.time ?? [];
-        if (dates.length === 0) throw new Error('no forecast days');
-        const days: HubForecastDay[] = [];
-        for (let i = 0; i < dates.length; i++) {
-          const dateISO = dates[i];
-          const high = Math.round(daily?.temperature_2m_max?.[i] ?? NaN);
-          const low = Math.round(daily?.temperature_2m_min?.[i] ?? NaN);
-          if (!Number.isFinite(high) || !Number.isFinite(low)) continue;
-          const code = daily?.weather_code?.[i] ?? 3;
-          const precip = Math.round(daily?.precipitation_probability_max?.[i] ?? 0);
-          const uv = Math.round(daily?.uv_index_max?.[i] ?? 0);
-          days.push({
-            dateISO,
-            dayLabel: i === 0 ? 'Today' : dayName(dateISO),
-            high,
-            low,
-            ...describe(high, code),
-            precipChance: precip,
-            uvMax: uv,
-            needsCoat: low <= 45,
-            needsRainGear: precip >= 50,
-            needsSunscreen: uv >= 6,
-          });
-        }
-        return days;
-      },
-      { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
+    // `budget` picks the read that never blocks a page for long — see the wait
+    // budget in src/lib/hub-cache.ts. The forecast decorates a page; it is
+    // never the page, so both hub callers pass it.
+    const read = opts.budget ? cachedWithin : cached;
+    return (
+      (await read(
+        // ":v3" — the day shape gained `label`/`precipChance` (v2) then `uvMax`/
+        // `needsSunscreen` (v3). Bump the key on any shape change so a deploy
+        // fetches the new fields fresh instead of serving the old-shape envelope
+        // for up to the 8h fresh window. ":v4" — the coordinates moved to
+        // site.geo (the school, not a point 2.2 miles away).
+        'weather:west-chester-oh:week:v4',
+        28_800_000, // 8h fresh — a multi-day forecast barely moves; ~3 KV writes/day
+        async () => {
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${site.geo.lat}&longitude=${site.geo.lng}` +
+              '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max' +
+              '&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7',
+            { signal: AbortSignal.timeout(5000) },
+          );
+          if (!res.ok) throw new Error(`open-meteo forecast ${res.status}`);
+          const daily = ((await res.json()) as OpenMeteoForecast).daily;
+          const dates = daily?.time ?? [];
+          if (dates.length === 0) throw new Error('no forecast days');
+          const days: HubForecastDay[] = [];
+          for (let i = 0; i < dates.length; i++) {
+            const dateISO = dates[i];
+            const high = Math.round(daily?.temperature_2m_max?.[i] ?? NaN);
+            const low = Math.round(daily?.temperature_2m_min?.[i] ?? NaN);
+            if (!Number.isFinite(high) || !Number.isFinite(low)) continue;
+            const code = daily?.weather_code?.[i] ?? 3;
+            const precip = Math.round(daily?.precipitation_probability_max?.[i] ?? 0);
+            const uv = Math.round(daily?.uv_index_max?.[i] ?? 0);
+            days.push({
+              dateISO,
+              dayLabel: i === 0 ? 'Today' : dayName(dateISO),
+              high,
+              low,
+              ...describe(high, code),
+              precipChance: precip,
+              uvMax: uv,
+              needsCoat: low <= 45,
+              needsRainGear: precip >= 50,
+              needsSunscreen: uv >= 6,
+            });
+          }
+          return days;
+        },
+        { swrMs: 57_600_000 }, // +16h stale — 24h horizon, survives a quiet day
+      )) ?? []
     );
   } catch {
     return [];
