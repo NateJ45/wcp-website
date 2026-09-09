@@ -45,6 +45,17 @@ setup('sign in to the family hub', async ({ page, context }) => {
   // Landing on the hub (not back on the login form) is the proof it worked.
   await expect(page).toHaveURL(/\/family-hub\/?$/);
 
+  // Every seed below reads the live DOM, and every one of them fails SILENTLY
+  // if the element is not attached yet: the note seeds nothing at all, the tour
+  // seeds an empty version that can never match the real one, and the spotlight
+  // map comes out empty. toHaveURL above polls the URL, which can flip while the
+  // hub document is still arriving, so wait for the shell itself before reading
+  // anything out of it. Getting this wrong raises no error here; it surfaces as
+  // a one-shot overlay covering the shell in some later suite, which is how the
+  // desktop-rail test failed on 2026-09-07 and again on 2026-09-09 even after
+  // the note seeding below was added.
+  await page.locator('.wcp-hub-canvas').waitFor({ state: 'attached' });
+
   // Mark the first-visit tour as seen, so its overlay never blocks the other
   // suites. tests/hub-tour.spec.ts clears this on purpose to test the tour.
   await page.evaluate(() => {
