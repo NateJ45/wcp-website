@@ -204,7 +204,15 @@ jobs:
       # webkit-iphone. Installing only chromium made every webkit test die
       # with "Executable doesn't exist" (bit us 2026-07-13).
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
+        # `--with-deps` runs `apt-get update`, which fails outright when the
+        # runner's third-party Chrome/Microsoft apt sources are mid-sync and
+        # report a "Hash Sum mismatch" (that killed a deploy 2026-09-09).
+        # Playwright's system libraries come from Ubuntu's own archive, so drop
+        # those sources first, then retry once for transient network failures.
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome* /etc/apt/sources.list.d/microsoft*
+          npx playwright install --with-deps chromium webkit ||
+            npx playwright install --with-deps chromium webkit
 
       # Runs the reflow (320px), smoke, and axe accessibility suites against a
       # fresh production build (see playwright.config.ts webServer). That
