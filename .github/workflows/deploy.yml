@@ -73,7 +73,15 @@ jobs:
       # Playwright's Chromium so a Studio edit regenerates the PDFs on every
       # deploy. Without the browser they skip and the committed PDFs ship.
       - name: Install Playwright Chromium (PDF generators)
-        run: npx playwright install --with-deps chromium
+        # `--with-deps` runs `apt-get update`, which fails outright when the
+        # runner's third-party Chrome/Microsoft apt sources are mid-sync and
+        # report a "Hash Sum mismatch" (that killed a deploy 2026-09-09).
+        # Playwright's system libraries come from Ubuntu's own archive, so drop
+        # those sources first, then retry once for transient network failures.
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome* /etc/apt/sources.list.d/microsoft*
+          npx playwright install --with-deps chromium ||
+            npx playwright install --with-deps chromium
 
       # SANITY_TOKEN is read via `import.meta.env.SANITY_TOKEN` at build time
       # by src/lib/cms.ts (public-page reads) — see site/.env locally. Setting
