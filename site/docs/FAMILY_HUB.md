@@ -725,6 +725,29 @@ add `--commit` to write.
   Matching is case-insensitive on `familyName`; an asset still referenced elsewhere is kept
   and logged rather than failing the run.
 
+### Where the directory lives now, and how to unlist one person
+
+**WARNING: the two scripts above are from the Sanity era.** The directory moved to the
+**DIRECTORY KV namespace** on 2026-09-06, because the Sanity dataset is PUBLIC on the free
+plan. `src/lib/hub-directory.ts` is the only reader. The key is `directory:v1`. The board
+edits families at **`/family-hub/admin`**, behind a second password.
+
+A family often asks the board to unlist ONE grown-up, and to keep the rest of the family
+listed. There are two ways to do this:
+
+1. **In the hub admin.** Open `/family-hub/admin`, select the family, and clear that
+   person's Email and Phone fields. Then save. This is the normal route. It needs no
+   developer.
+2. **With `node scripts/redact-directory-contacts.mjs "<Person Name>" [...] [--commit]`.**
+   Use it for several people at a time. The script clears the email and the phone, and keeps
+   the name on the card. `--drop` removes the person from the family instead. It is dry-run
+   by default. It backs the old value up to `directory:v1:backup:<timestamp>` and increments
+   the version, in the same way `saveDirectory()` does. Log in to wrangler first.
+
+**The Squarespace directory code block holds a SECOND copy of these details.** It is a
+separate paste, and KV does not feed it. Update it in the same sitting, or the details the
+family asked you to remove stay on the old site.
+
 `optedIn` mirrors the registration form's "may we print your family's name, address, email and
 phone on the class roster?" question. A family who answered **No** still gets a record (the
 Board needs it) but goes in with `optedIn: false`, so it never renders. That mapping is not
