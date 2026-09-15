@@ -8,7 +8,7 @@ name: Refresh Instagram token
 # GitHub Actions cron is calendar-based (fixed times/dates), not
 # interval-based, so it cannot express "every 50 days" directly. Instead this
 # runs on a frequent-enough cron and gates the actual refresh behind a
-# checked-in timestamp (.github/instagram-token-refreshed-at) — the refresh
+# timestamp kept on the `ops-state` branch (instagram-token-refreshed-at) — the refresh
 # only fires once >= 50 days have actually elapsed since the last one, giving
 # an exact 50-day cadence independent of how the cron itself is expressed.
 # Comfortably inside the 60-day expiry window even if a run is skipped
@@ -33,14 +33,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The marker lives on the unprotected `ops-state` branch, NOT on main.
+      # `main` is governed by the ruleset "main: PR + green CI", and a repo owned
+      # by a personal account cannot grant the GitHub Actions app a bypass (the
+      # API rejects actor_type "Integration" outright), so a cron that committed
+      # to main would fail every time it was due. Reading and writing a branch
+      # nothing protects keeps this job self-sufficient with no bypass anywhere.
       - name: Check if 50 days have elapsed
         id: check
         run: |
-          STATE_FILE=".github/instagram-token-refreshed-at"
+          # LAST=0 means "never refreshed", which makes DAYS_SINCE enormous and
+          # fires the gate below. That safe default is deliberate and unchanged
+          # from when this marker lived on main: a missing marker must refresh,
+          # never skip. A missing ops-state branch lands in the same place.
           LAST=0
-          if [ -f "$STATE_FILE" ]; then
-            LAST=$(cat "$STATE_FILE")
+          if git fetch --depth=1 origin ops-state 2>/dev/null; then
+            LAST=$(git show FETCH_HEAD:instagram-token-refreshed-at 2>/dev/null || echo 0)
           fi
+          case "$LAST" in ''|*[!0-9]*) LAST=0 ;; esac
           NOW=$(date +%s)
           DAYS_SINCE=$(( (NOW - LAST) / 86400 ))
           echo "$DAYS_SINCE days since last refresh (0 = never)"
@@ -103,13 +113,29 @@ jobs:
       - name: Record refresh timestamp
         if: steps.check.outputs.due == 'true'
         run: |
-          mkdir -p .github
-          date +%s > .github/instagram-token-refreshed-at
+          # Commit the new timestamp ONTO ops-state without checking it out:
+          # hash-object / write-tree / commit-tree build the one-file commit
+          # directly, so the main checkout this job is running in is never
+          # disturbed and no second worktree is needed. commit-tree still needs
+          # a committer identity, hence the git config lines.
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/instagram-token-refreshed-at
-          git commit -m "chore: record Instagram token refresh"
-          git push
+          git fetch --depth=1 origin ops-state
+          PARENT=$(git rev-parse FETCH_HEAD)
+          BLOB=$(date +%s | git hash-object -w --stdin)
+          # Build the one-file tree through a THROWAWAY index. The obvious
+          # `printf ... | git mktree` needs a literal tab between the mode and
+          # the path, and an invisible tab inside a YAML block scalar is a
+          # trap; --cacheinfo takes the same fields as plain arguments.
+          GIT_INDEX_FILE=$(mktemp -u)   # -u: a NAME only. A zero-byte file from
+          #                               plain mktemp makes git abort with
+          #                               "index file smaller than expected".
+          export GIT_INDEX_FILE
+          git update-index --add --cacheinfo 100644,$BLOB,instagram-token-refreshed-at
+          TREE=$(git write-tree)
+          unset GIT_INDEX_FILE
+          COMMIT=$(git commit-tree "$TREE" -p "$PARENT" -m "chore: record Instagram token refresh")
+          git push origin "$COMMIT:refs/heads/ops-state"
 
       # Rebuilds so the new token is baked into the static build immediately,
       # rather than waiting for the next content push or Sanity publish.
