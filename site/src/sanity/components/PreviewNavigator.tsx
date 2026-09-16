@@ -27,7 +27,7 @@ import { LiveDraftBridge } from './LiveDraftBridge';
 import { newKey, regenerateKeys } from '../../lib/sanity-keys';
 import { sectionLabel } from '../../lib/page-checks';
 import { adaptBandToNeighbour } from '../../lib/section-fields';
-import { startNav, stepNav, type PendingNav } from '../../lib/preview-navigation';
+import { startNav, stepNav, toPreviewPath, type PendingNav } from '../../lib/preview-navigation';
 
 // =============================================================================
 // PreviewNavigator — the Squarespace-style page list beside the live preview
@@ -476,9 +476,11 @@ export function makePreviewNavigator(kind: 'public' | 'hub'): ComponentType {
       };
     }, [client, refetch]);
 
-    // params.preview is the iframe's current URL; compare pathnames so query
-    // strings never break the highlight.
-    const current = (params.preview ?? '').split('?')[0];
+    // params.preview is the iframe's current URL. It is NORMALISED TO A PATH,
+    // not merely stripped of its query: on a deployed Studio the host stores it
+    // as an absolute url, and every comparison below (the bounce machine and the
+    // row highlight) is against a root-relative row href. See toPreviewPath.
+    const current = toPreviewPath(params.preview);
 
     // BOUNCE-AWARE navigation (2026-08-28, ported from presacademy). Clicking a
     // page took TWO clicks every time: the panel changed, the iframe did not,
