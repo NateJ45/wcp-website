@@ -185,8 +185,10 @@ produce a long-lived (60-day) token.
 Because the site is static, both the feed content and the token need periodic rebuilds/
 refreshing — both automated: `.github/workflows/refresh-instagram-token.yml` runs weekly,
 refreshes the long-lived token via `graph.instagram.com/refresh_access_token` every 50
-days (tracked in `.github/instagram-token-refreshed-at`, created on the first real refresh, since GitHub cron can't express
-"every N days" directly), writes the new token back to the `INSTAGRAM_TOKEN` secret, and
+days (tracked in `instagram-token-refreshed-at` on the **`ops-state` branch**, since GitHub
+cron can't express "every N days" directly). The marker lives off `main` on purpose: `main`
+requires a PR plus green CI, and a personal-account repo cannot grant the Actions app a
+ruleset bypass, so a cron committing to `main` would fail every time it was due, writes the new token back to the `INSTAGRAM_TOKEN` secret, and
 triggers a `deploy.yml` rebuild so it — and any new posts — go live immediately. That
 refresh/rebuild step needs a **PAT** (not the default `GITHUB_TOKEN`, which can't write
 repo secrets or trigger other workflows) stored as the `GH_ACTIONS_PAT` secret, scoped to
