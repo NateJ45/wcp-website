@@ -1,10 +1,11 @@
 /**
- * Builds the West Chester Preschool Publicity Committee Guide (2026-2027) as a .docx.
+ * Builds the West Chester Preschool Publicity Committee Guide (2026-2027) as a
+ * one-page .docx.
  *
  * Formatting mirrors the other WCP committee guides (Family Activities, etc.):
  *   - three-line centered title block at the top
  *   - bold + underlined section headings
- *   - bulleted instructions with one level of sub-bullets
+ *   - short bulleted sections
  *   - simple bordered tables for the chair and committee roster
  *
  * Section headings use WCP navy (#01457e) as the one brand touch; everything
@@ -35,7 +36,7 @@ const {
 
 const NAVY = "01457E"; // WCP navy, used for section headings
 const FONT = "Arial";
-const BODY_SIZE = 21; // half-points, so 21 = 10.5pt (keeps the guide to two pages)
+const BODY_SIZE = 21; // half-points, so 21 = 10.5pt (keeps the guide to one page)
 
 // US Letter, 1" margins on the sides, a little tighter top/bottom for page fit.
 const PAGE = {
@@ -70,7 +71,7 @@ function titleLine(text, opts = {}) {
 /** Bold, underlined, navy section heading (matches the other committee guides). */
 function heading(text) {
   return new Paragraph({
-    spacing: { before: 260, after: 100 },
+    spacing: { before: 190, after: 80 },
     children: [
       new TextRun({
         text,
@@ -92,7 +93,7 @@ function heading(text) {
 function bullet(runs, level = 0) {
   return new Paragraph({
     numbering: { reference: "wcp-bullets", level },
-    spacing: { after: 60 },
+    spacing: { after: 40 },
     children: runs.map(
       (r) =>
         new TextRun({
@@ -182,6 +183,11 @@ function spacer(size = 120) {
 
 // ---------------------------------------------------------------------------
 // Document content
+//
+// Scope note: this guide is deliberately narrow. Committee reps do one monthly
+// ClassDojo photo pull plus optional sharing, capped at about an hour a month.
+// Event photography, flyer distribution, and photo-permission checking sit with
+// the chair and the board, not with reps.
 // ---------------------------------------------------------------------------
 
 const children = [
@@ -193,177 +199,80 @@ const children = [
   // --- What the committee does --------------------------------------------
   heading("What the Publicity Committee Does"),
   body(
-    "Publicity tells the WCP story, both to the families already here and to the families who have not " +
-      "found us yet. That covers photos and video at school events, social media, the website, the family " +
-      "newsletter, flyers and signs around West Chester, and anything else that carries the school name or " +
-      "logo. Enrollment is the reason this committee exists. A full school is what keeps tuition low and the " +
-      "co-op running, and most families find us through a photo, a post, or a friend sharing one.",
+    "Publicity keeps West Chester Preschool visible, both to the families already here and to the families " +
+      "still looking for a preschool. Committee reps are the eyes inside the classroom. Once a month you pass " +
+      "along the best photos from your class so they can become posts. That is the job.",
   ),
 
-  // --- Committee instructions ---------------------------------------------
-  heading("Publicity Committee Instructions"),
+  // --- The monthly routine -------------------------------------------------
+  heading("Your Job, About One Hour a Month"),
   bullet([
-    { text: "The chair holds the accounts. ", bold: true },
+    { text: "Pull classroom highlights, about 45 minutes. ", bold: true },
     {
       text:
-        "Only the chair posts to the WCP Facebook and Instagram pages, the website, and the family email " +
-        "list, so the look and voice stay consistent and nothing private lands on the public web. " +
-        "Everything below is committee work, and all of it matters.",
+        "Once a month, scroll through your classroom's ClassDojo feed, pick 3 to 5 photos that show kids " +
+        "busy and happy, and drop them into the shared Publicity folder (link in the committee email). " +
+        "That is the heart of the role.",
     },
   ]),
   bullet([
-    { text: "Take photos at events you attend. ", bold: true },
+    { text: "Share a post when you can, about 15 minutes. ", bold: true },
     {
       text:
-        "Phone photos are perfect. Send them to the chair within a day or two, while the event is still " +
-        "news. Candid shots of kids busy and happy work better than posed lineups, and a few seconds of " +
-        "video is gold for a reel.",
+        "When WCP posts on Facebook or Instagram, share it to your own page or a local community group if it " +
+        "fits. No quota, just when it is easy.",
     },
   ]),
-  bullet(
-    [
-      {
-        text:
-          "Check the photo permission list before you shoot. A few families have opted out of photos. " +
-          "The chair keeps the current list and will share it at the start of the year. When in doubt, " +
-          "send the photo to the chair rather than posting it anywhere yourself.",
-      },
-    ],
-    1,
-  ),
+
+  // --- Guardrails ----------------------------------------------------------
+  heading("Good to Know"),
   bullet([
-    { text: "Share every post. ", bold: true },
+    { text: "Time: ", bold: true },
     {
       text:
-        "Share WCP posts to your own page and into local parent groups: West Chester and Liberty Township " +
-        "community pages, moms groups, Buy Nothing groups, your neighborhood page, your church. This is the " +
-        "single highest-value thing a member can do, it costs nothing, and it is how most new families hear " +
-        "about us.",
+        "this role is built for about one hour a month, roughly eight hours across the school year, and it " +
+        "can be done from your phone.",
     },
   ]),
   bullet([
-    { text: "Help with the enrollment push, January through March. ", bold: true },
+    { text: "Approval: ", bold: true },
     {
       text:
-        "This is the busy stretch. Members hang flyers and drop postcards at libraries, pediatric and " +
-        "dentist offices, coffee shops, gyms, churches, and community centers. The chair prints and " +
-        "supplies the materials, so members just need to deliver them.",
+        "board leadership reviews content before it is published. Margot approves what goes on the school's " +
+        "pages, so nothing reaches the public without a board member seeing it first.",
     },
   ]),
   bullet([
-    { text: "Cover an event when the chair cannot. ", bold: true },
+    { text: "Photos: ", bold: true },
     {
       text:
-        "If the chair is not able to be at a school event, one member volunteers to be the camera for that " +
-        "night. No experience needed, just a charged phone.",
+        "send them to the shared folder rather than posting them yourself. The chair and board check photo " +
+        "permissions before anything is published, so it is not yours to track.",
     },
   ]),
   bullet([
-    { text: "Bring ideas, and proofread. ", bold: true },
+    { text: "Experience: ", bold: true },
     {
       text:
-        "Classroom milestones, a teacher doing something wonderful, an alumni family with good news, a " +
-        "community event we should be at. Pass it along. If you spot a typo or a wrong date on a post or " +
-        "flyer, text the chair right away.",
+        "none needed. No design skills, no social media know-how. If you can use ClassDojo, you can do this job.",
     },
   ]),
 
   // --- What the chair handles ---------------------------------------------
-  heading("What the Chair Handles"),
-  body(
-    "Listed so members know what is already covered and can ask to help with any of it:",
-    { after: 60 },
-  ),
+  heading("What the Chair Handles, So You Do Not Have To"),
   bullet([
-    {
-      text:
-        "Facebook and Instagram: the posting schedule, stories, reels, event promotion, and enrollment ads",
-    },
+    { text: "Posting and scheduling on Facebook and Instagram" },
   ]),
   bullet([
-    {
-      text: "The website: page edits, the calendar, announcements, and the family area",
-    },
+    { text: "The website, the calendar, and family announcements" },
   ]),
   bullet([
-    { text: "The family newsletter and email announcements" },
+    { text: "Graphics, flyers, signs, and enrollment materials" },
   ]),
   bullet([
     {
       text:
-        "Graphics, flyers, signs, and banners, all built in the WCP brand colors, fonts, and logo",
-    },
-  ]),
-  bullet([
-    {
-      text:
-        "Board headshots, class boards, and keeping the year's photos and graphics filed in the Publicity Google Drive",
-    },
-  ]),
-  bullet([
-    {
-      text:
-        "Community outreach: open house promotion, yard signs, local parent groups, and community events",
-    },
-  ]),
-
-  // --- Year at a glance ----------------------------------------------------
-  heading("The Publicity Year at a Glance"),
-  table(
-    [2300, 7780],
-    [
-      ["When", "Publicity Focus"],
-      [
-        "Aug - Sept",
-        "Welcome back posts, teacher introductions, first day photos, board headshots",
-      ],
-      [
-        "Oct - Dec",
-        "Fall VIP Night, classroom and holiday moments, fundraiser promotion",
-      ],
-      [
-        "Jan - Mar",
-        "Enrollment season: open house, registration dates, flyers and postcards out in the community, paid social ads. All hands on deck.",
-      ],
-      [
-        "Apr - May",
-        "Spring VIP Night, spring fundraiser, class photos, continued enrollment",
-      ],
-      [
-        "May - June",
-        "End of year picnic, graduation, thank-you posts, and handoff to next year's chair",
-      ],
-    ],
-  ),
-  spacer(),
-
-  // --- Time commitment -----------------------------------------------------
-  heading("Time Commitment"),
-  bullet([
-    {
-      text:
-        "A few hours a month for most of the year, and more during the January through March enrollment push.",
-    },
-  ]),
-  bullet([
-    {
-      text:
-        "Most of the work can be done from your phone, on your own schedule. If you cannot attend an event, you can still help by sharing posts, distributing flyers, or prepping materials.",
-    },
-  ]),
-
-  // --- Reimbursement -------------------------------------------------------
-  heading("Purchasing and Reimbursement"),
-  bullet([
-    {
-      text:
-        "Publicity has a budget for printing, signage, and social media ads. Check with the chair before spending, so we do not double up.",
-    },
-  ]),
-  bullet([
-    {
-      text:
-        "Keep your receipts and give them to the VP or Treasurer for reimbursement. A board member can also purchase items with the school credit card if that is easier.",
+        "Photos and video at school events, and filing the year's photos and graphics in the Publicity Google Drive",
     },
   ]),
 
@@ -391,7 +300,7 @@ const children = [
   ),
   spacer(60),
   body(
-    "Questions about anything in here, ask Nathan. Nothing on this list requires design or social media experience, just a phone and a willingness to talk up the school.",
+    "Questions, or a month where you cannot get to it? Text Nathan. A heads up ahead of time is always fine.",
     { italics: true },
   ),
 ];
