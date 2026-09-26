@@ -1,4 +1,7 @@
-# WCP social: Remotion motion layer (pilot)
+# WCP social: Remotion motion layer
+
+Adopted as the motion layer on 2026-09-26 after the One Pump pilot (see
+`social/CLAUDE.md`).
 
 A React/Remotion project that animates WCP reels and carousels. It was built
 as a pilot that rebuilds the 2026-09-25 "One Pump" reel

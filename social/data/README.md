@@ -28,23 +28,23 @@ const items = await classes();
 
 ## What it returns
 
-- **`classes()`** — one entry per class: name, slug, age group, days/times,
+- **`classes()`**, one entry per class: name, slug, age group, days/times,
   teacher name + honorific + role, class color key (`amber`/`green`/`orange`/
   `sky`/`navy`), a short description when one is modeled, and an
   `enrollmentStatus` field that is always `null` (see Gaps below).
-- **`upcomingEvents({ days = 45 })`** — public Events-page items (open
+- **`upcomingEvents({ days = 45 })`**, public Events-page items (open
   houses, tours, community events, closures) starting within the window,
   weekly/monthly recurrence expanded into real dates.
-- **`enrollment()`** — school year label, enrollment mode (open / waitlist /
+- **`enrollment()`**, school year label, enrollment mode (open / waitlist /
   closed) and deadline, the Google rating/review count/listing link, the
   headline fee amounts and payment FAQ from the Tuition & Fees singleton, and
   the upcoming open-house events.
-- **`school()`** — school name, tagline, founding year, city/state, site URL,
+- **`school()`**, school name, tagline, founding year, city/state, site URL,
   and social links (Facebook, Instagram, Google listing).
 
 ## The allowlist (what it queries, and nothing else)
 
-Every query names its exact fields — never `{...}` — and every query excludes
+Every query names its exact fields, never `{...}`, and every query excludes
 drafts (`!(_id in path("drafts.**"))`). The document types and fields it
 reads:
 
@@ -60,7 +60,7 @@ reads:
 
 **Never read:** `directoryEntry`, `hoursLog`, `photoSubmission`, `roleHolder`,
 `coopRole`, `submission`, `subscriber`, any `hub*` document, or any field on
-the types above outside the list — in particular `staff.email`, `staff.bio`,
+the types above outside the list, in particular `staff.email`, `staff.bio`,
 `staff.photo`, `siteSettings.phone`, `siteSettings.emailGeneral/Admin/Treasurer`,
 `siteSettings.street`/`zip`, and every PayPal payment-link field
 (`payId`, `studentFeePayId`, `registrationPayId`, `participationPayId`).
@@ -80,7 +80,7 @@ required.
 - **Open spots / enrollment status per class is not in Sanity.** It lives in
   a Google Sheet (`siteSettings.availabilitySheetId`), read server-side via
   `site/src/lib/gsheets.ts` at request time, not through a plain Sanity
-  query. `classes()` always returns `enrollmentStatus: null` — treat that as
+  query. `classes()` always returns `enrollmentStatus: null`, treat that as
   "not asked," not "no spots."
 - **`shortDescription` is per guide, not per class.** It comes from
   `curriculumGuide.intro`, keyed by a class slug (`twos`, `threes`) or a
@@ -88,7 +88,7 @@ required.
   its `-am`/`-pm` suffix, so Pre-K AM and Pre-K PM share the Pre-K intro.
   A new group key with another naming pattern would need that fallback extended.
 - **No per-class tuition in `classes()`.** `monthly`/`annual`/`studentFee`
-  live on the `class` document but aren't in this projection — they weren't
+  live on the `class` document but aren't in this projection, they weren't
   asked for here on purpose (enrollment-adjacent tuition facts belong in
   `enrollment()`, and that function currently surfaces only the school-wide
   registration/participation fees, not per-class tuition). Add

@@ -8,10 +8,10 @@ description: Make a West Chester Preschool social media reel or short video (Fac
 1. Read `social/CLAUDE.md` in full (brief, hard rules, workflow, gotchas), then
    `social/STYLE.md` and the newest entry in `social/LOG.md`.
 2. Follow the workflow there: intake with `social/reelkit/reelkit.py intake`,
-   find the one joke, copy the newest `social/reels/*/reel.py` to a new
-   `social/reels/<YYYY-MM-DD-slug>/reel.py`, preview stills, render in the
-   background, verify the encoded file, then deliver both MP4s with
-   SendUserFile plus a caption.
+   find the one joke, run the face check sheet, prepare blurred media with a
+   new `social/reels/<YYYY-MM-DD-slug>/export_assets.py`, animate it in
+   `social/remotion/`, render, loudnorm, verify the encoded file at 2x, then
+   deliver both MP4s (or carousel PNGs) with SendUserFile plus a caption.
 3. Non-negotiables: no media in git (the repo is public), send the face check
    sheet (`facesheet.py build`) and blur the faces Nathan ticks, blur every readable
    child's name, no em-dashes, synthesized music only, never post on Nathan's

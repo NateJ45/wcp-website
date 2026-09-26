@@ -3,8 +3,9 @@
 Read this before making any WCP social post, reel, or short video. It covers what
 Nathan needs, how the toolkit works, and the rules that are not negotiable.
 Companion files: `STYLE.md` (brand, voice, captions), `LOG.md` (what we have
-made and what worked), `reelkit/reelkit.py` (the render library),
-`reels/<date-slug>/reel.py` (one script per finished piece).
+made and what worked), `reelkit/` (Python media prep), `remotion/` (the
+animation layer, README there), `data/` (class facts from the website), and
+`reels/<date-slug>/` (one folder per finished piece).
 
 ## Who this is for
 
@@ -103,19 +104,30 @@ A finished handoff is:
    montage, and a branded end card. Look closely at the photos for accidental
    gags; the "How to Count to 1" book on a shelf was the best beat in One Pump.
    Put real dialogue on screen as captions, timed from Whisper's word timestamps.
-3. **Script it.** Copy the newest `reels/*/reel.py` to
-   `reels/<date-slug>/reel.py` and rewrite its timeline, text, and SFX schedule.
-   Reuse the reelkit primitives rather than writing new drawing code.
-4. **Preview.** `python reel.py --preview` writes stills at chosen timestamps
-   plus a contact sheet. Look at it. Check text fits the frame, nothing covers
-   faces, zooms land on the intended detail, and blurs cover names. Iterate here;
-   previews take seconds, full renders take about 2 minutes.
-5. **Render.** `python reel.py` (run it in the background; it is longer than a
-   foreground timeout). Then verify the *encoded* file: ffprobe duration and
-   resolution, a frame grab from each section, and loudness via
-   `ffmpeg -af ebur128=peak=true`.
-6. **Deliver.** SendUserFile both MP4s, then give the caption and the note.
-7. **Record.** Add a row to `LOG.md` (date, class, concept, what worked, open
+3. **Release check.** Pick the photos and clips you will use, then run
+   `facesheet.py build` on just those and send Nathan `face_sheet.html`. Wait
+   for the ticked ids before rendering (see hard rule 3). If he is not
+   around, deliver the draft with the sheet and say the blur is pending.
+4. **Prepare media (Python).** Copy the newest `reels/*/export_assets.py` to
+   `reels/<date-slug>/` and adapt it: photos through `load_photo(blur=...)`
+   (name boxes plus `blur_plan()` face boxes), video through
+   `blur_video_region()` for labels and `blur_video_faces()` for ticked faces,
+   SFX and music wavs, and `timeline.json`. Output goes to the external
+   `public/` folder under `C:\Users\natha\Videos\WCP Reels\<slug>\`.
+5. **Animate (Remotion).** Add a composition in `social/remotion/src/<slug>/`,
+   reusing the components in `src/components/`. Preview in Remotion Studio
+   (`social/remotion/README.md` has the commands); check text fits the safe
+   area, nothing covers faces, zooms land on the right detail, blurs hold.
+   A carousel is the same components rendered with `npx remotion still`.
+6. **Render and verify.** Render in the background (about 40 s), then run the
+   two-pass ffmpeg loudnorm to about -14 LUFS (Remotion does not normalize).
+   Verify the *encoded* file: ffprobe duration and resolution, a frame grab
+   from each section, loudness via `ffmpeg -af ebur128=peak=true`, and a 2x
+   zoom on every shelf, label and face that should be blurred.
+   (The older Pillow path, `reels/2026-09-25-one-pump/reel.py`, still works
+   for a quick one-off: `--preview` for stills, no flag to render, about 2 min.)
+7. **Deliver.** SendUserFile both MP4s (or the carousel PNGs), then give the caption and the note.
+8. **Record.** Add a card to the post board and a row to `LOG.md` (date, class, concept, what worked, open
    questions). If you learned a new gotcha, add it below.
 
 ## Motion layer: Remotion (decided 2026-09-26)
@@ -151,6 +163,8 @@ names, days, open-house dates, fees). Never type facts from memory.
 
 ## Toolchain
 
+- Node 22+ for Remotion: `cd social/remotion && npm ci` once (it downloads a
+  headless Chrome on first render).
 - Python 3.14 at user level. Install once: `pip install -r social/requirements.txt -r social/requirements-extra.txt`.
 - Models download on first use to `%LOCALAPPDATA%\wcp-reelkit\models\` (YuNet,
   Piper) and `~\.rembg\` (cutouts). Never into the repo.
