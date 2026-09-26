@@ -97,7 +97,7 @@
     "svgo": "^4.0.2",
     "undici": "7.29.1",
     "js-yaml": "^4.3.1",
-    "adm-zip": "^0.6.0",
+    "adm-zip": "0.6.1",
     "tmp": "^0.2.6",
     "qs": "^6.16.0",
     "@lhci/utils": {
@@ -117,7 +117,7 @@
       "brace-expansion": "^1.1.18"
     },
     "@module-federation/vite": {
-      "adm-zip": "^0.6.0"
+      "adm-zip": "0.6.1"
     },
     "external-editor": {
       "tmp": "^0.2.6"
