@@ -841,6 +841,13 @@ coop-jobs / tuition / fundraising / calendar / twos / threes by
 `node scripts/seed-hub-knowledge.mjs` (re-running RESETS those pages to that baseline).
 The source PDFs are uploaded as gated `hubDocument` files on the Documents page — the
 PDFs themselves are gitignored (they contain the hub password and phone numbers).
+The **September 2026 Orientation deck** came later, so it is a patch on top of that
+baseline, not part of the seed: `patch-orientation-deck-2627.mjs` uploads the deck and
+repoints the "Orientation Slide Deck" document at it, and
+`patch-orientation-2627-content.mjs` adds the policy the deck introduced (the July 2026
+handbook updates, the hand/bathroom rules, the discipline ladder and Chronic Aggression
+Policy, no homemade snacks, the board-meeting cadence). Run both again after any
+`seed-hub-knowledge.mjs` reset.
 
 ### Class pages are DERIVED — the classroom model (2026-08-29)
 

@@ -101,3 +101,6 @@ playwright/.cache/
 # cookie for whatever password .dev.vars holds. Never commit it.
 site/tests/.auth/
 /backups/
+
+# Publicity Drive working copies: kids names, parent contacts, helper schedules. Never commit (this repo is public).
+/PublicityGdrive/
