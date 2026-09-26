@@ -1,0 +1,8 @@
+pillow
+pillow-heif
+numpy
+scipy
+imageio-ffmpeg
+faster-whisper
+fonttools
+brotli

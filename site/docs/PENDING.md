@@ -5,7 +5,7 @@ patch script, add a row; when you run one, delete its row AND remove its
 stopgap (each row says how). A stale row here misleads the next session, which
 defeats the point.
 
-_Last reviewed: 2026-08-29._
+_Last reviewed: 2026-09-15._
 
 ## The 2026-08-04 quota-reset close-out (context)
 
@@ -26,10 +26,12 @@ reference again.
 
 ## Run and closed out
 
-| Script (`site/scripts/`)   | What it did                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Run                    |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `patch-org-chart.mjs`      | Moved the org chart's SHAPE out of code and into the `coopRole` documents: every "Reports to" became a REFERENCE (the chart's columns derive from it), the three paid-staff seats the old chart carried in code became roles, the Class Rep role was ticked "one of these for every class", all 17 `roleHolder` documents were pointed at their seat (the four reps at the ONE Class Rep seat plus their class), and the five job-list headings were seeded onto "How the co-op works". Idempotent; re-running reports "already …" for every row. | 2026-08-29 (`--apply`) |
-| `patch-hub-classrooms.mjs` | Set "Classes on this page" on the two shipped Family Hub class pages (`twos-threes` → Twos + Threes, `pre-k` → Pre-K AM + PM) and moved the four committed class icons into their `class` documents. Idempotent; re-running reports "already …" for every row.                                                                                                                                                                                                                                                                                    | 2026-08-29 (`--apply`) |
+| Script (`site/scripts/`)             | What it did                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Run                     |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `patch-org-chart.mjs`                | Moved the org chart's SHAPE out of code and into the `coopRole` documents: every "Reports to" became a REFERENCE (the chart's columns derive from it), the three paid-staff seats the old chart carried in code became roles, the Class Rep role was ticked "one of these for every class", all 17 `roleHolder` documents were pointed at their seat (the four reps at the ONE Class Rep seat plus their class), and the five job-list headings were seeded onto "How the co-op works". Idempotent; re-running reports "already …" for every row.                                               | 2026-08-29 (`--apply`)  |
+| `patch-orientation-deck-2627.mjs`    | Replaced the Family Hub's "Orientation Slide Deck" with the 2026-27 deck. The board's PowerPoint was exported to PDF, UPLOADED to Sanity, and the document flipped from a Canva link to `sourceType: 'file'`. This also closed the link-health 403: Canva served 403 to the checker on the old `/edit` URL. **The PDF prints the shared Family Hub password on its last slide, so it must never go in `site/public/` or any other tracked file** — the Sanity asset URL is resolved at request time. Idempotent; the upload happens only under `--commit`.                                      | 2026-09-15 (`--commit`) |
+| `patch-orientation-2627-content.mjs` | Put the parts of the 2026-27 Orientation deck that the hub had never been told about onto the hub: the July 2026 handbook updates (door security, phones and conduct, social media and photos, the nursing space, the December participation review, one cleaning per family) on Getting Started; the hand and bathroom rules, and the discipline ladder plus the Chronic Aggression Policy, on Health & Safety; the no-homemade-snacks rule in both class pages' NUT-FREE callout; the board-meeting cadence on Calendar. Sections carry stable `orient2627-*` keys, so re-running is a no-op. | 2026-09-15 (`--commit`) |
+| `patch-hub-classrooms.mjs`           | Set "Classes on this page" on the two shipped Family Hub class pages (`twos-threes` → Twos + Threes, `pre-k` → Pre-K AM + PM) and moved the four committed class icons into their `class` documents. Idempotent; re-running reports "already …" for every row.                                                                                                                                                                                                                                                                                                                                  | 2026-08-29 (`--apply`)  |
 
 ## Needs a human
 
@@ -252,12 +254,6 @@ deliberately curated card row. `scripts/patch-class-surfaces-auto.mjs`
   variables -> Actions -> Variables -> New repository variable, named
   `SITE_URL`, valued `https://wcp-website.nathanjnixon86.workers.dev` (change it
   at the domain cutover). See [TESTING.md](TESTING.md).
-
-- **Re-share the Orientation Slide Deck.** The first link-health run (2026-08-17) found the
-  Documents page's "Orientation Slide Deck" link answering HTTP 403 — families who tap it get
-  Google's access-denied page. Open the file in Google, set sharing back to "Anyone with the
-  link", and paste the fresh link into Studio → Family Hub → Documents & Forms → that entry.
-  The next Monday check (Family Hub → Link health) should show the row green.
 
 - **Replace the Pre-K class-pet placeholder with a real photo of Pickles.**
   `scripts/patch-prek-pet-splitmedia.mjs` (run 2026-08-16) converted the Pre-K
