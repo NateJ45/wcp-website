@@ -26,7 +26,8 @@ never here.
   children's first names on storage bins (left shelf), and a partial name
   sat just outside the IMG_9195 blur box. Only photos had been checked. Fixed
   with a tracked video blur (`reelkit.blur_video_region`) and a second photo
-  box; corrected files are `*-CORRECTED.mp4`. Nathan to delete and repost.
+  box; corrected files are `*-CORRECTED.mp4`. Nathan deleted the original
+  posts and reposted the corrected cut on 2026-09-26.
   Lesson now a hard rule in `CLAUDE.md`: check video frames and the encoded
   file at 2x zoom.
 - **Remotion pilot:** the same piece rebuilt in `social/remotion/` (plus a
