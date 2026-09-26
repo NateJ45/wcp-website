@@ -12,7 +12,8 @@ description: Make a West Chester Preschool social media reel or short video (Fac
    `social/reels/<YYYY-MM-DD-slug>/reel.py`, preview stills, render in the
    background, verify the encoded file, then deliver both MP4s with
    SendUserFile plus a caption.
-3. Non-negotiables: no media in git (the repo is public), blur every readable
+3. Non-negotiables: no media in git (the repo is public), send the face check
+   sheet (`facesheet.py build`) and blur the faces Nathan ticks, blur every readable
    child's name, no em-dashes, synthesized music only, never post on Nathan's
    behalf.
 4. Finish by adding a `social/LOG.md` entry and any new gotcha to

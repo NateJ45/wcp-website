@@ -71,8 +71,17 @@ A finished handoff is:
    children's names readable on bins in the video clip because only the
    photos were checked. Before delivering, grab frames from the ENCODED file
    and zoom 2x on every shelf and label area.
-3. **Photo releases.** Remind Nathan to confirm every child shown has a release.
-   You cannot verify this; say so.
+3. **Photo releases: people recognize, tools blur.** Before rendering, run
+   `python social/reelkit/facesheet.py build <out_dir> <chosen photos + clips>`
+   and send Nathan `face_sheet.html` (numbered face cards with checkboxes). He
+   or the class rep ticks any child without a release and pastes the ids back;
+   `facesheet.py blur` / `blur_plan()` / `blur_video_faces()` then blur exactly
+   those faces, tracking them through video. Look at the video check sheet
+   and the coverage stats (`held` frames are guesses). Never build or use face
+   recognition, embeddings, or headshot matching: no identity is ever stored,
+   and a child without a release is better left out of the shot than blurred.
+   Detection misses faces that are turned away, tiny (under ~1.5% of the
+   frame), or never in a sampled frame, so the human review stays mandatory.
 4. **No em-dashes** in anything Nathan will post or read (captions, on-screen
    text, your summary). En-dash ranges are fine.
 5. **Music:** only the synthesized track from `reelkit.music()` or silence. Never
@@ -130,6 +139,7 @@ The Pillow `reel.py` path still works and is fine for a quick one-off.
 |---|---|---|
 | Intake, stills, render, audio synth | `reelkit/reelkit.py` | the core; `intake` CLI |
 | Find readable names to blur | `reelkit/privacy.py` | `python privacy.py scan <folder> <out>` writes annotated JPGs + `flags.json` (outside the repo). **Misses small rotated or handwritten labels** (it missed the IMG_9237 table sticker), so it is a first pass; still eyeball every frame |
+| Release check: number every face, blur the ticked ones | `reelkit/facesheet.py` | `build` then `blur`; tracks faces within one clip, never identifies |
 | Face-aware crop to 9:16 / 4:5 / 1:1 | `reelkit/vision.py` `smart_crop(img, aspect)` | detection only, never identification |
 | Scrapbook cutout stickers | `reelkit/vision.py` `cutout()` + `sticker_outline()` | rembg; first run downloads ~1 GB model |
 | Cut on the beat | `reelkit/beats.py` `beats(path)` | librosa; decodes MP4 via ffmpeg first |
