@@ -22,6 +22,7 @@ import {
   fmtEventWeekday,
   fmtEventTime,
   EVENT_TYPE_META,
+  CHIP_LABEL_TEXT,
   type HubEvent,
 } from '@/lib/hub-calendar';
 import { deEmDash } from '@/lib/portable-text';
@@ -98,7 +99,7 @@ const defaultOpen = byKey.has(todayKey) ? todayKey : (groups[0]?.key ?? '');
                       meta.chipBg,
                     ]}
                   >
-                    <span class="text-[0.6rem] font-bold text-ink-muted uppercase">
+                    <span class={`text-[0.6rem] font-bold uppercase ${CHIP_LABEL_TEXT}`}>
                       {fmtEventMonth(e)}
                     </span>
                     <span class="text-base leading-none font-extrabold text-heading">

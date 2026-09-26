@@ -140,8 +140,30 @@ export function eventType(title: string): HubEventType {
 /** Per-type styling, colour-coded to a brand tier so a calendar card reads by
  *  its KIND, not its position: Board meetings navy, volunteer sky, milestones
  *  orange, everyday events green. `accent` feeds the card's `--note-accent`
- *  surface tint; `chipBg`/`chipText` colour the date box + type pill (AA-safe
- *  `-ink` text on soft tints); `iconColor` tints the pill glyph. */
+ *  surface tint; `chipBg` tints the date box + type pill; `iconColor` tints the
+ *  pill glyph. The colour on a chip lives in the tint and the decorative icon
+ *  only — the label is always CHIP_LABEL_TEXT, for the reason documented there. */
+/**
+ * The ONE text class for a label sitting on a `chipBg` tint, in every chip
+ * rendering (agenda card, type pill, month grid, mobile schedule, home widget).
+ *
+ * It is a single constant rather than a per-type field because the per-type
+ * field is exactly how the dark-mode contrast bug got in. Each type used to
+ * carry a `chipText` of its own colour (`text-orange-ink` on `bg-amber/20`,
+ * ...), which is the trap site/CLAUDE.md warns about: in dark mode the `-ink`
+ * token flips to the bright tier AND the tint composites over the dark surface,
+ * and the pair lands at 4.06-5.34:1. The mobile schedule reached for
+ * `text-ink-muted` instead, believing muted neutral was the safe answer, and
+ * measured 4.08:1 on the amber chip — a real AA failure that shipped.
+ *
+ * `--color-heading` is the only label colour with headroom on all five tints in
+ * both themes (5.91-8.56:1). The chip keeps its colour through the tint itself
+ * and the aria-hidden `iconColor` icon, where 3:1 is the bar. Measured on the
+ * real token values by hub-calendar-contrast.test.ts — change this constant and
+ * that gate re-measures.
+ */
+export const CHIP_LABEL_TEXT = 'text-heading';
+
 export const EVENT_TYPE_META: Record<
   HubEventType,
   {
@@ -149,10 +171,11 @@ export const EVENT_TYPE_META: Record<
     /** Plural for the filter chips (some don't pluralise with a bare "s"). */
     labelPlural: string;
     icon: string;
+    /** Icon only — decorative, so 3:1 (SC 1.4.11), not the text bar. */
     iconColor: string;
     accent: string;
+    /** Tint behind the chip. The label on it is always CHIP_LABEL_TEXT. */
     chipBg: string;
-    chipText: string;
   }
 > = {
   meeting: {
@@ -162,7 +185,6 @@ export const EVENT_TYPE_META: Record<
     iconColor: 'text-navy dark:text-sky',
     accent: 'var(--color-navy)',
     chipBg: 'bg-navy/10 dark:bg-sky/15',
-    chipText: 'text-heading',
   },
   volunteer: {
     label: 'Volunteer',
@@ -171,7 +193,6 @@ export const EVENT_TYPE_META: Record<
     iconColor: 'text-sky-ink',
     accent: 'var(--color-sky)',
     chipBg: 'bg-sky/15',
-    chipText: 'text-sky-ink',
   },
   milestone: {
     label: 'Milestone',
@@ -180,10 +201,13 @@ export const EVENT_TYPE_META: Record<
     iconColor: 'text-orange-ink',
     accent: 'var(--color-orange)',
     chipBg: 'bg-amber/20',
-    chipText: 'text-orange-ink',
   },
   // No-school days: neutral grey, deliberately de-emphasised — an absence, not
-  // an event. Neutral text on a faint ink tint stays AA in both themes.
+  // an event. The de-emphasis is carried by the grey tint and the muted icon;
+  // the LABEL is CHIP_LABEL_TEXT like every other chip, because muted text on
+  // this tint measures 4.89:1 in dark mode — passing, but with no margin left
+  // for a future tint tweak, and it was the identical reasoning on the amber
+  // chip that produced a 4.08:1 failure.
   closure: {
     label: 'No school',
     labelPlural: 'No-school days',
@@ -191,7 +215,6 @@ export const EVENT_TYPE_META: Record<
     iconColor: 'text-ink-muted',
     accent: 'var(--color-ink-muted)',
     chipBg: 'bg-ink/8',
-    chipText: 'text-ink-muted',
   },
   event: {
     label: 'Event',
@@ -200,7 +223,6 @@ export const EVENT_TYPE_META: Record<
     iconColor: 'text-green-ink',
     accent: 'var(--color-green)',
     chipBg: 'bg-green/15',
-    chipText: 'text-green-ink',
   },
 };
 
