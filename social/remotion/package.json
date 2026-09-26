@@ -1,0 +1,24 @@
+{
+  "name": "wcp-social-remotion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WCP social reels and carousels in Remotion. Media lives outside the repo; pass --public-dir.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render:onepump": "remotion render OnePump",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.529",
+    "@remotion/noise": "4.0.529",
+    "@remotion/paths": "4.0.529",
+    "@remotion/shapes": "4.0.529",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.529"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "typescript": "5.9.3"
+  }
+}

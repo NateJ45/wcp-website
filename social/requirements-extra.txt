@@ -1,0 +1,14 @@
+# Extra packages for the media-prep modules in reelkit/:
+#   privacy.py -> rapidocr-onnxruntime (falls back to easyocr)
+#   vision.py  -> opencv-python (YuNet face detection), rembg (cutouts)
+#   beats.py   -> librosa (falls back to numpy/scipy autocorrelation)
+#   voice.py   -> piper-tts (falls back to kokoro-onnx)
+#
+# All verified installable on Windows 11 / Python 3.14 (user site-packages)
+# as of 2026-09-26.
+rapidocr-onnxruntime
+opencv-python
+rembg
+librosa
+piper-tts
+kokoro-onnx

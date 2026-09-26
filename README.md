@@ -76,6 +76,7 @@ Pushes to `main` deploy automatically. Publishing in the Sanity Studio also trig
 - [`site/docs/TESTING.md`](site/docs/TESTING.md) — which test suite covers what.
 - [`site/docs/GOOGLE.md`](site/docs/GOOGLE.md) — the Google-side dependencies (calendar, Apps Scripts, sheets) and who owns them.
 - [`site/docs/PENDING.md`](site/docs/PENDING.md) — the live registry of queued/stopgapped work.
+- [`social/`](social/): tooling and agent brief for the school's Facebook/Instagram reels (separate from the website; no media is committed).
 - Plus [`FORMS.md`](site/docs/FORMS.md), [`ROLES.md`](site/docs/ROLES.md), [`REDIRECTS.md`](site/docs/REDIRECTS.md), and [`LAUNCH_CHECKLIST.md`](site/docs/LAUNCH_CHECKLIST.md) in the same folder.
 
 ---

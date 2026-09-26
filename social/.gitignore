@@ -1,0 +1,17 @@
+*.mp4
+*.mov
+*.MOV
+*.heic
+*.HEIC
+*.jpg
+*.jpeg
+*.png
+*.wav
+*.raw
+_work/
+out/
+__pycache__/
+
+# Remotion pilot (social/remotion): dependencies and render output
+node_modules/
+out/
